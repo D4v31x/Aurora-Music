@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "449384217876",
+    "project_id": "auroramusic-alpha",
+    "storage_bucket": "auroramusic-alpha.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:449384217876:android:ad6f2c53712d0adc5c1601",
+        "android_client_info": {
+          "package_name": "com.example.aurora_music_v01"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6nBM975fdC9gVGAiV6OiWIUirT0J1HCU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
