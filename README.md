@@ -76,5 +76,6 @@ For any questions, suggestions, or feedback, feel free to reach out via [email@e
 ---
 
 <p align="center">
-  Made with ❤️ in Czech Republic
+  Made with ❤️ in Czech Republic.  
+  *Parts of the code are made by LLM. The project will gradually be dependent only on person coding.
 </p>
