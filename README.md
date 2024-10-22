@@ -1,4 +1,4 @@
-#![Aurora Music Banner](https://github.com/user-attachments/assets/7eb33dfe-03e5-4edc-8a55-af9bad09aeea)
+![Music_bannerV2](https://github.com/user-attachments/assets/03b7a711-3f59-4161-ae08-33bc6a5444f6)
 
 # Aurora Music
 
