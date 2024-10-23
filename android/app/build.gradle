@@ -49,19 +49,6 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
- /*
-        manifestPlaceholders = [
-        'appName': 'Aurora Music',
-        'firebaseAppId': '1:58059013710:android:bba9f306591c6160a8cd1f',
-        'firebaseApiKey': 'AIzaSyBQM7KYdnczqbFUj02LsQUHHmqsnj1cymY',
-        'firebaseProjectId': 'auroramusic-7fc25',
-        'firebaseStorageBucket': 'my-app-id.appspot.com',
-        'firebaseMessagingSenderId': '234567890123',
-        'googleCloudMessagingSenderId': '234567890123',
-        'firebaseAppGroupId': 'com.example.aurora_music_v01'
-
-    ]
-    */
     }
 
     buildTypes {

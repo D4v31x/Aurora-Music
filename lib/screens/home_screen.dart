@@ -263,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<bool> checkForNewVersion() async {
     try {
       final response = await http.get(Uri.parse(
-          'https://api.github.com/repos/D4v31x/Aurora-Music_ALPHA_RELEASES/releases/latest'));
+          'https://api.github.com/repos/D4v31x/Aurora-Music/releases/latest'));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

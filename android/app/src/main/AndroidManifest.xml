@@ -60,6 +60,15 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="com.linusu.flutter_web_auth_2.CallbackActivity" android:exported="true">
+            <intent-filter android:label="flutter_web_auth_2">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="appwrite-callback-663e1a92003d390b8b2f" />
+            </intent-filter>
+        </activity>
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
