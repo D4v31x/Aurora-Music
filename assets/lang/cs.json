@@ -77,6 +77,7 @@
   "songs_loaded": "Písní načteno",
   "scanning_songs": "Načítání písní",
   "library_updated": "Knihovna aktualizována",
-  "update_failed": "Aktualizace knihovny se nezdařila"
+  "update_failed": "Aktualizace knihovny se nezdařila",
+  "search": "Hledat"
 
 }

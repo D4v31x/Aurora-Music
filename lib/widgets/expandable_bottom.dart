@@ -9,17 +9,17 @@ class ExpandableBottomSheet extends StatefulWidget {
   final double minHeight;
 
   const ExpandableBottomSheet({
-    super.key,
+    Key? key,
     required this.minChild,
     required this.maxChild,
     this.minHeight = 60.0,
-  });
+  }) : super(key: key);
 
   @override
-  _ExpandableBottomSheetState createState() => _ExpandableBottomSheetState();
+  State<ExpandableBottomSheet> createState() => ExpandableBottomSheetState();
 }
 
-class _ExpandableBottomSheetState extends State<ExpandableBottomSheet> with SingleTickerProviderStateMixin {
+class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _heightFactor;
 
@@ -28,9 +28,12 @@ class _ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Sing
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 400),
     );
-    _heightFactor = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
+    _heightFactor = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
@@ -39,9 +42,35 @@ class _ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Sing
     super.dispose();
   }
 
+  bool get isExpanded => _controller.value == 1.0;
+
+  Future<void> collapse() async {
+    if (!mounted) return;
+    await _controller.animateTo(
+      0.0,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  Future<void> expand() async {
+    if (!mounted) return;
+    await _controller.animateTo(
+      1.0,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final expandablePlayerController = Provider.of<ExpandablePlayerController>(context);
+
+    if (expandablePlayerController.isExpanded && !isExpanded) {
+      expand();
+    } else if (!expandablePlayerController.isExpanded && isExpanded) {
+      collapse();
+    }
 
     return AnimatedBuilder(
       animation: _controller,
@@ -50,52 +79,72 @@ class _ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Sing
           bottom: 0,
           left: 0,
           right: 0,
-          height: widget.minHeight + (MediaQuery.of(context).size.height - widget.minHeight) * _heightFactor.value,
-          child: GestureDetector(
-            onVerticalDragUpdate: (details) {
-              _controller.value -= details.primaryDelta! / (MediaQuery.of(context).size.height - widget.minHeight);
-            },
-            onVerticalDragEnd: (details) {
-              if (_controller.isAnimating) return;
+          height: widget.minHeight + 
+                 (MediaQuery.of(context).size.height - widget.minHeight) * 
+                 _heightFactor.value,
+          child: RepaintBoundary(
+            child: GestureDetector(
+              onVerticalDragUpdate: (details) {
+                if (!mounted) return;
+                _controller.value -= details.primaryDelta! / 
+                                   (MediaQuery.of(context).size.height - widget.minHeight);
+              },
+              onVerticalDragEnd: (details) {
+                if (!mounted || _controller.isAnimating) return;
 
-              final double flingVelocity = details.velocity.pixelsPerSecond.dy / (MediaQuery.of(context).size.height - widget.minHeight);
-              if (flingVelocity.abs() > 2.0) {
-                _controller.fling(velocity: -flingVelocity);
-                expandablePlayerController.isExpanded ? expandablePlayerController.collapse() : expandablePlayerController.expand();
-              } else if (_controller.value < 0.5) {
-                _controller.animateTo(0.0);
-                expandablePlayerController.collapse();
-              } else {
-                _controller.animateTo(1.0);
-                expandablePlayerController.expand();
-              }
-            },
-            onTap: () {
-              if (_controller.value == 0.0) {
-                _controller.animateTo(1.0);
-                expandablePlayerController.expand();
-              }
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.8),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
-              ),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: FadeTransition(
-                      opacity: ReverseAnimation(_controller),
-                      child: widget.minChild,
+                final double velocity = details.velocity.pixelsPerSecond.dy / 
+                                     (MediaQuery.of(context).size.height - widget.minHeight);
+                
+                if (velocity.abs() > 1.0) {
+                  if (velocity > 0) {
+                    collapse();
+                    expandablePlayerController.collapse();
+                  } else {
+                    expand();
+                    expandablePlayerController.expand();
+                  }
+                } else {
+                  if (_controller.value < 0.5) {
+                    collapse();
+                    expandablePlayerController.collapse();
+                  } else {
+                    expand();
+                    expandablePlayerController.expand();
+                  }
+                }
+              },
+              onTap: () {
+                if (!mounted) return;
+                if (_controller.value == 0.0) {
+                  expand();
+                  expandablePlayerController.expand();
+                }
+              },
+              child: RepaintBoundary(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.8),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(20.0)
                     ),
                   ),
-                  Positioned.fill(
-                    child: FadeTransition(
-                      opacity: _controller,
-                      child: widget.maxChild,
-                    ),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: FadeTransition(
+                          opacity: ReverseAnimation(_controller),
+                          child: widget.minChild,
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: FadeTransition(
+                          opacity: _controller,
+                          child: widget.maxChild,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

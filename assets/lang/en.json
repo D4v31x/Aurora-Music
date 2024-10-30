@@ -76,5 +76,6 @@
   "songs_loaded": "Songs loaded",
   "scanning_songs": "Scanning songs",
   "library_updated": "Library updated",
-  "update_failed": "Library update failed"
+  "update_failed": "Library update failed",
+  "search": "Search"
 }

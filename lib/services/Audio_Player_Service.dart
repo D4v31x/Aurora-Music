@@ -46,7 +46,7 @@ class AudioPlayerService extends ChangeNotifier {
   List<SpotifySongModel> _spotifyPlaylist = [];
   int _currentSpotifyIndex = 0;
 
-
+  Timer? _sleepTimer;
 
   AudioPlayerService() {
     _init();
@@ -500,12 +500,19 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
+  void cancelSleepTimer() {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _audioPlayer.dispose();
     _savePlayCounts();
     savePlaylists();
     _currentSongController.close();
+    _sleepTimer?.cancel();
     super.dispose();
   }
 }

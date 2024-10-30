@@ -1,119 +1,183 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:provider/provider.dart';
+import 'package:palette_generator/palette_generator.dart';
 import '../services/Audio_Player_Service.dart';
-import 'dart:typed_data';
+import '../services/expandable_player_controller.dart';
+import '../services/artwork_cache_service.dart';
 
-class MiniPlayer extends StatelessWidget {
+class MiniPlayer extends StatefulWidget {
   final SongModel currentSong;
-
+  
   const MiniPlayer({
-    super.key,
+    Key? key,
     required this.currentSong,
-  });
+  }) : super(key: key);
 
-  String sanitizeText(String? text) {
-    return text?.replaceAll(RegExp(r'[^\x20-\x7E]'), '') ?? 'Unknown';
+  @override
+  State<MiniPlayer> createState() => _MiniPlayerState();
+}
+
+class _MiniPlayerState extends State<MiniPlayer> {
+  final _artworkService = ArtworkCacheService();
+  Color? dominantColor;
+  final double _minHeight = 65.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateDominantColor();
+  }
+
+  @override
+  void didUpdateWidget(MiniPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentSong.id != widget.currentSong.id) {
+      _updateDominantColor();
+    }
+  }
+
+  Future<void> _updateDominantColor() async {
+    final artwork = await _artworkService.getArtwork(widget.currentSong.id);
+    if (artwork != null) {
+      final paletteGenerator = await PaletteGenerator.fromImageProvider(
+        MemoryImage(artwork),
+        size: const Size(50, 50), // menší velikost pro rychlejší zpracování
+      );
+      if (mounted) {
+        setState(() {
+          dominantColor = paletteGenerator.dominantColor?.color ?? Colors.black;
+        });
+      }
+    }
+  }
+
+  Color getTextColor(Color backgroundColor) {
+    // Výpočet relativní luminance podle WCAG 2.0
+    double luminance = (0.299 * backgroundColor.red + 
+                       0.587 * backgroundColor.green + 
+                       0.114 * backgroundColor.blue) / 255;
+    
+    // Pokud je pozadí světlé, vrátíme černou, jinak bílou
+    return luminance > 0.5 ? Colors.black : Colors.white;
   }
 
   @override
   Widget build(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final textColor = dominantColor != null ? getTextColor(dominantColor!) : Colors.white;
 
     return Material(
-      color: Colors.transparent, // Make the Material background transparent
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-          child: Container(
-            height: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              children: [
-                Hero(
-                  tag: 'albumArtHero',
+      color: Colors.transparent,
+      child: Container(
+        height: 65 + bottomPadding,
+        decoration: BoxDecoration(
+          color: dominantColor?.withOpacity(0.95) ?? Colors.black.withOpacity(0.95),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+        ),
+        child: Row(
+          children: [
+            // Artwork s vylepšenou Hero animací
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Hero(
+                tag: 'artwork',
+                createRectTween: (begin, end) {
+                  return MaterialRectCenterArcTween(begin: begin, end: end);
+                },
+                child: Material(
+                  color: Colors.transparent,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: FutureBuilder<Uint8List?>(
-                      future: audioPlayerService.getCurrentSongArtwork(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-                          return Image.memory(
-                            snapshot.data!,
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                          );
-                        } else {
-                          return Image.asset(
-                            'assets/images/logo/default_art.png',
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                          );
-                        }
-                      },
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: QueryArtworkWidget(
+                        id: widget.currentSong.id,
+                        type: ArtworkType.AUDIO,
+                        nullArtworkWidget: const Icon(Icons.music_note, color: Colors.white),
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Hero(
-                        tag: 'songTitleHero',
+              ),
+            ),
+            // Informace o skladbě s vylepšenými Hero animacemi
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Hero(
+                      tag: 'title',
+                      createRectTween: (begin, end) {
+                        return MaterialRectCenterArcTween(begin: begin, end: end);
+                      },
+                      child: Material(
+                        color: Colors.transparent,
                         child: Text(
-                          sanitizeText(currentSong.title),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                          widget.currentSong.title,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Hero(
+                      tag: 'artist',
+                      createRectTween: (begin, end) {
+                        return MaterialRectCenterArcTween(begin: begin, end: end);
+                      },
+                      child: Material(
+                        color: Colors.transparent,
+                        child: Text(
+                          widget.currentSong.artist ?? 'Unknown Artist',
+                          style: TextStyle(
+                            color: textColor.withOpacity(0.7),
                             fontSize: 12,
                           ),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Hero(
-                        tag: 'artistNameHero',
-                        child: Text(
-                          sanitizeText(currentSong.artist),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 10,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                IconButton(
-                  icon: Icon(
-                    audioPlayerService.isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    if (audioPlayerService.isPlaying) {
-                      audioPlayerService.pause();
-                    } else {
-                      audioPlayerService.resume();
-                    }
-                  },
-                ),
-              ],
+              ),
             ),
-          ),
+            // Play/Pause tlačítko
+            GestureDetector(
+              onTap: () {
+                if (audioPlayerService.isPlaying) {
+                  audioPlayerService.pause();
+                } else {
+                  audioPlayerService.resume();
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Icon(
+                  audioPlayerService.isPlaying 
+                      ? Icons.pause_rounded 
+                      : Icons.play_arrow_rounded,
+                  color: textColor,
+                  size: 32,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -8,6 +8,7 @@ import '../services/Audio_Player_Service.dart';
 import '../services/expandable_player_controller.dart';
 import '../services/lyrics_service.dart';  // Genius lyrics fetching service
 import 'Artist_screen.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   const NowPlayingScreen({super.key});
@@ -19,12 +20,135 @@ class NowPlayingScreen extends StatefulWidget {
 class _NowPlayingScreenState extends State<NowPlayingScreen> {
   final ScrollController _scrollController = ScrollController();
   String? _lyrics;
+  final Map<int, Uint8List?> _artworkCache = {};
+  final Map<int, ImageProvider<Object>?> _imageProviderCache = {};
+  ImageProvider<Object>? _currentArtwork;
+  bool _isLoadingArtwork = true;
+  int? _lastSongId;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
-    _fetchLyrics();  // Fetch lyrics for the current song
+    _fetchLyrics();
+    _initializeArtwork();
+  }
+
+  Future<void> _initializeArtwork() async {
+    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    if (audioPlayerService.currentSong != null) {
+      await _updateArtwork(audioPlayerService.currentSong!);
+    }
+  }
+
+  Future<ImageProvider<Object>?> _getCachedImageProvider(int id) async {
+    if (_imageProviderCache.containsKey(id)) {
+      return _imageProviderCache[id];
+    }
+
+    final artwork = await _getArtwork(id);
+    if (artwork != null) {
+      final provider = MemoryImage(artwork) as ImageProvider<Object>;
+      _imageProviderCache[id] = provider;
+      return provider;
+    }
+    return null;
+  }
+
+  Future<void> _updateArtwork(SongModel song) async {
+    setState(() => _isLoadingArtwork = true);
+    
+    try {
+      final provider = await _getCachedImageProvider(song.id);
+      if (mounted) {
+        setState(() {
+          _currentArtwork = provider ?? const AssetImage('assets/images/logo/default_art.png') as ImageProvider<Object>;
+          _isLoadingArtwork = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _currentArtwork = const AssetImage('assets/images/logo/default_art.png') as ImageProvider<Object>;
+          _isLoadingArtwork = false;
+        });
+      }
+    }
+  }
+
+  Future<Uint8List?> _getArtwork(int id) async {
+    if (_artworkCache.containsKey(id)) {
+      return _artworkCache[id];
+    }
+    
+    try {
+      final artwork = await OnAudioQuery().queryArtwork(
+        id,
+        ArtworkType.AUDIO,
+        quality: 100, // Zvýšená kvalita
+        size: 1000, // Větší velikost
+      );
+      _artworkCache[id] = artwork;
+      return artwork;
+    } catch (e) {
+      print('Error loading artwork: $e');
+      return null;
+    }
+  }
+
+  // Upravený build method pro artwork
+  Widget _buildArtwork() {
+    if (_isLoadingArtwork) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+
+    return Hero(
+      tag: 'playerArtwork',
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: _currentArtwork != null
+              ? Image(image: _currentArtwork!, fit: BoxFit.cover)
+              : const Center(child: CircularProgressIndicator()),
+        ),
+      ),
+    );
+  }
+
+  // Upravený build method pro pozadí
+  Widget _buildBackground() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      child: Container(
+        key: ValueKey(_currentArtwork),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: _currentArtwork ?? const AssetImage('assets/images/logo/default_art.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+          child: Container(
+            color: Colors.black.withOpacity(0.3),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -77,38 +201,18 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
     final expandablePlayerController = Provider.of<ExpandablePlayerController>(context);
 
+    // Aktualizujte artwork pouze když se změní písnička
+    if (audioPlayerService.currentSong != null && 
+        (_currentArtwork == null || audioPlayerService.currentSong?.id != _lastSongId)) {
+      _lastSongId = audioPlayerService.currentSong?.id;
+      _updateArtwork(audioPlayerService.currentSong!);
+    }
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // Background image with blur effect
-          if (audioPlayerService.currentSong != null)
-            FutureBuilder<Uint8List?>(
-              future: audioPlayerService.getCurrentSongArtwork(),
-              builder: (context, snapshot) {
-                ImageProvider backgroundImage;
-                if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-                  backgroundImage = MemoryImage(snapshot.data!);
-                } else {
-                  backgroundImage = const AssetImage('assets/images/logo/default_art.png');
-                }
-                return Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: backgroundImage,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-                    child: Container(
-                      color: Colors.black.withOpacity(0.3),
-                    ),
-                  ),
-                );
-              },
-            ),
-          // Main content
+          _buildBackground(),
           CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -126,38 +230,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 70.0),
                               child: AspectRatio(
                                 aspectRatio: 1,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.3),
-                                        spreadRadius: 5,
-                                        blurRadius: 30,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: FutureBuilder<Uint8List?>(
-                                      future: audioPlayerService.getCurrentSongArtwork(),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-                                          return Image.memory(
-                                            snapshot.data!,
-                                            fit: BoxFit.cover,
-                                          );
-                                        } else {
-                                          return Image.asset(
-                                            'assets/images/logo/default_art.png',
-                                            fit: BoxFit.cover,
-                                          );
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ),
+                                child: _buildArtwork(),
                               ),
                             ),
                           ),

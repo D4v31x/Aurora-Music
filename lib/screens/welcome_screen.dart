@@ -29,7 +29,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     super.initState();
     _pageController = PageController();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
     _animation = CurvedAnimation(
@@ -225,143 +225,143 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
 
   Widget _buildAlphaTestingPage() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: AnimationLimiter(
-      child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: AnimationConfiguration.toStaggeredList(
-        duration: const Duration(milliseconds: 375),
-        childAnimationBuilder: (widget) => SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: widget,
-          ),
-        ),
-        children: [
-          const Icon(Icons.star, size: 60, color: Colors.white),
-          const SizedBox(height: 20),
-          Text(
-            AppLocalizations.of(context).translate('alpha_title'),
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            AppLocalizations.of(context).translate('alpha_description'),
-            style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    )));
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: AnimationLimiter(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: AnimationConfiguration.toStaggeredList(
+                duration: const Duration(milliseconds: 375),
+                childAnimationBuilder: (widget) => SlideAnimation(
+                  verticalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: widget,
+                  ),
+                ),
+                children: [
+                  const Icon(Icons.star, size: 60, color: Colors.white),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context).translate('alpha_title'),
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context).translate('alpha_description'),
+                    style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            )));
   }
 
   Widget _buildPermissionsPage() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: AnimationLimiter(
-      child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: AnimationConfiguration.toStaggeredList(
-        duration: const Duration(milliseconds: 375),
-        childAnimationBuilder: (widget) => SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: widget,
-          ),
-        ),
-        children: [
-          const Icon(Icons.security, size: 60, color: Colors.white)
-              .animate()
-              .scale(duration: 600.ms, curve: Curves.elasticOut),
-          const SizedBox(height: 20),
-          Text(
-            AppLocalizations.of(context).translate('permissions_title'),
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            AppLocalizations.of(context).translate('permissions_description'),
-            style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    )));
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: AnimationLimiter(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: AnimationConfiguration.toStaggeredList(
+                duration: const Duration(milliseconds: 375),
+                childAnimationBuilder: (widget) => SlideAnimation(
+                  verticalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: widget,
+                  ),
+                ),
+                children: [
+                  const Icon(Icons.security, size: 60, color: Colors.white)
+                      .animate()
+                      .scale(duration: 600.ms, curve: Curves.elasticOut),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context).translate('permissions_title'),
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context).translate('permissions_description'),
+                    style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            )));
   }
 
   Widget _buildPrivacyPage() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: AnimationLimiter(
-      child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: AnimationConfiguration.toStaggeredList(
-        duration: const Duration(milliseconds: 375),
-        childAnimationBuilder: (widget) => SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: widget,
-          ),
-        ),
-        children: [
-          const Icon(Icons.privacy_tip, size: 60, color: Colors.white)
-              .animate()
-              .scale(duration: 600.ms, curve: Curves.elasticOut),
-          const SizedBox(height: 20),
-          Text(
-            AppLocalizations.of(context).translate('privacy_title'),
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            AppLocalizations.of(context).translate('privacy_description'),
-            style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    )));
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: AnimationLimiter(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: AnimationConfiguration.toStaggeredList(
+                duration: const Duration(milliseconds: 375),
+                childAnimationBuilder: (widget) => SlideAnimation(
+                  verticalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: widget,
+                  ),
+                ),
+                children: [
+                  const Icon(Icons.privacy_tip, size: 60, color: Colors.white)
+                      .animate()
+                      .scale(duration: 600.ms, curve: Curves.elasticOut),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context).translate('privacy_title'),
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context).translate('privacy_description'),
+                    style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            )));
   }
 
   Widget _buildLanguagePage() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: AnimationLimiter(
-      child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: AnimationConfiguration.toStaggeredList(
-        duration: const Duration(milliseconds: 375),
-        childAnimationBuilder: (widget) => SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: widget,
-          ),
-        ),
-        children: [
-          const Icon(Icons.language, size: 60, color: Colors.white)
-              .animate()
-              .scale(duration: 600.ms, curve: Curves.elasticOut),
-          const SizedBox(height: 20),
-          Text(
-            AppLocalizations.of(context).translate('language_title'),
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 30),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildLanguageButton('English', 'en'),
-              const SizedBox(width: 20),
-              _buildLanguageButton('Čeština', 'cs'),
-            ],
-          ),
-        ],
-      ),
-    )));
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: AnimationLimiter(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: AnimationConfiguration.toStaggeredList(
+                duration: const Duration(milliseconds: 375),
+                childAnimationBuilder: (widget) => SlideAnimation(
+                  verticalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: widget,
+                  ),
+                ),
+                children: [
+                  const Icon(Icons.language, size: 60, color: Colors.white)
+                      .animate()
+                      .scale(duration: 600.ms, curve: Curves.elasticOut),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context).translate('language_title'),
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildLanguageButton('English', 'en'),
+                      const SizedBox(width: 20),
+                      _buildLanguageButton('Čeština', 'cs'),
+                    ],
+                  ),
+                ],
+              ),
+            )));
   }
 
   Widget _buildLanguageButton(String language, String code) {
@@ -390,104 +390,104 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
 
   Widget _buildCommunityPage() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: AnimationLimiter(
-      child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: AnimationConfiguration.toStaggeredList(
-        duration: const Duration(milliseconds: 375),
-        childAnimationBuilder: (widget) => SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: widget,
-          ),
-        ),
-        children: [
-          const Icon(Icons.people, size: 60, color: Colors.white)
-              .animate()
-              .scale(duration: 600.ms, curve: Curves.elasticOut),
-          const SizedBox(height: 20),
-          Text(
-            AppLocalizations.of(context).translate('community_title'),
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            AppLocalizations.of(context).translate('community_description'),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.normal, color: Colors.white),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () async {
-            const url = 'https://www.instagram.com/aurora.software?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==';
-            print('Attempting to launch URL: $url');
-            try {
-              final uri = Uri.parse(url);
-              if (await canLaunchUrl(uri)) {
-                print('Launching URL...');
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
-              } else {
-                print('Cannot launch URL');
-                throw 'Could not launch $url';
-              }
-            } catch (e) {
-              print('Error: $e');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Failed to open the link: $e')),
-              );
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.pinkAccent,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
-          child: Text(AppLocalizations.of(context).translate('follow_instagram')),
-        )
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: AnimationLimiter(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: AnimationConfiguration.toStaggeredList(
+                duration: const Duration(milliseconds: 375),
+                childAnimationBuilder: (widget) => SlideAnimation(
+                  verticalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: widget,
+                  ),
+                ),
+                children: [
+                  const Icon(Icons.people, size: 60, color: Colors.white)
+                      .animate()
+                      .scale(duration: 600.ms, curve: Curves.elasticOut),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context).translate('community_title'),
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context).translate('community_description'),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.normal, color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () async {
+                      const url = 'https://www.instagram.com/aurora.software?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==';
+                      print('Attempting to launch URL: $url');
+                      try {
+                        final uri = Uri.parse(url);
+                        if (await canLaunchUrl(uri)) {
+                          print('Launching URL...');
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        } else {
+                          print('Cannot launch URL');
+                          throw 'Could not launch $url';
+                        }
+                      } catch (e) {
+                        print('Error: $e');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Failed to open the link: $e')),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.pinkAccent,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: Text(AppLocalizations.of(context).translate('follow_instagram')),
+                  )
 
-        ],
-      ),
-    )));
+                ],
+              ),
+            )));
   }
 
   Widget _buildFinishPage() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: AnimationLimiter(
-      child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: AnimationConfiguration.toStaggeredList(
-        duration: const Duration(milliseconds: 375),
-        childAnimationBuilder: (widget) => SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: widget,
-          ),
-        ),
-        children: [
-          const Icon(Icons.celebration, size: 60, color: Colors.white)
-              .animate()
-              .scale(duration: 600.ms, curve: Curves.elasticOut),
-          const SizedBox(height: 20),
-          Text(
-            AppLocalizations.of(context).translate('finish_title'),
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            AppLocalizations.of(context).translate('finish_description'),
-            style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    )));
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: AnimationLimiter(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: AnimationConfiguration.toStaggeredList(
+                duration: const Duration(milliseconds: 375),
+                childAnimationBuilder: (widget) => SlideAnimation(
+                  verticalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: widget,
+                  ),
+                ),
+                children: [
+                  const Icon(Icons.celebration, size: 60, color: Colors.white)
+                      .animate()
+                      .scale(duration: 600.ms, curve: Curves.elasticOut),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context).translate('finish_title'),
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context).translate('finish_description'),
+                    style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            )));
   }
 
   Widget _buildPageIndicator() {
