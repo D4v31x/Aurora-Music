@@ -210,6 +210,68 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            color: Colors.grey[900],
+            onSelected: (value) {
+              switch (value) {
+                case 'sleep_timer':
+                  _showSleepTimerOptions(context);
+                  break;
+                case 'lyrics':
+                  // Implementace pro texty písní
+                  break;
+                case 'add_playlist':
+                  // Implementace pro přidání do playlistu
+                  break;
+                // Další případy podle potřeby
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem<String>(
+                value: 'sleep_timer',
+                child: Row(
+                  children: [
+                    Icon(
+                      Provider.of<AudioPlayerService>(context, listen: false).isSleepTimerActive 
+                          ? Icons.timer 
+                          : Icons.timer_outlined,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 12),
+                    const Text('Časovač vypnutí', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'lyrics',
+                child: Row(
+                  children: [
+                    Icon(Icons.lyrics_outlined, color: Colors.white),
+                    SizedBox(width: 12),
+                    Text('Texty písní', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'add_playlist',
+                child: Row(
+                  children: [
+                    Icon(Icons.playlist_add, color: Colors.white),
+                    SizedBox(width: 12),
+                    Text('Přidat do playlistu', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
+              // Další položky menu
+            ],
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           _buildBackground(),
@@ -372,6 +434,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                               ),
                             ),
                           ),
+                          _buildRemainingTime(),
                         ],
                       ),
                     ),
@@ -382,6 +445,251 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showSleepTimerOptions(BuildContext context) {
+    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    final minutesController = TextEditingController();
+    final secondsController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            top: 16,
+            left: 16,
+            right: 16,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.7),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              // Přednastavené možnosti v řádku
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildTimerTile(context, '5', Duration(minutes: 5)),
+                    _buildTimerTile(context, '15', Duration(minutes: 15)),
+                    _buildTimerTile(context, '30', Duration(minutes: 30)),
+                    _buildTimerTile(context, '60', Duration(minutes: 60)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Vlastní čas
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTimeInput(
+                      controller: minutesController,
+                      label: 'min',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildTimeInput(
+                      controller: secondsController,
+                      label: 'sec',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSetButton(
+                    context,
+                    minutesController,
+                    secondsController,
+                  ),
+                ],
+              ),
+              if (audioPlayerService.isSleepTimerActive) ...[
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      audioPlayerService.cancelSleepTimer();
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Časovač vypnutí byl zrušen'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.timer_off, color: Colors.red, size: 20),
+                    label: const Text('Zrušit časovač', style: TextStyle(color: Colors.red)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimerTile(BuildContext context, String minutes, Duration duration) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      child: InkWell(
+        onTap: () {
+          final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+          audioPlayerService.setSleepTimer(duration);
+          Navigator.pop(context);
+          _showTimerSetSnackBar(context, duration);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            '$minutes min',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeInput({
+    required TextEditingController controller,
+    required String label,
+  }) {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          hintText: label,
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSetButton(
+    BuildContext context,
+    TextEditingController minutesController,
+    TextEditingController secondsController,
+  ) {
+    return Container(
+      height: 44,
+      width: 44,
+      child: ElevatedButton(
+        onPressed: () {
+          final minutes = int.tryParse(minutesController.text) ?? 0;
+          final seconds = int.tryParse(secondsController.text) ?? 0;
+          if (minutes > 0 || seconds > 0) {
+            final duration = Duration(minutes: minutes, seconds: seconds);
+            final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+            audioPlayerService.setSleepTimer(duration);
+            Navigator.pop(context);
+            _showTimerSetSnackBar(context, duration);
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white.withOpacity(0.2),
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        child: const Icon(Icons.check, color: Colors.white),
+      ),
+    );
+  }
+
+  void _showTimerSetSnackBar(BuildContext context, Duration duration) {
+    String timeText;
+    if (duration.inHours > 0) {
+      timeText = '${duration.inHours} hodin';
+    } else if (duration.inMinutes > 0) {
+      timeText = '${duration.inMinutes} minut';
+      if (duration.inSeconds % 60 > 0) {
+        timeText += ' a ${duration.inSeconds % 60} sekund';
+      }
+    } else {
+      timeText = '${duration.inSeconds} sekund';
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Časovač nastaven na $timeText'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  // Přidejte nebo upravte _buildRemainingTime pro lepší zobrazení zbývajícího času
+  Widget _buildRemainingTime() {
+    return Consumer<AudioPlayerService>(
+      builder: (context, service, child) {
+        if (!service.isSleepTimerActive) return const SizedBox.shrink();
+        
+        final remaining = service.remainingTime;
+        if (remaining == null) return const SizedBox.shrink();
+        
+        String timeText;
+        if (remaining.inHours > 0) {
+          timeText = '${remaining.inHours}:${(remaining.inMinutes % 60).toString().padLeft(2, '0')}:${(remaining.inSeconds % 60).toString().padLeft(2, '0')}';
+        } else {
+          timeText = '${remaining.inMinutes}:${(remaining.inSeconds % 60).toString().padLeft(2, '0')}';
+        }
+        
+        return _glassmorphicContainer(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.timer, color: Colors.white, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  timeText,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

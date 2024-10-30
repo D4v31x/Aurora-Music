@@ -31,7 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
   just_audio: ^0.9.37
-  audioplayers: ^6.0.0
   permission_handler: ^11.3.1
   flutter_launcher_icons: ^0.13.1
   connectivity_plus: ^6.0.2
@@ -83,6 +82,8 @@ dependencies:
   spotify_sdk: ^2.3.1
   flutter_web_auth: ^0.5.0
   html: ^0.15.4
+  flutter_lyric: ^2.0.4+6
+  amlv: ^1.0.2
 
 dev_dependencies:
   flutter_test:
