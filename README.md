@@ -54,7 +54,7 @@ Follow these steps to start enjoying Aurora Music on your Android device:
 
 ## 📢 Disclaimer
 
-**Aurora Music is currently in Alpha phase.** This means the application may contain bugs, incomplete features, or exhibit unstable behavior. We are actively working on improvements and appreciate your feedback as we continue to refine and enhance the app. We also collect anonymous data to improve the app, and quickly discover bugs. You can see the Privacy Policy [here](Privacy_Policy.txt). (Will be uploaded with 0.0.85 version)
+**Aurora Music is currently in Alpha phase.** This means the application may contain bugs, incomplete features, or exhibit unstable behavior. We are actively working on improvements and appreciate your feedback as we continue to refine and enhance the app. We also collect anonymous data to improve the app, and quickly discover bugs. You can see the Privacy Policy [here](https://d4v31x.github.io/Aurora_WEB/terms.html).
 
 ---
 
