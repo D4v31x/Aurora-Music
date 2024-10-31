@@ -62,7 +62,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
   void _playAllSongs(AudioPlayerService audioPlayerService) {
     if (audioPlayerService.playlists.isNotEmpty) {
-      audioPlayerService.setPlaylist(widget.playlist.songs, 0);
+      audioPlayerService.setPlaylist(
+        widget.playlist.songs, 
+        0,
+      );
       audioPlayerService.play();
     }
   }
@@ -202,7 +205,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   title: Text(song.title, style: const TextStyle(color: Colors.white)),
                                   subtitle: Text(song.artist ?? 'Unknown Artist', style: const TextStyle(color: Colors.grey)),
                                   onTap: () {
-                                    audioPlayerService.setPlaylist(updatedPlaylist.songs, index);
+                                    audioPlayerService.setPlaylist(
+                                      updatedPlaylist.songs, 
+                                      index,
+                                    );
                                     audioPlayerService.play();
                                   },
                                   onLongPress: () => _showRemoveSongDialog(context, audioPlayerService, song),

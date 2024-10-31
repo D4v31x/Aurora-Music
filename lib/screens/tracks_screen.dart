@@ -416,7 +416,8 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
         }
             : () {
           audioPlayerService.setPlaylist(
-              _displayedSongs, _displayedSongs.indexOf(song));
+              _displayedSongs, _displayedSongs.indexOf(song),
+            );
           audioPlayerService.play();
         },
       ),

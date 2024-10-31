@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'package:provider/provider.dart';
@@ -7,8 +10,10 @@ import '../models/utils.dart';
 import '../services/Audio_Player_Service.dart';
 import '../services/expandable_player_controller.dart';
 import '../services/lyrics_service.dart';  // Genius lyrics fetching service
+import '../services/lyrics_service.dart'; // Importujte službu pro timed lyrics
 import 'Artist_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import '../models/timed_lyrics.dart'; // Importujte model
 
 class NowPlayingScreen extends StatefulWidget {
   const NowPlayingScreen({super.key});
@@ -17,7 +22,7 @@ class NowPlayingScreen extends StatefulWidget {
   _NowPlayingScreenState createState() => _NowPlayingScreenState();
 }
 
-class _NowPlayingScreenState extends State<NowPlayingScreen> {
+class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   String? _lyrics;
   final Map<int, Uint8List?> _artworkCache = {};
@@ -26,12 +31,72 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   bool _isLoadingArtwork = true;
   int? _lastSongId;
 
+  // Přidáme proměnné pro timed lyrics
+  List<TimedLyric>? _timedLyrics;
+  int _currentLyricIndex = 0;
+
+  // Přidejte tyto proměnné
+  late AnimationController _timerExpandController;
+  bool _isTimerExpanded = false;
+  Timer? _autoCollapseTimer;
+
+  // Přidáme proměnnou pro zdroj přehrávání
+  String _playingSource = "Library"; // Výchozí hodnota
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
-    _fetchLyrics();
     _initializeArtwork();
+    _initializeTimedLyrics();
+    _timerExpandController = AnimationController(
+      duration: const Duration(milliseconds: 300), // Rychlejší animace
+      vsync: this,
+    );
+  }
+
+  Future<void> _initializeTimedLyrics() async {
+    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    final timedLyricsService = TimedLyricsService();
+
+    if (audioPlayerService.currentSong != null) {
+      final song = audioPlayerService.currentSong!;
+      // Nejprve se pokusíme načíst z lokálního úložiště
+      var lyrics = await timedLyricsService.loadLyricsFromFile(song.artist ?? 'Unknown', song.title ?? 'Unknown');
+
+      if (lyrics == null) {
+        // Pokud nejsou uloženy, stáhneme je
+        lyrics = await timedLyricsService.fetchTimedLyrics(song.artist ?? 'Unknown', song.title ?? 'Unknown');
+      }
+
+      setState(() {
+        _timedLyrics = lyrics;
+        _currentLyricIndex = 0;
+      });
+    }
+
+    // Přihlaste se k poslechu pozice přehrávání
+    audioPlayerService.audioPlayer.positionStream.listen((position) {
+      _updateCurrentLyric(position);
+    });
+  }
+
+  void _updateCurrentLyric(Duration position) {
+    if (_timedLyrics == null || _timedLyrics!.isEmpty) return;
+
+    for (int i = 0; i < _timedLyrics!.length; i++) {
+      if (position < _timedLyrics![i].time) {
+        setState(() {
+          _currentLyricIndex = i > 0 ? i - 1 : 0;
+        });
+        break;
+      }
+      if (i == _timedLyrics!.length - 1) {
+        setState(() {
+          _currentLyricIndex = i;
+        });
+      }
+    }
   }
 
   Future<void> _initializeArtwork() async {
@@ -155,6 +220,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   void dispose() {
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
+    _timerExpandController.dispose();
+    _autoCollapseTimer?.cancel();
     super.dispose();
   }
 
@@ -165,16 +232,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     }
   }
 
-  // Fetch lyrics using the Genius API
-  Future<void> _fetchLyrics() async {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-    if (audioPlayerService.currentSong != null) {
-      final title = audioPlayerService.currentSong!.title;
-      final artist = audioPlayerService.currentSong!.artist;
-      _lyrics = await LyricsService.fetchLyrics(artist ?? 'Unknown', title ?? 'Unknown');
-      setState(() {});  // Update lyrics display
-    }
-  }
+
 
   Widget _glassmorphicContainer({required Widget child}) {
     return ClipRRect(
@@ -202,10 +260,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     final expandablePlayerController = Provider.of<ExpandablePlayerController>(context);
 
     // Aktualizujte artwork pouze když se změní písnička
-    if (audioPlayerService.currentSong != null && 
+    if (audioPlayerService.currentSong != null &&
         (_currentArtwork == null || audioPlayerService.currentSong?.id != _lastSongId)) {
       _lastSongId = audioPlayerService.currentSong?.id;
       _updateArtwork(audioPlayerService.currentSong!);
+      _initializeTimedLyrics(); // Inicializujte timed lyrics při změně písničky
     }
 
     return Scaffold(
@@ -213,7 +272,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
+          _buildSleepTimerIndicator(audioPlayerService),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.white),
             color: Colors.grey[900],
@@ -228,7 +292,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 case 'add_playlist':
                   // Implementace pro přidání do playlistu
                   break;
-                // Další případy podle potřeby
+                // Dalš pípady podle potřeby
               }
             },
             itemBuilder: (BuildContext context) => [
@@ -275,166 +339,172 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       body: Stack(
         children: [
           _buildBackground(),
-          CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Column(
-                  children: [
-                    Expanded(
+          Column(
+            children: [
+              Expanded(
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Album Artwork
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 70.0),
-                              child: AspectRatio(
-                                aspectRatio: 1,
-                                child: _buildArtwork(),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          // Song Title
-                          Text(
-                            audioPlayerService.currentSong?.title ?? 'No song playing',
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          // Artist Name
-                          GestureDetector(
-                            onTap: () {
-                              if (audioPlayerService.currentSong != null) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ArtistDetailsScreen(
-                                      artistName: splitArtists(audioPlayerService.currentSong!.artist ?? 'Unknown artist').first,
-                                      artistImagePath: null,
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [                                // Album Artwork
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 70.0),
+                                    child: AspectRatio(
+                                      aspectRatio: 1,
+                                      child: _buildArtwork(),
                                     ),
                                   ),
-                                );
-                              }
-                            },
-                            child: Text(
-                              audioPlayerService.currentSong?.artist ?? 'Unknown artist',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                decoration: TextDecoration.underline,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          // Progress Bar
-                          StreamBuilder<Duration?>(
-                            stream: audioPlayerService.audioPlayer.durationStream,
-                            builder: (context, snapshot) {
-                              final duration = snapshot.data ?? Duration.zero;
-                              return StreamBuilder<Duration>(
-                                stream: audioPlayerService.audioPlayer.positionStream,
-                                builder: (context, snapshot) {
-                                  var position = snapshot.data ?? Duration.zero;
-                                  if (position > duration) {
-                                    position = duration;
-                                  }
-                                  return Column(
-                                    children: [
-                                      Slider(
-                                        activeColor: Colors.white,
-                                        inactiveColor: Colors.white54,
-                                        min: 0.0,
-                                        max: duration.inMilliseconds.toDouble(),
-                                        value: position.inMilliseconds.toDouble(),
-                                        onChanged: (value) {
-                                          audioPlayerService.audioPlayer.seek(Duration(milliseconds: value.round()));
-                                        },
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              _formatDuration(position),
-                                              style: const TextStyle(color: Colors.white),
-                                            ),
-                                            Text(
-                                              _formatDuration(duration),
-                                              style: const TextStyle(color: Colors.white),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                          // Control Buttons
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              IconButton(
-                                icon: Icon(audioPlayerService.isShuffle ? Icons.shuffle : Icons.shuffle_outlined, color: Colors.white),
-                                onPressed: audioPlayerService.toggleShuffle,
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.skip_previous, color: Colors.white),
-                                onPressed: audioPlayerService.back,
-                              ),
-                              IconButton(
-                                icon: Icon(audioPlayerService.isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 40),
-                                onPressed: () {
-                                  if (audioPlayerService.isPlaying) {
-                                    audioPlayerService.pause();
-                                  } else {
-                                    audioPlayerService.resume();
-                                  }
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.skip_next, color: Colors.white),
-                                onPressed: audioPlayerService.skip,
-                              ),
-                              IconButton(
-                                icon: Icon(audioPlayerService.isRepeat ? Icons.repeat_one : Icons.repeat, color: Colors.white),
-                                onPressed: audioPlayerService.toggleRepeat,
-                              ),
-                            ],
-                          ),
-                          // Like Button
-                          IconButton(
-                            icon: const Icon(Icons.favorite_border, color: Colors.white),
-                            onPressed: () {
-                              // Handle "like" action here
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          // Lyrics Section
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: _glassmorphicContainer(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Text(
-                                  _lyrics ?? 'Lyrics not available',
-                                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                                ),
+                                const SizedBox(height: 20),
+                                // Song Title
+                                Text(
+                                  audioPlayerService.currentSong?.title ?? 'No song playing',
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                   textAlign: TextAlign.center,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                // Artist Name
+                                GestureDetector(
+                                  onTap: () {
+                                    if (audioPlayerService.currentSong != null) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ArtistDetailsScreen(
+                                            artistName: splitArtists(audioPlayerService.currentSong!.artist ?? 'Unknown artist').first,
+                                            artistImagePath: null,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Text(
+                                    audioPlayerService.currentSong?.artist ?? 'Unknown artist',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                // Progress Bar
+                                StreamBuilder<Duration?>(
+                                  stream: audioPlayerService.audioPlayer.durationStream,
+                                  builder: (context, snapshot) {
+                                    final duration = snapshot.data ?? Duration.zero;
+                                    return StreamBuilder<Duration>(
+                                      stream: audioPlayerService.audioPlayer.positionStream,
+                                      builder: (context, snapshot) {
+                                        var position = snapshot.data ?? Duration.zero;
+                                        if (position > duration) {
+                                          position = duration;
+                                        }
+                                        return Column(
+                                          children: [
+                                            Slider(
+                                              activeColor: Colors.white,
+                                              inactiveColor: Colors.white54,
+                                              min: 0.0,
+                                              max: duration.inMilliseconds.toDouble(),
+                                              value: position.inMilliseconds.toDouble(),
+                                              onChanged: (value) {
+                                                audioPlayerService.audioPlayer.seek(Duration(milliseconds: value.round()));
+                                              },
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    _formatDuration(position),
+                                                    style: const TextStyle(color: Colors.white),
+                                                  ),
+                                                  Text(
+                                                    _formatDuration(duration),
+                                                    style: const TextStyle(color: Colors.white),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                                // Control Buttons
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(audioPlayerService.isShuffle ? Icons.shuffle : Icons.shuffle_outlined, color: Colors.white),
+                                      onPressed: audioPlayerService.toggleShuffle,
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.skip_previous, color: Colors.white),
+                                      onPressed: audioPlayerService.back,
+                                    ),
+                                    IconButton(
+                                      icon: Icon(audioPlayerService.isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 40),
+                                      onPressed: () {
+                                        if (audioPlayerService.isPlaying) {
+                                          audioPlayerService.pause();
+                                        } else {
+                                          audioPlayerService.resume();
+                                        }
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.skip_next, color: Colors.white),
+                                      onPressed: audioPlayerService.skip,
+                                    ),
+                                    IconButton(
+                                      icon: Icon(audioPlayerService.isRepeat ? Icons.repeat_one : Icons.repeat, color: Colors.white),
+                                      onPressed: audioPlayerService.toggleRepeat,
+                                    ),
+                                  ],
+                                ),
+                                // Like Button
+                                IconButton(
+                                  icon: const Icon(Icons.favorite_border, color: Colors.white),
+                                  onPressed: () {
+                                    // Handle "like" action here
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                // Lyrics Section
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                  child: _glassmorphicContainer(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: _timedLyrics != null
+                                          ? _buildTimedLyrics()
+                                          : Text(
+                                              _lyrics ?? 'Lyrics not available',
+                                              style: const TextStyle(color: Colors.white, fontSize: 16),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          _buildRemainingTime(),
                         ],
                       ),
                     ),
@@ -448,251 +518,285 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  void _showSleepTimerOptions(BuildContext context) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-    final minutesController = TextEditingController();
-    final secondsController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-            top: 16,
-            left: 16,
-            right: 16,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.7),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              // Přednastavené možnosti v řádku
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildTimerTile(context, '5', Duration(minutes: 5)),
-                    _buildTimerTile(context, '15', Duration(minutes: 15)),
-                    _buildTimerTile(context, '30', Duration(minutes: 30)),
-                    _buildTimerTile(context, '60', Duration(minutes: 60)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Vlastní čas
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTimeInput(
-                      controller: minutesController,
-                      label: 'min',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildTimeInput(
-                      controller: secondsController,
-                      label: 'sec',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _buildSetButton(
-                    context,
-                    minutesController,
-                    secondsController,
-                  ),
-                ],
-              ),
-              if (audioPlayerService.isSleepTimerActive) ...[
-                const SizedBox(height: 16),
-                Center(
-                  child: TextButton.icon(
-                    onPressed: () {
-                      audioPlayerService.cancelSleepTimer();
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Časovač vypnutí byl zrušen'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.timer_off, color: Colors.red, size: 20),
-                    label: const Text('Zrušit časovač', style: TextStyle(color: Colors.red)),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimerTile(BuildContext context, String minutes, Duration duration) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      child: InkWell(
-        onTap: () {
-          final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-          audioPlayerService.setSleepTimer(duration);
-          Navigator.pop(context);
-          _showTimerSetSnackBar(context, duration);
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            '$minutes min',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimeInput({
-    required TextEditingController controller,
-    required String label,
-  }) {
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.number,
+  // Vytvořte widget pro zobrazení časovaných textů
+  Widget _buildTimedLyrics() {
+    if (_timedLyrics == null || _timedLyrics!.isEmpty) {
+      return const Text(
+        'Lyrics not available',
+        style: TextStyle(color: Colors.white, fontSize: 16),
         textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: label,
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSetButton(
-    BuildContext context,
-    TextEditingController minutesController,
-    TextEditingController secondsController,
-  ) {
-    return Container(
-      height: 44,
-      width: 44,
-      child: ElevatedButton(
-        onPressed: () {
-          final minutes = int.tryParse(minutesController.text) ?? 0;
-          final seconds = int.tryParse(secondsController.text) ?? 0;
-          if (minutes > 0 || seconds > 0) {
-            final duration = Duration(minutes: minutes, seconds: seconds);
-            final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-            audioPlayerService.setSleepTimer(duration);
-            Navigator.pop(context);
-            _showTimerSetSnackBar(context, duration);
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white.withOpacity(0.2),
-          padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        child: const Icon(Icons.check, color: Colors.white),
-      ),
-    );
-  }
-
-  void _showTimerSetSnackBar(BuildContext context, Duration duration) {
-    String timeText;
-    if (duration.inHours > 0) {
-      timeText = '${duration.inHours} hodin';
-    } else if (duration.inMinutes > 0) {
-      timeText = '${duration.inMinutes} minut';
-      if (duration.inSeconds % 60 > 0) {
-        timeText += ' a ${duration.inSeconds % 60} sekund';
-      }
-    } else {
-      timeText = '${duration.inSeconds} sekund';
+      );
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Časovač nastaven na $timeText'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  // Přidejte nebo upravte _buildRemainingTime pro lepší zobrazení zbývajícího času
-  Widget _buildRemainingTime() {
-    return Consumer<AudioPlayerService>(
-      builder: (context, service, child) {
-        if (!service.isSleepTimerActive) return const SizedBox.shrink();
-        
-        final remaining = service.remainingTime;
-        if (remaining == null) return const SizedBox.shrink();
-        
-        String timeText;
-        if (remaining.inHours > 0) {
-          timeText = '${remaining.inHours}:${(remaining.inMinutes % 60).toString().padLeft(2, '0')}:${(remaining.inSeconds % 60).toString().padLeft(2, '0')}';
-        } else {
-          timeText = '${remaining.inMinutes}:${(remaining.inSeconds % 60).toString().padLeft(2, '0')}';
-        }
-        
-        return _glassmorphicContainer(
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _timedLyrics!.length,
+      itemBuilder: (context, index) {
+        final lyric = _timedLyrics![index];
+        final isCurrent = index == _currentLyricIndex;
+        return AnimatedOpacity(
+          opacity: isCurrent ? 1.0 : 0.5,
+          duration: const Duration(milliseconds: 300),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.timer, color: Colors.white, size: 16),
-                const SizedBox(width: 8),
-                Text(
-                  timeText,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            child: Text(
+              lyric.text,
+              style: TextStyle(
+                color: isCurrent ? Colors.blueAccent : Colors.white,
+                fontSize: isCurrent ? 18 : 16,
+                fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         );
       },
     );
   }
-}
+
+  void _showSleepTimerOptions(BuildContext context) {
+    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    int? selectedMinutes;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.8),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const Text(
+                  'Časovač vypnutí',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                // Nový design pro předvolby
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildCircularOption('5', selectedMinutes == 5, () => setState(() => selectedMinutes = 5)),
+                    _buildCircularOption('10', selectedMinutes == 10, () => setState(() => selectedMinutes = 10)),
+                    _buildCircularOption('15', selectedMinutes == 15, () => setState(() => selectedMinutes = 15)),
+                    _buildCircularOption('30', selectedMinutes == 30, () => setState(() => selectedMinutes = 30)),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                // Vlastní časovač
+                GestureDetector(
+                  onTap: () => _showNumberPicker(context, (value) => setState(() => selectedMinutes = value)),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add, color: Colors.white.withOpacity(0.8)),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Vlastní nastavení',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                // Tlačítka
+                Row(
+                  children: [
+                    if (audioPlayerService.isSleepTimerActive)
+                      Expanded(
+                        child: TextButton.icon(
+                          onPressed: () {
+                            audioPlayerService.cancelSleepTimer();
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.timer_off, color: Colors.redAccent),
+                          label: const Text('Zrušit', style: TextStyle(color: Colors.redAccent)),
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.redAccent.withOpacity(0.1),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (audioPlayerService.isSleepTimerActive)
+                      const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: selectedMinutes != null ? () {
+                          audioPlayerService.setSleepTimer(Duration(minutes: selectedMinutes!));
+                          Navigator.pop(context);
+                          // Po nastavení časovače rozbalíme indikátor
+                          this.setState(() {
+                            _isTimerExpanded = true;
+                            // Nastavíme časovač pro sbalení po 3 sekundách
+                            _autoCollapseTimer?.cancel();
+                            _autoCollapseTimer = Timer(const Duration(seconds: 3), () {
+                              if (mounted) {
+                                this.setState(() {
+                                  _isTimerExpanded = false;
+                                });
+                              }
+                            });
+                          });
+                        } : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('Nastavit'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCircularOption(String minutes, bool isSelected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isSelected ? Colors.white.withOpacity(0.2) : Colors.white.withOpacity(0.1),
+          border: Border.all(
+            color: isSelected ? Colors.white.withOpacity(0.5) : Colors.white.withOpacity(0.2),
+            width: 2,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              minutes,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isSelected ? 20 : 18,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+            Text(
+              'min',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNumberPicker(BuildContext context, Function(int) onSelect) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Vyberte počet minut',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  height: 150,
+                  child: CupertinoPicker(
+                    itemExtent: 40,
+                    backgroundColor: Colors.transparent,
+                    onSelectedItemChanged: (index) => onSelect(index + 1),
+                    children: List.generate(
+                      120,
+                      (index) => Center(
+                        child: Text(
+                          '${index + 1} min',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    minimumSize: const Size(double.infinity, 45),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Potvrdit'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
 // Helper function to format duration into mm:ss
 String _formatDuration(Duration duration) {
@@ -705,5 +809,233 @@ String _formatDuration(Duration duration) {
     return '$hours:$minutes:$seconds';
   } else {
     return '$minutes:$seconds';
+  }
+}
+
+  Widget _buildSleepTimerIndicator(AudioPlayerService audioPlayerService) {
+    if (!audioPlayerService.isSleepTimerActive) return const SizedBox.shrink();
+
+    final remainingTime = audioPlayerService.remainingTime;
+    if (remainingTime == null) return const SizedBox.shrink();
+
+    final minutes = remainingTime.inMinutes;
+    final seconds = (remainingTime.inSeconds % 60).toString().padLeft(2, '0');
+    final progress = audioPlayerService.sleepTimerDuration != null
+        ? remainingTime.inSeconds / audioPlayerService.sleepTimerDuration!.inSeconds
+        : 0.0;
+
+    return Container(
+      width: 90.0,
+      height: 32.0,
+      alignment: Alignment.centerRight,
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _isTimerExpanded = !_isTimerExpanded;
+            if (_isTimerExpanded) {
+              _autoCollapseTimer?.cancel();
+              _autoCollapseTimer = Timer(const Duration(seconds: 3), () {
+                if (mounted) {
+                  this.setState(() {
+                    _isTimerExpanded = false;
+                  });
+                }
+              });
+            } else {
+              _autoCollapseTimer?.cancel();
+            }
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 500), // Zvýšení doby trvání pro plynulejší efekt
+          curve: Curves.easeOut, // Změna křivky pro plynulejší přechod
+          width: _isTimerExpanded ? 120.0 : 32.0,
+          height: 32.0,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(16.0),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+              width: 0.5,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16.0),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Kolapsovaný stav
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 500), // Synchronizace doby trvání
+                    curve: Curves.easeOut, // Změna křivky
+                    opacity: _isTimerExpanded ? 0.0 : 1.0,
+                    child: ClipOval(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              value: progress,
+                              backgroundColor: Colors.white.withOpacity(0.1),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white.withOpacity(0.8),
+                              ),
+                              strokeWidth: 1.5,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.bedtime_outlined,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Rozbalený stav
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 500), // Synchronizace doby trvání
+                    curve: Curves.easeOut, // Změna křivky
+                    opacity: _isTimerExpanded ? 1.0 : 0.0,
+                    child: SizedBox(
+                      width: 100,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.bedtime_outlined,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              '$minutes:$seconds',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: -0.2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SpringCurve extends Curve {
+  const SpringCurve({
+    required this.mass,
+    required this.stiffness,
+    required this.damping,
+  });
+
+  final double mass;
+  final double stiffness;
+  final double damping;
+
+  @override
+  double transform(double t) {
+    final oscillation = exp(-damping * t);
+    final frequency = sqrt(stiffness / mass) / (2 * pi);
+    return 1 - oscillation * cos(2 * pi * frequency * t);
+  }
+}
+
+// Přidáme nový widget pro scrollování textu
+class ScrollingText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+
+  const ScrollingText({
+    Key? key,
+    required this.text,
+    required this.style,
+  }) : super(key: key);
+
+  @override
+  _ScrollingTextState createState() => _ScrollingTextState();
+}
+
+class _ScrollingTextState extends State<ScrollingText> with SingleTickerProviderStateMixin {
+  late ScrollController _scrollController;
+  late AnimationController _animationController;
+  bool _showScrolling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        setState(() {
+          _showScrolling = _scrollController.position.maxScrollExtent > 0;
+        });
+        if (_showScrolling) {
+          _startScrolling();
+        }
+      }
+    });
+  }
+
+  void _startScrolling() async {
+    while (_scrollController.hasClients && _showScrolling) {
+      await Future.delayed(const Duration(seconds: 2));
+      if (_scrollController.hasClients) {
+        await _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(seconds: _scrollController.position.maxScrollExtent ~/ 30),
+          curve: Curves.linear,
+        );
+      }
+      await Future.delayed(const Duration(seconds: 2));
+      if (_scrollController.hasClients) {
+        await _scrollController.animateTo(
+          0.0,
+          duration: Duration(seconds: _scrollController.position.maxScrollExtent ~/ 30),
+          curve: Curves.linear,
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      controller: _scrollController,
+      child: Text(
+        widget.text,
+        style: widget.style,
+      ),
+    );
   }
 }

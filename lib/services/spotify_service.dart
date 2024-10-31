@@ -18,7 +18,7 @@ class SpotifyService {
       'client_id': clientId,
       'response_type': 'code',
       'redirect_uri': redirectUri,
-      'scope': 'user-library-read user-top-read user-read-recently-played playlist-read-private',
+      'scope': 'user-library-read user-top-read user-read-recently-played playist-read-private',
     });
 
     try {

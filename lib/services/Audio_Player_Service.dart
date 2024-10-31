@@ -48,9 +48,11 @@ class AudioPlayerService extends ChangeNotifier {
 
   Timer? _sleepTimer;
   Duration? _remainingTime;
+  Duration? _sleepTimerDuration;
 
   bool get isSleepTimerActive => _sleepTimer?.isActive ?? false;
   Duration? get remainingTime => _remainingTime;
+  Duration? get sleepTimerDuration => _sleepTimerDuration;
 
   AudioPlayerService() {
     _init();
@@ -507,6 +509,7 @@ class AudioPlayerService extends ChangeNotifier {
   void setSleepTimer(Duration duration) {
     cancelSleepTimer();
     _remainingTime = duration;
+    _sleepTimerDuration = duration;
     _sleepTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingTime != null) {
         _remainingTime = _remainingTime! - const Duration(seconds: 1);
@@ -524,6 +527,7 @@ class AudioPlayerService extends ChangeNotifier {
     _sleepTimer?.cancel();
     _sleepTimer = null;
     _remainingTime = null;
+    _sleepTimerDuration = null;
     notifyListeners();
   }
 

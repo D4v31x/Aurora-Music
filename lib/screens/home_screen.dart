@@ -504,7 +504,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _onSongTap(SongModel song) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-    audioPlayerService.setPlaylist(songs, songs.indexOf(song));
+    audioPlayerService.setPlaylist(
+      randomSongs, 
+      randomSongs.indexOf(song),
+    );
     audioPlayerService.play();
     _updateBackgroundImage(song);
   }
@@ -1431,7 +1434,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     leading: const Icon(Icons.favorite, color: Colors.pink),
                     title: const Text(favoritesPlaylist, style: TextStyle(color: Colors.white)),
                     onTap: () {
-                      // Navigate to the favorites playlist
                     },
                   ),
                 ),
