@@ -504,12 +504,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _onSongTap(SongModel song) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    final expandableController = Provider.of<ExpandablePlayerController>(context, listen: false);
+    
+    // Determine which list to use based on current tab
+    List<SongModel> playlist;
+    int initialIndex;
+    
+    if (_tabController.index == 2) { // Search tab
+      playlist = _filteredSongs;
+      initialIndex = _filteredSongs.indexOf(song);
+    } else {
+      playlist = randomSongs;
+      initialIndex = randomSongs.indexOf(song);
+    }
+
+    // Set the playlist and play
     audioPlayerService.setPlaylist(
-      randomSongs, 
-      randomSongs.indexOf(song),
+      playlist,
+      initialIndex,
     );
+    
     audioPlayerService.play();
     _updateBackgroundImage(song);
+
+    // Show the expandable player
+    expandableController.show();
   }
 
   // Metoda pro aktualizaci pozadí
