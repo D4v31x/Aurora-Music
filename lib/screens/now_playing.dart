@@ -172,20 +172,18 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
     return Hero(
       tag: 'playerArtwork',
       child: Container(
-        width: 100,
-        height: 100,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(8), // Smaller border radius
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 15,
-              offset: const Offset(0, 10),
+              offset: const Offset(0, 8),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(8), // Match container radius
           child: _currentArtwork != null
               ? Image(image: _currentArtwork!, fit: BoxFit.cover)
               : const Center(child: CircularProgressIndicator()),
@@ -254,6 +252,140 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
     );
   }
 
+  // Update the artwork and song info section
+  Widget _buildArtworkWithInfo(AudioPlayerService audioPlayerService) {
+    final artworkSize = MediaQuery.of(context).size.width * 0.6;
+    
+    return Padding(
+      padding: const EdgeInsets.only(top: 0),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          // Info container positioned under the artwork
+          Positioned(
+            top: artworkSize - 25,
+            child: Container(
+              width: artworkSize,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(2),
+                  bottom: Radius.circular(16),
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ScrollingText(
+                    text: audioPlayerService.currentSong?.title ?? 'No song playing',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                    Text(
+                      audioPlayerService.currentSong?.artist ?? 'Unknown artist',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Artwork on top
+          Container(
+            width: artworkSize,
+            height: artworkSize,
+            child: _buildArtwork(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Update the progress bar section
+  Widget _buildProgressBar(Duration position, Duration duration, AudioPlayerService audioPlayerService) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 50.0), // Narrower padding
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Custom progress bar
+          Container(
+            height: 3, // Slightly thicker
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth;
+                final progress = position.inMilliseconds / duration.inMilliseconds;
+                return Stack(
+                  children: [
+                    // Background track
+                    Container(
+                      width: width,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(1.5),
+                      ),
+                    ),
+                    // Progress track
+                    GestureDetector(
+                      onHorizontalDragUpdate: (details) {
+                        final RenderBox box = context.findRenderObject() as RenderBox;
+                        final position = details.localPosition.dx;
+                        final percentage = position / width;
+                        final newPosition = duration * percentage;
+                        audioPlayerService.audioPlayer.seek(newPosition);
+                      },
+                      child: Container(
+                        width: width * progress,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(1.5),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Time labels below slider
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _formatDuration(position),
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                _formatDuration(duration),
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
@@ -273,8 +405,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
+          onPressed: () {
+            final expandablePlayerController = Provider.of<ExpandablePlayerController>(context, listen: false);
+            expandablePlayerController.collapse();
+          },
         ),
         actions: [
           _buildSleepTimerIndicator(audioPlayerService),
@@ -285,6 +420,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
               switch (value) {
                 case 'sleep_timer':
                   _showSleepTimerOptions(context);
+                  break;
+                case 'view_artist':
+                  _showArtistOptions(context, audioPlayerService);
                   break;
                 case 'lyrics':
                   // Implementace pro texty písní
@@ -308,6 +446,16 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                     ),
                     const SizedBox(width: 12),
                     const Text('Časovač vypnutí', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'view_artist',
+                child: Row(
+                  children: const [
+                    Icon(Icons.person_outline, color: Colors.white),
+                    SizedBox(width: 12),
+                    Text('Zobrazit umělce', style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
@@ -349,159 +497,101 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                       hasScrollBody: false,
                       child: Column(
                         children: [
+                          const SizedBox(height: 60), // AppBar spacing
                           Expanded(
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [                                // Album Artwork
-                                Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 70.0),
-                                    child: AspectRatio(
-                                      aspectRatio: 1,
-                                      child: _buildArtwork(),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                // Song Title
-                                Text(
-                                  audioPlayerService.currentSong?.title ?? 'No song playing',
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 8),
-                                // Artist Name
-                                GestureDetector(
-                                  onTap: () {
-                                    if (audioPlayerService.currentSong != null) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ArtistDetailsScreen(
-                                            artistName: splitArtists(audioPlayerService.currentSong!.artist ?? 'Unknown artist').first,
-                                            artistImagePath: null,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  child: Text(
-                                    audioPlayerService.currentSong?.artist ?? 'Unknown artist',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                // Progress Bar
-                                StreamBuilder<Duration?>(
-                                  stream: audioPlayerService.audioPlayer.durationStream,
-                                  builder: (context, snapshot) {
-                                    final duration = snapshot.data ?? Duration.zero;
-                                    return StreamBuilder<Duration>(
-                                      stream: audioPlayerService.audioPlayer.positionStream,
+                              children: [
+                                const Spacer(flex: 1),
+                                _buildArtworkWithInfo(audioPlayerService),
+                                const Spacer(flex: 1), // Spacer between artwork and controls
+                                // Progress bar and ALL controls grouped together
+                                Column(
+                                  children: [
+                                    // Progress Bar
+                                    StreamBuilder<Duration?>(
+                                      stream: audioPlayerService.audioPlayer.durationStream,
                                       builder: (context, snapshot) {
-                                        var position = snapshot.data ?? Duration.zero;
-                                        if (position > duration) {
-                                          position = duration;
-                                        }
-                                        return Column(
-                                          children: [
-                                            Slider(
-                                              activeColor: Colors.white,
-                                              inactiveColor: Colors.white54,
-                                              min: 0.0,
-                                              max: duration.inMilliseconds.toDouble(),
-                                              value: position.inMilliseconds.toDouble(),
-                                              onChanged: (value) {
-                                                audioPlayerService.audioPlayer.seek(Duration(milliseconds: value.round()));
-                                              },
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    _formatDuration(position),
-                                                    style: const TextStyle(color: Colors.white),
-                                                  ),
-                                                  Text(
-                                                    _formatDuration(duration),
-                                                    style: const TextStyle(color: Colors.white),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
+                                        final duration = snapshot.data ?? Duration.zero;
+                                        return StreamBuilder<Duration>(
+                                          stream: audioPlayerService.audioPlayer.positionStream,
+                                          builder: (context, snapshot) {
+                                            var position = snapshot.data ?? Duration.zero;
+                                            if (position > duration) {
+                                              position = duration;
+                                            }
+                                            return _buildProgressBar(position, duration, audioPlayerService);
+                                          },
                                         );
                                       },
-                                    );
-                                  },
-                                ),
-                                // Control Buttons
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(audioPlayerService.isShuffle ? Icons.shuffle : Icons.shuffle_outlined, color: Colors.white),
-                                      onPressed: audioPlayerService.toggleShuffle,
                                     ),
-                                    IconButton(
-                                      icon: const Icon(Icons.skip_previous, color: Colors.white),
-                                      onPressed: audioPlayerService.back,
+                                    const SizedBox(height: 20),
+                                    // Playback Controls
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                            audioPlayerService.isShuffle ? Icons.shuffle : Icons.shuffle,
+                                            color: audioPlayerService.isShuffle 
+                                                ? Colors.white 
+                                                : Colors.white.withOpacity(0.7),
+                                            size: 24,
+                                          ),
+                                          onPressed: audioPlayerService.toggleShuffle,
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.skip_previous, color: Colors.white, size: 32),
+                                          onPressed: audioPlayerService.back,
+                                        ),
+                                        Container(
+                                          width: 64,
+                                          height: 64,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white.withOpacity(0.1),
+                                          ),
+                                          child: IconButton(
+                                            icon: Icon(
+                                              audioPlayerService.isPlaying ? Icons.pause : Icons.play_arrow,
+                                              color: Colors.white,
+                                              size: 32,
+                                            ),
+                                            onPressed: () {
+                                              if (audioPlayerService.isPlaying) {
+                                                audioPlayerService.pause();
+                                              } else {
+                                                audioPlayerService.resume();
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.skip_next, color: Colors.white, size: 32),
+                                          onPressed: audioPlayerService.skip,
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            audioPlayerService.isRepeat ? Icons.repeat_one : Icons.repeat,
+                                            color: audioPlayerService.isRepeat 
+                                                ? Colors.white 
+                                                : Colors.white.withOpacity(0.7),
+                                            size: 24,
+                                          ),
+                                          onPressed: audioPlayerService.toggleRepeat,
+                                        ),
+                                      ],
                                     ),
+                                    const SizedBox(height: 20),
+                                    // Like Button
                                     IconButton(
-                                      icon: Icon(audioPlayerService.isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 40),
+                                      icon: const Icon(Icons.favorite_border, color: Colors.white),
                                       onPressed: () {
-                                        if (audioPlayerService.isPlaying) {
-                                          audioPlayerService.pause();
-                                        } else {
-                                          audioPlayerService.resume();
-                                        }
+                                        // Handle like action
                                       },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.skip_next, color: Colors.white),
-                                      onPressed: audioPlayerService.skip,
-                                    ),
-                                    IconButton(
-                                      icon: Icon(audioPlayerService.isRepeat ? Icons.repeat_one : Icons.repeat, color: Colors.white),
-                                      onPressed: audioPlayerService.toggleRepeat,
                                     ),
                                   ],
                                 ),
-                                // Like Button
-                                IconButton(
-                                  icon: const Icon(Icons.favorite_border, color: Colors.white),
-                                  onPressed: () {
-                                    // Handle "like" action here
-                                  },
-                                ),
-                                const SizedBox(height: 20),
-                                // Lyrics Section
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                  child: _glassmorphicContainer(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: _timedLyrics != null
-                                          ? _buildTimedLyrics()
-                                          : Text(
-                                              _lyrics ?? 'Lyrics not available',
-                                              style: const TextStyle(color: Colors.white, fontSize: 16),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                    ),
-                                  ),
-                                ),
+                                const Spacer(flex: 2),
                               ],
                             ),
                           ),
@@ -937,6 +1027,98 @@ String _formatDuration(Duration duration) {
       ),
     );
   }
+
+  void _showArtistOptions(BuildContext context, AudioPlayerService audioPlayerService) {
+    final String? artistString = audioPlayerService.currentSong?.artist;
+    if (artistString == null || artistString.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informace o umělci nejsou k dispozici')),
+      );
+      return;
+    }
+
+    // Split by both "/" and "," and handle potential multiple delimiters
+    final List<String> artists = artistString
+        .split(RegExp(r'[/,&]'))  // Split by both "/" and ","
+        .map((e) => e.trim())  // Remove whitespace
+        .where((e) => e.isNotEmpty)  // Remove empty strings
+        .toList();
+
+    if (artists.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informace o umělci nejsou k dispozici')),
+      );
+      return;
+    }
+
+    if (artists.length == 1) {
+      // If there's only one artist, navigate directly
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ArtistDetailsScreen(artistName: artists.first),
+        ),
+      );
+      return;
+    }
+
+    // If there are multiple artists, show dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[900],
+              borderRadius: BorderRadius.circular(16),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    'Vyberte umělce',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                ...artists.map((artist) => ListTile(
+                  title: Text(
+                    artist,
+                    style: const TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                  onTap: () {
+                    Navigator.pop(context); // Close dialog
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ArtistDetailsScreen(artistName: artist),
+                      ),
+                    );
+                  },
+                )).toList(),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Zrušit',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class SpringCurve extends Curve {
@@ -975,55 +1157,62 @@ class ScrollingText extends StatefulWidget {
 
 class _ScrollingTextState extends State<ScrollingText> with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
-  late AnimationController _animationController;
   bool _showScrolling = false;
+  Timer? _scrollTimer;
+  bool _isScrolling = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         setState(() {
           _showScrolling = _scrollController.position.maxScrollExtent > 0;
         });
         if (_showScrolling) {
-          _startScrolling();
+          _startScrollingWithPause();
         }
       }
     });
   }
 
-  void _startScrolling() async {
+  void _startScrollingWithPause() async {
+    if (!_showScrolling || _isScrolling) return;
+
+    _isScrolling = true;
     while (_scrollController.hasClients && _showScrolling) {
+      // Wait at start
       await Future.delayed(const Duration(seconds: 2));
+      
+      // Scroll to end
       if (_scrollController.hasClients) {
         await _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
-          duration: Duration(seconds: _scrollController.position.maxScrollExtent ~/ 30),
-          curve: Curves.linear,
+          duration: const Duration(seconds: 2),
+          curve: Curves.easeInOut,
         );
       }
+
+      // Wait at end
       await Future.delayed(const Duration(seconds: 2));
+
+      // Scroll back to start
       if (_scrollController.hasClients) {
         await _scrollController.animateTo(
           0.0,
-          duration: Duration(seconds: _scrollController.position.maxScrollExtent ~/ 30),
-          curve: Curves.linear,
+          duration: const Duration(seconds: 2),
+          curve: Curves.easeInOut,
         );
       }
     }
+    _isScrolling = false;
   }
 
   @override
   void dispose() {
+    _scrollTimer?.cancel();
     _scrollController.dispose();
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -1032,9 +1221,11 @@ class _ScrollingTextState extends State<ScrollingText> with SingleTickerProvider
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       controller: _scrollController,
+      physics: const NeverScrollableScrollPhysics(), // Prevent manual scrolling
       child: Text(
         widget.text,
         style: widget.style,
+        textAlign: TextAlign.center,
       ),
     );
   }

@@ -29,7 +29,7 @@ class AudioPlayerService extends ChangeNotifier {
   Map<String, int> _artistPlayCounts = {};
   Map<String, int> _playlistPlayCounts = {};
   Map<String, int> _folderAccessCounts = {};
-
+  
   // Getters
   AudioPlayer get audioPlayer => _audioPlayer;
   List<SongModel> get playlist => _playlist;
