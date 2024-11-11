@@ -1274,18 +1274,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       );
     }
 
-    print('Building search results');
-    print('Total artists in state: ${artists.length}');
+    
+    
     
     final query = _searchController.text.toLowerCase();
     final matchingArtists = artists.where(
       (artist) => artist.artist.toLowerCase().contains(query)
     ).toList();
     
-    print('Found ${matchingArtists.length} matching artists');
+    
     
     final closestArtist = matchingArtists.isNotEmpty ? matchingArtists.first : null;
-    print('Closest artist: ${closestArtist?.artist}');
+    
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -1342,8 +1342,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
-    print('Search query: $query');
-    print('Total artists available: ${artists.length}');
+    
+    
 
     if (query.isEmpty) {
       setState(() {
@@ -1364,9 +1364,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return artistName.contains(query);
       }).toList();
 
-      print('Found ${_filteredArtists.length} matching artists');
+      
       for (var artist in _filteredArtists) {
-        print('Matched artist: ${artist.artist}');
+        
       }
     });
   }
@@ -1607,7 +1607,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           permissionStatus[permissionhandler.Permission.storage]!.isGranted ?? false;
       
       if (!hasPermission) {
-        print('Permissions not granted');
+        
         return;
       }
 
@@ -1616,22 +1616,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       
       // Načíst umělce
       final artistsList = await onAudioQuery.queryArtists();
-      print('Successfully loaded ${artistsList.length} artists');
+      
       
       // Načíst skladby
       final songsList = await onAudioQuery.querySongs();
-      print('Successfully loaded ${songsList.length} songs');
+      
 
       if (mounted) {
         setState(() {
           artists = artistsList;
           songs = songsList;
-          print('Artists and songs set in state');
-          print('Artists count: ${artists.length}');
+          
+          
         });
       }
     } catch (e) {
-      print('Error during initialization: $e');
+      
     }
   }
 }

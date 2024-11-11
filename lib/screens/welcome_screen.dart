@@ -106,7 +106,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isFirstRun', false);
     await prefs.setBool('isWelcomeCompleted', true);
-    print('WelcomeScreen: Set isWelcomeCompleted to true');
+    
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
@@ -421,18 +421,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   ElevatedButton(
                     onPressed: () async {
                       const url = 'https://www.instagram.com/aurora.software?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==';
-                      print('Attempting to launch URL: $url');
+                      
                       try {
                         final uri = Uri.parse(url);
                         if (await canLaunchUrl(uri)) {
-                          print('Launching URL...');
+                          
                           await launchUrl(uri, mode: LaunchMode.externalApplication);
                         } else {
-                          print('Cannot launch URL');
+                          
                           throw 'Could not launch $url';
                         }
                       } catch (e) {
-                        print('Error: $e');
+                        
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Failed to open the link: $e')),
                         );

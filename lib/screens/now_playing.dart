@@ -154,7 +154,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
       _artworkCache[id] = artwork;
       return artwork;
     } catch (e) {
-      print('Error loading artwork: $e');
+      
       return null;
     }
   }
@@ -834,9 +834,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                 // Like Button
                 Center(
                   child: IconButton(
-                    icon: const Icon(Icons.favorite_border, color: Colors.white, size: 30),
+                    icon: Icon(
+                      audioPlayerService.isLiked(audioPlayerService.currentSong!)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: audioPlayerService.isLiked(audioPlayerService.currentSong!)
+                          ? Colors.red
+                          : Colors.white,
+                      size: 30,
+                    ),
                     onPressed: () {
-                      // Handle like action
+                      audioPlayerService.toggleLike(audioPlayerService.currentSong!);
                     },
                   ),
                 ),

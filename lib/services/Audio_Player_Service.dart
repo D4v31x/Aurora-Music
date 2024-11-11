@@ -54,9 +54,13 @@ class AudioPlayerService extends ChangeNotifier {
   Duration? get remainingTime => _remainingTime;
   Duration? get sleepTimerDuration => _sleepTimerDuration;
 
+  Set<String> _likedSongs = {};
+  Playlist? _likedSongsPlaylist;
+
   AudioPlayerService() {
     _init();
     loadLibrary();
+    initializeLikedSongsPlaylist();
     audioPlayer.playerStateStream.listen((playerState) {
       notifyListeners();
     });
@@ -127,9 +131,15 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   void removeSongFromPlaylist(String playlistId, SongModel song) {
-    final playlist = _playlists.firstWhere((p) => p.id == playlistId);
-    playlist.songs.remove(song);
-    savePlaylists();
+    if (playlistId == 'liked_songs') {
+      _likedSongs.remove(song.id.toString());
+      saveLikedSongs();
+      _updateLikedSongsPlaylist();
+    } else {
+      final playlist = _playlists.firstWhere((p) => p.id == playlistId);
+      playlist.songs.remove(song);
+      savePlaylists();
+    }
     notifyListeners();
   }
 
@@ -149,13 +159,23 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   void addSongsToPlaylist(String playlistId, List<SongModel> songs) {
-    final playlist = _playlists.firstWhere((p) => p.id == playlistId);
-    for (var song in songs) {
-      if (!playlist.songs.contains(song)) {
-        playlist.songs.add(song);
+    if (playlistId == 'liked_songs') {
+      for (var song in songs) {
+        if (!_likedSongs.contains(song.id.toString())) {
+          _likedSongs.add(song.id.toString());
+        }
       }
+      saveLikedSongs();
+      _updateLikedSongsPlaylist();
+    } else {
+      final playlist = _playlists.firstWhere((p) => p.id == playlistId);
+      for (var song in songs) {
+        if (!playlist.songs.contains(song)) {
+          playlist.songs.add(song);
+        }
+      }
+      savePlaylists();
     }
-    savePlaylists();
     notifyListeners();
   }
 
@@ -318,7 +338,7 @@ class AudioPlayerService extends ChangeNotifier {
         _currentSongController.add(song);
         notifyListeners();
       } else {
-        print("Song URL is null");
+        
       }
     }
   }
@@ -365,7 +385,7 @@ class AudioPlayerService extends ChangeNotifier {
         );
         await audioPlayer.setAudioSource(AudioSource.uri(Uri.file(downloadedFilePath), tag: mediaItem));
       } else {
-        print('Failed to download the song');
+        
         return;
       }
     } else {
@@ -452,7 +472,7 @@ class AudioPlayerService extends ChangeNotifier {
         size: 1000,
       );
     } catch (e) {
-      print("Error fetching artwork: $e");
+      
       return null;
     }
   }
@@ -471,7 +491,7 @@ class AudioPlayerService extends ChangeNotifier {
       );
       currentArtwork.value = artwork;
     } catch (e) {
-      print("Error fetching artwork: $e");
+      
       currentArtwork.value = null;
     }
   }
@@ -530,6 +550,64 @@ class AudioPlayerService extends ChangeNotifier {
     _sleepTimerDuration = null;
     notifyListeners();
   }
+
+  Future<void> initializeLikedSongsPlaylist() async {
+    await loadLikedSongs();
+    _updateLikedSongsPlaylist();
+  }
+
+  Future<void> loadLikedSongs() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/liked_songs.json');
+
+    if (await file.exists()) {
+      final contents = await file.readAsString();
+      final json = jsonDecode(contents);
+      _likedSongs = Set<String>.from(json['liked_songs']);
+    }
+  }
+
+  Future<void> saveLikedSongs() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/liked_songs.json');
+
+    final json = {
+      'liked_songs': _likedSongs.toList(),
+    };
+
+    await file.writeAsString(jsonEncode(json));
+  }
+
+  void _updateLikedSongsPlaylist() async {
+    final allSongs = await _audioQuery.querySongs();
+    final likedSongs = allSongs.where((song) => _likedSongs.contains(song.id.toString())).toList();
+    
+    _likedSongsPlaylist = Playlist(
+      id: 'liked_songs',
+      name: 'Oblíbené skladby',
+      songs: likedSongs,
+    );
+    
+    notifyListeners();
+  }
+
+  bool isLiked(SongModel song) {
+    return _likedSongs.contains(song.id.toString());
+  }
+
+  Future<void> toggleLike(SongModel song) async {
+    if (_likedSongs.contains(song.id.toString())) {
+      _likedSongs.remove(song.id.toString());
+    } else {
+      _likedSongs.add(song.id.toString());
+    }
+    
+    await saveLikedSongs();
+    _updateLikedSongsPlaylist();
+    notifyListeners();
+  }
+
+  Playlist? get likedSongsPlaylist => _likedSongsPlaylist;
 
   @override
   void dispose() {

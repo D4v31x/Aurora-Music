@@ -77,6 +77,43 @@ class PlaylistsScreenList extends StatelessWidget {
                     child: Text(AppLocalizations.of(context).translate('create_playlist')),
                   ),
                   const SizedBox(height: 20),
+                  if (audioPlayerService.likedSongsPlaylist != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: glassmorphicContainer(
+                        child: ListTile(
+                          leading: const Icon(Icons.favorite, color: Colors.red),
+                          title: Text(
+                            audioPlayerService.likedSongsPlaylist!.name,
+                            style: const TextStyle(color: Colors.white)
+                          ),
+                          subtitle: Text(
+                            '${audioPlayerService.likedSongsPlaylist!.songs.length} skladeb',
+                            style: const TextStyle(color: Colors.grey)
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.play_arrow, color: Colors.white),
+                            onPressed: () {
+                              audioPlayerService.setPlaylist(
+                                audioPlayerService.likedSongsPlaylist!.songs,
+                                0,
+                              );
+                              audioPlayerService.play();
+                            },
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PlaylistDetailScreen(
+                                  playlist: audioPlayerService.likedSongsPlaylist!,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                   if (audioPlayerService.playlists.isEmpty)
                     glassmorphicContainer(
                       child: Padding(

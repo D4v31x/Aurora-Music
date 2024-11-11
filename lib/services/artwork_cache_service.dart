@@ -39,7 +39,7 @@ class ArtworkCacheService {
       _artworkCache[id] = artwork;
       return artwork;
     } catch (e) {
-      print('Error loading artwork: $e');
+      
       return null;
     }
   }

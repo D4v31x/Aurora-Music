@@ -58,7 +58,7 @@ class ErrorTrackingService {
 
       await prefs.setString(_storageKey, jsonEncode(errorMaps));
     } catch (e) {
-      print('Error saving pending errors: $e');
+      
     }
   }
 
@@ -74,7 +74,7 @@ class ErrorTrackingService {
             .toList();
       }
     } catch (e) {
-      print('Error loading pending errors: $e');
+      
     }
     return [];
   }
@@ -85,7 +85,7 @@ class ErrorTrackingService {
       await prefs.remove(_storageKey);
       _currentErrors.clear();
     } catch (e) {
-      print('Error clearing pending errors: $e');
+      
     }
   }
 }
@@ -142,7 +142,7 @@ Map<String, dynamic> processErrorsForAppwrite(List<ErrorRecord> errors) {
 // Update the syncUserData function to use the new error processing
 Future<void> syncUserData() async {
   if (currentUserId == null) {
-    print('No user session available');
+    
     return;
   }
 
@@ -200,7 +200,7 @@ Future<void> syncUserData() async {
           Permission.write(Role.user(currentUserId!)),
         ],
       );
-      print('Created new user data document with ${processedErrorData['error_count']} errors');
+      
       await errorTracker.clearPendingErrors();
 
     } catch (e) {
@@ -223,17 +223,17 @@ Future<void> syncUserData() async {
               'last_error_time': processedErrorData['last_error_time'],
             },
           );
-          print('Updated existing user data document with ${processedErrorData['error_count']} errors');
+          
           await errorTracker.clearPendingErrors();
         } catch (updateError) {
-          print('Error updating document: $updateError');
+          
         }
       } else {
-        print('Error creating document: $e');
+        
       }
     }
   } catch (e) {
-    print('Error syncing user data: $e');
+    
   }
 }
 
@@ -270,18 +270,18 @@ void main() async {
     try {
       final session = await account.createAnonymousSession();
       currentUserId = session.userId;
-      print('Successfully created anonymous session: $currentUserId');
+      
     } catch (e) {
       if (e is AppwriteException && e.code == 401) {
         try {
           final session = await account.getSession(sessionId: 'current');
           currentUserId = session.userId;
-          print('Using existing session: $currentUserId');
+          
         } catch (sessionError) {
-          print('Error getting current session: $sessionError');
+          
         }
       } else {
-        print('Error with session management: $e');
+        
       }
     }
 

@@ -24,17 +24,17 @@ class SpotifyService {
         url: url.toString(),
         callbackUrlScheme: 'auroramusic',
       );
-      print('Authentication result: $result');
+      
 
       final code = Uri.parse(result).queryParameters['code'];
       if (code != null) {
-        print('Received code: $code');
+        
         return await getAccessToken(code);
       } else {
-        print('No code received in the callback');
+        
       }
     } catch (e) {
-      print('Authentication error: $e');
+      
     }
     return false;
   }
@@ -56,7 +56,7 @@ class SpotifyService {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       accessToken = data['access_token'];
-      print('Access token obtained: $accessToken');
+      
       return true;
     }
     return false;
@@ -69,8 +69,8 @@ class SpotifyService {
         headers: {'Authorization': 'Bearer $accessToken'},
       );
 
-      print('Recently played tracks response status: ${response.statusCode}');
-      print('Recently played tracks response body: ${response.body}');
+      
+      
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -79,7 +79,7 @@ class SpotifyService {
         throw Exception('Failed to load recently played tracks: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error getting recently played tracks: $e');
+      
       return [];
     }
   }
@@ -91,8 +91,8 @@ class SpotifyService {
         headers: {'Authorization': 'Bearer $accessToken'},
       );
 
-      print('Spotify playlists response status: ${response.statusCode}');
-      print('Spotify playlists response body: ${response.body}');
+      
+      
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -101,7 +101,7 @@ class SpotifyService {
         throw Exception('Failed to load Spotify playlists: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error getting Spotify playlists: $e');
+      
       return [];
     }
   }
@@ -114,8 +114,8 @@ class SpotifyService {
         headers: {'Authorization': 'Bearer $accessToken'},
       );
 
-      print('Track details response status: ${response.statusCode}');
-      print('Track details response body: ${response.body}');
+      
+      
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
@@ -123,7 +123,7 @@ class SpotifyService {
         throw Exception('Failed to load track details: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error getting track details: $e');
+      
       return {};
     }
   }
@@ -150,7 +150,7 @@ class SpotifyService {
         }
       }
     } catch (e) {
-      print('Error downloading Spotify song: $e');
+      
     }
     return null;
   }
