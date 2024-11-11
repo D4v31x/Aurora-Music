@@ -81,7 +81,6 @@ dependencies:
   flutter_web_auth: ^0.5.0
   html: ^0.15.4
   flutter_lyric: ^2.0.4+6
-  amlv: ^1.0.2
   rive: ^0.13.15
 
 dev_dependencies:

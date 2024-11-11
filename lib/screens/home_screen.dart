@@ -6,7 +6,6 @@ import 'dart:ui';
 import 'package:aurora_music_v01/screens/tracks_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
@@ -32,9 +31,10 @@ import '../widgets/mini_player.dart';
 import '../services/local_caching_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/expandable_player_controller.dart';
+import '../widgets/artist_card.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -78,11 +78,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _scannedSongs = 0;
   int _totalSongs = 0;
   late SpotifyService _spotifyService;
-  List<Map<String, dynamic>> _recentlyPlayedTracks = [];
-  List<Map<String, dynamic>> _spotifyPlaylists = [];
+  final List<Map<String, dynamic>> _recentlyPlayedTracks = [];
+  final List<Map<String, dynamic>> _spotifyPlaylists = [];
   final TextEditingController _searchController = TextEditingController();
   List<SongModel> _filteredSongs = [];
-  List<AlbumModel> _filteredAlbums = [];
+  final List<AlbumModel> _filteredAlbums = [];
   List<ArtistModel> _filteredArtists = [];
   List<AlbumModel> albums = [];
   List<ArtistModel> artists = [];
@@ -90,12 +90,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final FocusNode _searchFocusNode = FocusNode();
   bool _isSearching = false;
   late AnimationController _searchAnimationController;
-  String _artistDescription = '';
+  final String _artistDescription = '';
   final Map<int, Uint8List?> _artworkCache = {};
   ImageProvider? _currentBackgroundImage;
   final Map<int, ImageProvider?> _imageProviderCache = {};
   final _artworkService = ArtworkCacheService();
   final GlobalKey<ExpandableBottomSheetState> _expandableKey = GlobalKey<ExpandableBottomSheetState>();
+  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -176,6 +177,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       parent: _animationController!,
       curve: Curves.easeInOut,
     ));
+
+    _loadLibraryData();
+
+    _initializeData().then((_) {
+      setState(() {
+        _isInitialized = true;
+      });
+    });
   }
 
   Future<List<SongModel>> _processSongsInBackground(List<SongModel> songs) async {
@@ -286,7 +295,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         }
       }
     } catch (e) {
-      print('Error checking for updates: $e');
     }
     return false;
   }
@@ -590,25 +598,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             context: context,
             builder: (context) => AlertDialog(
               backgroundColor: Colors.grey[900],
-              title: Text(
+              title: const Text(
                 'Exit Aurora Music?',
                 style: TextStyle(color: Colors.white),
               ),
-              content: Text(
+              content: const Text(
                 'Are you sure you want to exit?',
                 style: TextStyle(color: Colors.white70),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(
+                  child: const Text(
                     'No',
                     style: TextStyle(color: Colors.white70),
                   ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(
+                  child: const Text(
                     'Yes',
                     style: TextStyle(color: Colors.white),
                   ),
@@ -653,13 +661,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget buildBackground(SongModel? currentSong) {
-    if (_currentBackgroundImage == null) {
-      _currentBackgroundImage = AssetImage(
+    _currentBackgroundImage ??= AssetImage(
         isDarkMode
             ? 'assets/images/background/dark_back.jpg'
             : 'assets/images/background/light_back.jpg'
       );
-    }
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 500),
@@ -1219,28 +1225,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget buildSearchTab() {
+    if (!_isInitialized) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     return Column(
       children: [
+        // Search bar
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: TextField(
             controller: _searchController,
             focusNode: _searchFocusNode,
+            style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              hintText: AppLocalizations.of(context).translate('search_hint'),
-              prefixIcon: const Icon(Icons.search, color: Colors.white),
-              filled: true,
-              fillColor: Colors.white.withOpacity(0.2),
+              hintText: AppLocalizations.of(context).translate('search'),
+              hintStyle: const TextStyle(color: Colors.white54),
+              prefixIcon: const Icon(Icons.search, color: Colors.white54),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide.none,
+                borderSide: const BorderSide(color: Colors.white24),
               ),
-              hintStyle: const TextStyle(color: Colors.white70),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: const BorderSide(color: Colors.white24),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: const BorderSide(color: Colors.white),
+              ),
             ),
-            style: const TextStyle(color: Colors.white),
-            onChanged: (_) => _onSearchChanged(),
           ),
         ),
+        // Search results
         Expanded(
           child: buildSearchResults(),
         ),
@@ -1251,142 +1270,59 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget buildSearchResults() {
     if (_searchController.text.isEmpty) {
       return const Center(
-          child: Text('Start typing to search', style: TextStyle(color: Colors.white70)));
+        child: Text('Start typing to search', style: TextStyle(color: Colors.white70))
+      );
     }
 
-    // Fetch the closest artist that matches the search query
-    final closestArtist = _findClosestArtist(_searchController.text);
+    print('Building search results');
+    print('Total artists in state: ${artists.length}');
+    
+    final query = _searchController.text.toLowerCase();
+    final matchingArtists = artists.where(
+      (artist) => artist.artist.toLowerCase().contains(query)
+    ).toList();
+    
+    print('Found ${matchingArtists.length} matching artists');
+    
+    final closestArtist = matchingArtists.isNotEmpty ? matchingArtists.first : null;
+    print('Closest artist: ${closestArtist?.artist}');
 
     return ListView(
+      padding: const EdgeInsets.all(16),
       children: [
-        // Display the artist card if an artist is found
-        if (closestArtist != null)
-          FutureBuilder<String>(
-            future: _fetchArtistInfo(closestArtist.artist),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                _artistDescription = snapshot.data ?? 'No information available.';
-                return buildArtistCard(closestArtist);
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            },
-          ),
-
-        // Display song results
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text('Songs', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-        ),
-        ..._filteredSongs.map((song) => buildSongListTile(song)),
-      ],
-    );
-  }
-
-  ArtistModel? _findClosestArtist(String query) {
-    final lowercaseQuery = query.toLowerCase();
-
-    print('Looking for closest match to: $lowercaseQuery in artists: ${_filteredArtists.map((a) => a.artist).toList()}');
-
-    try {
-      final artist = _filteredArtists.firstWhere(
-            (artist) => artist.artist.toLowerCase().contains(lowercaseQuery),
-      );
-      print('Closest artist found: ${artist.artist}');
-      return artist;
-    } catch (e) {
-      print('No artist found for query: $query');
-      return null;
-    }
-  }
-
-  Future<String> _fetchArtistInfo(String artistName) async {
-    final apiKey = dotenv.env['LASTFM_API_KEY'];
-    final url = Uri.parse('http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=$artistName&api_key=$apiKey&format=json');
-
-    print('Fetching artist info for: $artistName');
-
-    try {
-      final response = await http.get(url);
-
-      print('Response status: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        print('Artist data: $data');
-        if (data['artist'] != null && data['artist']['bio'] != null) {
-          return data['artist']['bio']['summary'] ?? 'No information available.';
-        }
-      }
-    } catch (e) {
-      print('Error fetching artist info: $e');
-    }
-
-    return 'No information available.';
-  }
-
-  Widget buildArtistCard(ArtistModel artist) {
-    print('Building artist card for: ${artist.artist}');  // Debugging: Print artist name
-
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.1),
-      ),
-      child: Row(
-        children: [
-          FutureBuilder<String?>(
-            future: _artistService.fetchArtistImage(artist.artist),
-            builder: (context, snapshot) {
-              final imageUrl = snapshot.data;
-              return ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  bottomLeft: Radius.circular(12),
-                ),
-                child: imageUrl != null
-                    ? Image.file(
-                  File(imageUrl),
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
-                )
-                    : Image.asset(
-                  'assets/images/default_artist.jpg',
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
+        if (closestArtist != null) ...[
+          ArtistCard(
+            artistName: closestArtist.artist,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ArtistDetailsScreen(
+                    artistName: closestArtist.artist,
+                    artistImagePath: null,
+                  ),
                 ),
               );
             },
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    artist.artist,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _artistDescription,
-                    style: TextStyle(color: Colors.white.withOpacity(0.7)),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+          const SizedBox(height: 20),
+        ],
+        
+        if (_filteredSongs.isNotEmpty) ...[
+          const Text(
+            'Songs',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold
             ),
           ),
+          const SizedBox(height: 10),
+          ..._filteredSongs.map((song) => buildSongListTile(song)),
         ],
-      ),
+      ],
     );
   }
-
 
   Widget buildSongListTile(SongModel song) {
     return ListTile(
@@ -1406,23 +1342,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
-
     print('Search query: $query');
+    print('Total artists available: ${artists.length}');
+
+    if (query.isEmpty) {
+      setState(() {
+        _filteredSongs = [];
+        _filteredArtists = [];
+      });
+      return;
+    }
 
     setState(() {
       _filteredSongs = songs.where((song) =>
-      song.title.toLowerCase().contains(query) ||
-          (song.artist ?? '').toLowerCase().contains(query)
+        song.title.toLowerCase().contains(query) ||
+        (song.artist ?? '').toLowerCase().contains(query)
       ).toList();
 
-      // Ensure the artists list is populated before filtering
-      print('Original artists list: ${artists.map((a) => a.artist).toList()}');
+      _filteredArtists = artists.where((artist) {
+        final artistName = artist.artist.toLowerCase();
+        return artistName.contains(query);
+      }).toList();
 
-      _filteredArtists = artists.where((artist) =>
-          artist.artist.toLowerCase().contains(query)
-      ).toList();
-
-      print('Filtered artists: ${_filteredArtists.map((a) => a.artist).toList()}');
+      print('Found ${_filteredArtists.length} matching artists');
+      for (var artist in _filteredArtists) {
+        print('Matched artist: ${artist.artist}');
+      }
     });
   }
 
@@ -1648,6 +1593,46 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         );
       },
     );
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      // Požádat o oprávnění
+      final permissionStatus = await [
+        permissionhandler.Permission.audio,
+        permissionhandler.Permission.storage,
+      ].request();
+      
+      bool hasPermission = permissionStatus[permissionhandler.Permission.audio]?.isGranted ?? false ||
+                          permissionStatus[permissionhandler.Permission.storage]!.isGranted ?? false;
+      
+      if (!hasPermission) {
+        print('Permissions not granted');
+        return;
+      }
+
+      // Načíst data
+      final onAudioQuery = OnAudioQuery();
+      
+      // Načíst umělce
+      final artistsList = await onAudioQuery.queryArtists();
+      print('Successfully loaded ${artistsList.length} artists');
+      
+      // Načíst skladby
+      final songsList = await onAudioQuery.querySongs();
+      print('Successfully loaded ${songsList.length} songs');
+
+      if (mounted) {
+        setState(() {
+          artists = artistsList;
+          songs = songsList;
+          print('Artists and songs set in state');
+          print('Artists count: ${artists.length}');
+        });
+      }
+    } catch (e) {
+      print('Error during initialization: $e');
+    }
   }
 }
 

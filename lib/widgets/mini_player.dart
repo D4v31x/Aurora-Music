@@ -1,19 +1,17 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:palette_generator/palette_generator.dart';
 import '../services/Audio_Player_Service.dart';
-import '../services/expandable_player_controller.dart';
 import '../services/artwork_cache_service.dart';
 
 class MiniPlayer extends StatefulWidget {
   final SongModel currentSong;
   
   const MiniPlayer({
-    Key? key,
+    super.key,
     required this.currentSong,
-  }) : super(key: key);
+  });
 
   @override
   State<MiniPlayer> createState() => _MiniPlayerState();

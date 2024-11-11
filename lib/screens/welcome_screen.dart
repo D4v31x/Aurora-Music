@@ -72,7 +72,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
         _showPermissionDeniedDialog();
       }
     } catch (e) {
-      print('Error requesting permissions: $e');
     }
   }
 

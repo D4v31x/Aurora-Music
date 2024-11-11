@@ -175,7 +175,7 @@ Future<void> syncUserData() async {
     final processedErrorData = processErrorsForAppwrite(pendingErrors);
 
     String lastOpened = DateTime.now().toIso8601String();
-    final documentId = 'user_${currentUserId}';
+    final documentId = 'user_$currentUserId';
 
     try {
       await databases.createDocument(

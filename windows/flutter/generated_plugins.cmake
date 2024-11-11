@@ -4,7 +4,6 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
-  audioplayers_windows
   connectivity_plus
   flutter_secure_storage_windows
   permission_handler_windows

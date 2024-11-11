@@ -9,11 +9,11 @@ class ExpandableBottomSheet extends StatefulWidget {
   final double minHeight;
 
   const ExpandableBottomSheet({
-    Key? key,
+    super.key,
     required this.minChild,
     required this.maxChild,
     this.minHeight = 60.0,
-  }) : super(key: key);
+  });
 
   @override
   State<ExpandableBottomSheet> createState() => ExpandableBottomSheetState();

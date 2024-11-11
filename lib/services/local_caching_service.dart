@@ -12,13 +12,20 @@ class LocalCachingArtistService {
   final String _clientId = dotenv.env['SPOTIFY_CLIENT_ID']!;
   final String _clientSecret = dotenv.env['SPOTIFY_CLIENT_SECRET']!;
   final Map<String, String?> _imageCache = {};
+  bool _isInitialized = false;
 
-  LocalCachingArtistService() {
-    _initializeService();
-  }
-  Future<void> _initializeService() async {
-    await _initializeCacheDir();
-    await _getSpotifyAccessToken();
+  Future<void> initializeService() async {
+    if (_isInitialized) {
+      return;
+    }
+
+    try {
+      await _initializeCacheDir();
+      await _getSpotifyAccessToken();
+      _isInitialized = true;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> _initializeCacheDir() async {
@@ -49,6 +56,11 @@ class LocalCachingArtistService {
   }
 
   Future<String?> fetchArtistImage(String artistName) async {
+    if (!_isInitialized) {
+      await initializeService();
+    }
+
+    
     if (_imageCache.containsKey(artistName)) {
       return _imageCache[artistName];
     }
@@ -73,11 +85,17 @@ class LocalCachingArtistService {
   }
 
   Future<String?> _getArtistImageFromSpotify(String artistName) async {
+    
     if (_accessToken == null) {
       await _getSpotifyAccessToken();
     }
 
-    final encodedArtist = Uri.encodeComponent(artistName);
+    String primaryArtist = artistName
+        .split(RegExp(r'[,/]|\s+&\s+|\s+feat\.?\s+|\s+ft\.?\s+|\s+featuring\s+|\s+with\s+|\s+x\s+|\s+X\s+'))
+        .first
+        .trim();
+
+    final encodedArtist = Uri.encodeComponent(primaryArtist);
     final url = 'https://api.spotify.com/v1/search?q=$encodedArtist&type=artist&limit=1';
 
     try {
@@ -101,20 +119,20 @@ class LocalCachingArtistService {
         return _getArtistImageFromSpotify(artistName);
       }
     } catch (e) {
-      print('Error fetching artist image: $e');
     }
     return null;
   }
 
   Future<String?> _downloadAndCacheImage(String imageUrl, File cacheFile) async {
+    
     try {
       final imageResponse = await _client.get(Uri.parse(imageUrl));
+      
       if (imageResponse.statusCode == 200) {
         await cacheFile.writeAsBytes(imageResponse.bodyBytes);
         return cacheFile.path;
       }
     } catch (e) {
-      print('Error downloading and caching image: $e');
     }
     return null;
   }
