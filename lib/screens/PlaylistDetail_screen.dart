@@ -326,7 +326,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         ),
       ),
     ).then((_) {
-      // Refresh the playlist after returning from TracksScreen
       setState(() {});
     });
   }

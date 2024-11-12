@@ -86,7 +86,7 @@ class _ArtistCardState extends State<ArtistCard> {
 
   Future<void> _initializeService() async {
     try {
-      await _artistService.initializeService();
+      await _artistService.initialize();
       if (!mounted) return;
       setState(() {
         _isInitialized = true;

@@ -14,26 +14,30 @@ class LocalCachingArtistService {
   final Map<String, String?> _imageCache = {};
   bool _isInitialized = false;
 
-  Future<void> initializeService() async {
+  Future<void> initialize() async {
     if (_isInitialized) {
       return;
     }
 
     try {
-      await _initializeCacheDir();
-      await _getSpotifyAccessToken();
+      await _createCacheDirectory();
+      await _loadCachedData();
       _isInitialized = true;
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<void> _initializeCacheDir() async {
+  Future<void> _createCacheDirectory() async {
     final appDir = await getApplicationDocumentsDirectory();
     cacheDir = Directory('${appDir.path}/artist_images');
     if (!await cacheDir.exists()) {
       await cacheDir.create(recursive: true);
     }
+  }
+
+  Future<void> _loadCachedData() async {
+    await _getSpotifyAccessToken();
   }
 
   Future<void> _getSpotifyAccessToken() async {
@@ -57,7 +61,7 @@ class LocalCachingArtistService {
 
   Future<String?> fetchArtistImage(String artistName) async {
     if (!_isInitialized) {
-      await initializeService();
+      await initialize();
     }
 
     

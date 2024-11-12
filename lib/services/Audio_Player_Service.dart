@@ -57,6 +57,9 @@ class AudioPlayerService extends ChangeNotifier {
   Set<String> _likedSongs = {};
   Playlist? _likedSongsPlaylist;
 
+  List<SongModel> _songs = [];
+  List<SongModel> get songs => _songs;
+
   AudioPlayerService() {
     _init();
     loadLibrary();
@@ -608,6 +611,11 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   Playlist? get likedSongsPlaylist => _likedSongsPlaylist;
+
+  Future<void> initializeWithSongs(List<SongModel> initialSongs) async {
+    _songs = initialSongs;
+    notifyListeners();
+  }
 
   @override
   void dispose() {

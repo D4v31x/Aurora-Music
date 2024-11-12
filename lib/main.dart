@@ -239,39 +239,45 @@ Future<void> syncUserData() async {
 
 void main() async {
   try {
+    
+    
     // Create error tracking instance
     final errorTracker = ErrorTrackingService();
+    
 
     // Set up Flutter error handling
     FlutterError.onError = (FlutterErrorDetails details) async {
+      
       FlutterError.dumpErrorToConsole(details);
       await errorTracker.recordError(details.exception, details.stack);
     };
 
-    // Set up platform error handling
-    PlatformDispatcher.instance.onError = (error, stack) {
-      errorTracker.recordError(error, stack);
-      return true;
-    };
-
+    
     WidgetsFlutterBinding.ensureInitialized();
+    
+    
     await dotenv.load(fileName: ".env");
+    
 
     // Initialize Appwrite
+    
     client = Client()
       ..setEndpoint(dotenv.env['APPWRITE_ENDPOINT']!)
       ..setProject(dotenv.env['APPWRITE_PROJECT_ID']!)
-      ..setSelfSigned(status: true); // Remove in production
-
+      ..setSelfSigned(status: true);
+    
     account = Account(client);
     databases = Databases(client);
+    
 
     // Create anonymous session
     try {
+      
       final session = await account.createAnonymousSession();
       currentUserId = session.userId;
       
     } catch (e) {
+      
       if (e is AppwriteException && e.code == 401) {
         try {
           final session = await account.getSession(sessionId: 'current');
@@ -280,32 +286,39 @@ void main() async {
         } catch (sessionError) {
           
         }
-      } else {
-        
       }
     }
 
-    // Sync user data if we have a session
-    if (currentUserId != null) {
-      await syncUserData();
-    }
-
+    
     await RiveFile.initialize();
+    
 
+    
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? languageCode = prefs.getString('languageCode') ?? 'en';
+    
 
+    
     await JustAudioBackground.init(
-      androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
+      androidNotificationChannelId: 'com.example.aurora_music.channel.audio',
       androidNotificationChannelName: 'Audio playback',
       androidNotificationOngoing: true,
     );
+    
 
+    
     runApp(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (context) => AudioPlayerService()),
-          ChangeNotifierProvider(create: (context) => ExpandablePlayerController()),
+          ChangeNotifierProvider(create: (context) {
+            
+            return AudioPlayerService();
+          }),
+          ChangeNotifierProvider(create: (context) {
+            
+            return ExpandablePlayerController();
+          }),
+          Provider<ErrorTrackingService>.value(value: errorTracker),
         ],
         child: MyApp(
           languageCode: languageCode,
@@ -313,8 +326,10 @@ void main() async {
         ),
       ),
     );
+    
   } catch (e, stack) {
-    // Record any errors during initialization
+    
+    
     final errorTracker = ErrorTrackingService();
     await errorTracker.recordError(e, stack);
     rethrow;
@@ -337,6 +352,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    
     _locale = ui.Locale(widget.languageCode);
   }
 
@@ -351,6 +367,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    
     return LocaleProvider(
       locale: _locale,
       setLocale: setLocale,
@@ -367,7 +384,12 @@ class _MyAppState extends State<MyApp> {
           ui.Locale('en', ''),
           ui.Locale('cs', ''),
         ],
-        home: const SplashScreen(),
+        home: Builder(
+          builder: (context) {
+            
+            return const SplashScreen();
+          },
+        ),
       ),
     );
   }

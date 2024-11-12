@@ -1597,37 +1597,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _initializeData() async {
     try {
-      // Požádat o oprávnění
-      final permissionStatus = await [
-        permissionhandler.Permission.audio,
-        permissionhandler.Permission.storage,
-      ].request();
-      
-      bool hasPermission = permissionStatus[permissionhandler.Permission.audio]?.isGranted ?? false ||
-                          permissionStatus[permissionhandler.Permission.storage]!.isGranted ?? false;
-      
-      if (!hasPermission) {
-        
-        return;
-      }
-
-      // Načíst data
       final onAudioQuery = OnAudioQuery();
       
-      // Načíst umělce
-      final artistsList = await onAudioQuery.queryArtists();
-      
-      
-      // Načíst skladby
-      final songsList = await onAudioQuery.querySongs();
-      
+      // Načteme všechna data najednou
+      final Future<List<SongModel>> songsFuture = onAudioQuery.querySongs();
+      final Future<List<ArtistModel>> artistsFuture = onAudioQuery.queryArtists();
+      final Future<List<AlbumModel>> albumsFuture = onAudioQuery.queryAlbums();
+
+      // Počkáme na dokončení všech operací
+      final results = await Future.wait([
+        songsFuture,
+        artistsFuture,
+        albumsFuture,
+      ]);
 
       if (mounted) {
         setState(() {
-          artists = artistsList;
-          songs = songsList;
+          songs = results[0] as List<SongModel>;
+          artists = results[1] as List<ArtistModel>;
+          albums = results[2] as List<AlbumModel>;
           
-          
+          if (!hasRandomized) {
+            _randomizeContent();
+            hasRandomized = true;
+          }
         });
       }
     } catch (e) {
