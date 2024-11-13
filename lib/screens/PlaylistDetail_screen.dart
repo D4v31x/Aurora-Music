@@ -105,20 +105,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     title: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        GestureDetector(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: QueryArtworkWidget(
-                              id: int.tryParse(updatedPlaylist.id) ?? 0,
-                              type: ArtworkType.PLAYLIST,
-                              artworkBorder: BorderRadius.circular(20),
-                              nullArtworkWidget: Image.asset(
-                                'assets/images/logo/default_art.png',
-                                fit: BoxFit.cover,
-                                width: 120,
-                                height: 120,
-                              ),
-                            ),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.asset(
+                            'assets/images/UI/liked_icon.png',
+                            width: 120,
+                            height: 120,
+                            fit: BoxFit.cover,
                           ),
                         ),
                         const SizedBox(height: 10),

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'package:provider/provider.dart';
 // Load Genius API keys from .env
+import '../localization/app_localizations.dart';
 import '../services/Audio_Player_Service.dart';
 import '../services/expandable_player_controller.dart';
 import '../services/lyrics_service.dart';  // Genius lyrics fetching service
@@ -389,8 +390,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
       children: [
         const SizedBox(height: 60),
         // Animated title with shimmer effect
-          const Text(
-            'Lyrics',
+           Text( AppLocalizations.of(context).translate(
+            'lyrics'),
             style: TextStyle(
               color: Colors.white,
               fontSize: 28,
@@ -595,8 +596,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
           opacity: value,
           child: Transform.translate(
             offset: Offset(0, 20 * (1 - value)),
-            child: const Text(
-              'Lyrics not available',
+            child: Text(AppLocalizations.of(context).translate(
+              'no_lyrics'),
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 16,
@@ -620,10 +621,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
 
   return Column(
     children: [
-      const Padding(
+       Padding(
         padding: EdgeInsets.only(bottom: 12),
-        child: Text(
-          'About artist',
+        child: Text( AppLocalizations.of(context).translate(
+          'about_artist'),
           style: TextStyle(
             color: Colors.white,
             fontSize: 24,
@@ -708,37 +709,37 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                       color: Colors.white,
                     ),
                     const SizedBox(width: 12),
-                    const Text('Časovač vypnutí', style: TextStyle(color: Colors.white)),
+                    Text( AppLocalizations.of(context).translate('sleep_timer'), style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'view_artist',
                 child: Row(
                   children: [
                     Icon(Icons.person_outline, color: Colors.white),
                     SizedBox(width: 12),
-                    Text('Zobrazit umělce', style: TextStyle(color: Colors.white)),
+                    Text( AppLocalizations.of(context).translate('view_artist'), style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'lyrics',
                 child: Row(
                   children: [
                     Icon(Icons.lyrics_outlined, color: Colors.white),
                     SizedBox(width: 12),
-                    Text('Texty písní', style: TextStyle(color: Colors.white)),
+                    Text( AppLocalizations.of(context).translate('lyrics'), style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'add_playlist',
                 child: Row(
                   children: [
                     Icon(Icons.playlist_add, color: Colors.white),
                     SizedBox(width: 12),
-                    Text('Přidat do playlistu', style: TextStyle(color: Colors.white)),
+                    Text( AppLocalizations.of(context).translate('add_to_playlist'), style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
@@ -863,8 +864,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
   // Vytvořte widget pro zobrazení časovaných textů
   Widget _buildTimedLyrics() {
     if (_timedLyrics == null || _timedLyrics!.isEmpty) {
-      return const Text(
-        'Lyrics not available',
+      return Text( AppLocalizations.of(context).translate(
+        'no_lyrics'),
         style: TextStyle(color: Colors.white, fontSize: 16),
         textAlign: TextAlign.center,
       );
@@ -962,8 +963,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                       children: [
                         Icon(Icons.add, color: Colors.white.withOpacity(0.8)),
                         const SizedBox(width: 8),
-                        Text(
-                          'Vlastní nastavení',
+                        Text( AppLocalizations.of(context).translate(
+                          'own_timer'),
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.8),
                             fontSize: 16,
@@ -986,7 +987,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.timer_off, color: Colors.redAccent),
-                          label: const Text('Zrušit', style: TextStyle(color: Colors.redAccent)),
+                          label:Text( AppLocalizations.of(context).translate('cancel'), style: TextStyle(color: Colors.redAccent)),
                           style: TextButton.styleFrom(
                             backgroundColor: Colors.redAccent.withOpacity(0.1),
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1025,9 +1026,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Nastavit'),
+                        child:Text( AppLocalizations.of(context).translate('set'),
                       ),
-                    ),
+                    ))
                   ],
                 ),
               ],
@@ -1093,8 +1094,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Vyberte počet minut',
+                Text( AppLocalizations.of(context).translate(
+                  'set_minutes'),
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -1130,8 +1131,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Potvrdit'),
-                ),
+                  child:Text( AppLocalizations.of(context).translate('set'),
+                ),)
               ],
             ),
           ),
@@ -1284,7 +1285,7 @@ String _formatDuration(Duration duration) {
     final String? artistString = audioPlayerService.currentSong?.artist;
     if (artistString == null || artistString.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Informace o umělci nejsou k dispozici')),
+         SnackBar(content: Text( AppLocalizations.of(context).translate('no_artist_info'))),
       );
       return;
     }
@@ -1298,7 +1299,7 @@ String _formatDuration(Duration duration) {
 
     if (artists.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Informace o umělci nejsou k dispozici')),
+         SnackBar(content: Text( AppLocalizations.of(context).translate('no_artist_info'))),
       );
       return;
     }
@@ -1329,10 +1330,10 @@ String _formatDuration(Duration duration) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(bottom: 16),
-                  child: Text(
-                    'Vyberte umělce',
+                  child: Text( AppLocalizations.of(context).translate(
+                    'select_artist'),
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -1359,8 +1360,8 @@ String _formatDuration(Duration duration) {
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Zrušit',
+                  child: Text( AppLocalizations.of(context).translate(
+                    'cancel'),
                     style: TextStyle(color: Colors.white),
                   ),
                 ),

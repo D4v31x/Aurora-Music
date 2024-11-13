@@ -587,7 +587,7 @@ class AudioPlayerService extends ChangeNotifier {
     
     _likedSongsPlaylist = Playlist(
       id: 'liked_songs',
-      name: 'Oblíbené skladby',
+      name:'Oblíbené skladby',
       songs: likedSongs,
     );
     

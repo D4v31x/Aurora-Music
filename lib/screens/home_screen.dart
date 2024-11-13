@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -97,6 +98,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _artworkService = ArtworkCacheService();
   final GlobalKey<ExpandableBottomSheetState> _expandableKey = GlobalKey<ExpandableBottomSheetState>();
   bool _isInitialized = false;
+  Queue<String> _notificationQueue = Queue<String>();
+  bool _isShowingNotification = false;
 
   @override
   void initState() {
@@ -185,6 +188,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _isInitialized = true;
       });
     });
+
+    // Show welcome back message after a short delay
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        showAppBarMessage(AppLocalizations.of(context).translate('welcome_back'));
+      }
+    });
   }
 
   Future<List<SongModel>> _processSongsInBackground(List<SongModel> songs) async {
@@ -231,22 +241,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  void showAppBarMessage(String message, {Duration duration = const Duration(seconds: 3)}) {
-    if (mounted) {
-      setState(() {
-        appBarMessage = message;
-        _isScanning = true;
-      });
-    }
+  void enqueueAppBarMessage(String message, {Duration duration = const Duration(seconds: 3)}) {
+    _notificationQueue.add(message);
+    _showNextNotification(duration);
+  }
+
+  void _showNextNotification(Duration duration) {
+    if (_isShowingNotification || _notificationQueue.isEmpty) return;
+
+    _isShowingNotification = true;
+    String message = _notificationQueue.removeFirst();
+
+    setState(() {
+      appBarMessage = message;
+    });
 
     Future.delayed(duration, () {
       if (mounted) {
         setState(() {
           appBarMessage = '';
-          _isScanning = false;
         });
       }
+      _isShowingNotification = false;
+      _showNextNotification(duration);
     });
+  }
+
+  // Modify showAppBarMessage to use the queue
+  void showAppBarMessage(String message, {Duration duration = const Duration(seconds: 3)}) {
+    enqueueAppBarMessage(message, duration: duration);
   }
 
   @override
@@ -274,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return LocalCachingArtistService();
   }
 
-  Future<bool> checkForNewVersion() async {
+  Future<VersionCheckResult> checkForNewVersion() async {
     try {
       final response = await http.get(Uri.parse(
           'https://api.github.com/repos/D4v31x/Aurora-Music/releases/latest'));
@@ -289,14 +312,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           final latestVersionString = match.group(1)!;
           final latestVersion = Version.parse(latestVersionString);
 
-          final currentVersion = Version.parse('0.0.8');
+          final currentVersion = Version.parse('0.0.9');
 
-          return latestVersion > currentVersion;
+          if (latestVersion > currentVersion) {
+            return VersionCheckResult(
+              isUpdateAvailable: true,
+              latestVersion: latestVersion,
+            );
+          }
         }
       }
     } catch (e) {
+      // Handle exceptions appropriately (e.g., log the error)
     }
-    return false;
+    return VersionCheckResult(isUpdateAvailable: false, latestVersion: null);
   }
 
   void _showUpToDateSnackBar() {
@@ -336,9 +365,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context).translate('update_available')),
+          title: Text(
+            AppLocalizations.of(context).translate('update_available')
+          ),
           content: Text(
-            AppLocalizations.of(context).translate('update_message').replaceFirst('%s', latestVersion.toString()),
+            AppLocalizations.of(context)
+              .translate('update_message')
+              .replaceFirst('%s', latestVersion.toString()),
           ),
           actions: [
             TextButton(
@@ -460,8 +493,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Permissions denied'),
+            SnackBar(
+              content: Text( AppLocalizations.of(context).translate('perm_deny')),
             ),
           );
         }
@@ -598,26 +631,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             context: context,
             builder: (context) => AlertDialog(
               backgroundColor: Colors.grey[900],
-              title: const Text(
-                'Exit Aurora Music?',
+              title: Text( AppLocalizations.of(context).translate(
+                'app_exit'),
                 style: TextStyle(color: Colors.white),
               ),
-              content: const Text(
-                'Are you sure you want to exit?',
+              content: Text( AppLocalizations.of(context).translate(
+                'exit_desc'),
                 style: TextStyle(color: Colors.white70),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text(
-                    'No',
+                  child: Text( AppLocalizations.of(context).translate(
+                    'No'),
                     style: TextStyle(color: Colors.white70),
                   ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text(
-                    'Yes',
+                  child: Text( AppLocalizations.of(context).translate(
+                    'Yes'),
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -692,14 +725,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       automaticallyImplyLeading: false,
       title: Column(
         children: [
-          // Animated Slide for aurora_music text
-          AnimatedSlide(
-            offset: _isScanning ? const Offset(0, -0.2) : const Offset(0, 0),
+          // AnimatedSwitcher smoothly transitions between widgets
+          AnimatedSwitcher(
             duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
             child: Center(
+              key: ValueKey<String>(appBarMessage.isNotEmpty 
+                  ? 'notification'
+                  : 'title'),
               child: Text(
-                AppLocalizations.of(context).translate('aurora_music'),
+                appBarMessage.isNotEmpty 
+                    ? appBarMessage 
+                    : AppLocalizations.of(context).translate('aurora_music'),
                 style: const TextStyle(
                   fontFamily: 'ProductSans',
                   fontStyle: FontStyle.normal,
@@ -711,19 +750,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(height: 10),
-          // Direct update of message text without fading in/out
-          Text(
-            appBarMessage,
-            style: const TextStyle(
-              fontFamily: 'ProductSans',
-              fontStyle: FontStyle.normal,
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 5),
-          // Progress bar displayed without fading effect
+          // Optionally, remove the separate appBarMessage if it's now part of the title
+          // If you want to keep additional messages or indicators below, you can retain this
           if (_isScanning)
             LinearProgressIndicator(
               value: _totalSongs > 0 ? _scannedSongs / _totalSongs : 0,
@@ -829,6 +857,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             title: AppLocalizations.of(context).translate('general'),
             children: [
               buildLanguageSelector(),
+              const SizedBox(height: 10.0),
+              buildManualUpdateCheck(),
             ],
           ),
         ],
@@ -863,9 +893,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           style: const TextStyle(color: Colors.white),
         ),
         trailing: const Icon(Icons.system_update, color: Colors.white),
-        onTap: () {
-          checkForNewVersion();
-          showAppBarMessage(AppLocalizations.of(context).translate('checking_for_updates'));
+        onTap: () async {
+          showAppBarMessage(
+            AppLocalizations.of(context).translate('checking_for_updates')
+          );
+          
+          VersionCheckResult result = await checkForNewVersion();
+          
+          if (result.isUpdateAvailable && result.latestVersion != null) {
+            showAppBarMessage(
+              AppLocalizations.of(context).translate('update_found')
+            );
+            _showUpdateAvailableDialog(result.latestVersion!);
+          } else {
+            showAppBarMessage(
+              AppLocalizations.of(context).translate('no_update_found')
+            );
+          }
         },
       ),
     );
@@ -1269,8 +1313,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget buildSearchResults() {
     if (_searchController.text.isEmpty) {
-      return const Center(
-        child: Text('Start typing to search', style: TextStyle(color: Colors.white70))
+      return Center(
+        child: Text( AppLocalizations.of(context).translate('Start_type'), style: TextStyle(color: Colors.white70))
       );
     }
 
@@ -1309,14 +1353,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
         
         if (_filteredSongs.isNotEmpty) ...[
-          const Text(
-            'Songs',
+          Text( AppLocalizations.of(context).translate(
+            'songs'),
             style: TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold
-            ),
-          ),
+            )),
           const SizedBox(height: 10),
           ..._filteredSongs.map((song) => buildSongListTile(song)),
         ],
@@ -1370,73 +1413,82 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     });
   }
+  
+Widget buildQuickAccessSection() {
+  final audioPlayerService = Provider.of<AudioPlayerService>(context);
+  final likedSongsPlaylist = audioPlayerService.likedSongsPlaylist;
 
-
-
-
-
-
-  Widget buildQuickAccessSection() {
-    const favoritesPlaylist = 'Oblíbené';
-    final recentlyListenedPlaylists = ['Playlist 1']; // This should be dynamically populated
-
-    if (favoritesPlaylist.isNotEmpty || recentlyListenedPlaylists.isNotEmpty) {
-      return AnimationLimiter(
-        child: Column(
-          children: AnimationConfiguration.toStaggeredList(
-            duration: const Duration(milliseconds: 375),
-            childAnimationBuilder: (widget) => SlideAnimation(
-              verticalOffset: 50.0,
-              child: FadeInAnimation(
-                child: widget,
-              ),
-            ),
-            children: [
-              if (favoritesPlaylist.isNotEmpty)
-                glassmorphicContainer(
-                  child: ListTile(
-                    leading: const Icon(Icons.favorite, color: Colors.pink),
-                    title: const Text(favoritesPlaylist, style: TextStyle(color: Colors.white)),
-                    onTap: () {
-                    },
-                  ),
-                ),
-              if (recentlyListenedPlaylists.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: glassmorphicContainer(
-                    child: ListTile(
-                      leading: const Icon(Icons.history, color: Colors.white),
-                      title: Text(recentlyListenedPlaylists[0], style: const TextStyle(color: Colors.white)),
-                      onTap: () {
-                        // Navigate to the recently listened playlist
-                      },
-                    ),
-                  ),
-                ),
-            ],
+  return AnimationLimiter(
+    child: Column(
+      children: AnimationConfiguration.toStaggeredList(
+        duration: const Duration(milliseconds: 375),
+        childAnimationBuilder: (widget) => SlideAnimation(
+          verticalOffset: 50.0,
+          child: FadeInAnimation(
+            child: widget,
           ),
         ),
-      );
-    } else {
-      return glassmorphicContainer(
-        child: const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text('Žádná data k zobrazení', style: TextStyle(color: Colors.white)),
-        ),
-      );
-    }
-  }
+        children: [
+          if (likedSongsPlaylist != null)
+            glassmorphicContainer(
+              child: ListTile(
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    'assets/images/UI/liked_icon.png',
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                title: Text(
+                  likedSongsPlaylist.name,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  '${likedSongsPlaylist.songs.length} ${AppLocalizations.of(context).translate('tracks')}',
+                  style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlaylistDetailScreen(
+                        playlist: likedSongsPlaylist,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          if (likedSongsPlaylist == null)
+            glassmorphicContainer(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  AppLocalizations.of(context).translate('no_data_to_display'),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}
 
   Widget buildSuggestedTracksSection() {
     if (randomSongs.isEmpty) {
       return glassmorphicContainer(
-        child: const Padding(
+        child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: Text('No data to display', style: TextStyle(color: Colors.white)),
+          child: Text( AppLocalizations.of(context).translate('No_data'), style: TextStyle(color: Colors.white)),
         ),
       );
     }
+
+    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final likedSongsPlaylist = audioPlayerService.likedSongsPlaylist;
 
     return AnimationLimiter(
       child: Column(
@@ -1449,6 +1501,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
           children: randomSongs.map((song) {
+            final isLiked = likedSongsPlaylist?.songs.any((s) => s.id == song.id) ?? false;
+            
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: glassmorphicContainer(
@@ -1465,7 +1519,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     splitArtists(song.artist ?? '').join(', '), 
                     style: const TextStyle(color: Colors.grey)
                   ),
-                  trailing: const Icon(Icons.favorite_border, color: Colors.white),
+                  trailing: Icon(
+                    isLiked ? Icons.favorite : Icons.favorite_border,
+                    color: isLiked ? Colors.pink : Colors.white,
+                  ),
                   onTap: () => _onSongTap(song),
                 ),
               ),
@@ -1479,9 +1536,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget buildSuggestedArtistsSection() {
     if (randomArtists.isEmpty) {
       return glassmorphicContainer(
-        child: const Padding(
+        child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: Text('No data to display', style: TextStyle(color: Colors.white)),
+          child: Text( AppLocalizations.of(context).translate('No_data'), style: TextStyle(color: Colors.white)),
         ),
       );
     }
@@ -1627,6 +1684,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       
     }
   }
+
+  void checkForUpdates() async {
+    showAppBarMessage(
+      AppLocalizations.of(context).translate('checking_for_updates')
+    );
+    
+    VersionCheckResult result = await checkForNewVersion();
+    
+    if (result.isUpdateAvailable && result.latestVersion != null) {
+      showAppBarMessage(
+        AppLocalizations.of(context).translate('update_found')
+      );
+      _showUpdateAvailableDialog(result.latestVersion!);
+    } else {
+      showAppBarMessage(
+        AppLocalizations.of(context).translate('no_update_found')
+      );
+    }
+  }
 }
 
 class ScrollingText extends StatefulWidget {
@@ -1703,4 +1779,11 @@ class _ScrollingTextState extends State<ScrollingText> with SingleTickerProvider
       ),
     );
   }
+}
+
+class VersionCheckResult {
+  final bool isUpdateAvailable;
+  final Version? latestVersion;
+
+  VersionCheckResult({required this.isUpdateAvailable, this.latestVersion});
 }

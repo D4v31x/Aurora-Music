@@ -82,13 +82,21 @@ class PlaylistsScreenList extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 10),
                       child: glassmorphicContainer(
                         child: ListTile(
-                          leading: const Icon(Icons.favorite, color: Colors.red),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.asset(
+                              'assets/images/UI/liked_icon.png',
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                           title: Text(
                             audioPlayerService.likedSongsPlaylist!.name,
                             style: const TextStyle(color: Colors.white)
                           ),
                           subtitle: Text(
-                            '${audioPlayerService.likedSongsPlaylist!.songs.length} skladeb',
+                            '${audioPlayerService.likedSongsPlaylist!.songs.length} ${AppLocalizations.of(context).translate('tracks')}',
                             style: const TextStyle(color: Colors.grey)
                           ),
                           trailing: IconButton(

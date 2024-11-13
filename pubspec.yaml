@@ -101,6 +101,7 @@ flutter:
     - assets/animations/untitled.riv
     - .env
     - assets/images/background/Bcg_V0.0.9.png
+    - assets/images/UI/liked_icon.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
