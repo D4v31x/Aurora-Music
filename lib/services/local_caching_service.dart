@@ -64,16 +64,15 @@ class LocalCachingArtistService {
       await initialize();
     }
 
-    
-    if (_imageCache.containsKey(artistName)) {
-      return _imageCache[artistName];
-    }
-
     final cacheFile = File('${cacheDir.path}/${artistName.replaceAll(' ', '_')}.jpg');
 
     if (await cacheFile.exists()) {
       _imageCache[artistName] = cacheFile.path;
       return cacheFile.path;
+    }
+
+    if (_imageCache.containsKey(artistName)) {
+      return _imageCache[artistName];
     }
 
     String? imageUrl = await _getArtistImageFromSpotify(artistName);

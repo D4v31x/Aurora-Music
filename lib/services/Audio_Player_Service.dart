@@ -40,9 +40,10 @@ class AudioPlayerService extends ChangeNotifier {
   bool get isRepeat => _isRepeat;
   SongModel? get currentSong => _currentIndex >= 0 && _currentIndex < _playlist.length ? _playlist[_currentIndex] : null;
   final ValueNotifier<Uint8List?> currentArtwork = ValueNotifier(null);
+  final ValueNotifier<SongModel?> currentSongNotifier = ValueNotifier(null);
 
-  final StreamController<SongModel?> _currentSongController = StreamController<SongModel?>.broadcast();
-  Stream<SongModel?> get currentSongStream => _currentSongController.stream;
+  final _currentSongController = StreamController<SongModel?>.broadcast();
+Stream<SongModel?> get currentSongStream => _currentSongController.stream;
   List<SpotifySongModel> _spotifyPlaylist = [];
   int _currentSpotifyIndex = 0;
 
@@ -300,11 +301,11 @@ class AudioPlayerService extends ChangeNotifier {
       final url = song.uri;
 
       if (url != null) {
-        // Fetch artwork if available, otherwise default to null
+        currentSongNotifier.value = song;
+        
         final artworkBytes = await getCurrentSongArtwork();
         Uri? artUri;
         if (artworkBytes != null) {
-          // Store artwork locally and create a file Uri for it
           final directory = await getApplicationDocumentsDirectory();
           final filePath = '${directory.path}/${song.id}_artwork.jpg';
           final file = File(filePath);
@@ -312,17 +313,15 @@ class AudioPlayerService extends ChangeNotifier {
           artUri = Uri.file(filePath);
         }
 
-        // Create the MediaItem with actual artwork or null
         final mediaItem = MediaItem(
           id: song.id.toString(),
           album: song.album ?? 'Unknown Album',
           title: song.title ?? 'Unknown Title',
           artist: song.artist ?? 'Unknown Artist',
-          artUri: artUri, // Use the local artwork Uri or null if not available
+          artUri: artUri,
           duration: Duration(milliseconds: song.duration ?? 0),
         );
 
-        // Set the audio source with the media item tag
         await _audioPlayer.setAudioSource(
           AudioSource.uri(
             Uri.parse(url),
@@ -331,17 +330,12 @@ class AudioPlayerService extends ChangeNotifier {
           preload: true,
         );
 
-        // Start playback
         await _audioPlayer.play();
-
-        // Track play count, update the current artwork, and notify listeners
         _isPlaying = true;
         _incrementPlayCount(song);
         await updateCurrentArtwork();
         _currentSongController.add(song);
         notifyListeners();
-      } else {
-        
       }
     }
   }
@@ -619,6 +613,7 @@ class AudioPlayerService extends ChangeNotifier {
 
   @override
   void dispose() {
+    currentSongNotifier.dispose();
     _audioPlayer.dispose();
     _savePlayCounts();
     savePlaylists();

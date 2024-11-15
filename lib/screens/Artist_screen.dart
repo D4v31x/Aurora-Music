@@ -31,6 +31,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
   late ScrollController _scrollController;
   Color _dominantColor = Colors.deepPurple.shade900;
   late Future<void> _colorFuture;
+  late Future<List<SongModel>> _songsFuture;
   int _displayedSongsCount = 8;
   final int _loadMoreStep = 8;
   final LocalCachingArtistService _artistService = LocalCachingArtistService();
@@ -38,8 +39,16 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _colorFuture = _updateDominantColor();
+    _colorFuture = widget.artistImagePath != null 
+        ? _updateDominantColor() 
+        : _artistService.fetchArtistImage(widget.artistName).then((path) => _updateDominantColor());
     _scrollController = ScrollController()..addListener(_scrollListener);
+    _songsFuture = _audioQuery.querySongs(
+      sortType: null,
+      orderType: OrderType.ASC_OR_SMALLER,
+      uriType: UriType.EXTERNAL,
+      ignoreCase: true,
+    );
   }
 
   @override
@@ -78,7 +87,9 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             builder: (context, snapshot) {
               return Scaffold(
                   body: FutureBuilder<String?>(
-                  future: _artistService.fetchArtistImage(widget.artistName),
+                  future: widget.artistImagePath != null 
+                      ? Future.value(widget.artistImagePath)
+                      : _artistService.fetchArtistImage(widget.artistName),
               builder: (context, imageSnapshot) {
               return Container(
               decoration: BoxDecoration(
@@ -107,7 +118,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
               _buildSliverAppBar(imageSnapshot.data),
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
@@ -142,46 +153,65 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
   Widget _buildSliverAppBar(String? artistImagePath) {
     return SliverAppBar(
       backgroundColor: Colors.transparent,
-      expandedHeight: 300,
+      expandedHeight: 350,
       floating: false,
       pinned: true,
-      flexibleSpace: FlexibleSpaceBar(
-        centerTitle: true,
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Hero(
-              tag: 'artist_image_${widget.artistName}',
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: artistImagePath != null
-                    ? Image.file(
-                  File(artistImagePath),
-                  fit: BoxFit.cover,
-                  width: 120,
-                  height: 120,
-                )
-                    : Image.asset(
-                  'assets/images/logo/default_art.png',
-                  fit: BoxFit.cover,
-                  width: 120,
-                  height: 120,
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          var top = constraints.biggest.height;
+          return FlexibleSpaceBar(
+            centerTitle: true,
+            title: top <= kToolbarHeight + 50
+                ? Text(
+                    widget.artistName,
+                    style: const TextStyle(
+                      fontFamily: 'ProductSans',
+                      fontStyle: FontStyle.normal,
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                : null,
+            background: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 70),
+                Hero(
+
+                  tag: 'artist_image_${widget.artistName}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(25),
+                    child: artistImagePath != null
+                        ? Image.file(
+                            File(artistImagePath),
+                            fit: BoxFit.cover,
+                            width: 200,
+                            height: 200,
+                          )
+                        : Image.asset(
+                            'assets/images/logo/default_art.png',
+                            fit: BoxFit.cover,
+                            width: 200,
+                            height: 200,
+                          ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                Text(
+                  widget.artistName,
+                  style: const TextStyle(
+                    fontFamily: 'ProductSans',
+                    fontStyle: FontStyle.normal,
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              widget.artistName,
-              style: const TextStyle(
-                fontFamily: 'ProductSans',
-                fontStyle: FontStyle.normal,
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -214,12 +244,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
 
   Widget _buildSongsList(AudioPlayerService audioPlayerService) {
     return FutureBuilder<List<SongModel>>(
-      future: _audioQuery.querySongs(
-        sortType: null,
-        orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.EXTERNAL,
-        ignoreCase: true,
-      ),
+      future: _songsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
@@ -230,7 +255,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
         final songs = snapshot.data!.where((song) => splitArtists(song.artist ?? '').contains(widget.artistName)).toList();
         return SliverList(
           delegate: SliverChildBuilderDelegate(
-                (context, index) {
+            (context, index) {
               if (index >= songs.length) return null;
               final song = songs[index];
               return AnimationConfiguration.staggeredList(
@@ -262,7 +287,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                 ),
               );
             },
-            childCount: _displayedSongsCount,
+            childCount: _displayedSongsCount > songs.length ? songs.length : _displayedSongsCount,
           ),
         );
       },

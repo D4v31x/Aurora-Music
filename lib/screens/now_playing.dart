@@ -389,126 +389,121 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
     return Column(
       children: [
         const SizedBox(height: 60),
-        // Animated title with shimmer effect
-           Text( AppLocalizations.of(context).translate(
-            'lyrics'),
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'ProductSans',
-              letterSpacing: 0.5,
-            ),
+        Text(
+          AppLocalizations.of(context).translate('lyrics'),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'ProductSans',
+            letterSpacing: 0.5,
           ),
+        ),
         const SizedBox(height: 20),
-    Hero(
-    tag: 'lyrics-box',
-    child:
-        Stack(
-          children: [
-            // Glassmorphic container with enhanced blur
-            TweenAnimationBuilder<double>(
-              duration: const Duration(milliseconds: 500),
-              tween: Tween(begin: 0.0, end: 1.0),
-              builder: (context, value, child) {
-                return Transform.scale(
-                  scale: 0.95 + (0.05 * value),
-                  child: Opacity(
-                    opacity: value,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 8 * value, sigmaY: 8 * value),
-                        child: Container(
-                          width: double.infinity,
-                          height: 220,
-                          margin: const EdgeInsets.symmetric(horizontal: 20),
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.7),
-                              width: 2,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 15,
-                                spreadRadius: -5,
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (_timedLyrics != null && _timedLyrics!.isNotEmpty)
-                                ..._buildAnimatedLyricLines()
-                              else
-                                _buildNoLyricsPlaceholder(),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-            // Enhanced maximize button
-            Positioned(
-              top: 8,
-              right: 28,
-              child: TweenAnimationBuilder<double>(
-                duration: const Duration(milliseconds: 300),
+        Hero(
+          tag: 'lyrics-box', // Unique tag for Hero
+          child: Stack(
+            children: [
+              // Glassmorphic container with enhanced blur
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 500),
                 tween: Tween(begin: 0.0, end: 1.0),
                 builder: (context, value, child) {
                   return Transform.scale(
-                    scale: value,
-                    child: GestureDetector(
-                      onTap: _navigateToFullLyrics,
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 1,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                              spreadRadius: -2,
+                    scale: 0.95 + (0.05 * value),
+                    child: Opacity(
+                      opacity: value,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 8 * value, sigmaY: 8 * value),
+                          child: Container(
+                            width: double.infinity,
+                            height: 280,
+                            margin: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.7),
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 15,
+                                  spreadRadius: -5,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.open_in_full,
-                          color: Colors.white.withOpacity(0.9),
-                          size: 16,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (_timedLyrics != null && _timedLyrics!.isNotEmpty)
+                                  ..._buildAnimatedLyricLines()
+                                else
+                                  _buildNoLyricsPlaceholder(),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   );
                 },
               ),
-            ),
-          ],
+              // Enhanced maximize button
+              Positioned(
+                top: 8,
+                right: 28,
+                child: TweenAnimationBuilder<double>(
+                  duration: const Duration(milliseconds: 300),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: GestureDetector(
+                        onTap: _navigateToFullLyrics,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                spreadRadius: -2,
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.open_in_full,
+                            color: Colors.white.withOpacity(0.9),
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-    )
       ],
     );
   }
 
   void _navigateToFullLyrics() {
     Navigator.of(context).push(
-      FullLyricsScreen.route(
-        timedLyrics: _timedLyrics,
-        currentLyricIndex: _currentLyricIndex,
-      ),
+      FullLyricsScreen.route(),
     );
   }
 
@@ -528,7 +523,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
       final lyric = entry.value;
       final isCurrent = index == currentIndex;
 
-      // Enhanced animation calculations
       final distanceFromCenter = (index - currentIndex).abs();
       final opacity = 1.0 - (distanceFromCenter * 0.25);
       final scale = 1.0 - (distanceFromCenter * 0.08);
@@ -541,7 +535,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
         builder: (context, value, child) {
           return Transform(
             transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001) // Perspective effect
+              ..setEntry(3, 2, 0.001)
               ..scale(scale)
               ..translate(0.0, 20.0 * (1 - value)),
             alignment: Alignment.center,
@@ -553,29 +547,49 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutCubic,
                 offset: Offset(0, isCurrent ? 0 : slideOffset),
-                child: AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut,
-                  style: TextStyle(
-                    color: isCurrent
-                        ? Colors.white
-                        : Colors.white.withOpacity(0.6),
-                    fontSize: isCurrent ? 18 : 14,
-                    fontFamily: 'ProductSans',
-                    fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                    height: 1.2,
-                    letterSpacing: isCurrent ? 0.2 : 0.0,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 8,
-                      horizontal: 16,
-                    ),
-                    child: Text(
-                      lyric.text,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                child: Container(
+                  width: MediaQuery.of(context).size.width - 80, // Account for padding
+                  child: ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                      return LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          Colors.white,
+                          Colors.white,
+                          Colors.white,
+                          Colors.white.withOpacity(0.0)
+                        ],
+                        stops: const [0.0, 0.85, 0.9, 1.0],
+                      ).createShader(bounds);
+                    },
+                    blendMode: BlendMode.dstIn,
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                      style: TextStyle(
+                        color: isCurrent
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.6),
+                        fontSize: isCurrent ? 18 : 14,
+                        fontFamily: 'ProductSans',
+                        fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                        height: 1.2,
+                        letterSpacing: isCurrent ? 0.2 : 0.0,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 16,
+                        ),
+                        child: Text(
+                          lyric.text,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.fade,
+                          softWrap: true,
+                        ),
+                      ),
                     ),
                   ),
                 ),
