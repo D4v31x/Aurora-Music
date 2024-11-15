@@ -12,8 +12,7 @@
     <application
         android:label="Aurora Music (Alpha)"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        android:enableOnBackInvokedCallback="true">
+        android:icon="@mipmap/ic_launcher">
         <activity
             android:name="com.ryanheise.audioservice.AudioServiceActivity"
             android:launchMode="singleTop"
