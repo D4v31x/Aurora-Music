@@ -116,28 +116,43 @@ return null;
 }
 }
 
-void _scrollToActiveLyric() {
-if (!mounted || _activeLineKey.currentContext == null) return;
+void _scrollToCurrentLyric() {
+if (_scrollController.hasClients && _timedLyrics != null && _currentLyricIndex != null) {
+final itemCount = _timedLyrics!.length;
+if (itemCount == 0) return;
 
-// Add a small delay to ensure the layout is complete
-Future.delayed(const Duration(milliseconds: 50), () {
-if (!mounted || _activeLineKey.currentContext == null) return;
+// Get the current viewport dimensions
+final viewportHeight = _scrollController.position.viewportDimension;
+final currentOffset = _scrollController.offset;
+final maxScroll = _scrollController.position.maxScrollExtent;
 
-final RenderObject? renderObject = _activeLineKey.currentContext!.findRenderObject();
-if (renderObject == null) return;
+// Calculate the position of the current lyric
+final itemHeight = 50.0; // Approximate height of each lyric item
+final currentPosition = _currentLyricIndex! * itemHeight;
 
-final RenderBox box = renderObject as RenderBox;
-final position = box.localToGlobal(Offset.zero);
-final screenHeight = MediaQuery.of(context).size.height;
+// Don't scroll if we're at the top and the current lyric is visible
+if (currentPosition < viewportHeight / 2 && currentOffset <= 0) {
+return;
+}
 
-if (_scrollController.hasClients) {
+// Don't scroll if we're at the bottom and the current lyric is visible
+if (currentPosition > maxScroll - viewportHeight / 2 && 
+currentOffset >= maxScroll) {
+return;
+}
+
+// Calculate the target scroll offset to center the current lyric
+final targetOffset = currentPosition - (viewportHeight / 2) + (itemHeight / 2);
+
+// Only scroll if the target offset is different from current
+if ((targetOffset - currentOffset).abs() > itemHeight / 2) {
 _scrollController.animateTo(
-_scrollController.offset + position.dy - screenHeight / 2.5,
+targetOffset.clamp(0.0, maxScroll),
 duration: const Duration(milliseconds: 300),
 curve: Curves.easeInOut,
 );
 }
-});
+}
 }
 
 @override
@@ -310,7 +325,7 @@ Widget _buildLyricsContent() {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             setState(() => _currentLyricIndex = newIndex);
-            _scrollToActiveLyric();
+            _scrollToCurrentLyric();
           }
         });
       }

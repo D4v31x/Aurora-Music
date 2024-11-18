@@ -21,10 +21,12 @@ import '../localization/locale_provider.dart';
 import '../localization/app_localizations.dart';
 import '../services/spotify_service.dart';
 import '../widgets/expandable_bottom.dart';
+import 'AlbumDetailScreen.dart';
 import 'Artist_screen.dart';
 import 'PlaylistDetail_screen.dart';
 import 'Playlist_screen.dart';
 import 'categories.dart';
+import 'folders_screen.dart' as folderdetail;
 import 'now_playing.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/outline_indicator.dart';
@@ -761,72 +763,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
       ),
       bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(48.0),
+        preferredSize: const Size.fromHeight(70.0),
         child: Align(
           alignment: Alignment.center,
-          child: TabBar(
-            controller: _tabController,
-            dividerColor: Colors.transparent,
-            indicator: const OutlineIndicator(
-              color: Colors.white,
-              strokeWidth: 2,
-              text: '',
-              radius: Radius.circular(24),
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 12.0),
+            child: TabBar(
+              controller: _tabController,
+              dividerColor: Colors.transparent,
+              isScrollable: true,
+              labelPadding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 12.0,
+              ),
+              indicatorPadding: const EdgeInsets.symmetric(vertical: 8.0),
+              indicator: OutlineIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+                radius: const Radius.circular(20),
+                text: [
+                  AppLocalizations.of(context).translate('home'),
+                  AppLocalizations.of(context).translate('library'),
+                  AppLocalizations.of(context).translate('search'),
+                  AppLocalizations.of(context).translate('settings'),
+                ][_tabController.index],
+              ),
+              tabs: [
+                _buildTabItem(AppLocalizations.of(context).translate('home')),
+                _buildTabItem(AppLocalizations.of(context).translate('library')),
+                _buildTabItem(AppLocalizations.of(context).translate('search')),
+                _buildTabItem(AppLocalizations.of(context).translate('settings')),
+              ],
             ),
-            tabs: [
-              Tab(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Text(
-                    AppLocalizations.of(context).translate('home'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontFamily: 'ProductSans',
-                    ),
-                  ),
-                ),
-              ),
-              Tab(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Text(
-                    AppLocalizations.of(context).translate('library'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontFamily: 'ProductSans',
-                    ),
-                  ),
-                ),
-              ),
-              Tab(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Text(
-                    AppLocalizations.of(context).translate('search'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontFamily: 'ProductSans',
-                    ),
-                  ),
-                ),
-              ),
-              Tab(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(
-                    AppLocalizations.of(context).translate('settings'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontFamily: 'ProductSans',
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
       ),
@@ -978,7 +946,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         return FadeTransition(opacity: animation, child: child);
                       },
                     ),
-                  )
+                  ),
+                  onItemTap: (song) {
+                    // Handle song tap
+                    if (song is SongModel) {
+                      audioPlayerService.setPlaylist([song], 0);
+                      audioPlayerService.play();
+                    }
+                  },
               ),
               const SizedBox(height: 30.0),
               buildCategorySection(
@@ -988,6 +963,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   context,
                   MaterialPageRoute(builder: (context) => const AlbumsScreen()),
                 ),
+                onItemTap: (album) {
+                  String albumName;
+                  if (album is String) {
+                    albumName = album;
+                  } else if (album is AlbumModel) {
+                    albumName = album.album;
+                  } else {
+                    return; // Invalid album type
+                  }
+                  
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AlbumDetailScreen(albumName: albumName),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 30.0),
               Consumer<AudioPlayerService>(
@@ -1018,6 +1010,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   context,
                   MaterialPageRoute(builder: (context) => const ArtistsScreen()),
                 ),
+                onItemTap: (artist) {
+                  if (artist is String) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ArtistDetailsScreen(artistName: artist),
+                      ),
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 30.0),
               buildCategorySection(
@@ -1027,6 +1029,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   context,
                   MaterialPageRoute(builder: (context) => const FoldersScreen()),
                 ),
+                onItemTap: (folder) {
+                  if (folder is String) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => folderdetail.FolderScreen(folderPath: folder),
+                      ),
+                    );
+                  }
+                },
               ),
             ],
           ),
@@ -1106,26 +1118,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: SlideAnimation(
               horizontalOffset: 50.0,
               child: FadeInAnimation(
-                child: GestureDetector(
-                  onTap: onItemTap != null ? () => onItemTap(item) : null,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: glassmorphicContainer(
-                      child: SizedBox(
-                        width: 120,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            getItemIcon(item),
-                            const SizedBox(height: 8),
-                            Text(
-                              getItemTitle(item),
-                              style: const TextStyle(color: Colors.white),
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onItemTap != null ? () => onItemTap(item) : null,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: glassmorphicContainer(
+                        child: SizedBox(
+                          width: 120,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              getItemIcon(item),
+                              const SizedBox(height: 8),
+                              Text(
+                                getItemTitle(item),
+                                style: const TextStyle(color: Colors.white),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -1481,12 +1496,17 @@ Widget buildQuickAccessSection() {
     if (randomSongs.isEmpty) {
       return glassmorphicContainer(
         child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text( AppLocalizations.of(context).translate('No_data'), style: TextStyle(color: Colors.white)),
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            AppLocalizations.of(context).translate('No_data'),
+            style: const TextStyle(color: Colors.white)
+          ),
         ),
       );
     }
 
+    // Take only top 3 songs
+    final topThreeSongs = randomSongs.take(3).toList();
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
     final likedSongsPlaylist = audioPlayerService.likedSongsPlaylist;
 
@@ -1500,30 +1520,35 @@ Widget buildQuickAccessSection() {
               child: widget,
             ),
           ),
-          children: randomSongs.map((song) {
+          children: topThreeSongs.map((song) {
             final isLiked = likedSongsPlaylist?.songs.any((s) => s.id == song.id) ?? false;
             
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: glassmorphicContainer(
-                child: ListTile(
-                  leading: _artworkService.buildCachedArtwork(
-                    song.id,
-                    size: 50,
+              child: Material( // Add Material widget for better touch feedback
+                color: Colors.transparent,
+                child: InkWell( // Replace GestureDetector with InkWell
+                  onTap: () => _onSuggestedSongTap(song, topThreeSongs), // Use the new method
+                  child: glassmorphicContainer(
+                    child: ListTile(
+                      leading: _artworkService.buildCachedArtwork(
+                        song.id,
+                        size: 50,
+                      ),
+                      title: Text(
+                        song.title, 
+                        style: const TextStyle(color: Colors.white)
+                      ),
+                      subtitle: Text(
+                        splitArtists(song.artist ?? '').join(', '), 
+                        style: const TextStyle(color: Colors.grey)
+                      ),
+                      trailing: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: isLiked ? Colors.pink : Colors.white,
+                      ),
+                    ),
                   ),
-                  title: Text(
-                    song.title, 
-                    style: const TextStyle(color: Colors.white)
-                  ),
-                  subtitle: Text(
-                    splitArtists(song.artist ?? '').join(', '), 
-                    style: const TextStyle(color: Colors.grey)
-                  ),
-                  trailing: Icon(
-                    isLiked ? Icons.favorite : Icons.favorite_border,
-                    color: isLiked ? Colors.pink : Colors.white,
-                  ),
-                  onTap: () => _onSongTap(song),
                 ),
               ),
             );
@@ -1703,6 +1728,27 @@ Widget buildQuickAccessSection() {
       );
     }
   }
+
+  // Add this new method for suggested tracks
+  void _onSuggestedSongTap(SongModel song, List<SongModel> suggestedSongs) {
+    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    final expandableController = Provider.of<ExpandablePlayerController>(context, listen: false);
+    
+    // Use the suggested songs list directly
+    final initialIndex = suggestedSongs.indexOf(song);
+    
+    // Set the playlist and play
+    audioPlayerService.setPlaylist(
+      suggestedSongs,
+      initialIndex,
+    );
+    
+    audioPlayerService.play();
+    _updateBackgroundImage(song);
+
+    // Show the expandable player
+    expandableController.show();
+  }
 }
 
 class ScrollingText extends StatefulWidget {
@@ -1786,4 +1832,26 @@ class VersionCheckResult {
   final Version? latestVersion;
 
   VersionCheckResult({required this.isUpdateAvailable, this.latestVersion});
+}
+
+Widget _buildTabItem(String text) {
+  return Container(
+    constraints: const BoxConstraints(minWidth: 80),
+    height: 30,
+    child: Tab(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          text,
+          maxLines: 1,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontFamily: 'ProductSans',
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    ),
+  );
 }
