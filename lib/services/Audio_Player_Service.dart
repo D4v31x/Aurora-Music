@@ -286,9 +286,9 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
   }
 
   // Playback Control
-  Future<void> setPlaylist(List<SongModel> songs, int initialIndex) async {
+  Future<void> setPlaylist(List<SongModel> songs, int startIndex) async {
     _playlist = songs;
-    _currentIndex = initialIndex;
+    _currentIndex = startIndex;
     await play();
   }
 
@@ -302,7 +302,7 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
 
       if (url != null) {
         currentSongNotifier.value = song;
-        
+
         final artworkBytes = await getCurrentSongArtwork();
         Uri? artUri;
         if (artworkBytes != null) {
@@ -382,7 +382,7 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
         );
         await audioPlayer.setAudioSource(AudioSource.uri(Uri.file(downloadedFilePath), tag: mediaItem));
       } else {
-        
+
         return;
       }
     } else {
@@ -469,7 +469,7 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
         size: 1000,
       );
     } catch (e) {
-      
+
       return null;
     }
   }
@@ -488,7 +488,7 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
       );
       currentArtwork.value = artwork;
     } catch (e) {
-      
+
       currentArtwork.value = null;
     }
   }
@@ -578,13 +578,13 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
   void _updateLikedSongsPlaylist() async {
     final allSongs = await _audioQuery.querySongs();
     final likedSongs = allSongs.where((song) => _likedSongs.contains(song.id.toString())).toList();
-    
+
     _likedSongsPlaylist = Playlist(
       id: 'liked_songs',
       name:'Oblíbené skladby',
       songs: likedSongs,
     );
-    
+
     notifyListeners();
   }
 
@@ -598,7 +598,7 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
     } else {
       _likedSongs.add(song.id.toString());
     }
-    
+
     await saveLikedSongs();
     _updateLikedSongsPlaylist();
     notifyListeners();

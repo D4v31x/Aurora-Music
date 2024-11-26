@@ -15,6 +15,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -59,39 +61,38 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   Future<bool> _requestPermissions() async {
     try {
+      if (Platform.isWindows) {
+        // Windows doesn't need audio permissions
+        return true;
+      }
       
+      // Android permission logic
       final permissionStatus = await OnAudioQuery().permissionsStatus();
-      
-      
       if (!permissionStatus) {
-        
         final granted = await OnAudioQuery().permissionsRequest();
-        
-        
         if (!granted) {
-          
           if (mounted) {
             await showDialog(
               context: context,
               barrierDismissible: false,
               builder: (context) => AlertDialog(
-                title: const Text('Potřebná oprávnění'),
+                title: const Text('Required Permissions'),
                 content: const Text(
-                  'Pro správné fungování aplikace je potřeba přístup k hudební knihovně. '
-                  'Prosím povolte oprávnění v nastavení aplikace.',
+                  'The app needs access to your music library to function properly. '
+                  'Please grant permissions in the app settings.',
                 ),
                 actions: [
                   TextButton(
                     onPressed: () {
-                      SystemNavigator.pop(); // Ukončí aplikaci
+                      SystemNavigator.pop();
                     },
-                    child: const Text('Ukončit'),
+                    child: const Text('Exit'),
                   ),
                   TextButton(
                     onPressed: () {
-                      openAppSettings(); // Otevře nastavení aplikace
+                      openAppSettings();
                     },
-                    child: const Text('Otevřít nastavení'),
+                    child: const Text('Open Settings'),
                   ),
                 ],
               ),
@@ -101,10 +102,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         }
       }
       await Future.delayed(const Duration(milliseconds: 100));
-      
       return true;
     } catch (e) {
-      
       return false;
     }
   }
@@ -159,22 +158,61 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   Future<void> _loadAppData() async {
     try {
-      final onAudioQuery = OnAudioQuery();
       final audioPlayerService = context.read<AudioPlayerService>();
 
-      // Načítáme data postupně, ne paralelně
-      final songs = await onAudioQuery.querySongs(
-        sortType: SongSortType.DATE_ADDED,
-        orderType: OrderType.DESC_OR_GREATER,
-      );
+      if (Platform.isWindows) {
+        // Windows-specific loading logic
+        final directory = await getApplicationDocumentsDirectory();
+        final musicDir = Directory('${directory.path}/Music');
+        
+        if (!await musicDir.exists()) {
+          await musicDir.create(recursive: true);
+        }
 
-      await audioPlayerService.initializeWithSongs(songs);
+        final files = await musicDir.list(recursive: true)
+            .where((entity) => entity is File && 
+                  (entity.path.toLowerCase().endsWith('.mp3') || 
+                   entity.path.toLowerCase().endsWith('.m4a') ||
+                   entity.path.toLowerCase().endsWith('.wav')))
+            .cast<File>()
+            .toList();
 
-      // Počkáme chvíli mezi dotazy
+        // Convert files to SongModel objects
+        final List<SongModel> windowsSongs = [];
+        for (final file in files) {
+          final fileName = file.path.split(Platform.pathSeparator).last;
+          final title = fileName.substring(0, fileName.lastIndexOf('.'));
+          
+          final song = SongModel({
+            '_id': file.hashCode,
+            'title': title,
+            'artist': 'Unknown Artist',
+            'album': 'Unknown Album',
+            'duration': 0,
+            'uri': file.path,
+            '_data': file.path,
+            'date_added': file.statSync().modified.millisecondsSinceEpoch,
+            'is_music': 1,
+            'size': file.lengthSync(),
+          });
+          
+          windowsSongs.add(song);
+        }
+
+        await audioPlayerService.initializeWithSongs(windowsSongs);
+      } else {
+        // Android loading logic
+        final onAudioQuery = OnAudioQuery();
+        final songs = await onAudioQuery.querySongs(
+          sortType: SongSortType.DATE_ADDED,
+          orderType: OrderType.DESC_OR_GREATER,
+        );
+        await audioPlayerService.initializeWithSongs(songs);
+      }
+
       await Future.delayed(const Duration(milliseconds: 100));
-
     } catch (e) {
-      
+      print('Error loading app data: $e');
     }
   }
 
@@ -184,10 +222,23 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     try {
       final artworkService = ArtworkCacheService();
       final audioPlayerService = context.read<AudioPlayerService>();
-      final onAudioQuery = OnAudioQuery();
 
-      // Načítáme postupně místo paralelně
-      // 1. Nejprve artwork skladeb
+      // For Windows, we'll only preload static images
+      if (Platform.isWindows) {
+        final staticImages = [
+          'assets/images/background/Bcg_V0.0.9.png',
+          'assets/images/logo/default_art.png',
+        ];
+
+        for (final image in staticImages) {
+          if (!mounted) return;
+          await precacheImage(AssetImage(image), context);
+        }
+        return;
+      }
+
+      // Android artwork loading logic
+      final onAudioQuery = OnAudioQuery();
       if (audioPlayerService.songs.isNotEmpty) {
         final songsToPreload = audioPlayerService.songs.take(30).toList();
         for (final song in songsToPreload) {
@@ -195,14 +246,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         }
       }
 
-      // 2. Pak obrázky interpretů
       final artists = await onAudioQuery.queryArtists();
       final artistsToPreload = artists.take(20).toList();
       for (final artist in artistsToPreload) {
         await artworkService.preloadArtistArtwork(artist.id);
       }
 
-      // 3. Nakonec statické obrázky
+      // Load static images
       final staticImages = [
         'assets/images/background/Bcg_V0.0.9.png',
         'assets/images/logo/default_art.png',
@@ -213,7 +263,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         await precacheImage(AssetImage(image), context);
       }
     } catch (e) {
-      
+      print('Error preloading images: $e');
     }
   }
 

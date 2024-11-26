@@ -47,5 +47,16 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>This app needs access to microphone to play audio in background</string>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>audio</string>
+			<string>processing</string>
+		</array>
+		<key>NSAppleMusicUsageDescription</key>
+		<string>This app needs access to music library to play your local music</string>
+		<key>kTCCServiceMediaLibrary</key>
+		<string>This app needs access to music library to play your local music</string>
 	</dict>
 </plist>

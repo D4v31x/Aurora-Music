@@ -58,7 +58,7 @@ class ErrorTrackingService {
 
       await prefs.setString(_storageKey, jsonEncode(errorMaps));
     } catch (e) {
-      
+
     }
   }
 
@@ -74,7 +74,7 @@ class ErrorTrackingService {
             .toList();
       }
     } catch (e) {
-      
+
     }
     return [];
   }
@@ -85,7 +85,7 @@ class ErrorTrackingService {
       await prefs.remove(_storageKey);
       _currentErrors.clear();
     } catch (e) {
-      
+
     }
   }
 }
@@ -142,7 +142,7 @@ Map<String, dynamic> processErrorsForAppwrite(List<ErrorRecord> errors) {
 // Update the syncUserData function to use the new error processing
 Future<void> syncUserData() async {
   if (currentUserId == null) {
-    
+
     return;
   }
 
@@ -200,7 +200,7 @@ Future<void> syncUserData() async {
           Permission.write(Role.user(currentUserId!)),
         ],
       );
-      
+
       await errorTracker.clearPendingErrors();
 
     } catch (e) {
@@ -223,99 +223,99 @@ Future<void> syncUserData() async {
               'last_error_time': processedErrorData['last_error_time'],
             },
           );
-          
+
           await errorTracker.clearPendingErrors();
         } catch (updateError) {
-          
+
         }
       } else {
-        
+
       }
     }
   } catch (e) {
-    
+
   }
 }
 
 void main() async {
   try {
-    
-    
+
+
     // Create error tracking instance
     final errorTracker = ErrorTrackingService();
-    
+
 
     // Set up Flutter error handling
     FlutterError.onError = (FlutterErrorDetails details) async {
-      
+
       FlutterError.dumpErrorToConsole(details);
       await errorTracker.recordError(details.exception, details.stack);
     };
 
-    
+
     WidgetsFlutterBinding.ensureInitialized();
-    
-    
+
+
     await dotenv.load(fileName: ".env");
-    
+
 
     // Initialize Appwrite
-    
+
     client = Client()
       ..setEndpoint(dotenv.env['APPWRITE_ENDPOINT']!)
       ..setProject(dotenv.env['APPWRITE_PROJECT_ID']!)
       ..setSelfSigned(status: true);
-    
+
     account = Account(client);
     databases = Databases(client);
-    
+
 
     // Create anonymous session
     try {
-      
+
       final session = await account.createAnonymousSession();
       currentUserId = session.userId;
-      
+
     } catch (e) {
-      
+
       if (e is AppwriteException && e.code == 401) {
         try {
           final session = await account.getSession(sessionId: 'current');
           currentUserId = session.userId;
-          
+
         } catch (sessionError) {
-          
+
         }
       }
     }
 
-    
-    await RiveFile.initialize();
-    
 
-    
+    await RiveFile.initialize();
+
+
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? languageCode = prefs.getString('languageCode') ?? 'en';
-    
 
-    
+
+
     await JustAudioBackground.init(
       androidNotificationChannelId: 'com.example.aurora_music.channel.audio',
       androidNotificationChannelName: 'Audio playback',
       androidNotificationOngoing: true,
     );
-    
 
-    
+
+
     runApp(
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) {
-            
+
             return AudioPlayerService();
           }),
           ChangeNotifierProvider(create: (context) {
-            
+
             return ExpandablePlayerController();
           }),
           Provider<ErrorTrackingService>.value(value: errorTracker),
@@ -326,10 +326,10 @@ void main() async {
         ),
       ),
     );
-    
+
   } catch (e, stack) {
-    
-    
+
+
     final errorTracker = ErrorTrackingService();
     await errorTracker.recordError(e, stack);
     rethrow;
@@ -352,7 +352,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    
+
     _locale = ui.Locale(widget.languageCode);
   }
 
@@ -367,7 +367,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    
+
     return LocaleProvider(
       locale: _locale,
       setLocale: setLocale,
@@ -386,7 +386,7 @@ class _MyAppState extends State<MyApp> {
         ],
         home: Builder(
           builder: (context) {
-            
+
             return const SplashScreen();
           },
         ),
