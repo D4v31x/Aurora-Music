@@ -6,13 +6,13 @@ import 'package:provider/provider.dart';
 import '../models/playlist_model.dart';
 import '../screens/AlbumDetailScreen.dart';
 import '../screens/Artist_screen.dart';
+import '../screens/FolderDetail_screen.dart';
 import '../screens/PlaylistDetail_screen.dart';
 import '../screens/Playlist_screen.dart';
 import '../screens/categories.dart';
 import '../screens/tracks_screen.dart';
 import '../services/Audio_Player_Service.dart';
 import '../widgets/glassmorphic_container.dart';
-import '../screens/folders_screen.dart' as folderdetail;
 import '../localization/app_localizations.dart';
 
 class LibraryTab extends StatefulWidget {
@@ -134,7 +134,9 @@ class _LibraryTabState extends State<LibraryTab> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => folderdetail.FolderScreen(folderPath: folder),
+                        builder: (context) => FolderDetailScreen(
+                          folderPath: folder,
+                        ),
                       ),
                     );
                   }
@@ -285,7 +287,7 @@ class _LibraryTabState extends State<LibraryTab> {
     if (item is AlbumModel) return item.album;
     if (item is Playlist) return item.name;
     if (item is ArtistModel) return item.artist;
-    if (item is String) return item;
+    if (item is String) return item.split('/').last;
     return 'Unknown';
   }
 }

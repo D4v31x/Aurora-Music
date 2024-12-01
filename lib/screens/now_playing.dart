@@ -45,6 +45,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
   // Přidáme proměnnou pro zdroj přehrávání
   final String _playingSource = "Library"; // Výchozí hodnota
 
+  bool _isDragging = false;
+
   @override
   void initState() {
     super.initState();
@@ -314,53 +316,78 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
   // Update the progress bar section
   Widget _buildProgressBar(Duration position, Duration duration, AudioPlayerService audioPlayerService) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 50.0), // Narrower padding
+      padding: const EdgeInsets.symmetric(horizontal: 50.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Custom progress bar
-          SizedBox(
-            height: 3, // Slightly thicker
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                final progress = position.inMilliseconds / duration.inMilliseconds;
-                return Stack(
-                  children: [
-                    // Background track
-                    Container(
-                      width: width,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(1.5),
-                      ),
-                    ),
-                    // Progress track
-                    GestureDetector(
+          StatefulBuilder(
+            builder: (context, setState) {
+              return SizedBox(
+                height: 20, // Increased touch target
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    final progress = position.inMilliseconds / duration.inMilliseconds;
+                    return GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onHorizontalDragStart: (details) {
+                        setState(() => _isDragging = true);
+                        audioPlayerService.pause();
+                      },
                       onHorizontalDragUpdate: (details) {
                         final RenderBox box = context.findRenderObject() as RenderBox;
-                        final position = details.localPosition.dx;
-                        final percentage = position / width;
+                        final tapPos = details.localPosition;
+                        final percentage = (tapPos.dx / width).clamp(0.0, 1.0);
                         final newPosition = duration * percentage;
                         audioPlayerService.audioPlayer.seek(newPosition);
                       },
-                      child: Container(
-                        width: width * progress,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(1.5),
+                      onHorizontalDragEnd: (details) {
+                        setState(() => _isDragging = false);
+                        audioPlayerService.resume();
+                      },
+                      onTapDown: (details) {
+                        final RenderBox box = context.findRenderObject() as RenderBox;
+                        final tapPos = details.localPosition;
+                        final percentage = (tapPos.dx / width).clamp(0.0, 1.0);
+                        final newPosition = duration * percentage;
+                        audioPlayerService.audioPlayer.seek(newPosition);
+                      },
+                      child: Center(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          width: width,
+                          height: _isDragging ? 6.0 : 3.0, // Animate between normal and dragging height
+                          child: Stack(
+                            children: [
+                              // Background track
+                              Container(
+                                width: width,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(_isDragging ? 3.0 : 1.5),
+                                ),
+                              ),
+                              // Progress track
+                              Container(
+                                width: width * progress,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(_isDragging ? 3.0 : 1.5),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                );
-              },
-            ),
+                    );
+                  },
+                ),
+              );
+            },
           ),
           const SizedBox(height: 8),
-          // Time labels below slider
+          // Time labels
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

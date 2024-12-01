@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:aurora_music_v01/services/spotify_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
+import '../localization/app_localizations.dart';
 import '../models/utils.dart';
 import 'dart:io';
 import 'dart:convert';
@@ -60,6 +62,9 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
 
   List<SongModel> _songs = [];
   List<SongModel> get songs => _songs;
+
+  static const String LIKED_SONGS_PLAYLIST_ID = 'liked_songs';
+  String _likedPlaylistName = 'Favorite Songs'; // Default English name
 
   AudioPlayerService() {
     _init();
@@ -280,9 +285,9 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
   }
 
   List<String> getThreeFolders() {
-    final sortedFolders = _folderAccessCounts.entries.toList()
+    final folderAccessCounts = _folderAccessCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    return sortedFolders.take(3).map((entry) => entry.key).toList();
+    return folderAccessCounts.take(3).map((entry) => entry.key).toList();
   }
 
   // Playback Control
@@ -580,8 +585,8 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
     final likedSongs = allSongs.where((song) => _likedSongs.contains(song.id.toString())).toList();
 
     _likedSongsPlaylist = Playlist(
-      id: 'liked_songs',
-      name:'Oblíbené skladby',
+      id: LIKED_SONGS_PLAYLIST_ID,
+      name: _likedPlaylistName,
       songs: likedSongs,
     );
 
@@ -621,6 +626,37 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
     _sleepTimer?.cancel();
     super.dispose();
   }
+
+  // Ensure that _folderAccessCounts is correctly populated
+  void _incrementFolderAccessCount(String folderPath) {
+    _folderAccessCounts[folderPath] = (_folderAccessCounts[folderPath] ?? 0) + 1;
+    notifyListeners();
+  }
+
+  // Call this method whenever a song from a folder is played
+  void playSongFromFolder(SongModel song) {
+    final folderPath = File(song.data).parent.path;
+    _incrementFolderAccessCount(folderPath);
+    // Proceed to play the song
+    setPlaylist([song], 0);
+    play();
+  }
+
+  // Method to update playlist name when language changes
+  void updateLikedPlaylistName(String newName) {
+    _likedPlaylistName = newName;
+    if (_likedSongsPlaylist != null) {
+      _likedSongsPlaylist = Playlist(
+        id: LIKED_SONGS_PLAYLIST_ID,
+        name: _likedPlaylistName,
+        songs: _likedSongsPlaylist!.songs,
+      );
+      notifyListeners();
+    }
+  }
+
+  // Getter for the playlist name
+  String get likedPlaylistName => _likedPlaylistName;
 }
 
 class SpotifySongModel {

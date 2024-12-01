@@ -19,6 +19,7 @@ import 'services/expandable_player_controller.dart';
 import 'localization/app_localizations.dart';
 import 'screens/splash_screen.dart';
 import 'localization/locale_provider.dart';
+import 'providers/theme_provider.dart';
 
 // Appwrite client configuration
 late Client client;
@@ -318,6 +319,7 @@ void main() async {
 
             return ExpandablePlayerController();
           }),
+          ChangeNotifierProvider(create: (context) => ThemeProvider()),
           Provider<ErrorTrackingService>.value(value: errorTracker),
         ],
         child: MyApp(
@@ -367,6 +369,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return LocaleProvider(
       locale: _locale,
@@ -374,6 +377,17 @@ class _MyAppState extends State<MyApp> {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         locale: _locale,
+        themeMode: themeProvider.themeMode,
+        theme: ThemeData(
+          brightness: Brightness.light,
+          primarySwatch: Colors.blue,
+          // Define other light theme properties
+        ),
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          primarySwatch: Colors.blue,
+          // Define other dark theme properties
+        ),
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

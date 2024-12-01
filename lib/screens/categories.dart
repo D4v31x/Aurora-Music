@@ -6,6 +6,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../services/Audio_Player_Service.dart';
 import '../widgets/glassmorphic_container.dart';
+import 'FolderDetail_screen.dart';
 
 class AlbumsScreen extends StatelessWidget {
   const AlbumsScreen({super.key});
@@ -314,7 +315,14 @@ class FoldersScreen extends StatelessWidget {
                                 style: const TextStyle(color: Colors.white),
                               ),
                               onTap: () {
-                                // Implement folder view functionality
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FolderDetailScreen(
+                                      folderPath: folder,
+                                    ),
+                                  ),
+                                );
                               },
                             ),
                           ),

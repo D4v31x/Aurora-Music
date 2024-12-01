@@ -24,10 +24,10 @@ import '../services/spotify_service.dart';
 import '../widgets/expandable_bottom.dart';
 import 'AlbumDetailScreen.dart';
 import 'Artist_screen.dart';
+import 'FolderDetail_screen.dart';
 import 'PlaylistDetail_screen.dart';
 import 'Playlist_screen.dart';
 import 'categories.dart';
-import 'folders_screen.dart' as folderdetail;
 import 'now_playing.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/outline_indicator.dart';
@@ -883,7 +883,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => folderdetail.FolderScreen(folderPath: folder),
+                        builder: (context) => FolderDetailScreen(
+                          folderPath: folder,
+                        ),
                       ),
                     );
                   }

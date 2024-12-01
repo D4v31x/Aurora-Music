@@ -43,7 +43,7 @@ android {
     }
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.example.aurora_music_v01"
+        applicationId "com.aurorasoftware.aurora_music"
         minSdk 24
         targetSdk 34
         versionCode flutterVersionCode.toInteger()
