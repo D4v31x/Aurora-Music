@@ -705,199 +705,207 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
       _initializeTimedLyrics(); // Inicializujte timed lyrics při změně písničky
     }
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
-          onPressed: () {
-            expandablePlayerController.collapse();
-          },
-        ),
-        actions: [
-          _buildSleepTimerIndicator(audioPlayerService),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            color: Colors.grey[900],
-            onSelected: (value) {
-              switch (value) {
-                case 'sleep_timer':
-                  _showSleepTimerOptions(context);
-                  break;
-                case 'view_artist':
-                  _showArtistOptions(context, audioPlayerService);
-                  break;
-                case 'lyrics':
-                  // Implementace pro texty písní
-                  break;
-                case 'add_playlist':
-                  // Implementace pro přidání do playlistu
-                  break;
-                // Další případy podle potřeby
-              }
+    // Add WillPopScope wrapper
+    return WillPopScope(
+      onWillPop: () async {
+        // Collapse the player and return false to prevent default back behavior
+        expandablePlayerController.collapse();
+        return false;
+      },
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
+            onPressed: () {
+              expandablePlayerController.collapse();
             },
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem<String>(
-                value: 'sleep_timer',
-                child: Row(
-                  children: [
-                    Icon(
-                      audioPlayerService.isSleepTimerActive 
-                          ? Icons.timer 
-                          : Icons.timer_outlined,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(width: 12),
-                    Text( AppLocalizations.of(context).translate('sleep_timer'), style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'view_artist',
-                child: Row(
-                  children: [
-                    Icon(Icons.person_outline, color: Colors.white),
-                    SizedBox(width: 12),
-                    Text( AppLocalizations.of(context).translate('view_artist'), style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'lyrics',
-                child: Row(
-                  children: [
-                    Icon(Icons.lyrics_outlined, color: Colors.white),
-                    SizedBox(width: 12),
-                    Text( AppLocalizations.of(context).translate('lyrics'), style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'add_playlist',
-                child: Row(
-                  children: [
-                    Icon(Icons.playlist_add, color: Colors.white),
-                    SizedBox(width: 12),
-                    Text( AppLocalizations.of(context).translate('add_to_playlist'), style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
-              // Další položky menu
-            ],
           ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          _buildBackground(),
-          SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
-              children: [
-                const SizedBox(height: 30),
-                _buildArtworkWithInfo(audioPlayerService),
-                const SizedBox(height: 110),
-                StreamBuilder<Duration?>(
-                  stream: audioPlayerService.audioPlayer.durationStream,
-                  builder: (context, snapshot) {
-                    final duration = snapshot.data ?? Duration.zero;
-                    return StreamBuilder<Duration>(
-                      stream: audioPlayerService.audioPlayer.positionStream,
-                      builder: (context, snapshot) {
-                        var position = snapshot.data ?? Duration.zero;
-                        if (position > duration) {
-                          position = duration;
-                        }
-                        return _buildProgressBar(position, duration, audioPlayerService);
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
-                // Playback Controls
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        audioPlayerService.isShuffle ? Icons.shuffle : Icons.shuffle,
-                        color: audioPlayerService.isShuffle 
-                            ? Colors.white 
-                            : Colors.white.withOpacity(0.7),
-                        size: 24,
+          actions: [
+            _buildSleepTimerIndicator(audioPlayerService),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              color: Colors.grey[900],
+              onSelected: (value) {
+                switch (value) {
+                  case 'sleep_timer':
+                    _showSleepTimerOptions(context);
+                    break;
+                  case 'view_artist':
+                    _showArtistOptions(context, audioPlayerService);
+                    break;
+                  case 'lyrics':
+                    // Implementace pro texty písní
+                    break;
+                  case 'add_playlist':
+                    // Implementace pro přidání do playlistu
+                    break;
+                  // Další případy podle potřeby
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem<String>(
+                  value: 'sleep_timer',
+                  child: Row(
+                    children: [
+                      Icon(
+                        audioPlayerService.isSleepTimerActive 
+                            ? Icons.timer 
+                            : Icons.timer_outlined,
+                        color: Colors.white,
                       ),
-                      onPressed: audioPlayerService.toggleShuffle,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.skip_previous, color: Colors.white, size: 32),
-                      onPressed: audioPlayerService.back,
-                    ),
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.1),
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          audioPlayerService.isPlaying ? Icons.pause : Icons.play_arrow,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                        onPressed: () {
-                          if (audioPlayerService.isPlaying) {
-                            audioPlayerService.pause();
-                          } else {
-                            audioPlayerService.resume();
-                          }
-                        },
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.skip_next, color: Colors.white, size: 32),
-                      onPressed: audioPlayerService.skip,
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        audioPlayerService.isRepeat ? Icons.repeat_one : Icons.repeat,
-                        color: audioPlayerService.isRepeat 
-                            ? Colors.white 
-                            : Colors.white.withOpacity(0.7),
-                        size: 24,
-                      ),
-                      onPressed: audioPlayerService.toggleRepeat,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // Like Button
-                Center(
-                  child: IconButton(
-                    icon: Icon(
-                      audioPlayerService.isLiked(audioPlayerService.currentSong!)
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color: audioPlayerService.isLiked(audioPlayerService.currentSong!)
-                          ? Colors.red
-                          : Colors.white,
-                      size: 30,
-                    ),
-                    onPressed: () {
-                      audioPlayerService.toggleLike(audioPlayerService.currentSong!);
-                    },
+                      const SizedBox(width: 12),
+                      Text( AppLocalizations.of(context).translate('sleep_timer'), style: TextStyle(color: Colors.white)),
+                    ],
                   ),
                 ),
-                _buildLyricsSection(),
-                const SizedBox(height: 100),
-                _buildArtistSection(audioPlayerService),
-                const SizedBox(height: 30),
+                PopupMenuItem<String>(
+                  value: 'view_artist',
+                  child: Row(
+                    children: [
+                      Icon(Icons.person_outline, color: Colors.white),
+                      SizedBox(width: 12),
+                      Text( AppLocalizations.of(context).translate('view_artist'), style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'lyrics',
+                  child: Row(
+                    children: [
+                      Icon(Icons.lyrics_outlined, color: Colors.white),
+                      SizedBox(width: 12),
+                      Text( AppLocalizations.of(context).translate('lyrics'), style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'add_playlist',
+                  child: Row(
+                    children: [
+                      Icon(Icons.playlist_add, color: Colors.white),
+                      SizedBox(width: 12),
+                      Text( AppLocalizations.of(context).translate('add_to_playlist'), style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+                // Další položky menu
               ],
             ),
-          ),
-        ],
+          ],
+        ),
+        body: Stack(
+          children: [
+            _buildBackground(),
+            SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
+                children: [
+                  const SizedBox(height: 30),
+                  _buildArtworkWithInfo(audioPlayerService),
+                  const SizedBox(height: 110),
+                  StreamBuilder<Duration?>(
+                    stream: audioPlayerService.audioPlayer.durationStream,
+                    builder: (context, snapshot) {
+                      final duration = snapshot.data ?? Duration.zero;
+                      return StreamBuilder<Duration>(
+                        stream: audioPlayerService.audioPlayer.positionStream,
+                        builder: (context, snapshot) {
+                          var position = snapshot.data ?? Duration.zero;
+                          if (position > duration) {
+                            position = duration;
+                          }
+                          return _buildProgressBar(position, duration, audioPlayerService);
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // Playback Controls
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          audioPlayerService.isShuffle ? Icons.shuffle : Icons.shuffle,
+                          color: audioPlayerService.isShuffle 
+                              ? Colors.white 
+                              : Colors.white.withOpacity(0.7),
+                          size: 24,
+                        ),
+                        onPressed: audioPlayerService.toggleShuffle,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.skip_previous, color: Colors.white, size: 32),
+                        onPressed: audioPlayerService.back,
+                      ),
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.1),
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            audioPlayerService.isPlaying ? Icons.pause : Icons.play_arrow,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          onPressed: () {
+                            if (audioPlayerService.isPlaying) {
+                              audioPlayerService.pause();
+                            } else {
+                              audioPlayerService.resume();
+                            }
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.skip_next, color: Colors.white, size: 32),
+                        onPressed: audioPlayerService.skip,
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          audioPlayerService.isRepeat ? Icons.repeat_one : Icons.repeat,
+                          color: audioPlayerService.isRepeat 
+                              ? Colors.white 
+                              : Colors.white.withOpacity(0.7),
+                          size: 24,
+                        ),
+                        onPressed: audioPlayerService.toggleRepeat,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Like Button
+                  Center(
+                    child: IconButton(
+                      icon: Icon(
+                        audioPlayerService.isLiked(audioPlayerService.currentSong!)
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: audioPlayerService.isLiked(audioPlayerService.currentSong!)
+                            ? Colors.red
+                            : Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        audioPlayerService.toggleLike(audioPlayerService.currentSong!);
+                      },
+                    ),
+                  ),
+                  _buildLyricsSection(),
+                  const SizedBox(height: 100),
+                  _buildArtistSection(audioPlayerService),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -570,24 +570,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<bool> _onWillPop() async {
+    final expandableController = Provider.of<ExpandablePlayerController>(context, listen: false);
+    
+    // If the player is expanded, collapse it instead of showing exit dialog
+    if (expandableController.isExpanded) {
+      expandableController.collapse();
+      return false;
+    }
+
+    // Otherwise show the exit dialog
     return await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context).translate('exit_app')),
-            content: Text(AppLocalizations.of(context).translate('exit_app_confirm')),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(AppLocalizations.of(context).translate('no')),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(AppLocalizations.of(context).translate('yes')),
-              ),
-            ],
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context).translate('exit_app')),
+        content: Text(AppLocalizations.of(context).translate('exit_app_confirm')),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppLocalizations.of(context).translate('no')),
           ),
-        ) ??
-        false;
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(AppLocalizations.of(context).translate('yes')),
+          ),
+        ],
+      ),
+    ) ?? false;
   }
 
   @override

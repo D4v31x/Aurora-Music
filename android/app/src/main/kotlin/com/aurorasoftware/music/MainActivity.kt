@@ -1,4 +1,4 @@
-package com.aurorasoftware.aurora_music
+package com.aurorasoftware.music
 
 import io.flutter.embedding.android.FlutterActivity
 
