@@ -142,126 +142,140 @@ Map<String, dynamic> processErrorsForAppwrite(List<ErrorRecord> errors) {
 
 // Update the syncUserData function to use the new error processing
 Future<void> syncUserData() async {
+  
   if (currentUserId == null) {
-
+    
     return;
   }
 
   try {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String appVersion = packageInfo.version;
-    String buildNumber = packageInfo.buildNumber;
-    String fullVersion = '$appVersion+$buildNumber';
-
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    
+    // Prepare device info variables
     String? deviceModel;
-    String? androidVersion;
+    String? osVersion;
     String? manufacturer;
 
+    // Get device-specific information
     if (Platform.isAndroid) {
-      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      final androidInfo = await deviceInfo.androidInfo;
       deviceModel = androidInfo.model;
-      androidVersion = androidInfo.version.release;
+      osVersion = androidInfo.version.release;
       manufacturer = androidInfo.manufacturer;
     } else if (Platform.isIOS) {
-      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      final iosInfo = await deviceInfo.iosInfo;
       deviceModel = iosInfo.utsname.machine;
+      osVersion = iosInfo.systemVersion;
       manufacturer = 'Apple';
     }
 
+    
     final errorTracker = ErrorTrackingService();
     final pendingErrors = await errorTracker.loadPendingErrors();
-
-    // Process errors to fit Appwrite's limitations
     final processedErrorData = processErrorsForAppwrite(pendingErrors);
 
-    String lastOpened = DateTime.now().toIso8601String();
     final documentId = 'user_$currentUserId';
+    
+    
+    // Add null checks for environment variables
+    final databaseId = dotenv.env['APPWRITE_DATABASE_ID'];
+    final collectionId = dotenv.env['APPWRITE_COLLECTION_ID'];
+    
+    if (databaseId == null || collectionId == null) {
+      
+      
+      
+      return;
+    }
+
+    // Prepare document data
+    final Map<String, dynamic> documentData = {
+      'user_id': currentUserId,
+      'app_version': packageInfo.version,
+      'build_number': packageInfo.buildNumber,
+      'full_version': '${packageInfo.version}+${packageInfo.buildNumber}',
+      'device_model': deviceModel ?? 'Unknown',
+      'manufacturer': manufacturer ?? 'Unknown',
+      'os_version': osVersion ?? 'Unknown',
+      'last_opened': DateTime.now().toIso8601String(),
+      'error_count': processedErrorData['error_count'],
+      'recent_errors': processedErrorData['recent_errors'],
+      'last_error_time': processedErrorData['last_error_time'],
+    };
 
     try {
+      
       await databases.createDocument(
-        databaseId: dotenv.env['APPWRITE_DATABASE_ID']!,
-        collectionId: dotenv.env['APPWRITE_COLLECTION_ID']!,
+        databaseId: databaseId,
+        collectionId: collectionId,
         documentId: documentId,
-        data: {
-          'user_id': currentUserId,
-          'app_version': appVersion,
-          'build_number': buildNumber,
-          'full_version': fullVersion,
-          'device_model': deviceModel ?? 'Unknown',
-          'manufacturer': manufacturer ?? 'Unknown',
-          'android_version': androidVersion ?? 'Unknown',
-          'last_opened': lastOpened,
-          'error_count': processedErrorData['error_count'],
-          'recent_errors': processedErrorData['recent_errors'],
-          'last_error_time': processedErrorData['last_error_time'],
-        },
+        data: documentData,
         permissions: [
           Permission.read(Role.user(currentUserId!)),
           Permission.write(Role.user(currentUserId!)),
         ],
       );
-
-      await errorTracker.clearPendingErrors();
-
+      
     } catch (e) {
-      if (e is AppwriteException && e.code == 409) {
-        try {
-          await databases.updateDocument(
-            databaseId: dotenv.env['APPWRITE_DATABASE_ID']!,
-            collectionId: dotenv.env['APPWRITE_COLLECTION_ID']!,
-            documentId: documentId,
-            data: {
-              'app_version': appVersion,
-              'build_number': buildNumber,
-              'full_version': fullVersion,
-              'device_model': deviceModel ?? 'Unknown',
-              'manufacturer': manufacturer ?? 'Unknown',
-              'android_version': androidVersion ?? 'Unknown',
-              'last_opened': lastOpened,
-              'error_count': processedErrorData['error_count'],
-              'recent_errors': processedErrorData['recent_errors'],
-              'last_error_time': processedErrorData['last_error_time'],
-            },
-          );
-
-          await errorTracker.clearPendingErrors();
-        } catch (updateError) {
-
+      if (e is AppwriteException) {
+        
+        if (e.code == 409) {
+          
+          try {
+            await databases.updateDocument(
+              databaseId: databaseId,
+              collectionId: collectionId,
+              documentId: documentId,
+              data: documentData,
+            );
+            
+          } catch (updateError) {
+            
+            return;
+          }
         }
       } else {
-
+        
+        return;
       }
     }
-  } catch (e) {
 
+    // Clear errors after successful sync
+    await errorTracker.clearPendingErrors();
+    
+
+  } catch (e) {
+    
   }
 }
 
 void main() async {
   try {
-
+    
 
     // Create error tracking instance
     final errorTracker = ErrorTrackingService();
-
+    
 
     // Set up Flutter error handling
     FlutterError.onError = (FlutterErrorDetails details) async {
-
+      
       FlutterError.dumpErrorToConsole(details);
       await errorTracker.recordError(details.exception, details.stack);
     };
 
-
     WidgetsFlutterBinding.ensureInitialized();
-
+    
 
     await dotenv.load(fileName: ".env");
-
+    
+    
+    
 
     // Initialize Appwrite
-
+    
     client = Client()
       ..setEndpoint(dotenv.env['APPWRITE_ENDPOINT']!)
       ..setProject(dotenv.env['APPWRITE_PROJECT_ID']!)
@@ -269,36 +283,41 @@ void main() async {
 
     account = Account(client);
     databases = Databases(client);
-
+    
 
     // Create anonymous session
     try {
-
+      
       final session = await account.createAnonymousSession();
       currentUserId = session.userId;
+      
 
     } catch (e) {
-
+      
       if (e is AppwriteException && e.code == 401) {
         try {
+          
           final session = await account.getSession(sessionId: 'current');
           currentUserId = session.userId;
-
+          
         } catch (sessionError) {
-
+          
         }
       }
     }
 
+    // Add sync call after anonymous session creation
+    if (currentUserId != null) {
+      
+      await syncUserData();
+    } else {
+      
+    }
 
     await RiveFile.initialize();
 
-
-
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? languageCode = prefs.getString('languageCode') ?? 'en';
-
-
 
     await JustAudioBackground.init(
       androidNotificationChannelId: 'com.example.aurora_music.channel.audio',
@@ -306,17 +325,13 @@ void main() async {
       androidNotificationOngoing: true,
     );
 
-
-
     runApp(
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) {
-
             return AudioPlayerService();
           }),
           ChangeNotifierProvider(create: (context) {
-
             return ExpandablePlayerController();
           }),
           ChangeNotifierProvider(create: (context) => ThemeProvider()),
@@ -330,8 +345,6 @@ void main() async {
     );
 
   } catch (e, stack) {
-
-
     final errorTracker = ErrorTrackingService();
     await errorTracker.recordError(e, stack);
     rethrow;
@@ -400,7 +413,6 @@ class _MyAppState extends State<MyApp> {
         ],
         home: Builder(
           builder: (context) {
-
             return const SplashScreen();
           },
         ),

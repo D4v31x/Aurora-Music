@@ -212,7 +212,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
       await Future.delayed(const Duration(milliseconds: 100));
     } catch (e) {
-      print('Error loading app data: $e');
+      
     }
   }
 
@@ -263,7 +263,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         await precacheImage(AssetImage(image), context);
       }
     } catch (e) {
-      print('Error preloading images: $e');
+      
     }
   }
 
