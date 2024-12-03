@@ -320,7 +320,7 @@ void main() async {
     String? languageCode = prefs.getString('languageCode') ?? 'en';
 
     await JustAudioBackground.init(
-      androidNotificationChannelId: 'com.example.aurora_music.channel.audio',
+      androidNotificationChannelId: 'com.aurorasoftware.music.channel.audio',
       androidNotificationChannelName: 'Audio playback',
       androidNotificationOngoing: true,
     );
@@ -391,16 +391,8 @@ class _MyAppState extends State<MyApp> {
         debugShowCheckedModeBanner: false,
         locale: _locale,
         themeMode: themeProvider.themeMode,
-        theme: ThemeData(
-          brightness: Brightness.light,
-          primarySwatch: Colors.blue,
-          // Define other light theme properties
-        ),
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          primarySwatch: Colors.blue,
-          // Define other dark theme properties
-        ),
+        theme: themeProvider.lightTheme,
+        darkTheme: themeProvider.darkTheme,
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

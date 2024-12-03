@@ -15,12 +15,14 @@ import 'package:permission_handler/permission_handler.dart' as permissionhandler
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/playlist_model.dart';
 import '../models/utils.dart';
 import '../services/Audio_Player_Service.dart';
 import '../localization/locale_provider.dart';
 import '../localization/app_localizations.dart';
 import '../services/spotify_service.dart';
+import '../widgets/changelog_dialog.dart';
 import '../widgets/expandable_bottom.dart';
 import 'AlbumDetailScreen.dart';
 import 'Artist_screen.dart';
@@ -36,24 +38,16 @@ import '../services/local_caching_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/expandable_player_controller.dart';
 import '../widgets/artist_card.dart';
-import '../widgets/library_tab.dart'; // Import the new LibraryTab widget
+import '../widgets/library_tab.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:aurora_music_v01/providers/theme_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class ThemeProvider with ChangeNotifier {
-  bool _isDarkMode = false;
-
-  bool get isDarkMode => _isDarkMode;
-
-  void toggleTheme() {
-    _isDarkMode = !_isDarkMode;
-    notifyListeners();
-  }
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
@@ -103,6 +97,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _isShowingNotification = false;
   late final ScrollController _appBarTextController;
   bool _isTabBarScrolled = false;
+  bool _hasShownChangelog = false;
+  String _currentVersion = '';
+  final NotificationManager _notificationManager = NotificationManager();
 
   @override
   void initState() {
@@ -176,10 +173,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     checkForNewVersion();
 
-    // Show welcome back message after a short delay
+    // Show welcome message after startup
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
-        showAppBarMessage(AppLocalizations.of(context).translate('welcome_back'));
+        _notificationManager.showNotification(
+          AppLocalizations.of(context).translate('welcome_back'),
+          duration: const Duration(seconds: 3),
+          onComplete: () => _notificationManager.showDefaultTitle(),
+        );
       }
     });
 
@@ -192,6 +193,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         });
       }
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowChangelog();
+    });
+
+    _loadVersionInfo();
+  }
+
+  Future<void> _loadVersionInfo() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _currentVersion = packageInfo.version;
+    });
+  }
+
+  Future<void> _checkAndShowChangelog() async {
+    if (_hasShownChangelog) return;
+    
+    final prefs = await SharedPreferences.getInstance();
+    final lastVersion = prefs.getString('last_version') ?? '';
+    
+    if (lastVersion != _currentVersion) {
+      await prefs.setString('last_version', _currentVersion);
+      if (mounted) {
+        _showChangelogDialog();
+        _hasShownChangelog = true;
+      }
+    }
   }
 
   Future<List<SongModel>> _processSongsInBackground(List<SongModel> songs) async {
@@ -260,7 +289,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-  void showAppBarMessage(String message, {Duration duration = const Duration(seconds: 3)}) {
+  void showAppBarMessage(String message, {Duration duration = const Duration(seconds: 8)}) {
     enqueueAppBarMessage(message, duration: duration);
   }
 
@@ -276,6 +305,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _searchFocusNode.dispose();
     Provider.of<AudioPlayerService>(context, listen: false).removeListener(_updateCurrentSong);
     _appBarTextController.dispose();
+    _notificationManager.dispose();
     super.dispose();
   }
 
@@ -415,7 +445,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             TextButton(
               onPressed: () async {
                 Navigator.pop(context);
-                await launchUrl(Uri.parse('https://github.com/D4v31x/Aurora-Music_ALPHA_RELEASES/releases/latest'));
+                await launchUrl(Uri.parse('https://github.com/D4v31x/Aurora-Music/releases/latest'));
               },
               child: Text(AppLocalizations.of(context).translate('update_now')),
             ),
@@ -432,19 +462,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _isScanning = true;
       _scannedSongs = 0;
       _totalSongs = 0;
-      appBarMessage = AppLocalizations.of(context).translate('preparing_to_scan');
     });
 
-    await Future.delayed(const Duration(seconds: 1));
+    _notificationManager.showNotification(
+      AppLocalizations.of(context).translate('scanning_songs'),
+      isProgress: true,
+    );
 
     try {
       final onAudioQuery = OnAudioQuery();
       final allSongs = await onAudioQuery.querySongs();
       _totalSongs = allSongs.length;
-
-      setState(() {
-        appBarMessage = '${AppLocalizations.of(context).translate('scanning_songs')} (0/$_totalSongs)';
-      });
 
       for (var song in allSongs) {
         await audioPlayerService.addSongToLibrary(song);
@@ -452,7 +480,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
         setState(() {
           _scannedSongs++;
-          appBarMessage = '${AppLocalizations.of(context).translate('scanning_songs')} ($_scannedSongs/$_totalSongs)';
         });
       }
 
@@ -460,27 +487,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         songs = allSongs;
         _randomizeContent();
         _isScanning = false;
-        appBarMessage = '${AppLocalizations.of(context).translate('library_updated')} ($_totalSongs ${AppLocalizations.of(context).translate('songs_loaded')})';
       });
+
+      _notificationManager.showNotification(
+        '${AppLocalizations.of(context).translate('library_updated')} ($_totalSongs ${AppLocalizations.of(context).translate('songs_loaded')})',
+        duration: const Duration(seconds: 5),
+        onComplete: () => _notificationManager.showDefaultTitle(),
+      );
 
       await audioPlayerService.saveLibrary();
 
-      await Future.delayed(const Duration(seconds: 5));
-
-      setState(() {
-        appBarMessage = '';
-      });
     } catch (e) {
       setState(() {
         _isScanning = false;
-        appBarMessage = AppLocalizations.of(context).translate('update_failed');
       });
-
-      await Future.delayed(const Duration(seconds: 5));
-
-      setState(() {
-        appBarMessage = '';
-      });
+      
+      _notificationManager.showNotification(
+        AppLocalizations.of(context).translate('scan_failed'),
+        duration: const Duration(seconds: 5),
+        onComplete: () => _notificationManager.showDefaultTitle(),
+      );
     }
   }
 
@@ -601,7 +627,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    isDarkMode = themeProvider.isDarkMode;
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
     _updateBackgroundImage(audioPlayerService.currentSong);
   }
@@ -674,34 +701,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget buildSettingsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0).copyWith(bottom: currentSong != null ? 90.0 : 30.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocalizations.of(context).translate('settings'),
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 20.0),
-          buildSettingsCategory(
-            title: AppLocalizations.of(context).translate('general'),
-            children: [
-              buildLanguageSelector(),
-              const SizedBox(height: 10.0),
-              buildManualUpdateCheck(),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget buildSettingsCategory({required String title, required List<Widget> children}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -721,6 +720,88 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  Widget buildThemeSelector() {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return glassmorphicContainer(
+          child: ListTile(
+            title: Text(
+              AppLocalizations.of(context).translate('theme'),
+              style: const TextStyle(color: Colors.white),
+            ),
+            trailing: Switch(
+              value: themeProvider.isDarkMode,
+              onChanged: (value) {
+                themeProvider.toggleTheme();
+                setState(() {
+                  isDarkMode = value;
+                  _updateBackgroundImage(Provider.of<AudioPlayerService>(context, listen: false).currentSong);
+                });
+              },
+              activeColor: Colors.white,
+              inactiveTrackColor: Colors.white.withOpacity(0.3),
+            ),
+            subtitle: Text(
+              themeProvider.isDarkMode 
+                  ? AppLocalizations.of(context).translate('dark_mode')
+                  : AppLocalizations.of(context).translate('light_mode'),
+              style: TextStyle(color: Colors.white.withOpacity(0.7)),
+          ),
+        ));
+      },
+    );
+  }
+
+  Widget buildSettingsTab() {
+    final codename = dotenv.env['CODE_NAME'] ?? 'Unknown';
+    
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0)
+          .copyWith(bottom: currentSong != null ? 90.0 : 30.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppLocalizations.of(context).translate('settings'),
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 20.0),
+          buildSettingsCategory(
+            title: AppLocalizations.of(context).translate('general'),
+            children: [
+              buildThemeSelector(),
+              const SizedBox(height: 10.0),
+              buildLanguageSelector(),
+              const SizedBox(height: 10.0),
+              buildManualUpdateCheck(),
+              const SizedBox(height: 10.0),
+              glassmorphicContainer(
+                child: ListTile(
+                  title: Text(
+                    AppLocalizations.of(context).translate('show_changelog'),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  trailing: const Icon(Icons.new_releases_outlined, color: Colors.white),
+                  onTap: () {
+                    _showChangelogDialog();
+                  },
+                  subtitle: Text(
+                    'Version $_currentVersion ($codename)',
+                    style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buildManualUpdateCheck() {
     return glassmorphicContainer(
       child: ListTile(
@@ -730,20 +811,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         trailing: const Icon(Icons.system_update, color: Colors.white),
         onTap: () async {
-          showAppBarMessage(
+          _notificationManager.showNotification(
             AppLocalizations.of(context).translate('checking_for_updates'),
+            duration: const Duration(seconds: 2),
           );
 
           VersionCheckResult result = await checkForNewVersion();
 
           if (result.isUpdateAvailable && result.latestVersion != null) {
-            showAppBarMessage(
+            _notificationManager.showNotification(
               AppLocalizations.of(context).translate('update_found'),
+              duration: const Duration(seconds: 3),
+              onComplete: () {
+                _showUpdateAvailableDialog(result.latestVersion!);
+                _notificationManager.showDefaultTitle();
+              },
             );
-            _showUpdateAvailableDialog(result.latestVersion!);
           } else {
-            showAppBarMessage(
+            _notificationManager.showNotification(
               AppLocalizations.of(context).translate('no_update_found'),
+              duration: const Duration(seconds: 3),
+              onComplete: () => _notificationManager.showDefaultTitle(),
             );
           }
         },
@@ -872,7 +960,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ArtistDetailsScreen(artistName: artist),
+                        builder: (context) => ArtistDetailsScreen(
+                          artistName: artist,
+                          artistImagePath: null,
+                        ),
                       ),
                     );
                   }
@@ -1540,20 +1631,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void checkForUpdates() async {
-    showAppBarMessage(
+    _notificationManager.showNotification(
       AppLocalizations.of(context).translate('checking_for_updates'),
+      duration: const Duration(seconds: 2),
     );
 
     VersionCheckResult result = await checkForNewVersion();
 
     if (result.isUpdateAvailable && result.latestVersion != null) {
-      showAppBarMessage(
+      _notificationManager.showNotification(
         AppLocalizations.of(context).translate('update_found'),
+        duration: const Duration(seconds: 3),
+        onComplete: () {
+          _showUpdateAvailableDialog(result.latestVersion!);
+          _notificationManager.showDefaultTitle();
+        },
       );
-      _showUpdateAvailableDialog(result.latestVersion!);
     } else {
-      showAppBarMessage(
+      _notificationManager.showNotification(
         AppLocalizations.of(context).translate('no_update_found'),
+        duration: const Duration(seconds: 3),
+        onComplete: () => _notificationManager.showDefaultTitle(),
       );
     }
   }
@@ -1572,29 +1670,55 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget buildAppBarTitle() {
-    return SizedBox(
-      height: 40,
-      child: appBarMessage.isNotEmpty
-          ? AutoScrollText(
-              text: appBarMessage,
-              style: const TextStyle(
-                fontFamily: 'ProductSans',
-                fontStyle: FontStyle.normal,
-                color: Colors.white,
-                fontSize: 34,
-                fontWeight: FontWeight.bold,
-              ),
-            )
-          : Text(
-              AppLocalizations.of(context).translate('aurora_music'),
-              style: const TextStyle(
-                fontFamily: 'ProductSans',
-                fontStyle: FontStyle.normal,
-                color: Colors.white,
-                fontSize: 34,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+    return StreamBuilder<String>(
+      stream: _notificationManager.notificationStream,
+      initialData: '',
+      builder: (context, snapshot) {
+        final message = snapshot.data ?? '';
+        
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: message.isEmpty
+              ? Text(
+                  AppLocalizations.of(context).translate('aurora_music'),
+                  key: const ValueKey('default'),
+                  style: const TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: Colors.white,
+                    fontSize: 34,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
+              : AutoScrollText(
+                  key: ValueKey(message),
+                  text: message,
+                  style: const TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: Colors.white,
+                    fontSize: 34,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  onMessageComplete: (message) => _notificationManager.showDefaultTitle(),
+                ),
+        );
+      },
+    );
+  }
+
+  void _showChangelogDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => ChangelogDialog(
+        currentVersion: _currentVersion,
+      ),
+    );
+  }
+
+  void updateScanningProgress(int current, int total) {
+    _notificationManager.showNotification(
+      AppLocalizations.of(context).translate('scanning_songs'),
+      isProgress: true,
     );
   }
 
@@ -1713,11 +1837,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 class AutoScrollText extends StatefulWidget {
   final String text;
   final TextStyle style;
+  final Function(String) onMessageComplete;
 
   const AutoScrollText({
     Key? key,
     required this.text,
     required this.style,
+    required this.onMessageComplete,
   }) : super(key: key);
 
   @override
@@ -1726,60 +1852,153 @@ class AutoScrollText extends StatefulWidget {
 
 class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
-  bool _shouldScroll = false;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+  String _displayedText = '';
+  Timer? _messageTimer;
+  bool _isAnimating = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _displayedText = widget.text;
+    
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
+
+    _fadeController.forward();
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        final maxScroll = _scrollController.position.maxScrollExtent;
-        if (maxScroll > 0) {
-          _shouldScroll = true;
-          _startScrolling();
-        }
+      _startMessageTimer();
+      _startScrollIfNeeded();
+    });
+  }
+
+  void _startScrollIfNeeded() {
+    if (!mounted || !_scrollController.hasClients) return;
+
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    if (maxScroll <= 0) return;
+
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      _startScrolling();
+    });
+  }
+
+  void _startScrolling() {
+    if (!mounted || _isAnimating) return;
+    _isAnimating = true;
+
+    const baseDuration = 3000;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    
+    _scrollController.animateTo(
+      maxScroll,
+      duration: Duration(milliseconds: baseDuration),
+      curve: Curves.linear,
+    ).then((_) {
+      return Future.delayed(const Duration(milliseconds: 500));
+    }).then((_) {
+      if (!mounted) {
+      return _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+      );
+      }
+    }).then((_) {
+      if (!mounted) return;
+      _isAnimating = false;
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        if (mounted) _startScrolling();
+      });
+    });
+  }
+
+  void _startMessageTimer() {
+    if (!mounted) return;
+    
+    final bool isScanningMessage = _isScanningMessage();
+    if (isScanningMessage) return;
+    
+    _messageTimer?.cancel();
+    _messageTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted) {
+        _fadeToNextMessage();
       }
     });
   }
 
-  void _startScrolling() async {
-    while (_shouldScroll && mounted) {
-      await Future.delayed(const Duration(seconds: 1));
-      if (_scrollController.hasClients) {
-        await _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(seconds: 3),
-          curve: Curves.easeInOut,
+  bool _isScanningMessage() {
+    if (!mounted) return false;
+    return widget.text.contains(
+      AppLocalizations.of(context).translate('scanning_songs'),
+    );
+  }
+
+  void _fadeToNextMessage() {
+    if (!mounted) return;
+    _fadeController.reverse().then((_) {
+      if (mounted) {
+        widget.onMessageComplete(
+          AppLocalizations.of(context).translate('aurora_music')
         );
-        await Future.delayed(const Duration(seconds: 1));
-        if (_scrollController.hasClients) {
-          await _scrollController.animateTo(
-            0.0,
-            duration: const Duration(seconds: 3),
-            curve: Curves.easeInOut,
-          );
-        }
       }
+    });
+  }
+
+  @override
+  void didUpdateWidget(AutoScrollText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    if (oldWidget.text != widget.text) {
+      setState(() => _displayedText = widget.text);
+      
+      if (!_isScanningMessage()) {
+        _fadeController.forward();
+      }
+      
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+      _isAnimating = false;
+      _startScrollIfNeeded();
+      _startMessageTimer();
     }
   }
 
   @override
   void dispose() {
-    _shouldScroll = false;
+    _messageTimer?.cancel();
     _scrollController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      controller: _scrollController,
-      physics: const NeverScrollableScrollPhysics(),
-      child: Text(
-        widget.text,
-        style: widget.style,
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        controller: _scrollController,
+        physics: const NeverScrollableScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            _displayedText,
+            style: widget.style,
+            maxLines: 1,
+          ),
+        ),
       ),
     );
   }
@@ -1790,4 +2009,48 @@ class VersionCheckResult {
   final Version? latestVersion;
 
   VersionCheckResult({required this.isUpdateAvailable, this.latestVersion});
+}
+
+class NotificationManager {
+  String _currentNotification = '';
+  Timer? _notificationTimer;
+  final StreamController<String> _notificationController = StreamController<String>.broadcast();
+  bool _isShowingProgress = false;
+
+  Stream<String> get notificationStream => _notificationController.stream;
+
+  void showNotification(
+    String message, {
+    Duration duration = const Duration(seconds: 3),
+    bool isProgress = false,
+    VoidCallback? onComplete,
+  }) {
+    if (isProgress && _isShowingProgress) {
+      _currentNotification = message;
+      _notificationController.add(message);
+      return;
+    }
+
+    _notificationTimer?.cancel();
+    _isShowingProgress = isProgress;
+    _currentNotification = message;
+    _notificationController.add(message);
+
+    if (!isProgress) {
+      _notificationTimer = Timer(duration, () {
+        onComplete?.call();
+      });
+    }
+  }
+
+  void showDefaultTitle() {
+    _isShowingProgress = false;
+    _currentNotification = '';
+    _notificationController.add('');
+  }
+
+  void dispose() {
+    _notificationTimer?.cancel();
+    _notificationController.close();
+  }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rive/rive.dart' as rive;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';  // Import this for ImageFilter
 import '../services/Audio_Player_Service.dart';
 import '../services/artwork_cache_service.dart';
@@ -150,6 +151,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           _isDataLoaded = true;
           _checkAndTransition();
         });
+        await _checkOnboardingStatus();
+
       }
     } catch (e) {
       
@@ -518,5 +521,29 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         ],
       ),
     );
+  }
+
+  Future<void> _checkOnboardingStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+    
+    if (!onboardingCompleted && mounted) {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const WelcomeScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+        ),
+      );
+      return;
+    }
+    
+    // If onboarding is completed, continue with your existing navigation logic
+    _checkAndTransition();
   }
 }

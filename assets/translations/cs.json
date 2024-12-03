@@ -95,5 +95,15 @@
   "set_minutes": "Vyberte počet minut",
   "select_artist": "Vyberte umělce",
   "no_artist_info": "Informace o umělci nejsou k dispozici",
-  "no_update_found": "Nebyla nalezena žádná aktualizace"
+  "no_update_found": "Nebyla nalezena žádná aktualizace",
+  "privacy_notice": "Používáním této aplikace souhlasíte s našimi Zásadami ochrany osobních údajů.",
+  "privacy_policy_link": "Přečtěte si naše Zásady ochrany osobních údajů",
+  "whats_new": "Co je nového (v angličtině)",
+  "got_it": "Rozumím!",
+  "show_changelog": "Zobrazit seznam změn",
+  "general": "Základní",
+  "set": "Nastavit",
+  "theme": "Téma",
+  "light_mode": "Světlý režim",
+  "dark_mode": "Tmavý režim"
 }

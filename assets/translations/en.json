@@ -103,5 +103,15 @@
   "set_minutes": "Set minutes",
   "select_artist": "Select artist",
   "no_artist_info": "Artist info not available",
-  "no_update_found": "No update found"
+  "no_update_found": "No update found",
+  "privacy_notice": "By continuing to use this app, you agree to our Privacy Policy.",
+  "privacy_policy_link": "Read our Privacy Policy",
+  "whats_new": "What's New",
+  "got_it": "Got it!",
+  "show_changelog": "Show Changelog",
+  "general": "General",
+  "set": "Set",
+  "theme": "Theme",
+  "light_mode": "Light Mode",
+  "dark_mode": "Dark Mode"
 }

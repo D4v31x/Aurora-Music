@@ -2,26 +2,32 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../widgets/aurora_background.dart';
-import '../widgets/alpha_badge.dart';
-import 'onboarding/language_selection.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../widgets/aurora_background.dart';
+import '../home_screen.dart';
 
-class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({super.key});
+class FinalScreen extends StatelessWidget {
+  const FinalScreen({super.key});
 
-  void _navigateToLanguageSelection(BuildContext context) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const LanguageSelectionScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-      ),
-    );
+  Future<void> _navigateToHome(BuildContext context) async {
+    // Mark onboarding as completed
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_completed', true);
+    
+    if (context.mounted) {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const HomeScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+        ),
+      );
+    }
   }
 
   @override
@@ -35,27 +41,30 @@ class WelcomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Spacer(),
-                    const AlphaBadge(),
-                    const SizedBox(height: 48),
+                    const Spacer(flex: 2),
+                    const Icon(
+                      Icons.celebration_outlined,
+                      size: 64,
+                      color: Colors.white,
+                    ).animate().scale(delay: 400.ms),
+                    const SizedBox(height: 24),
                     Text(
-                      'Welcome to Aurora Music',
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      "You're All Set!",
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
-                    ).animate().fadeIn(duration: 800.ms),
+                    ).animate().fadeIn(duration: 600.ms),
                     const SizedBox(height: 16),
                     Text(
-                      "Let's set up your music experience.",
+                      'Dive into Aurora and enjoy your music!',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.white70,
                       ),
                       textAlign: TextAlign.center,
-                    ).animate().fadeIn(delay: 400.ms),
+                    ).animate().fadeIn(delay: 200.ms),
                     const SizedBox(height: 48),
                     Container(
                       width: double.infinity,
@@ -73,7 +82,7 @@ class WelcomeScreen extends StatelessWidget {
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                           child: ElevatedButton(
-                            onPressed: () => _navigateToLanguageSelection(context),
+                            onPressed: () => _navigateToHome(context),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,
                               foregroundColor: Colors.white,
@@ -83,7 +92,7 @@ class WelcomeScreen extends StatelessWidget {
                               ),
                             ),
                             child: const Text(
-                              'Get Started',
+                              'Start Listening',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -93,20 +102,7 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                       ),
                     ).animate().scale(delay: 800.ms),
-                    const SizedBox(height: 24),
-                    TextButton(
-                      onPressed: () {
-                        // TODO: Implement privacy policy link
-                      },
-                      child: Text(
-                        'By continuing, you agree to our Privacy Policy',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white70,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const Spacer(),
+                    const Spacer(flex: 3),
                   ],
                 ),
               ),
