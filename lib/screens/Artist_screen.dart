@@ -171,41 +171,46 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   )
                 : null,
             background: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 70),
-                Hero(
-
-                  tag: 'artist_image_${widget.artistName}',
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(25),
-                    child: artistImagePath != null
-                        ? Image.file(
-                            File(artistImagePath),
-                            fit: BoxFit.cover,
-                            width: 200,
-                            height: 200,
-                          )
-                        : Image.asset(
-                            'assets/images/logo/default_art.png',
-                            fit: BoxFit.cover,
-                            width: 200,
-                            height: 200,
-                          ),
-                  ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(25),
+                  child: artistImagePath != null
+                      ? Image.file(
+                          File(artistImagePath),
+                          fit: BoxFit.cover,
+                          width: 200,
+                          height: 200,
+                        )
+                      : Image.asset(
+                          'assets/images/logo/default_art.png',
+                          fit: BoxFit.cover,
+                          width: 200,
+                          height: 200,
+                        ),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  widget.artistName,
-                  style: const TextStyle(
-                    fontFamily: 'ProductSans',
-                    fontStyle: FontStyle.normal,
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    widget.artistName,
+                    style: const TextStyle(
+                      fontFamily: 'ProductSans',
+                      fontStyle: FontStyle.normal,
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

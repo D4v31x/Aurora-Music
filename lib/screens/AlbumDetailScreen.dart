@@ -226,6 +226,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
+                      textAlign: TextAlign.center,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 );

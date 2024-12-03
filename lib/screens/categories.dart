@@ -6,7 +6,9 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../services/Audio_Player_Service.dart';
 import '../widgets/glassmorphic_container.dart';
+import 'Artist_screen.dart';
 import 'FolderDetail_screen.dart';
+import 'AlbumDetailScreen.dart';
 
 class AlbumsScreen extends StatelessWidget {
   const AlbumsScreen({super.key});
@@ -14,7 +16,12 @@ class AlbumsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
-    final albumsFuture = audioPlayerService.getMostPlayedAlbums();
+    final albumsFuture = OnAudioQuery().queryAlbums(
+      sortType: AlbumSortType.ALBUM,
+      orderType: OrderType.ASC_OR_SMALLER,
+      uriType: UriType.EXTERNAL,
+      ignoreCase: true,
+    );
 
     return Hero(
       tag: 'albums_screen',
@@ -41,7 +48,9 @@ class AlbumsScreen extends StatelessWidget {
                       child: GridView.builder(
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 1,
+                          childAspectRatio: 0.8,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
                         ),
                         itemCount: albums.length,
                         itemBuilder: (context, index) {
@@ -52,25 +61,63 @@ class AlbumsScreen extends StatelessWidget {
                             duration: const Duration(milliseconds: 375),
                             child: ScaleAnimation(
                               child: FadeInAnimation(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: glassmorphicContainer(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        QueryArtworkWidget(
-                                          id: album.id,
-                                          type: ArtworkType.ALBUM,
-                                          nullArtworkWidget: const Icon(Icons.album),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AlbumDetailScreen(
+                                          albumName: album.album,
                                         ),
-                                        const SizedBox(height: 10),
-                                        Text(
-                                          album.album,
-                                          style: const TextStyle(color: Colors.white),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
+                                      ),
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: glassmorphicContainer(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            height: 100,
+                                            width: 100,
+                                            child: QueryArtworkWidget(
+                                              id: album.id,
+                                              type: ArtworkType.ALBUM,
+                                              artworkQuality: FilterQuality.high,
+                                              artworkBorder: BorderRadius.circular(10),
+                                              nullArtworkWidget: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white24,
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.album,
+                                                  color: Colors.white,
+                                                  size: 50,
+                                                ),
+                                              ),
+                                              keepOldArtwork: true,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Flexible(
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                              child: Text(
+                                                album.album,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                ),
+                                                maxLines: 2,
+                                                textAlign: TextAlign.center,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -153,7 +200,12 @@ class ArtistsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
-    final artistsFuture = audioPlayerService.getMostPlayedArtists();
+    final artistsFuture = OnAudioQuery().queryArtists(
+      sortType: ArtistSortType.ARTIST,
+      orderType: OrderType.ASC_OR_SMALLER,
+      uriType: UriType.EXTERNAL,
+      ignoreCase: true,
+    );
 
     return Hero(
       tag: 'artists_screen',
@@ -191,15 +243,37 @@ class ArtistsScreen extends StatelessWidget {
                                   padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                                   child: glassmorphicContainer(
                                     child: ListTile(
-                                      leading: CircleAvatar(
-                                        child: Text(artist.artist[0]),
+                                      leading: SizedBox(
+                                        width: 40,
+                                        height: 40,
+                                        child: CircleAvatar(
+                                          backgroundColor: Colors.white24,
+                                          child: Text(
+                                            artist.artist.isNotEmpty ? artist.artist[0].toUpperCase() : '?',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                       title: Text(
                                         artist.artist,
                                         style: const TextStyle(color: Colors.white),
                                       ),
+                                      subtitle: Text(
+                                        '${artist.numberOfTracks} tracks',
+                                        style: const TextStyle(color: Colors.grey),
+                                      ),
                                       onTap: () {
-                                        // Implement artist view functionality
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ArtistDetailsScreen(
+                                              artistName: artist.artist,
+                                            ),
+                                          ),
+                                        );
                                       },
                                     ),
                                   ),
@@ -283,7 +357,7 @@ class FoldersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
-    final folders = audioPlayerService.getThreeFolders();
+    final foldersFuture = OnAudioQuery().queryAllPath();
 
     return Hero(
       tag: 'folders_screen',
@@ -295,40 +369,60 @@ class FoldersScreen extends StatelessWidget {
             Scaffold(
               backgroundColor: Colors.transparent,
               appBar: buildAppBar(context, 'Folders'),
-              body: ListView.builder(
-                itemCount: folders.length,
-                itemBuilder: (context, index) {
-                  final folder = folders[index];
-                  return AnimationConfiguration.staggeredList(
-                    position: index,
-                    duration: const Duration(milliseconds: 375),
-                    child: SlideAnimation(
-                      verticalOffset: 50.0,
-                      child: FadeInAnimation(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                          child: glassmorphicContainer(
-                            child: ListTile(
-                              leading: const Icon(Icons.folder, color: Colors.white),
-                              title: Text(
-                                folder.split('/').last,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => FolderDetailScreen(
-                                      folderPath: folder,
-                                    ),
+              body: FutureBuilder<List<String>>(
+                future: foldersFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No folders found'));
+                  }
+
+                  final folders = snapshot.data!;
+                  return ListView.builder(
+                    itemCount: folders.length,
+                    itemBuilder: (context, index) {
+                      final folder = folders[index];
+                      return AnimationConfiguration.staggeredList(
+                        position: index,
+                        duration: const Duration(milliseconds: 375),
+                        child: SlideAnimation(
+                          verticalOffset: 50.0,
+                          child: FadeInAnimation(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                              child: glassmorphicContainer(
+                                child: ListTile(
+                                  leading: const Icon(Icons.folder, color: Colors.white),
+                                  title: Text(
+                                    folder.split('/').last,
+                                    style: const TextStyle(color: Colors.white),
                                   ),
-                                );
-                              },
+                                  subtitle: Text(
+                                    folder,
+                                    style: const TextStyle(color: Colors.grey),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => FolderDetailScreen(
+                                          folderPath: folder,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   );
                 },
               ),

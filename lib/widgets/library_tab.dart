@@ -111,11 +111,13 @@ class _LibraryTabState extends State<LibraryTab> {
                   MaterialPageRoute(builder: (context) => const ArtistsScreen()),
                 ),
                 onItemTap: (artist) {
-                  if (artist is String) {
+                  if (artist is ArtistModel) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ArtistDetailsScreen(artistName: artist),
+                        builder: (context) => ArtistDetailsScreen(
+                          artistName: artist.artist,
+                        ),
                       ),
                     );
                   }

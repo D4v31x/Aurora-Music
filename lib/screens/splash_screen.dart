@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:rive/rive.dart' as rive;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';  // Import this for ImageFilter
+import '../main.dart';
 import '../services/Audio_Player_Service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/local_caching_service.dart';
@@ -18,6 +20,9 @@ import 'package:just_audio/just_audio.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:appwrite/appwrite.dart';
+import '../services/analytics_service.dart';
+import '../services/error_reporting_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -40,6 +45,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   String _currentTask = '';
   List<String> _completedTasks = [];
   double _progress = 0.0;
+  late Client _appwriteClient;
+  late AnalyticsService _analyticsService;
+  late ErrorReportingService _errorReportingService;
+  List<String> _warnings = [];
+  bool _hasConnectivityIssues = false;
+  late Account _account;
 
   @override
   void initState() {
@@ -111,16 +122,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   Future<void> _initializeApp() async {
     try {
-      // Nejdřív zkontrolujeme oprávnění
       final hasPermissions = await _requestPermissions();
-      if (!hasPermissions) {
-        return; // Ukončíme inicializaci, pokud nemáme oprávnění
-      }
+      if (!hasPermissions) return;
 
       final tasks = [
-        ('Načítání knihovny', _loadAppData()),
-        ('Načítání obrázků', _preloadImages()),
-        ('Finální příprava', _finalizeInitialization()),
+        ('Initializing Services', _initializeServices()),
+        ('Loading Library', _loadAppData()),
+        ('Caching Artwork', _preloadImages()),
+        if (!_hasConnectivityIssues) ('Setting up Analytics', _setupAnalytics()),
+        ('Final Preparations', _finalizeInitialization()),
       ];
 
       for (int i = 0; i < tasks.length; i++) {
@@ -140,22 +150,134 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             });
           }
         } catch (e) {
-          
+          print('Task failed: ${task.$1} with error: $e');
+          // Only show warnings for critical errors
+          if (task.$1 != 'Setting up Analytics') {
+            if (mounted) {
+              setState(() {
+                _warnings.add('Issue with ${task.$1.toLowerCase()}');
+                _hasConnectivityIssues = true;
+              });
+            }
+            await Future.delayed(const Duration(seconds: 1));
+          }
+          continue;
         }
+      }
+
+      if (_hasConnectivityIssues && _warnings.isNotEmpty) {
+        await Future.delayed(const Duration(seconds: 2));
       }
 
       if (mounted) {
         setState(() {
-          _currentTask = 'Dokončování...';
+          _currentTask = 'Complete';
           _progress = 1.0;
           _isDataLoaded = true;
-          _checkAndTransition();
         });
         await _checkOnboardingStatus();
-
       }
     } catch (e) {
-      
+      print('Initialization error: $e');
+      if (!_warnings.contains('Some features may be limited')) {
+        _warnings.add('Some features may be limited');
+      }
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted) {
+        _checkAndTransition();
+      }
+    }
+  }
+
+  Future<void> _initializeServices() async {
+    try {
+      // First check general internet connectivity
+      try {
+        final result = await InternetAddress.lookup('google.com');
+        if (result.isEmpty || result[0].rawAddress.isEmpty) {
+          throw Exception('No internet connection');
+        }
+      } catch (e) {
+        setState(() {
+          _warnings.add('No internet connection');
+          _warnings.add('Offline mode active');
+          _hasConnectivityIssues = true;
+        });
+        await Future.delayed(const Duration(seconds: 1));
+        return;
+      }
+
+      // Initialize Appwrite client
+      _appwriteClient = Client()
+        ..setEndpoint(dotenv.env['APPWRITE_ENDPOINT'] ?? '')
+        ..setProject(dotenv.env['APPWRITE_PROJECT_ID'] ?? '')
+        ..setSelfSigned(status: true);
+
+      // Test Appwrite connection first
+      try {
+        final account = Account(_appwriteClient);
+        await account.get();
+        
+        _analyticsService = AnalyticsService(_appwriteClient);
+        _errorReportingService = ErrorReportingService(_appwriteClient);
+        
+      } catch (e) {
+        setState(() {
+          _warnings.add('Cloud services unavailable');
+          _warnings.add('Playlist sync disabled');
+          _hasConnectivityIssues = true;
+        });
+        await Future.delayed(const Duration(seconds: 1));
+      }
+
+      // Test image service connectivity
+      try {
+        final result = await InternetAddress.lookup('api.deezer.com');
+        if (result.isEmpty || result[0].rawAddress.isEmpty) {
+          throw Exception('Image service unavailable');
+        }
+      } catch (e) {
+        setState(() {
+          _warnings.add('Using default artwork');
+        });
+        await Future.delayed(const Duration(milliseconds: 800));
+      }
+
+    } catch (e) {
+      if (!_warnings.contains('Some features may be limited')) {
+        setState(() {
+          _warnings.add('Some features may be limited');
+          _hasConnectivityIssues = true;
+        });
+        await Future.delayed(const Duration(seconds: 1));
+      }
+    }
+  }
+
+  Future<void> _setupAnalytics() async {
+    // Skip if services weren't initialized or we have connectivity issues
+    if (_hasConnectivityIssues || 
+        _warnings.isNotEmpty || 
+        !_isServicesInitialized()) {
+      return;
+    }
+
+    try {
+      await _analyticsService.initialize();
+      await _analyticsService.logAppStart();
+    } catch (e) {
+      print('Analytics setup delayed: $e');
+    }
+  }
+
+  // Add helper method to check if services are initialized
+  bool _isServicesInitialized() {
+    try {
+      return _appwriteClient != null && 
+             _analyticsService != null && 
+             _errorReportingService != null;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -436,66 +558,142 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                 ),
                 Positioned(
-                  left: 20,
-                  right: 20,
+                  left: 30,
+                  right: 30,
                   bottom: 100,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Progress bar
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: LinearProgressIndicator(
-                          value: _progress,
-                          backgroundColor: Colors.white.withOpacity(0.2),
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white.withOpacity(0.8),
+                      // Animated progress bar
+                      TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                        tween: Tween<double>(
+                          begin: 0,
+                          end: _progress,
+                        ),
+                        builder: (context, value, _) => Column(
+                          children: [
+                            LinearProgressIndicator(
+                              value: value,
+                              backgroundColor: Colors.white.withOpacity(0.2),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white.withOpacity(0.8),
+                              ),
+                              minHeight: 3, // Thinner progress bar
+                            ),
+                            const SizedBox(height: 20),
+                            // Animated current task text
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              switchInCurve: Curves.easeInOut,
+                              switchOutCurve: Curves.easeInOut,
+                              transitionBuilder: (Widget child, Animation<double> animation) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: SlideTransition(
+                                    position: Tween<Offset>(
+                                      begin: const Offset(0.0, 0.1),
+                                      end: Offset.zero,
+                                    ).animate(animation),
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                _currentTask,
+                                key: ValueKey<String>(_currentTask),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Warnings section (new)
+                      if (_warnings.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        AnimationLimiter(
+                          child: Column(
+                            children: AnimationConfiguration.toStaggeredList(
+                              duration: const Duration(milliseconds: 375),
+                              childAnimationBuilder: (widget) => SlideAnimation(
+                                verticalOffset: 20.0,
+                                child: FadeInAnimation(child: widget),
+                              ),
+                              children: _sortWarnings(_warnings).map((warning) => Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      _getWarningIcon(warning),
+                                      color: _getWarningColor(warning),
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      warning,
+                                      style: TextStyle(
+                                        color: _getWarningColor(warning),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )).toList(),
+                            ),
                           ),
-                          minHeight: 6,
                         ),
-                      ),
-                      const SizedBox(height: 12),
+                      ],
                       
-                      // Aktuální úkol
-                      Text(
-                        _currentTask,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      
-                      // Seznam dokončených úkolů
-                      const SizedBox(height: 8),
+                      // Completed tasks with staggered animation
+                      const SizedBox(height: 16),
                       SizedBox(
                         height: 60,
-                        child: ListView.builder(
-                          itemCount: _completedTasks.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.check_circle_outline,
-                                    color: Colors.green,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    _completedTasks[index],
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.7),
-                                      fontSize: 12,
+                        child: AnimationLimiter(
+                          child: ListView.builder(
+                            itemCount: _completedTasks.length,
+                            itemBuilder: (context, index) {
+                              return AnimationConfiguration.staggeredList(
+                                position: index,
+                                duration: const Duration(milliseconds: 375),
+                                child: SlideAnimation(
+                                  verticalOffset: 20.0,
+                                  child: FadeInAnimation(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 3),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.check_circle,
+                                            color: Colors.green.withOpacity(0.8),
+                                            size: 14,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            _completedTasks[index],
+                                            style: TextStyle(
+                                              color: Colors.white.withOpacity(0.6),
+                                              fontSize: 13
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ],
-                              ),
-                            );
-                          },
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ],
@@ -545,5 +743,52 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     
     // If onboarding is completed, continue with your existing navigation logic
     _checkAndTransition();
+  }
+
+  Color _getWarningColor(String warning) {
+    if (warning.contains('Offline mode')) {
+      return Colors.blue.withOpacity(0.8);
+    } else if (warning.contains('Cloud services')) {
+      return Colors.red.withOpacity(0.8);
+    } else if (warning.contains('No internet')) {
+      return Colors.red.withOpacity(0.8);
+    } else if (warning.contains('Playlist sync')) {
+      return Colors.orange.withOpacity(0.8);
+    } else if (warning.contains('default artwork')) {
+      return Colors.purple.withOpacity(0.8);
+    } else {
+      return Colors.amber.withOpacity(0.8);
+    }
+  }
+
+  IconData _getWarningIcon(String warning) {
+    if (warning.contains('Offline mode')) {
+      return Icons.offline_bolt;
+    } else if (warning.contains('Cloud services')) {
+      return Icons.cloud_off;
+    } else if (warning.contains('No internet')) {
+      return Icons.wifi_off;
+    } else if (warning.contains('Playlist sync')) {
+      return Icons.playlist_remove;
+    } else if (warning.contains('default artwork')) {
+      return Icons.image_not_supported;
+    } else {
+      return Icons.warning_amber_rounded;
+    }
+  }
+
+  List<String> _sortWarnings(List<String> warnings) {
+    final priorityOrder = {
+      'No internet connection': 0,
+      'Offline mode active': 1,
+      'Cloud services unavailable': 2,
+      'Playlist sync disabled': 3,
+      'Using default artwork': 4,
+      'Some features may be limited': 5,
+    };
+
+    return List<String>.from(warnings)..sort((a, b) {
+      return (priorityOrder[a] ?? 999).compareTo(priorityOrder[b] ?? 999);
+    });
   }
 }
