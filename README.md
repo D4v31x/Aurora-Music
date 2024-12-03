@@ -9,16 +9,13 @@ Welcome to **Aurora Music** - a powerful and feature-rich music player built wit
 - **🎧 Local Music Playback**  
   Enjoy your personal music library with support for a wide range of audio formats.
 
-- **🔗 Spotify Integration**  
-  Connect your Spotify account to access playlists, recently played tracks, and personalized recommendations.
-
 - **📱 Responsive Design**  
   Aurora Music adapts to various screen sizes and orientations, ensuring a consistent and immersive user experience across devices.
 
 - **🎨 Customizable UI**  
   Tailor the app's appearance to your liking with customizable themes, color schemes, and other visual settings.
 
-- **🌐 Offline Mode**  
+- **🌐 Offline Access**  
   Access and play your local music library even without an internet connection.
 
 - **🎶 Playlist Management**  
