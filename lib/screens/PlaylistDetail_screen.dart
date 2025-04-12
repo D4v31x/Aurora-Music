@@ -23,6 +23,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   final int _loadMoreStep = 8;
   bool _isEditingName = false;
   late TextEditingController _nameController;
+  final ValueNotifier<bool> _isEditingNotifier = ValueNotifier<bool>(false);
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _nameController.dispose();
+    _isEditingNotifier.dispose();
     super.dispose();
   }
 
@@ -54,9 +56,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     } else {
       _nameController.text = widget.playlist.name;
     }
-    setState(() {
-      _isEditingName = false;
-    });
+    _isEditingNotifier.value = false;
     FocusScope.of(context).unfocus();
   }
 
@@ -70,13 +70,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Consumer<AudioPlayerService>(
-      builder: (context, audioPlayerService, child) {
+      builder: (context, audioPlayerService, _) {
         final updatedPlaylist = audioPlayerService.playlists.firstWhere(
-              (p) => p.id == widget.playlist.id,
+          (p) => p.id == widget.playlist.id,
           orElse: () => widget.playlist,
         );
 
@@ -95,131 +94,137 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             child: CustomScrollView(
               controller: _scrollController,
               slivers: [
-                SliverAppBar(
-                  backgroundColor: Colors.transparent,
-                  expandedHeight: 300,
-                  floating: false,
-                  pinned: true,
-                  flexibleSpace: FlexibleSpaceBar(
-                    centerTitle: true,
-                    title: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.asset(
-                            'assets/images/UI/liked_icon.png',
-                            width: 120,
-                            height: 120,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        _isEditingName
-                            ? SizedBox(
-                          width: 200,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _nameController,
-                                  autofocus: true,
-                                  onSubmitted: (_) => _saveNewName(context),
-                                  style: const TextStyle(
-                                    fontFamily: 'ProductSans',
-                                    fontStyle: FontStyle.normal,
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.check, color: Colors.white),
-                                onPressed: () => _saveNewName(context),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                              ),
-                            ],
-                          ),
-                        )
-                            : GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isEditingName = true;
-                            });
-                          },
-                          child: Text(
-                            updatedPlaylist.name,
-                            style: const TextStyle(
-                              fontFamily: 'ProductSans',
-                              fontStyle: FontStyle.normal,
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                _buildSliverAppBar(updatedPlaylist, context),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
                     child: _buildActionPills(context, audioPlayerService),
                   ),
                 ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                      if (index >= updatedPlaylist.songs.length) return null;
-                      final song = updatedPlaylist.songs[index];
-                      return AnimationConfiguration.staggeredList(
-                        position: index,
-                        duration: const Duration(milliseconds: 375),
-                        child: SlideAnimation(
-                          verticalOffset: 50.0,
-                          child: FadeInAnimation(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-                              child: glassmorphicContainer(
-                                child: ListTile(
-                                  leading: QueryArtworkWidget(
-                                    id: song.id,
-                                    type: ArtworkType.AUDIO,
-                                    nullArtworkWidget: const Icon(Icons.music_note, color: Colors.white),
-                                  ),
-                                  title: Text(song.title, style: const TextStyle(color: Colors.white)),
-                                  subtitle: Text(song.artist ?? 'Unknown Artist', style: const TextStyle(color: Colors.grey)),
-                                  onTap: () {
-                                    audioPlayerService.setPlaylist(
-                                      updatedPlaylist.songs, 
-                                      index,
-                                    );
-                                    audioPlayerService.play();
-                                  },
-                                  onLongPress: () => _showRemoveSongDialog(context, audioPlayerService, song),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: _displayedSongsCount,
-                  ),
-                ),
+                _buildSongsList(updatedPlaylist, audioPlayerService),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSliverAppBar(Playlist playlist, BuildContext context) {
+    return SliverAppBar(
+      backgroundColor: Colors.transparent,
+      expandedHeight: 300,
+      floating: false,
+      pinned: true,
+      flexibleSpace: FlexibleSpaceBar(
+        centerTitle: true,
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                'assets/images/UI/liked_icon.png',
+                width: 120,
+                height: 120,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ValueListenableBuilder<bool>(
+              valueListenable: _isEditingNotifier,
+              builder: (context, isEditing, _) {
+                return isEditing
+                    ? SizedBox(
+                        width: 200,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _nameController,
+                                autofocus: true,
+                                onSubmitted: (_) => _saveNewName(context),
+                                style: const TextStyle(
+                                  fontFamily: 'ProductSans',
+                                  fontStyle: FontStyle.normal,
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.check, color: Colors.white),
+                              onPressed: () => _saveNewName(context),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                      )
+                    : GestureDetector(
+                        onTap: () => _isEditingNotifier.value = true,
+                        child: Text(
+                          playlist.name,
+                          style: const TextStyle(
+                            fontFamily: 'ProductSans',
+                            fontStyle: FontStyle.normal,
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSongsList(Playlist playlist, AudioPlayerService audioPlayerService) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          if (index >= playlist.songs.length) return null;
+          final song = playlist.songs[index];
+          return AnimationConfiguration.staggeredList(
+            position: index,
+            duration: const Duration(milliseconds: 375),
+            child: SlideAnimation(
+              verticalOffset: 50.0,
+              child: FadeInAnimation(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                  child: glassmorphicContainer(
+                    child: ListTile(
+                      leading: QueryArtworkWidget(
+                        id: song.id,
+                        type: ArtworkType.AUDIO,
+                        nullArtworkWidget: const Icon(Icons.music_note, color: Colors.white),
+                      ),
+                      title: Text(song.title, style: const TextStyle(color: Colors.white)),
+                      subtitle: Text(song.artist ?? 'Unknown Artist', style: const TextStyle(color: Colors.grey)),
+                      onTap: () {
+                        audioPlayerService.setPlaylist(playlist.songs, index);
+                        audioPlayerService.play();
+                      },
+                      onLongPress: () => _showRemoveSongDialog(context, audioPlayerService, song),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+        childCount: _displayedSongsCount > playlist.songs.length ? playlist.songs.length : _displayedSongsCount,
+      ),
     );
   }
 

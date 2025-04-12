@@ -418,7 +418,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
         const SizedBox(height: 60),
         Text(
           AppLocalizations.of(context).translate('lyrics'),
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -574,20 +574,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutCubic,
                 offset: Offset(0, isCurrent ? 0 : slideOffset),
-                child: Container(
+                child: SizedBox(
                   width: MediaQuery.of(context).size.width - 80, // Account for padding
                   child: ShaderMask(
                     shaderCallback: (Rect bounds) {
                       return LinearGradient(
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
-                        colors: [
-                          Colors.white,
-                          Colors.white,
-                          Colors.white,
-                          Colors.white.withOpacity(0.0)
-                        ],
-                        stops: const [0.0, 0.85, 0.9, 1.0],
+                        colors: [Colors.white, Colors.white.withOpacity(0.0)],
+                        stops: const [0.8, 1.0],
                       ).createShader(bounds);
                     },
                     blendMode: BlendMode.dstIn,
@@ -639,7 +634,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
             offset: Offset(0, 20 * (1 - value)),
             child: Text(AppLocalizations.of(context).translate(
               'no_lyrics'),
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 16,
                 fontFamily: 'ProductSans',
@@ -663,10 +658,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
   return Column(
     children: [
        Padding(
-        padding: EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.only(bottom: 12),
         child: Text( AppLocalizations.of(context).translate(
           'about_artist'),
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -702,7 +697,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
         (_currentArtwork == null || audioPlayerService.currentSong?.id != _lastSongId)) {
       _lastSongId = audioPlayerService.currentSong?.id;
       _updateArtwork(audioPlayerService.currentSong!);
-      _initializeTimedLyrics(); // Inicializujte timed lyrics při změně písničky
+      _initializeTimedLyrics(); // Inicializujte timed lyrics p��i změně písničky
     }
 
     // Add WillPopScope wrapper
@@ -757,7 +752,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                         color: Colors.white,
                       ),
                       const SizedBox(width: 12),
-                      Text( AppLocalizations.of(context).translate('sleep_timer'), style: TextStyle(color: Colors.white)),
+                      Text( AppLocalizations.of(context).translate('sleep_timer'), style: const TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -765,9 +760,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                   value: 'view_artist',
                   child: Row(
                     children: [
-                      Icon(Icons.person_outline, color: Colors.white),
-                      SizedBox(width: 12),
-                      Text( AppLocalizations.of(context).translate('view_artist'), style: TextStyle(color: Colors.white)),
+                      const Icon(Icons.person_outline, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Text( AppLocalizations.of(context).translate('view_artist'), style: const TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -775,9 +770,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                   value: 'lyrics',
                   child: Row(
                     children: [
-                      Icon(Icons.lyrics_outlined, color: Colors.white),
-                      SizedBox(width: 12),
-                      Text( AppLocalizations.of(context).translate('lyrics'), style: TextStyle(color: Colors.white)),
+                      const Icon(Icons.lyrics_outlined, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Text( AppLocalizations.of(context).translate('lyrics'), style: const TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -785,9 +780,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                   value: 'add_playlist',
                   child: Row(
                     children: [
-                      Icon(Icons.playlist_add, color: Colors.white),
-                      SizedBox(width: 12),
-                      Text( AppLocalizations.of(context).translate('add_to_playlist'), style: TextStyle(color: Colors.white)),
+                      const Icon(Icons.playlist_add, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Text( AppLocalizations.of(context).translate('add_to_playlist'), style: const TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -915,7 +910,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
     if (_timedLyrics == null || _timedLyrics!.isEmpty) {
       return Text( AppLocalizations.of(context).translate(
         'no_lyrics'),
-        style: TextStyle(color: Colors.white, fontSize: 16),
+        style: const TextStyle(color: Colors.white, fontSize: 16),
         textAlign: TextAlign.center,
       );
     }
@@ -1036,7 +1031,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.timer_off, color: Colors.redAccent),
-                          label:Text( AppLocalizations.of(context).translate('cancel'), style: TextStyle(color: Colors.redAccent)),
+                          label:Text( AppLocalizations.of(context).translate('cancel'), style: const TextStyle(color: Colors.redAccent)),
                           style: TextButton.styleFrom(
                             backgroundColor: Colors.redAccent.withOpacity(0.1),
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1145,7 +1140,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
               children: [
                 Text( AppLocalizations.of(context).translate(
                   'set_minutes'),
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -1380,10 +1375,10 @@ String _formatDuration(Duration duration) {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
-                  padding: EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(bottom: 16),
                   child: Text( AppLocalizations.of(context).translate(
                     'select_artist'),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -1411,7 +1406,7 @@ String _formatDuration(Duration duration) {
                   onPressed: () => Navigator.pop(context),
                   child: Text( AppLocalizations.of(context).translate(
                     'cancel'),
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ],

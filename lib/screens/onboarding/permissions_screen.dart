@@ -2,26 +2,38 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../widgets/aurora_background.dart';
-import 'artwork_notice_screen.dart';
-import 'analytics_consent_screen.dart';
+import 'theme_selection.dart';
 
-class PermissionsScreen extends StatelessWidget {
+class PermissionsScreen extends StatefulWidget {
   const PermissionsScreen({super.key});
 
-  void _navigateToAnalyticsConsent(BuildContext context) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const AnalyticsConsentScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-      ),
-    );
+  @override
+  State<PermissionsScreen> createState() => _PermissionsScreenState();
+}
+
+class _PermissionsScreenState extends State<PermissionsScreen> {
+  bool _isExiting = false;
+  bool _mediaPermission = false;
+  bool _notificationPermission = false;
+
+  void _navigateToThemeSelection(BuildContext context) {
+    setState(() => _isExiting = true);
+    
+    Future.delayed(const Duration(milliseconds: 600), () {
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const ThemeSelectionScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      );
+    });
   }
 
   @override
@@ -29,102 +41,230 @@ class PermissionsScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          const AuroraBackground(),
+          Image.asset(
+            'assets/images/background/welcome_bg.jpg',
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+          ).animate().blur(duration: 300.ms),
+          
           SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                child: Column(
-                  children: [
-                    const Spacer(flex: 1),
-                    Text(
-                      'Permissions We Need',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ).animate().fadeIn(duration: 600.ms),
-                    const SizedBox(height: 8),
-                    Text(
-                      'To work smoothly, Aurora needs access to:',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white70,
-                      ),
-                      textAlign: TextAlign.center,
-                    ).animate().fadeIn(delay: 200.ms),
-                    const SizedBox(height: 48),
-                    _buildPermissionItem(
-                      context,
-                      Icons.folder_outlined,
-                      'Storage Access',
-                      'To scan and manage your local music files',
-                      'Required',
-                    ).animate().fadeIn(delay: 400.ms),
-                    const SizedBox(height: 16),
-                    _buildPermissionItem(
-                      context,
-                      Icons.cloud_outlined,
-                      'Internet Access',
-                      'To fetch album artwork and synchronized lyrics',
-                      'Required',
-                    ).animate().fadeIn(delay: 600.ms),
-                    const SizedBox(height: 16),
-                    _buildPermissionItem(
-                      context,
-                      Icons.notifications_outlined,
-                      'Notifications',
-                      'For playback controls and updates',
-                      'Optional',
-                    ).animate().fadeIn(delay: 800.ms),
-                    const Spacer(flex: 2),
-                    Text(
-                      'No personal data is collected or stored.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white70,
-                      ),
-                      textAlign: TextAlign.center,
-                    ).animate().fadeIn(delay: 900.ms),
-                    const SizedBox(height: 24),
-                    Container(
-                      width: double.infinity,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(28),
-                        color: Colors.white.withOpacity(0.15),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.2),
-                          width: 1,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Spacer(flex: 1),
+                  Text(
+                    'Permissions\nSet up',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      fontSize: 46,
+                      fontFamily: 'Outfit',
+                    ),
+                  )
+                  .animate()
+                    .fadeIn(duration: 300.ms, delay: 500.ms, curve: Curves.easeInOut)
+                    .moveX(begin: -30, end: 0)
+                  .animate(
+                    target: _isExiting ? 1.0 : 0.0,
+                    autoPlay: false,
+                  )
+                    .custom(
+                      duration: 400.ms,
+                      curve: Curves.easeInOut,
+                      builder: (context, value, child) => 
+                        Transform(
+                          transform: Matrix4.identity()
+                            ..setEntry(3, 2, 0.001)
+                            ..rotateY(value * 0.5)
+                            ..translate(value * 100.0),
+                          alignment: Alignment.centerRight,
+                          child: Opacity(opacity: 1.0 - value, child: child),
                         ),
+                    ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  Container(
+                    width: 185,
+                    height: 2,
+                    color: Colors.white,
+                  )
+                  .animate()
+                    .scaleX(
+                      begin: 0, 
+                      end: 1,
+                      duration: 250.ms,
+                      delay: 400.ms,
+                      curve: Curves.easeInOut,
+                      alignment: Alignment.centerLeft
+                    )
+                  .animate(
+                    target: _isExiting ? 1.0 : 0.0,
+                    autoPlay: false,
+                  )
+                    .custom(
+                      duration: 400.ms,
+                      curve: Curves.easeInOut,
+                      builder: (context, value, child) => 
+                        Transform.scale(
+                          scaleX: 1.0 - value,
+                          alignment: Alignment.centerRight,
+                          child: child,
+                        ),
+                    ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  Text(
+                    'To make sure the app works properly,\nallow following permissions:',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white70,
+                      fontSize: 20,
+                      fontFamily: 'Outfit',
+                    ),
+                  )
+                  .animate()
+                    .fadeIn(duration: 300.ms, delay: 700.ms, curve: Curves.easeInOut)
+                    .moveX(begin: -30, end: 0)
+                  .animate(
+                    target: _isExiting ? 1.0 : 0.0,
+                    autoPlay: false,
+                  )
+                    .custom(
+                      duration: 400.ms,
+                      curve: Curves.easeInOut,
+                      builder: (context, value, child) => 
+                        Transform(
+                          transform: Matrix4.identity()
+                            ..setEntry(3, 2, 0.001)
+                            ..rotateY(value * 0.5)
+                            ..translate(value * 100.0),
+                          alignment: Alignment.centerRight,
+                          child: Opacity(opacity: 1.0 - value, child: child),
+                        ),
+                    ),
+
+                  const SizedBox(height: 48),
+
+                  _buildPermissionTile(
+                    'Media Library',
+                    'For access to your audio files',
+                    _mediaPermission,
+                    (value) => setState(() => _mediaPermission = value),
+                  ).animate()
+                    .fadeIn(duration: 300.ms, delay: 800.ms, curve: Curves.easeInOut)
+                    .moveY(begin: 20, end: 0)
+                  .animate(
+                    target: _isExiting ? 1.0 : 0.0,
+                    autoPlay: false,
+                  )
+                    .custom(
+                      duration: 400.ms,
+                      curve: Curves.easeInOut,
+                      builder: (context, value, child) => 
+                        Transform(
+                          transform: Matrix4.identity()
+                            ..setEntry(3, 2, 0.001)
+                            ..rotateY(value * 0.5)
+                            ..translate(value * 100.0),
+                          alignment: Alignment.centerRight,
+                          child: Opacity(opacity: 1.0 - value, child: child),
+                        ),
+                    ),
+
+                  const SizedBox(height: 16),
+
+                  _buildPermissionTile(
+                    'Notifications',
+                    'For background service',
+                    _notificationPermission,
+                    (value) => setState(() => _notificationPermission = value),
+                  ).animate()
+                    .fadeIn(duration: 300.ms, delay: 900.ms, curve: Curves.easeInOut)
+                    .moveY(begin: 20, end: 0)
+                  .animate(
+                    target: _isExiting ? 1.0 : 0.0,
+                    autoPlay: false,
+                  )
+                    .custom(
+                      duration: 400.ms,
+                      curve: Curves.easeInOut,
+                      builder: (context, value, child) => 
+                        Transform(
+                          transform: Matrix4.identity()
+                            ..setEntry(3, 2, 0.001)
+                            ..rotateY(value * 0.5)
+                            ..translate(value * 100.0),
+                          alignment: Alignment.centerRight,
+                          child: Opacity(opacity: 1.0 - value, child: child),
+                        ),
+                    ),
+
+                  const Spacer(flex: 2),
+                  
+                  Container(
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      color: Colors.white.withOpacity(0.15),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(28),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: ElevatedButton(
-                            onPressed: () => _navigateToAnalyticsConsent(context),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(28),
-                              ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(28),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: ElevatedButton(
+                          onPressed: () => _navigateToThemeSelection(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
                             ),
-                            child: const Text(
-                              'Next',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          ),
+                          child: const Text(
+                            'Continue',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Outfit',
                             ),
                           ),
                         ),
                       ),
-                    ).animate().scale(delay: 1000.ms),
-                    const Spacer(flex: 1),
-                  ],
-                ),
+                    ),
+                  )
+                  .animate()
+                    .fadeIn(duration: 300.ms, delay: 1000.ms, curve: Curves.easeInOut)
+                    .moveY(begin: 20, end: 0)
+                  .animate(
+                    target: _isExiting ? 1.0 : 0.0,
+                    autoPlay: false,
+                  )
+                    .custom(
+                      duration: 400.ms,
+                      curve: Curves.easeInOut,
+                      builder: (context, value, child) => 
+                        Transform(
+                          transform: Matrix4.identity()
+                            ..setEntry(3, 2, 0.001)
+                            ..rotateY(value * 0.5)
+                            ..translate(value * 100.0),
+                          alignment: Alignment.centerRight,
+                          child: Opacity(opacity: 1.0 - value, child: child),
+                        ),
+                    ),
+                  
+                  const SizedBox(height: 48),
+                ],
               ),
             ),
           ),
@@ -133,12 +273,11 @@ class PermissionsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPermissionItem(
-    BuildContext context,
-    IconData icon,
+  Widget _buildPermissionTile(
     String title,
-    String description,
-    String badge,
+    String subtitle,
+    bool value,
+    ValueChanged<bool> onChanged,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -153,72 +292,36 @@ class PermissionsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: badge == 'Required'
-                                  ? Colors.white.withOpacity(0.2)
-                                  : Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              badge,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          child: ListTile(
+            title: Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Outfit',
+              ),
+            ),
+            subtitle: Text(
+              subtitle,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+                fontFamily: 'Outfit',
+              ),
+            ),
+            trailing: Checkbox(
+              value: value,
+              onChanged: (bool? newValue) => onChanged(newValue ?? false),
+              fillColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.selected)
+                    ? Colors.white
+                    : Colors.white.withOpacity(0.2),
+              ),
+              checkColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
             ),
           ),
         ),

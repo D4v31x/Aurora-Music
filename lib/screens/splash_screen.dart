@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:rive/rive.dart' as rive;
+import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';  // Import this for ImageFilter
-import '../main.dart';
 import '../services/Audio_Player_Service.dart';
 import '../services/artwork_cache_service.dart';
-import '../services/local_caching_service.dart';
 import '../services/user_preferences.dart';
 import 'welcome_screen.dart';
 import 'home_screen.dart';
@@ -16,13 +13,13 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:appwrite/appwrite.dart';
 import '../services/analytics_service.dart';
 import '../services/error_reporting_service.dart';
+
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -32,7 +29,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late rive.RiveAnimationController _riveController;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   String _versionNumber = '';
@@ -40,15 +36,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   bool _isDataLoaded = false;
   bool _isAnimationComplete = false;
   final List<Future> _initializationTasks = [];
-  bool _isLoadingComplete = false;
+  final bool _isLoadingComplete = false;
   bool _didInitialize = false;
   String _currentTask = '';
-  List<String> _completedTasks = [];
+  final List<String> _completedTasks = [];
   double _progress = 0.0;
   late Client _appwriteClient;
   late AnalyticsService _analyticsService;
   late ErrorReportingService _errorReportingService;
-  List<String> _warnings = [];
+  final List<String> _warnings = [];
   bool _hasConnectivityIssues = false;
   late Account _account;
 
@@ -126,6 +122,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       if (!hasPermissions) return;
 
       final tasks = [
+        ('Warming shaders', _warmupShaders()),
         ('Initializing Services', _initializeServices()),
         ('Loading Library', _loadAppData()),
         ('Caching Artwork', _preloadImages()),
@@ -273,9 +270,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   // Add helper method to check if services are initialized
   bool _isServicesInitialized() {
     try {
-      return _appwriteClient != null && 
-             _analyticsService != null && 
-             _errorReportingService != null;
+      return _analyticsService != null;
     } catch (e) {
       return false;
     }
@@ -407,30 +402,24 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   void _initializeAnimations() {
-    _riveController = rive.SimpleAnimation('Timeline 1');
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(_fadeController);
 
-    // Upravený listener pro dokončení Rive animace
-    _riveController.isActiveChanged.addListener(() {
-      if (!_riveController.isActive) {
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            setState(() {
-              _isAnimationComplete = true;
-              _checkAndTransition();
-            });
-          }
+    _fadeController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() {
+          _isAnimationComplete = true;
+          _checkAndTransition();
         });
       }
     });
   }
 
   void _checkAndTransition() {
-    if (_isDataLoaded && _isAnimationComplete) {
+    if (_isAnimationComplete) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           _transitionToNextScreen();
@@ -440,9 +429,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _transitionToNextScreen() async {
-    await _fadeController.forward();
     bool isFirstTime = await UserPreferences.isFirstTimeUser();
-    
+
     if (mounted) {
       if (isFirstTime) {
         await UserPreferences.setFirstTimeUser(false);
@@ -462,10 +450,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           child: screen,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // Definice křivek pro různé části animace
           const curve = Curves.easeOutCubic;
-          
-          // Scale animace (mírné zvětšení)
+
           var scaleAnimation = Tween<double>(
             begin: 0.95,
             end: 1.0,
@@ -473,8 +459,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             parent: animation,
             curve: curve,
           ));
-          
-          // Fade animace
+
           var fadeAnimation = Tween<double>(
             begin: 0.0,
             end: 1.0,
@@ -482,8 +467,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             parent: animation,
             curve: curve,
           ));
-          
-          // Blur efekt
+
           var blurAnimation = Tween<double>(
             begin: 5,
             end: 0,
@@ -494,14 +478,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
           return Stack(
             children: [
-              // Pozadí
               Positioned.fill(
                 child: Image.asset(
                   'assets/images/background/Bcg_V0.0.9.png',
                   fit: BoxFit.cover,
                 ),
               ),
-              // Animovaný obsah
               AnimatedBuilder(
                 animation: animation,
                 builder: (context, child) {
@@ -547,173 +529,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               fit: BoxFit.cover,
             ),
           ),
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: Stack(
-              children: [
-                Center(
-                  child: rive.RiveAnimation.asset(
-                    "assets/animations/untitled.riv",
-                    controllers: [_riveController],
-                  ),
-                ),
-                Positioned(
-                  left: 30,
-                  right: 30,
-                  bottom: 100,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Animated progress bar
-                      TweenAnimationBuilder<double>(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeInOut,
-                        tween: Tween<double>(
-                          begin: 0,
-                          end: _progress,
-                        ),
-                        builder: (context, value, _) => Column(
-                          children: [
-                            LinearProgressIndicator(
-                              value: value,
-                              backgroundColor: Colors.white.withOpacity(0.2),
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white.withOpacity(0.8),
-                              ),
-                              minHeight: 3, // Thinner progress bar
-                            ),
-                            const SizedBox(height: 20),
-                            // Animated current task text
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 200),
-                              switchInCurve: Curves.easeInOut,
-                              switchOutCurve: Curves.easeInOut,
-                              transitionBuilder: (Widget child, Animation<double> animation) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: const Offset(0.0, 0.1),
-                                      end: Offset.zero,
-                                    ).animate(animation),
-                                    child: child,
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                _currentTask,
-                                key: ValueKey<String>(_currentTask),
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      // Warnings section (new)
-                      if (_warnings.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        AnimationLimiter(
-                          child: Column(
-                            children: AnimationConfiguration.toStaggeredList(
-                              duration: const Duration(milliseconds: 375),
-                              childAnimationBuilder: (widget) => SlideAnimation(
-                                verticalOffset: 20.0,
-                                child: FadeInAnimation(child: widget),
-                              ),
-                              children: _sortWarnings(_warnings).map((warning) => Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      _getWarningIcon(warning),
-                                      color: _getWarningColor(warning),
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      warning,
-                                      style: TextStyle(
-                                        color: _getWarningColor(warning),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )).toList(),
-                            ),
-                          ),
-                        ),
-                      ],
-                      
-                      // Completed tasks with staggered animation
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 60,
-                        child: AnimationLimiter(
-                          child: ListView.builder(
-                            itemCount: _completedTasks.length,
-                            itemBuilder: (context, index) {
-                              return AnimationConfiguration.staggeredList(
-                                position: index,
-                                duration: const Duration(milliseconds: 375),
-                                child: SlideAnimation(
-                                  verticalOffset: 20.0,
-                                  child: FadeInAnimation(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 3),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.check_circle,
-                                            color: Colors.green.withOpacity(0.8),
-                                            size: 14,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            _completedTasks[index],
-                                            style: TextStyle(
-                                              color: Colors.white.withOpacity(0.6),
-                                              fontSize: 13
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 20,
-                  child: Text(
-                    'Version $_versionNumber ($_codeName)',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+          Center(
+            child: Lottie.asset(
+              'assets/animations/Splash.json',
+              controller: _fadeController,
+              onLoaded: (composition) {
+                _fadeController.duration = composition.duration;
+                _fadeController.forward();
+              },
             ),
           ),
         ],
@@ -725,24 +548,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     final prefs = await SharedPreferences.getInstance();
     final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
     
-    if (!onboardingCompleted && mounted) {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const WelcomeScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-        ),
-      );
-      return;
+    if (!mounted) return;
+
+    if (!onboardingCompleted) {
+      // First time only - show onboarding
+      _navigateToScreen(const WelcomeScreen());
+    } else {
+      // All subsequent launches - go straight to home
+      _navigateToScreen(const HomeScreen());
     }
-    
-    // If onboarding is completed, continue with your existing navigation logic
-    _checkAndTransition();
   }
 
   Color _getWarningColor(String warning) {
@@ -790,5 +604,29 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     return List<String>.from(warnings)..sort((a, b) {
       return (priorityOrder[a] ?? 999).compareTo(priorityOrder[b] ?? 999);
     });
+  }
+
+  Future<void> _warmupShaders() async {
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+    final paint = Paint();
+
+    // Warm up common gradients
+    paint.shader = LinearGradient(
+      colors: [Colors.white, Colors.white.withOpacity(0.0)],
+      stops: const [0.8, 1.0],
+    ).createShader(const Rect.fromLTWH(0, 0, 100, 100));
+    canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), paint);
+
+    // Warm up blur effects
+    final filter = ImageFilter.blur(sigmaX: 10, sigmaY: 10);
+    canvas.drawRect(
+      const Rect.fromLTWH(0, 0, 100, 100),
+      Paint()..imageFilter = filter,
+    );
+
+    // Record and compile
+    final picture = recorder.endRecording();
+    await picture.toImage(100, 100);
   }
 }

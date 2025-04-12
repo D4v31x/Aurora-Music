@@ -42,7 +42,18 @@ import '../widgets/library_tab.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:aurora_music_v01/providers/theme_provider.dart';
+import 'package:aurora_music_v01/widgets/about_dialog.dart';
 
+/// A screen that displays the main interface of the Aurora Music app.
+///
+/// This screen contains four main tabs:
+/// - Home: Displays quick access items and suggested content
+/// - Library: Shows the user's music library organized by categories
+/// - Search: Allows users to search through their music collection
+/// - Settings: Provides app configuration options
+///
+/// The screen also features a mini-player at the bottom when music is playing
+/// and supports background artwork that changes based on the current song.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -50,70 +61,103 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+/// The state class for the HomeScreen widget.
+///
+/// This class manages:
+/// - Tab navigation and animations
+/// - Music playback controls
+/// - UI state and appearance
+/// - Search functionality
+/// - Settings configuration
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  // Theme state
   late bool isDarkMode;
-  final Color _dominantColor = Colors.black;
+
+  // Controllers
   late TabController _tabController;
+  late final ScrollController _scrollController = ScrollController();
+  late final ScrollController _appBarTextController;
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  late AnimationController _searchAnimationController;
+  AnimationController? _animationController;
+
+  // Services
   late final LocalCachingArtistService _artistService = LocalCachingArtistService();
+  late final ArtworkCacheService _artworkService = ArtworkCacheService();
+  late AudioPlayerService _audioPlayerService;
+  final NotificationManager _notificationManager = NotificationManager();
+
+  // UI State
   late final ValueNotifier<SongModel?> _currentSongNotifier = ValueNotifier<SongModel?>(null);
-  bool isWelcomeBackVisible = true;
-  bool isAuroraMusicVisible = false;
-  bool _showAppBar = true;
+  final GlobalKey<ExpandableBottomSheetState> _expandableKey = GlobalKey<ExpandableBottomSheetState>();
+  late Animation<double> _searchAnimation;
+  Animation<Offset>? _slideAnimation;
+  ImageProvider<Object>? _currentBackgroundImage;
+
+  // Data
   List<SongModel> songs = [];
   List<String> randomArtists = [];
   List<SongModel> randomSongs = [];
-  Color? dominantColor;
-  Color? textColor;
-  AnimationController? _animationController;
-  Animation<Offset>? _slideAnimation;
-  final ScrollController _scrollController = ScrollController();
-  final StreamController<bool> _streamController = StreamController<bool>();
-  SongModel? currentSong;
-  String appBarMessage = '';
-  bool isAppBarMessageVisible = false;
-  bool _isScanning = false;
-  int _scannedSongs = 0;
-  int _totalSongs = 0;
-  late final SpotifyService _spotifyService = SpotifyService();
-  final List<Map<String, dynamic>> _recentlyPlayedTracks = [];
-  final List<Map<String, dynamic>> _spotifyPlaylists = [];
-  final TextEditingController _searchController = TextEditingController();
+  List<AlbumModel> albums = [];
+  List<ArtistModel> artists = [];
   List<SongModel> _filteredSongs = [];
   final List<AlbumModel> _filteredAlbums = [];
   List<ArtistModel> _filteredArtists = [];
-  List<AlbumModel> albums = [];
-  List<ArtistModel> artists = [];
-  late Animation<double> _searchAnimation;
-  final FocusNode _searchFocusNode = FocusNode();
-  bool _isSearching = false;
-  late AnimationController _searchAnimationController;
+  final List<Map<String, dynamic>> _recentlyPlayedTracks = [];
+  final List<Map<String, dynamic>> _spotifyPlaylists = [];
+
+  // Caching
   final Map<int, Uint8List?> _artworkCache = {};
-  ImageProvider<Object>? _currentBackgroundImage;
   final Map<int, ImageProvider<Object>?> _imageProviderCache = {};
-  final ArtworkCacheService _artworkService = ArtworkCacheService();
-  final GlobalKey<ExpandableBottomSheetState> _expandableKey = GlobalKey<ExpandableBottomSheetState>();
+
+  // State flags
+  bool isWelcomeBackVisible = true;
+  bool isAuroraMusicVisible = false;
+  bool _showAppBar = true;
+  bool _isSearching = false;
   bool _isInitialized = false;
-  Queue<String> _notificationQueue = Queue<String>();
-  bool _isShowingNotification = false;
-  late final ScrollController _appBarTextController;
   bool _isTabBarScrolled = false;
   bool _hasShownChangelog = false;
   String _currentVersion = '';
-  final NotificationManager _notificationManager = NotificationManager();
 
+  // Notification state
+  final Queue<String> _notificationQueue = Queue<String>();
+  bool _isShowingNotification = false;
+  String appBarMessage = '';
+  bool isAppBarMessageVisible = false;
+
+  // Scanning state
+  bool _isScanning = false;
+  int _scannedSongs = 0;
+  int _totalSongs = 0;
+
+  /// Initializes the state of the HomeScreen.
+  ///
+  /// Sets up:
+  /// - Scroll listeners
+  /// - Search functionality
+  /// - Audio player service
+  /// - Tab controller
+  /// - Animations
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
     _searchController.addListener(_onSearchChanged);
+
+    // Initialize audio player service
     final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
     _currentSongNotifier.value = audioPlayerService.currentSong;
     audioPlayerService.addListener(_updateCurrentSong);
+
+    // Initialize tab controller
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
 
+    // Initialize search animations
     _searchAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -122,17 +166,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       parent: _searchAnimationController,
       curve: Curves.easeInOut,
     );
-    _searchFocusNode.addListener(() {
-      setState(() {
-        _isSearching = _searchFocusNode.hasFocus;
-      });
-      if (_searchFocusNode.hasFocus) {
-        _searchAnimationController.forward();
-      } else {
-        _searchAnimationController.reverse();
-      }
-    });
 
+    // Setup search focus listener
+    _searchFocusNode.addListener(_onSearchFocusChange);
+
+    // Initialize slide animation
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -145,16 +183,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       curve: Curves.easeInOut,
     ));
 
+    // Load initial data
     _loadLibraryData();
     _initializeData().then((_) {
-      setState(() {
-        _isInitialized = true;
-        _randomizeContent();
-      });
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+          _randomizeContent();
+        });
+      }
     });
 
     fetchSongs();
 
+    // Initialize welcome animations
+    _initializeWelcomeAnimations();
+
+    // Check for updates and show changelog
+    checkForNewVersion();
+    _loadVersionInfo();
+
+    // Initialize app bar controller
+    _appBarTextController = ScrollController();
+    _scrollController.addListener(_handleScroll);
+
+    // Show welcome message
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showWelcomeMessage();
+      _checkAndShowChangelog();
+    });
+  }
+
+  /// Handles changes in search focus state
+  void _onSearchFocusChange() {
+    if (!mounted) return;
+
+    setState(() {
+      _isSearching = _searchFocusNode.hasFocus;
+    });
+
+    if (_searchFocusNode.hasFocus) {
+      _searchAnimationController.forward();
+    } else {
+      _searchAnimationController.reverse();
+    }
+  }
+
+  /// Initializes welcome animations
+  void _initializeWelcomeAnimations() {
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
         setState(() {
@@ -170,35 +246,51 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         });
       }
     });
+  }
 
-    checkForNewVersion();
+  /// Shows the welcome message notification
+  void _showWelcomeMessage() {
+    if (!mounted) return;
+    _notificationManager.showNotification(
+      AppLocalizations.of(context).translate('welcome_back'),
+      duration: const Duration(seconds: 3),
+      onComplete: () => _notificationManager.showDefaultTitle(),
+    );
+  }
 
-    // Show welcome message after startup
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted) {
-        _notificationManager.showNotification(
-          AppLocalizations.of(context).translate('welcome_back'),
-          duration: const Duration(seconds: 3),
-          onComplete: () => _notificationManager.showDefaultTitle(),
-        );
-      }
+  /// Handles scroll events for the main scroll view
+  void _handleScroll() {
+    final isScrolled = _scrollController.offset > 180;
+    if (_isTabBarScrolled != isScrolled && mounted) {
+      setState(() {
+        _isTabBarScrolled = isScrolled;
+      });
+    }
+  }
+
+  /// Updates the current song state when it changes
+  void _updateCurrentSong() {
+    if (!mounted) return;
+    _currentSongNotifier.value = _audioPlayerService.currentSong;
+  }
+
+  /// Randomizes the displayed content in the UI
+  void _randomizeContent() {
+    if (!mounted || songs.isEmpty) return;
+
+    setState(() {
+      randomSongs = List.from(songs)..shuffle();
+      randomSongs = randomSongs.take(3).toList();
+
+      final uniqueArtists = songs
+          .map((song) => splitArtists(song.artist ?? ''))
+          .expand((artist) => artist)
+          .toSet()
+          .toList();
+
+      randomArtists = List.from(uniqueArtists)..shuffle();
+      randomArtists = randomArtists.take(3).toList();
     });
-
-    _appBarTextController = ScrollController();
-    _scrollController.addListener(() {
-      final isScrolled = _scrollController.offset > 180;
-      if (_isTabBarScrolled != isScrolled) {
-        setState(() {
-          _isTabBarScrolled = isScrolled;
-        });
-      }
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndShowChangelog();
-    });
-
-    _loadVersionInfo();
   }
 
   Future<void> _loadVersionInfo() async {
@@ -210,10 +302,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _checkAndShowChangelog() async {
     if (_hasShownChangelog) return;
-    
+
     final prefs = await SharedPreferences.getInstance();
     final lastVersion = prefs.getString('last_version') ?? '';
-    
+
     if (lastVersion != _currentVersion) {
       await prefs.setString('last_version', _currentVersion);
       if (mounted) {
@@ -232,65 +324,159 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return songs;
   }
 
-  void _updateCurrentSong() {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-    _currentSongNotifier.value = audioPlayerService.currentSong;
-  }
-
-  void _randomizeContent() {
-    if (songs.isNotEmpty) {
-      randomSongs = List.from(songs)..shuffle();
-      randomSongs = randomSongs.take(3).toList();
-      final uniqueArtists = songs
-          .map((song) => splitArtists(song.artist ?? ''))
-          .expand((artist) => artist)
-          .toSet()
-          .toList();
-      randomArtists = List.from(uniqueArtists)..shuffle();
-      randomArtists = randomArtists.take(3).toList();
-    }
-  }
-
+  /// Handles scroll events for the main content
   void _scrollListener() {
-    if (_scrollController.offset > 180 && _showAppBar) {
+    if (!mounted) return;
+
+    final shouldShowAppBar = _scrollController.offset <= 180;
+    if (_showAppBar != shouldShowAppBar) {
       setState(() {
-        _showAppBar = false;
-      });
-    } else if (_scrollController.offset <= 180 && !_showAppBar) {
-      setState(() {
-        _showAppBar = true;
+        _showAppBar = shouldShowAppBar;
       });
     }
   }
 
+  /// Adds a message to the app bar notification queue
+  ///
+  /// [message] The message to display
+  /// [duration] How long to display the message (defaults to 3 seconds)
   void enqueueAppBarMessage(String message, {Duration duration = const Duration(seconds: 3)}) {
     _notificationQueue.add(message);
     _showNextNotification(duration);
   }
 
+  /// Shows the next notification in the queue if one exists
+  ///
+  /// [duration] How long to show the notification
   void _showNextNotification(Duration duration) {
     if (_isShowingNotification || _notificationQueue.isEmpty) return;
 
     _isShowingNotification = true;
-    String message = _notificationQueue.removeFirst();
+    final message = _notificationQueue.removeFirst();
+
+    if (!mounted) return;
 
     setState(() {
       appBarMessage = message;
     });
 
     Future.delayed(duration, () {
-      if (mounted) {
-        setState(() {
-          appBarMessage = '';
-        });
-      }
+      if (!mounted) return;
+
+      setState(() {
+        appBarMessage = '';
+      });
       _isShowingNotification = false;
       _showNextNotification(duration);
     });
   }
 
+  /// Shows a message in the app bar
+  ///
+  /// [message] The message to display
+  /// [duration] How long to display the message (defaults to 8 seconds)
   void showAppBarMessage(String message, {Duration duration = const Duration(seconds: 8)}) {
     enqueueAppBarMessage(message, duration: duration);
+  }
+
+  /// Handles changes in the search query
+  void _onSearchChanged() {
+    if (!mounted) return;
+
+    final query = _searchController.text.toLowerCase();
+
+    if (query.isEmpty) {
+      setState(() {
+        _filteredSongs = [];
+        _filteredArtists = [];
+      });
+      return;
+    }
+
+    setState(() {
+      _filteredSongs = songs.where((song) {
+        final titleMatch = song.title.toLowerCase().contains(query);
+        final artistMatch = (song.artist ?? '').toLowerCase().contains(query);
+        return titleMatch || artistMatch;
+      }).toList();
+
+      _filteredArtists = artists.where((artist) {
+        final artistName = artist.artist.toLowerCase();
+        return artistName.contains(query);
+      }).toList();
+    });
+  }
+
+  /// Initializes the app's data by loading songs, artists, and albums
+  Future<void> _initializeData() async {
+    if (!mounted) return;
+
+    try {
+      final onAudioQuery = OnAudioQuery();
+
+      final results = await Future.wait([
+        onAudioQuery.querySongs(),
+        onAudioQuery.queryArtists(),
+        onAudioQuery.queryAlbums(),
+      ]);
+
+      if (!mounted) return;
+
+      setState(() {
+        songs = results[0] as List<SongModel>;
+        artists = results[1] as List<ArtistModel>;
+        albums = results[2] as List<AlbumModel>;
+        _randomizeContent();
+      });
+    } catch (e) {
+      debugPrint('Initialization error: $e');
+    }
+  }
+
+  /// Updates the background image based on the current song
+  ///
+  /// [song] The current song being played
+  Future<void> _updateBackgroundImage(SongModel? song) async {
+    if (!mounted) return;
+
+    ImageProvider<Object>? newBackground;
+
+    if (song == null) {
+      newBackground = AssetImage(
+        isDarkMode
+            ? 'assets/images/background/dark_back.jpg'
+            : 'assets/images/background/light_back.jpg',
+      );
+    } else {
+      final artwork = await _getArtwork(song.id);
+      newBackground = artwork != null
+          ? MemoryImage(artwork)
+          : AssetImage(
+              isDarkMode
+                  ? 'assets/images/background/dark_back.jpg'
+                  : 'assets/images/background/light_back.jpg',
+            ) as ImageProvider<Object>;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _currentBackgroundImage = newBackground;
+    });
+  }
+
+  /// Retrieves artwork for a song from cache or loads it if not cached
+  ///
+  /// [id] The ID of the song to get artwork for
+  /// Returns the artwork as a byte array if found, null otherwise
+  Future<Uint8List?> _getArtwork(int id) async {
+    if (_artworkCache.containsKey(id)) {
+      return _artworkCache[id];
+    }
+
+    final artwork = await OnAudioQuery().queryArtwork(id, ArtworkType.AUDIO);
+    _artworkCache[id] = artwork;
+    return artwork;
   }
 
   @override
@@ -298,7 +484,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _animationController?.dispose();
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
-    _streamController.close();
     _currentSongNotifier.dispose();
     _tabController.dispose();
     _searchAnimationController.dispose();
@@ -306,6 +491,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Provider.of<AudioPlayerService>(context, listen: false).removeListener(_updateCurrentSong);
     _appBarTextController.dispose();
     _notificationManager.dispose();
+    _audioPlayerService.removeListener(_updateCurrentSong);
     super.dispose();
   }
 
@@ -325,8 +511,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               (entity.path.toLowerCase().endsWith('.mp3') ||
                   entity.path.toLowerCase().endsWith('.m4a') ||
                   entity.path.toLowerCase().endsWith('.wav')))
-          .cast<File>()
-          .toList();
+              .cast<File>()
+              .toList();
 
       final songs = files.map((file) {
         final fileName = file.path.split(Platform.pathSeparator).last;
@@ -425,33 +611,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _showUpdateAvailableDialog(Version latestVersion) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(
-            AppLocalizations.of(context).translate('update_available'),
+      builder: (context) => AlertDialog(
+        title: Text(
+          AppLocalizations.of(context).translate('update_available'),
+        ),
+        content: Text(
+          AppLocalizations.of(context)
+              .translate('update_message')
+              .replaceFirst('%s', latestVersion.toString()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(AppLocalizations.of(context).translate('later')),
           ),
-          content: Text(
-            AppLocalizations.of(context)
-                .translate('update_message')
-                .replaceFirst('%s', latestVersion.toString()),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await launchUrl(Uri.parse('https://github.com/D4v31x/Aurora-Music/releases/latest'));
+            },
+            child: Text(AppLocalizations.of(context).translate('update_now')),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(AppLocalizations.of(context).translate('later')),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                await launchUrl(Uri.parse('https://github.com/D4v31x/Aurora-Music/releases/latest'));
-              },
-              child: Text(AppLocalizations.of(context).translate('update_now')),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -501,7 +685,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       setState(() {
         _isScanning = false;
       });
-      
+
       _notificationManager.showNotification(
         AppLocalizations.of(context).translate('scan_failed'),
         duration: const Duration(seconds: 5),
@@ -597,7 +781,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<bool> _onWillPop() async {
     final expandableController = Provider.of<ExpandablePlayerController>(context, listen: false);
-    
+
     // If the player is expanded, collapse it instead of showing exit dialog
     if (expandableController.isExpanded) {
       expandableController.collapse();
@@ -630,6 +814,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final themeProvider = Provider.of<ThemeProvider>(context);
     isDarkMode = themeProvider.isDarkMode;
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    _audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
     _updateBackgroundImage(audioPlayerService.currentSong);
   }
 
@@ -645,36 +830,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _updateBackgroundImage(song);
 
     expandableController.show();
-  }
-
-  Future<void> _updateBackgroundImage(SongModel? song) async {
-    if (song == null) {
-      _currentBackgroundImage = AssetImage(
-        isDarkMode
-            ? 'assets/images/background/dark_back.jpg'
-            : 'assets/images/background/light_back.jpg',
-      ) as ImageProvider<Object>;
-    } else {
-      final artwork = await _getArtwork(song.id);
-      _currentBackgroundImage = (artwork != null
-          ? MemoryImage(artwork)
-          : AssetImage(
-              isDarkMode
-                  ? 'assets/images/background/dark_back.jpg'
-                  : 'assets/images/background/light_back.jpg',
-            )) as ImageProvider<Object>;
-    }
-    setState(() {});
-  }
-
-  Future<Uint8List?> _getArtwork(int id) async {
-    if (_artworkCache.containsKey(id)) {
-      return _artworkCache[id];
-    }
-
-    final artwork = await OnAudioQuery().queryArtwork(id, ArtworkType.AUDIO);
-    _artworkCache[id] = artwork;
-    return artwork;
   }
 
   Widget buildBackground(SongModel? currentSong) {
@@ -733,66 +888,250 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               value: themeProvider.isDarkMode,
               onChanged: (value) {
                 themeProvider.toggleTheme();
-                setState(() {
-                  isDarkMode = value;
-                  _updateBackgroundImage(Provider.of<AudioPlayerService>(context, listen: false).currentSong);
-                });
+                _updateBackgroundImage(Provider.of<AudioPlayerService>(context, listen: false).currentSong);
               },
               activeColor: Colors.white,
               inactiveTrackColor: Colors.white.withOpacity(0.3),
             ),
             subtitle: Text(
-              themeProvider.isDarkMode 
+              themeProvider.isDarkMode
                   ? AppLocalizations.of(context).translate('dark_mode')
                   : AppLocalizations.of(context).translate('light_mode'),
               style: TextStyle(color: Colors.white.withOpacity(0.7)),
+            ),
           ),
-        ));
+        );
       },
     );
   }
 
   Widget buildSettingsTab() {
-    final codename = dotenv.env['CODE_NAME'] ?? 'Unknown';
-    
+    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final currentSong = audioPlayerService.currentSong;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0)
           .copyWith(bottom: currentSong != null ? 90.0 : 30.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            AppLocalizations.of(context).translate('settings'),
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 20.0),
+          // Playback Settings
           buildSettingsCategory(
-            title: AppLocalizations.of(context).translate('general'),
+            title: AppLocalizations.of(context).translate('playback'),
             children: [
-              buildThemeSelector(),
-              const SizedBox(height: 10.0),
-              buildLanguageSelector(),
-              const SizedBox(height: 10.0),
-              buildManualUpdateCheck(),
-              const SizedBox(height: 10.0),
               glassmorphicContainer(
-                child: ListTile(
-                  title: Text(
-                    AppLocalizations.of(context).translate('show_changelog'),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  trailing: const Icon(Icons.new_releases_outlined, color: Colors.white),
-                  onTap: () {
-                    _showChangelogDialog();
-                  },
-                  subtitle: Text(
-                    'Version $_currentVersion ($codename)',
-                    style: TextStyle(color: Colors.white.withOpacity(0.7)),
-                  ),
+                child: Column(
+                  children: [
+                    // Gapless Playback
+                    ListTile(
+                      leading: const Icon(Icons.play_circle_outline, color: Colors.white),
+                      title: const Text(
+                        'Gapless Playback',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      trailing: Switch(
+                        value: audioPlayerService.gaplessPlayback,
+                        onChanged: (value) => audioPlayerService.setGaplessPlayback(value),
+                        activeColor: Colors.white,
+                        inactiveTrackColor: Colors.white.withOpacity(0.3),
+                      ),
+                    ),
+                    const Divider(color: Colors.white24),
+
+                    // Volume Normalization
+                    ListTile(
+                      leading: const Icon(Icons.volume_up_outlined, color: Colors.white),
+                      title: const Text(
+                        'Volume Normalization',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      trailing: Switch(
+                        value: audioPlayerService.volumeNormalization,
+                        onChanged: (value) => audioPlayerService.setVolumeNormalization(value),
+                        activeColor: Colors.white,
+                        inactiveTrackColor: Colors.white.withOpacity(0.3),
+                      ),
+                    ),
+                    const Divider(color: Colors.white24),
+
+                    // Playback Speed
+                    ListTile(
+                      leading: const Icon(Icons.speed, color: Colors.white),
+                      title: const Text(
+                        'Playback Speed',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      trailing: DropdownButton<double>(
+                        dropdownColor: Colors.grey[900],
+                        value: audioPlayerService.playbackSpeed,
+                        items: [0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((speed) {
+                          return DropdownMenuItem<double>(
+                            value: speed,
+                            child: Text(
+                              '${speed}x',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            audioPlayerService.setPlaybackSpeed(value);
+                          }
+                        },
+                        underline: Container(),
+                        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // Library Settings
+          buildSettingsCategory(
+            title: AppLocalizations.of(context).translate('library'),
+            children: [
+              glassmorphicContainer(
+                child: Column(
+                  children: [
+                    // Default Sort Order
+                    ListTile(
+                      leading: const Icon(Icons.sort, color: Colors.white),
+                      title: const Text(
+                        'Default Sort Order',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      trailing: DropdownButton<String>(
+                        dropdownColor: Colors.grey[900],
+                        value: audioPlayerService.defaultSortOrder,
+                        items: ['title', 'artist', 'album', 'date_added'].map((sort) {
+                          return DropdownMenuItem<String>(
+                            value: sort,
+                            child: Text(
+                              sort.replaceAll('_', ' ').toUpperCase(),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            audioPlayerService.setDefaultSortOrder(value);
+                          }
+                        },
+                        underline: Container(),
+                        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                      ),
+                    ),
+                    const Divider(color: Colors.white24),
+
+                    // Auto Playlists
+                    ListTile(
+                      leading: const Icon(Icons.playlist_add_check, color: Colors.white),
+                      title: const Text(
+                        'Auto Playlists',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      trailing: Switch(
+                        value: audioPlayerService.autoPlaylists,
+                        onChanged: (value) => audioPlayerService.setAutoPlaylists(value),
+                        activeColor: Colors.white,
+                        inactiveTrackColor: Colors.white.withOpacity(0.3),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // Advanced Settings
+          buildSettingsCategory(
+            title: AppLocalizations.of(context).translate('advanced'),
+            children: [
+              glassmorphicContainer(
+                child: Column(
+                  children: [
+                    // Cache Size
+                    ListTile(
+                      leading: const Icon(Icons.memory, color: Colors.white),
+                      title: const Text(
+                        'Cache Size',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      trailing: DropdownButton<int>(
+                        dropdownColor: Colors.grey[900],
+                        value: audioPlayerService.cacheSize,
+                        items: [100, 250, 500, 1000, 2000].map((size) {
+                          return DropdownMenuItem<int>(
+                            value: size,
+                            child: Text(
+                              '${size}MB',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            audioPlayerService.setCacheSize(value);
+                          }
+                        },
+                        underline: Container(),
+                        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                      ),
+                    ),
+                    const Divider(color: Colors.white24),
+
+                    // Media Controls
+                    ListTile(
+                      leading: const Icon(Icons.notifications, color: Colors.white),
+                      title: const Text(
+                        'Media Controls',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      trailing: Switch(
+                        value: audioPlayerService.mediaControls,
+                        onChanged: (value) => audioPlayerService.setMediaControls(value),
+                        activeColor: Colors.white,
+                        inactiveTrackColor: Colors.white.withOpacity(0.3),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // About Section
+          buildSettingsCategory(
+            title: AppLocalizations.of(context).translate('about'),
+            children: [
+              glassmorphicContainer(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.info_outline, color: Colors.white),
+                      title: Text(
+                        AppLocalizations.of(context).translate('about_aurora'),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      trailing: const Icon(Icons.chevron_right, color: Colors.white),
+                      onTap: () => _showAboutDialog(),
+                    ),
+                    const Divider(color: Colors.white24),
+                    ListTile(
+                      leading: const Icon(Icons.system_update, color: Colors.white),
+                      title: Text(
+                        AppLocalizations.of(context).translate('check_updates'),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        'Version $_currentVersion',
+                        style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                      ),
+                      onTap: checkForUpdates,
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -1181,51 +1520,115 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget buildHomeTab() {
-    return RefreshIndicator(
-      onRefresh: _refreshLibrary,
-      child: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: 20.0,
-          right: 20.0,
-          top: 20.0,
-          bottom: currentSong != null ? 90.0 : 30.0,
-        ),
-        child: AnimationLimiter(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: AnimationConfiguration.toStaggeredList(
-              duration: const Duration(milliseconds: 375),
-              childAnimationBuilder: (widget) => SlideAnimation(
-                verticalOffset: 50.0,
-                child: FadeInAnimation(child: widget),
+    return Consumer<AudioPlayerService>(
+      builder: (context, audioPlayerService, _) {
+        final currentSong = audioPlayerService.currentSong;
+
+        return RefreshIndicator(
+          onRefresh: _refreshLibrary,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: 20.0,
+              right: 20.0,
+              top: 20.0,
+              bottom: currentSong != null ? 90.0 : 30.0,
+            ),
+            child: AnimationLimiter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: AnimationConfiguration.toStaggeredList(
+                  duration: const Duration(milliseconds: 375),
+                  childAnimationBuilder: (widget) => SlideAnimation(
+                    verticalOffset: 50.0,
+                    child: FadeInAnimation(child: widget),
+                  ),
+                  children: [
+                    const SizedBox(height: 20.0),
+                    SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: Text(
+                          AppLocalizations.of(context).translate('quick_access'),
+                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20.0),
+                    SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: _buildQuickAccessSection(audioPlayerService),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              children: [
-                const SizedBox(height: 20.0),
-                Text(
-                  AppLocalizations.of(context).translate('quick_access'),
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(height: 10.0),
-                buildQuickAccessSection(),
-                const SizedBox(height: 30.0),
-                Text(
-                  AppLocalizations.of(context).translate('suggested_tracks'),
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(height: 10.0),
-                buildSuggestedTracksSection(),
-                const SizedBox(height: 30.0),
-                Text(
-                  AppLocalizations.of(context).translate('suggested_artists'),
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(height: 10.0),
-                buildSuggestedArtistsSection(),
-              ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickAccessSection(AudioPlayerService audioPlayerService) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        buildCategorySection(
+          title: AppLocalizations.of(context).translate('recently_played'),
+          items: audioPlayerService.getRecentlyPlayed(),
+          onDetailsTap: () {},
+          onItemTap: (song) {
+            if (song is SongModel) {
+              audioPlayerService.setPlaylist([song], 0);
+              audioPlayerService.play();
+            }
+          },
         ),
-      ),
+        const SizedBox(height: 30.0),
+        buildCategorySection(
+          title: AppLocalizations.of(context).translate('albums'),
+          items: audioPlayerService.getMostPlayedAlbums(),
+          onDetailsTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AlbumsScreen()),
+          ),
+          onItemTap: (album) {
+            if (album is AlbumModel) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AlbumDetailScreen(albumName: album.album),
+                ),
+              );
+            }
+          },
+        ),
+        const SizedBox(height: 30.0),
+        ValueListenableBuilder<List<Playlist>>(
+          valueListenable: audioPlayerService.playlistsNotifier,
+          builder: (context, playlists, _) {
+            return buildCategorySection(
+              title: AppLocalizations.of(context).translate('playlists'),
+              items: audioPlayerService.getThreePlaylists(),
+              onDetailsTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PlaylistsScreenList()),
+              ),
+              onItemTap: (playlist) {
+                if (playlist is Playlist) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlaylistDetailScreen(playlist: playlist),
+                    ),
+                  );
+                }
+              },
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -1273,7 +1676,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget buildSearchResults() {
     if (_searchController.text.isEmpty) {
       return Center(
-        child: Text(AppLocalizations.of(context).translate('Start_type'), style: TextStyle(color: Colors.white70)),
+        child: Text(AppLocalizations.of(context).translate('Start_type'), style: const TextStyle(color: Colors.white70)),
       );
     }
 
@@ -1290,17 +1693,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         if (closestArtist != null) ...[
           ArtistCard(
             artistName: closestArtist.artist,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ArtistDetailsScreen(
-                    artistName: closestArtist.artist,
-                    artistImagePath: null,
-                  ),
-                ),
-              );
-            },
+            onTap: () => _navigateToArtistDetails(closestArtist.artist, null),
           ),
           const SizedBox(height: 20),
         ],
@@ -1314,13 +1707,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(height: 10),
-          ..._filteredSongs.map(buildSongListTile),
+          ..._filteredSongs.map(_buildSongListTile),
         ],
       ],
     );
   }
 
-  Widget buildSongListTile(SongModel song) {
+  Widget _buildSongListTile(SongModel song) {
     return ListTile(
       leading: buildCachedArtwork(song.id),
       title: Text(
@@ -1334,326 +1727,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       trailing: const Icon(Icons.favorite_border, color: Colors.white),
       onTap: () => _onSongTap(song),
     );
-  }
-
-  void _onSearchChanged() {
-    final query = _searchController.text.toLowerCase();
-
-    if (query.isEmpty) {
-      setState(() {
-        _filteredSongs = [];
-        _filteredArtists = [];
-      });
-      return;
-    }
-
-    setState(() {
-      _filteredSongs = songs.where((song) {
-        final titleMatch = song.title.toLowerCase().contains(query);
-        final artistMatch = (song.artist ?? '').toLowerCase().contains(query);
-        return titleMatch || artistMatch;
-      }).toList();
-
-      _filteredArtists = artists.where((artist) {
-        final artistName = artist.artist.toLowerCase();
-        return artistName.contains(query);
-      }).toList();
-    });
-  }
-
-  Widget buildQuickAccessSection() {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
-    final likedSongsPlaylist = audioPlayerService.likedSongsPlaylist;
-
-    return AnimationLimiter(
-      child: Column(
-        children: AnimationConfiguration.toStaggeredList(
-          duration: const Duration(milliseconds: 375),
-          childAnimationBuilder: (widget) => SlideAnimation(
-            verticalOffset: 50.0,
-            child: FadeInAnimation(child: widget),
-          ),
-          children: [
-            if (likedSongsPlaylist != null)
-              glassmorphicContainer(
-                child: ListTile(
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(
-                      'assets/images/UI/liked_icon.png',
-                      width: 48,
-                      height: 48,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  title: Text(
-                    likedSongsPlaylist.name,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  subtitle: Text(
-                    '${likedSongsPlaylist.songs.length} ${AppLocalizations.of(context).translate('tracks')}',
-                    style: TextStyle(color: Colors.white.withOpacity(0.7)),
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PlaylistDetailScreen(
-                          playlist: likedSongsPlaylist,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            if (likedSongsPlaylist == null)
-              glassmorphicContainer(
-                child: const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    'No data to display',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildSuggestedTracksSection() {
-    if (randomSongs.isEmpty) {
-      return glassmorphicContainer(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            AppLocalizations.of(context).translate('No_data'),
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
-      );
-    }
-
-    final topThreeSongs = randomSongs.take(3).toList();
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
-    final likedSongsPlaylist = audioPlayerService.likedSongsPlaylist;
-
-    return AnimationLimiter(
-      child: Column(
-        children: AnimationConfiguration.toStaggeredList(
-          duration: const Duration(milliseconds: 375),
-          childAnimationBuilder: (widget) => SlideAnimation(
-            verticalOffset: 50.0,
-            child: FadeInAnimation(child: widget),
-          ),
-          children: topThreeSongs.map((song) {
-            final isLiked = likedSongsPlaylist?.songs.any((s) => s.id == song.id) ?? false;
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _onSuggestedSongTap(song, topThreeSongs),
-                  child: glassmorphicContainer(
-                    child: ListTile(
-                      leading: _artworkService.buildCachedArtwork(
-                        song.id,
-                        size: 50,
-                      ),
-                      title: Text(
-                        song.title,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      subtitle: Text(
-                        splitArtists(song.artist ?? '').join(', '),
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                      trailing: Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.pink : Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget buildSuggestedArtistsSection() {
-    if (randomArtists.isEmpty) {
-      return glassmorphicContainer(
-        child: const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            'No data',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      );
-    }
-
-    return SizedBox(
-      height: 150,
-      child: AnimationLimiter(
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: randomArtists.length,
-          separatorBuilder: (context, index) => const SizedBox(width: 10),
-          itemBuilder: (context, index) {
-            final artist = randomArtists[index];
-
-            return AnimationConfiguration.staggeredList(
-              position: index,
-              duration: const Duration(milliseconds: 375),
-              child: SlideAnimation(
-                horizontalOffset: 50.0,
-                child: FadeInAnimation(
-                  child: FutureBuilder<String?>(
-                    future: _artistService.fetchArtistImage(artist),
-                    builder: (context, snapshot) {
-                      final imagePath = snapshot.data;
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ArtistDetailsScreen(
-                                artistName: artist,
-                                artistImagePath: imagePath,
-                              ),
-                            ),
-                          );
-                        },
-                        child: glassmorphicContainer(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                CircleAvatar(
-                                  radius: 40,
-                                  backgroundImage: imagePath != null ? FileImage(File(imagePath)) : null,
-                                  child: imagePath == null
-                                      ? const Icon(Icons.person, size: 40, color: Colors.white)
-                                      : null,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(artist, style: const TextStyle(color: Colors.white)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Future<ImageProvider<Object>> _getCachedImageProvider(int id) async {
-    if (_imageProviderCache.containsKey(id)) {
-      return _imageProviderCache[id] ?? const AssetImage('assets/images/logo/default_art.png') as ImageProvider<Object>;
-    }
-
-    final artwork = await _getArtwork(id);
-    final ImageProvider<Object> provider = artwork != null
-        ? MemoryImage(artwork)
-        : const AssetImage('assets/images/logo/default_art.png') as ImageProvider<Object>;
-    _imageProviderCache[id] = provider;
-    return provider;
-  }
-
-  Widget buildCachedArtwork(int id, {double size = 50}) {
-    return FutureBuilder<ImageProvider<Object>>(
-      future: _getCachedImageProvider(id),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: snapshot.data!,
-                fit: BoxFit.cover,
-              ),
-            ),
-          );
-        }
-        return Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(Icons.music_note, color: Colors.white),
-        );
-      },
-    );
-  }
-
-  Future<void> _initializeData() async {
-    try {
-      final onAudioQuery = OnAudioQuery();
-
-      final songsFuture = onAudioQuery.querySongs();
-      final artistsFuture = onAudioQuery.queryArtists();
-      final albumsFuture = onAudioQuery.queryAlbums();
-
-      final results = await Future.wait([
-        songsFuture,
-        artistsFuture,
-        albumsFuture,
-      ]);
-
-      setState(() {
-        songs = results[0] as List<SongModel>;
-        artists = results[1] as List<ArtistModel>;
-        albums = results[2] as List<AlbumModel>;
-        _randomizeContent();
-      });
-    } catch (e) {
-      debugPrint('Initialization error: $e');
-    }
-  }
-
-  void checkForUpdates() async {
-    _notificationManager.showNotification(
-      AppLocalizations.of(context).translate('checking_for_updates'),
-      duration: const Duration(seconds: 2),
-    );
-
-    VersionCheckResult result = await checkForNewVersion();
-
-    if (result.isUpdateAvailable && result.latestVersion != null) {
-      _notificationManager.showNotification(
-        AppLocalizations.of(context).translate('update_found'),
-        duration: const Duration(seconds: 3),
-        onComplete: () {
-          _showUpdateAvailableDialog(result.latestVersion!);
-          _notificationManager.showDefaultTitle();
-        },
-      );
-    } else {
-      _notificationManager.showNotification(
-        AppLocalizations.of(context).translate('no_update_found'),
-        duration: const Duration(seconds: 3),
-        onComplete: () => _notificationManager.showDefaultTitle(),
-      );
-    }
   }
 
   void _onSuggestedSongTap(SongModel song, List<SongModel> suggestedSongs) {
@@ -1675,7 +1748,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       initialData: '',
       builder: (context, snapshot) {
         final message = snapshot.data ?? '';
-        
+
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           child: message.isEmpty
@@ -1722,6 +1795,90 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _showAboutDialog() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    final codename = dotenv.env['CODE_NAME'] ?? 'Unknown';
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AuroraAboutDialog(
+        version: packageInfo.version,
+        codename: codename,
+      ),
+    );
+  }
+
+  void _showLanguageDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: glassmorphicContainer(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  AppLocalizations.of(context).translate('select_language'),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ...AppLocalizations.supportedLocales.map((locale) {
+                  final languageName = AppLocalizations.getLanguageName(locale.languageCode);
+                  final currentLocale = LocaleProvider.of(context)?.locale;
+
+                  return ListTile(
+                    leading: Radio<Locale>(
+                      value: locale,
+                      groupValue: currentLocale,
+                      onChanged: (Locale? value) {
+                        if (value != null) {
+                          LocaleProvider.of(context)?.setLocale(value);
+                          Navigator.pop(context);
+                        }
+                      },
+                      activeColor: Colors.white,
+                    ),
+                    title: Text(
+                      languageName,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    onTap: () {
+                      LocaleProvider.of(context)?.setLocale(locale);
+                      Navigator.pop(context);
+                    },
+                  );
+                }),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context).translate('close'),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
@@ -1765,6 +1922,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           isScrollable: true,
                           labelPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
                           indicatorPadding: const EdgeInsets.symmetric(vertical: 8.0),
+                          tabs: [
+                            _buildTabItem(AppLocalizations.of(context).translate('home')),
+                            _buildTabItem(AppLocalizations.of(context).translate('library')),
+                            _buildTabItem(AppLocalizations.of(context).translate('search')),
+                            _buildTabItem(AppLocalizations.of(context).translate('settings')),
+                          ],
                           indicator: OutlineIndicator(
                             color: Colors.white,
                             strokeWidth: 2,
@@ -1776,12 +1939,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               AppLocalizations.of(context).translate('settings'),
                             ][_tabController.index],
                           ),
-                          tabs: [
-                            _buildTabItem(AppLocalizations.of(context).translate('home')),
-                            _buildTabItem(AppLocalizations.of(context).translate('library')),
-                            _buildTabItem(AppLocalizations.of(context).translate('search')),
-                            _buildTabItem(AppLocalizations.of(context).translate('settings')),
-                          ],
                         ),
                       ),
                     ),
@@ -1792,7 +1949,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 controller: _tabController,
                 children: [
                   buildHomeTab(),
-                  const LibraryTab(), // Use the separated LibraryTab widget
+                  const LibraryTab(),
                   buildSearchTab(),
                   buildSettingsTab(),
                 ],
@@ -1832,6 +1989,289 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
+
+  /// Builds the quick access section of the home screen
+  Widget buildQuickAccessSection() {
+    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final likedSongsPlaylist = audioPlayerService.likedSongsPlaylist;
+
+    return AnimationLimiter(
+      child: Column(
+        children: AnimationConfiguration.toStaggeredList(
+          duration: const Duration(milliseconds: 375),
+          childAnimationBuilder: (widget) => SlideAnimation(
+            verticalOffset: 50.0,
+            child: FadeInAnimation(child: widget),
+          ),
+          children: [
+            if (likedSongsPlaylist != null)
+              _buildLikedSongsPlaylistTile(likedSongsPlaylist),
+            if (likedSongsPlaylist == null)
+              _buildNoDataContainer(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds a tile for the liked songs playlist
+  Widget _buildLikedSongsPlaylistTile(Playlist playlist) {
+    return glassmorphicContainer(
+      child: ListTile(
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.asset(
+            'assets/images/UI/liked_icon.png',
+            width: 48,
+            height: 48,
+            fit: BoxFit.cover,
+          ),
+        ),
+        title: Text(
+          playlist.name,
+          style: const TextStyle(color: Colors.white),
+        ),
+        subtitle: Text(
+          '${playlist.songs.length} ${AppLocalizations.of(context).translate('tracks')}',
+          style: TextStyle(color: Colors.white.withOpacity(0.7)),
+        ),
+        onTap: () => _navigateToPlaylistDetail(playlist),
+      ),
+    );
+  }
+
+  /// Navigates to the playlist detail screen
+  void _navigateToPlaylistDetail(Playlist playlist) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlaylistDetailScreen(playlist: playlist),
+      ),
+    );
+  }
+
+  /// Builds a container for when no data is available
+  Widget _buildNoDataContainer() {
+    return glassmorphicContainer(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          AppLocalizations.of(context).translate('No_data'),
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  /// Builds the suggested tracks section of the home screen
+  Widget buildSuggestedTracksSection() {
+    if (randomSongs.isEmpty) {
+      return _buildNoDataContainer();
+    }
+
+    final topThreeSongs = randomSongs.take(3).toList();
+    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final likedSongsPlaylist = audioPlayerService.likedSongsPlaylist;
+
+    return AnimationLimiter(
+      child: Column(
+        children: AnimationConfiguration.toStaggeredList(
+          duration: const Duration(milliseconds: 375),
+          childAnimationBuilder: (widget) => SlideAnimation(
+            verticalOffset: 50.0,
+            child: FadeInAnimation(child: widget),
+          ),
+          children: topThreeSongs.map((song) =>
+            _buildSuggestedSongTile(song, topThreeSongs, likedSongsPlaylist)
+          ).toList(),
+        ),
+      ),
+    );
+  }
+
+  /// Builds a tile for a suggested song
+  Widget _buildSuggestedSongTile(SongModel song, List<SongModel> allSongs, Playlist? likedSongsPlaylist) {
+    final isLiked = likedSongsPlaylist?.songs.any((s) => s.id == song.id) ?? false;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _onSuggestedSongTap(song, allSongs),
+          child: glassmorphicContainer(
+            child: ListTile(
+              leading: _artworkService.buildCachedArtwork(
+                song.id,
+                size: 50,
+              ),
+              title: Text(
+                song.title,
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                splitArtists(song.artist ?? '').join(', '),
+                style: const TextStyle(color: Colors.grey),
+              ),
+              trailing: Icon(
+                isLiked ? Icons.favorite : Icons.favorite_border,
+                color: isLiked ? Colors.pink : Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Gets a cached image provider for artwork
+  Future<ImageProvider<Object>> _getCachedImageProvider(int id) async {
+    if (_imageProviderCache.containsKey(id)) {
+      return _imageProviderCache[id] ??
+             const AssetImage('assets/images/logo/default_art.png') as ImageProvider<Object>;
+    }
+
+    final artwork = await _getArtwork(id);
+    final ImageProvider<Object> provider = artwork != null
+        ? MemoryImage(artwork)
+        : const AssetImage('assets/images/logo/default_art.png') as ImageProvider<Object>;
+    _imageProviderCache[id] = provider;
+    return provider;
+  }
+
+  /// Builds a cached artwork widget
+  Widget buildCachedArtwork(int id, {double size = 50}) {
+    return FutureBuilder<ImageProvider<Object>>(
+      future: _getCachedImageProvider(id),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              image: DecorationImage(
+                image: snapshot.data!,
+                fit: BoxFit.cover,
+              ),
+            ),
+          );
+        }
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.music_note, color: Colors.white),
+        );
+      },
+    );
+  }
+
+  /// Builds the suggested artists section of the home screen
+  Widget buildSuggestedArtistsSection() {
+    if (randomArtists.isEmpty) {
+      return _buildNoDataContainer();
+    }
+
+    return SizedBox(
+      height: 150,
+      child: AnimationLimiter(
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: randomArtists.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemBuilder: (context, index) => _buildArtistCard(randomArtists[index], index),
+        ),
+      ),
+    );
+  }
+
+  /// Builds a card for an individual artist
+  Widget _buildArtistCard(String artist, int index) {
+    return AnimationConfiguration.staggeredList(
+      position: index,
+      duration: const Duration(milliseconds: 375),
+      child: SlideAnimation(
+        horizontalOffset: 50.0,
+        child: FadeInAnimation(
+          child: FutureBuilder<String?>(
+            future: _artistService.fetchArtistImage(artist),
+            builder: (context, snapshot) => _buildArtistCardContent(artist, snapshot.data),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Builds the content of an artist card
+  Widget _buildArtistCardContent(String artist, String? imagePath) {
+    return GestureDetector(
+      onTap: () => _navigateToArtistDetails(artist, imagePath),
+      child: glassmorphicContainer(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 40,
+                backgroundImage: imagePath != null ? FileImage(File(imagePath)) : null,
+                child: imagePath == null
+                    ? const Icon(Icons.person, size: 40, color: Colors.white)
+                    : null,
+              ),
+              const SizedBox(height: 8),
+              Text(artist, style: const TextStyle(color: Colors.white)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Navigates to the artist details screen
+  void _navigateToArtistDetails(String artist, String? imagePath) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ArtistDetailsScreen(
+          artistName: artist,
+          artistImagePath: imagePath,
+        ),
+      ),
+    );
+  }
+
+  /// Checks for available updates and shows appropriate notifications
+  Future<void> checkForUpdates() async {
+    _notificationManager.showNotification(
+      AppLocalizations.of(context).translate('checking_for_updates'),
+      duration: const Duration(seconds: 2),
+    );
+
+    VersionCheckResult result = await checkForNewVersion();
+
+    if (result.isUpdateAvailable && result.latestVersion != null) {
+      _notificationManager.showNotification(
+        AppLocalizations.of(context).translate('update_found'),
+        duration: const Duration(seconds: 3),
+        onComplete: () {
+          _showUpdateAvailableDialog(result.latestVersion!);
+          _notificationManager.showDefaultTitle();
+        },
+      );
+    } else {
+      _notificationManager.showNotification(
+        AppLocalizations.of(context).translate('no_update_found'),
+        duration: const Duration(seconds: 3),
+        onComplete: () => _notificationManager.showDefaultTitle(),
+      );
+    }
+  }
 }
 
 class AutoScrollText extends StatefulWidget {
@@ -1840,11 +2280,11 @@ class AutoScrollText extends StatefulWidget {
   final Function(String) onMessageComplete;
 
   const AutoScrollText({
-    Key? key,
+    super.key,
     required this.text,
     required this.style,
     required this.onMessageComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<AutoScrollText> createState() => _AutoScrollTextState();
@@ -1863,72 +2303,71 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
     super.initState();
     _scrollController = ScrollController();
     _displayedText = widget.text;
-    
+
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
 
     _fadeController.forward();
-    
+
+    // Delay the start of scrolling and message timer
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startMessageTimer();
-      _startScrollIfNeeded();
+      if (mounted) {
+        _startMessageTimer();
+        _startScrollIfNeeded();
+      }
     });
   }
 
   void _startScrollIfNeeded() {
-    if (!mounted || !_scrollController.hasClients) return;
-
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    if (maxScroll <= 0) return;
-
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (!mounted) return;
-      _startScrolling();
-    });
-  }
-
-  void _startScrolling() {
     if (!mounted || _isAnimating) return;
     _isAnimating = true;
 
-    const baseDuration = 3000;
+    const duration = Duration(milliseconds: 3000);
     final maxScroll = _scrollController.position.maxScrollExtent;
-    
+
+    if (!mounted) {
+      _isAnimating = false;
+      return;
+    }
+
     _scrollController.animateTo(
       maxScroll,
-      duration: Duration(milliseconds: baseDuration),
+      duration: duration,
       curve: Curves.linear,
     ).then((_) {
+      if (!mounted) return null;
       return Future.delayed(const Duration(milliseconds: 500));
     }).then((_) {
-      if (!mounted) {
+      if (!mounted) return null;
       return _scrollController.animateTo(
         0,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeOut,
       );
-      }
     }).then((_) {
-      if (!mounted) return;
-      _isAnimating = false;
-      Future.delayed(const Duration(milliseconds: 1000), () {
-        if (mounted) _startScrolling();
-      });
+      if (mounted) {
+        _isAnimating = false;
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          if (mounted) {
+            _startScrollIfNeeded();
+          }
+        });
+      }
     });
   }
 
   void _startMessageTimer() {
     if (!mounted) return;
-    
+
     final bool isScanningMessage = _isScanningMessage();
     if (isScanningMessage) return;
-    
+
     _messageTimer?.cancel();
     _messageTimer = Timer(const Duration(seconds: 5), () {
       if (mounted) {
@@ -1937,20 +2376,11 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
     });
   }
 
-  bool _isScanningMessage() {
-    if (!mounted) return false;
-    return widget.text.contains(
-      AppLocalizations.of(context).translate('scanning_songs'),
-    );
-  }
-
   void _fadeToNextMessage() {
     if (!mounted) return;
     _fadeController.reverse().then((_) {
       if (mounted) {
-        widget.onMessageComplete(
-          AppLocalizations.of(context).translate('aurora_music')
-        );
+        widget.onMessageComplete(widget.text);
       }
     });
   }
@@ -1958,14 +2388,16 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
   @override
   void didUpdateWidget(AutoScrollText oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
-    if (oldWidget.text != widget.text) {
-      setState(() => _displayedText = widget.text);
-      
+
+    if (oldWidget.text != widget.text && mounted) {
+      setState(() {
+        _displayedText = widget.text;
+      });
+
       if (!_isScanningMessage()) {
         _fadeController.forward();
       }
-      
+
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(0);
       }
@@ -1981,6 +2413,13 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
     _scrollController.dispose();
     _fadeController.dispose();
     super.dispose();
+  }
+
+  bool _isScanningMessage() {
+    if (!mounted) return false;
+    return widget.text.contains(
+      AppLocalizations.of(context).translate('scanning_songs'),
+    );
   }
 
   @override

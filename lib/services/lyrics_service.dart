@@ -177,7 +177,7 @@ class TimedLyricsService {
 
       
       return null;
-    } catch (e, stackTrace) {
+    } catch (e) {
       
       
       return null;

@@ -214,7 +214,7 @@ class ArtworkNoticeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                )).toList(),
+                )),
               ],
             ),
           ),

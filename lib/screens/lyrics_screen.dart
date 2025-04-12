@@ -117,7 +117,7 @@ return null;
 }
 
 void _scrollToCurrentLyric() {
-if (_scrollController.hasClients && _timedLyrics != null && _currentLyricIndex != null) {
+if (_scrollController.hasClients && _timedLyrics != null) {
 final itemCount = _timedLyrics!.length;
 if (itemCount == 0) return;
 
@@ -127,8 +127,8 @@ final currentOffset = _scrollController.offset;
 final maxScroll = _scrollController.position.maxScrollExtent;
 
 // Calculate the position of the current lyric
-final itemHeight = 50.0; // Approximate height of each lyric item
-final currentPosition = _currentLyricIndex! * itemHeight;
+const itemHeight = 50.0; // Approximate height of each lyric item
+final currentPosition = _currentLyricIndex * itemHeight;
 
 // Don't scroll if we're at the top and the current lyric is visible
 if (currentPosition < viewportHeight / 2 && currentOffset <= 0) {

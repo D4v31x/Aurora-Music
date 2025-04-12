@@ -16,7 +16,7 @@ import '../widgets/glassmorphic_container.dart';
 import '../localization/app_localizations.dart';
 
 class LibraryTab extends StatefulWidget {
-  const LibraryTab({Key? key}) : super(key: key);
+  const LibraryTab({super.key});
 
   @override
   State<LibraryTab> createState() => _LibraryTabState();

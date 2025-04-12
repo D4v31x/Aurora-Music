@@ -1,6 +1,15 @@
 class ChangelogContent {
   static const Map<String, List<Map<String, List<String>>>> versions = {
     // Latest version at the top
+    '0.1.0': [
+      {
+        'PRERELEASE': [
+          'Yet to be done',
+        ],
+      },
+    ],
+    
+    // Older versions below
     '0.0.9-alpha': [
       {
         'Now Playing': [
@@ -26,23 +35,6 @@ class ChangelogContent {
           'Background Playback',
           'Added Favourite Songs playlist',
           'Various fixes and optimizations',
-        ],
-      },
-    ],
-    
-    // Older versions below
-    '0.9.0': [
-      {
-        'Features': [
-          'Initial beta release',
-          'Basic music playback',
-          'Library organization',
-        ],
-      },
-      {
-        'Improvements': [
-          'Performance optimizations',
-          'UI refinements',
         ],
       },
     ],

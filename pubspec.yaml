@@ -1,5 +1,5 @@
 name: aurora_music_v01
-description: "A new Flutter project."
+description: "Modern Mobile Music Player"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.0.9-alpha
+version: 0.1.0-impeller
 
 environment:
   sdk: '>=3.3.3 <4.0.0'
@@ -36,7 +36,7 @@ dependencies:
   package_info_plus: ^8.0.0
   url_launcher: ^6.2.6
   version: ^3.0.2
-  shared_preferences: ^2.2.3
+  shared_preferences: ^2.3.4
   on_audio_query: ^2.9.0
   path_provider: ^2.1.3
   provider: ^6.1.2
@@ -54,14 +54,17 @@ dependencies:
   pub_semver: ^2.1.4
   just_audio_background: ^0.0.1-beta.13
   flutter_dotenv: ^5.1.0
-  flutter_web_auth: ^0.5.0
+  flutter_web_auth: ^0.6.0
   html: ^0.15.4
-  rive: ^0.13.15
-  youtube_explode_dart: ^2.3.6
   crypto: ^3.0.6
   supercharged: ^2.1.1
   simple_animations: ^5.1.0
+  flutter_local_notifications: ^18.0.1
+  lottie: ^3.2.0
+  dependency_validator: ^5.0.2
 
+
+  audio_session: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -94,11 +97,26 @@ flutter:
         - asset: assets/fonts/ProductSans-Medium.ttf
         - asset: assets/fonts/ProductSans-Thin.ttf
         - asset: assets/fonts/ProductSans-Regular.ttf
+
+    - family: Outfit
+      fonts:
+        - asset: assets/fonts/Outfit-Bold.ttf
+        - asset: assets/fonts/Outfit-Medium.ttf
+        - asset: assets/fonts/Outfit-Regular.ttf
+        - asset: assets/fonts/Outfit-SemiBold.ttf
+        - asset: assets/fonts/Outfit-Light.ttf
+        - asset: assets/fonts/Outfit-Thin.ttf
+        - asset: assets/fonts/Outfit-Black.ttf
+        - asset: assets/fonts/Outfit-ExtraBold.ttf
+        - asset: assets/fonts/Outfit-ExtraLight.ttf
+
   assets:
     - assets/images/background/light_back.jpg
+    - assets/images/background/welcome_bg.jpg
     - assets/images/background/dark_back.jpg
     - assets/images/logo/Music_logo.png
     - assets/images/logo/App_logo.png
+    - assets/images/logo/Music_full_logo.png
     - assets/images/logo/default_art.png
     - assets/translations/cs.json
     - assets/translations/en.json
@@ -106,6 +124,7 @@ flutter:
     - .env
     - assets/images/background/Bcg_V0.0.9.png
     - assets/images/UI/liked_icon.png
+    - assets/animations/Splash.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:

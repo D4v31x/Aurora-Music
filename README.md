@@ -37,6 +37,12 @@ Welcome to **Aurora Music** - a powerful and feature-rich music player built wit
 
 Follow these steps to start enjoying Aurora Music on your Android device:
 
+
+## Requirements
+
+- **Android 10 and higher**
+- For the best experience **internet connection**
+
 ### Installation
 
 1. **Enable Installation from Unknown Sources**  

@@ -69,7 +69,7 @@ class ChangelogDialog extends StatelessWidget {
               ),
             ],
           ),
-        )).toList(),
+        )),
       ],
     );
   }
@@ -172,7 +172,7 @@ class ChangelogDialog extends StatelessWidget {
                               const SizedBox(height: 16),
                             ],
                           )),
-                        ]).toList(),
+                        ]),
 
                         // Privacy Notice Section
                         Divider(

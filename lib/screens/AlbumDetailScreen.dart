@@ -1,8 +1,6 @@
 import 'dart:ui';
-import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import '../models/utils.dart';
 import '../services/Audio_Player_Service.dart';
 import '../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -15,9 +13,9 @@ class AlbumDetailScreen extends StatefulWidget {
   final String albumName;
 
   const AlbumDetailScreen({
-    Key? key,
+    super.key,
     required this.albumName,
-  }) : super(key: key);
+  });
 
   @override
   State<AlbumDetailScreen> createState() => _AlbumDetailScreenState();
@@ -27,7 +25,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   final OnAudioQuery _audioQuery = OnAudioQuery();
   final ArtworkCacheService _artworkService = ArtworkCacheService();
   late ScrollController _scrollController;
-  Color _dominantColor = Colors.deepPurple.shade900;
+  late ValueNotifier<Color> _dominantColorNotifier;
   late Future<List<SongModel>> _songsFuture;
   int _displayedSongsCount = 8;
   final int _loadMoreStep = 8;
@@ -36,8 +34,17 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_scrollListener);
+    _dominantColorNotifier = ValueNotifier(Colors.deepPurple.shade900);
     _songsFuture = _loadSongs();
     _updateDominantColor();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
+    _dominantColorNotifier.dispose();
+    super.dispose();
   }
 
   void _scrollListener() {
@@ -66,9 +73,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
         final paletteGenerator = await PaletteGenerator.fromImageProvider(
           MemoryImage(artwork),
         );
-        setState(() {
-          _dominantColor = paletteGenerator.dominantColor?.color ?? Colors.deepPurple.shade900;
-        });
+        _dominantColorNotifier.value = paletteGenerator.dominantColor?.color ?? Colors.deepPurple.shade900;
       }
     }
   }
@@ -76,79 +81,57 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Consumer<AudioPlayerService>(
-      builder: (context, audioPlayerService, child) {
+      builder: (context, audioPlayerService, _) {
         return Scaffold(
           body: FutureBuilder<List<SongModel>>(
             future: _songsFuture,
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
-                return Container(
-                  decoration: BoxDecoration(
-                    image: const DecorationImage(
-                      image: AssetImage('assets/images/background/dark_back.jpg'),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                );
+                return const Center(child: CircularProgressIndicator());
               }
 
-              return FutureBuilder<dynamic>(
-                future: snapshot.data!.isNotEmpty 
-                    ? _artworkService.getArtwork(snapshot.data!.first.id)
-                    : Future.value(null),
-                builder: (context, artworkSnapshot) {
-                  ImageProvider backgroundImage;
-                  if (artworkSnapshot.hasData) {
-                    backgroundImage = MemoryImage(artworkSnapshot.data!);
-                  } else {
-                    backgroundImage = const AssetImage('assets/images/background/dark_back.jpg');
-                  }
-
+              return ValueListenableBuilder<Color>(
+                valueListenable: _dominantColorNotifier,
+                builder: (context, dominantColor, _) {
                   return Container(
                     decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: backgroundImage,
-                        fit: BoxFit.cover,
-                        colorFilter: ColorFilter.mode(
-                          _dominantColor.withOpacity(0.3),
-                          BlendMode.srcOver,
-                        ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          dominantColor.withOpacity(0.8),
+                          Colors.black,
+                        ],
                       ),
                     ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
-                      child: Container(
-                        color: _dominantColor.withOpacity(0.1),
-                        child: CustomScrollView(
-                          controller: _scrollController,
-                          slivers: [
-                            _buildSliverAppBar(),
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    _buildActionPill(
-                                      context,
-                                      Icons.play_arrow,
-                                      AppLocalizations.of(context).translate('play_all'),
-                                      () => _playAllSongs(context),
-                                    ),
-                                    _buildActionPill(
-                                      context,
-                                      Icons.shuffle,
-                                      AppLocalizations.of(context).translate('shuffle'),
-                                      () => _shuffleAllSongs(context),
-                                    ),
-                                  ],
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      slivers: [
+                        _buildSliverAppBar(snapshot.data!),
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildActionPill(
+                                  context,
+                                  Icons.play_arrow,
+                                  AppLocalizations.of(context).translate('play_all'),
+                                  () => _playAllSongs(context, snapshot.data!),
                                 ),
-                              ),
+                                _buildActionPill(
+                                  context,
+                                  Icons.shuffle,
+                                  AppLocalizations.of(context).translate('shuffle'),
+                                  () => _shuffleAllSongs(context, snapshot.data!),
+                                ),
+                              ],
                             ),
-                            _buildSongsList(audioPlayerService),
-                          ],
+                          ),
                         ),
-                      ),
+                        _buildSongsList(snapshot.data!, audioPlayerService),
+                      ],
                     ),
                   );
                 },
@@ -160,7 +143,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
     );
   }
 
-  Widget _buildSliverAppBar() {
+  Widget _buildSliverAppBar(List<SongModel> songs) {
     return SliverAppBar(
       backgroundColor: Colors.transparent,
       expandedHeight: 350,
@@ -266,8 +249,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
     );
   }
 
-  void _playAllSongs(BuildContext context) async {
-    final songs = await _songsFuture;
+  void _playAllSongs(BuildContext context, List<SongModel> songs) async {
     if (songs.isNotEmpty) {
       final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
       audioPlayerService.setPlaylist(songs, 0);
@@ -275,8 +257,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
     }
   }
 
-  void _shuffleAllSongs(BuildContext context) async {
-    final songs = await _songsFuture;
+  void _shuffleAllSongs(BuildContext context, List<SongModel> songs) async {
     if (songs.isNotEmpty) {
       final shuffledSongs = List<SongModel>.from(songs)..shuffle();
       final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
@@ -285,69 +266,52 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
     }
   }
 
-  Widget _buildSongsList(AudioPlayerService audioPlayerService) {
-    return FutureBuilder<List<SongModel>>(
-      future: _songsFuture,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const SliverFillRemaining(
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        final songs = snapshot.data!;
-        return SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              if (index >= songs.length) return null;
-              final song = songs[index];
-              return AnimationConfiguration.staggeredList(
-                position: index,
-                duration: const Duration(milliseconds: 375),
-                child: SlideAnimation(
-                  verticalOffset: 50.0,
-                  child: FadeInAnimation(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
-                      ),
-                      child: glassmorphicContainer(
-                        child: ListTile(
-                          leading: Text(
-                            '${index + 1}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                          title: Text(
-                            song.title,
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          subtitle: Text(
-                            song.artist ?? 'Unknown Artist',
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                          onTap: () {
-                            audioPlayerService.setPlaylist(songs, index);
-                            audioPlayerService.play();
-                          },
+  Widget _buildSongsList(List<SongModel> songs, AudioPlayerService audioPlayerService) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          if (index >= songs.length) return null;
+          final song = songs[index];
+          return AnimationConfiguration.staggeredList(
+            position: index,
+            duration: const Duration(milliseconds: 375),
+            child: SlideAnimation(
+              verticalOffset: 50.0,
+              child: FadeInAnimation(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  child: glassmorphicContainer(
+                    child: ListTile(
+                      leading: Text(
+                        '${index + 1}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
                         ),
                       ),
+                      title: Text(
+                        song.title,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        song.artist ?? 'Unknown Artist',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      onTap: () {
+                        audioPlayerService.setPlaylist(songs, index);
+                        audioPlayerService.play();
+                      },
                     ),
                   ),
                 ),
-              );
-            },
-          ),
-        );
-      },
+              ),
+            ),
+          );
+        },
+      ),
     );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 }

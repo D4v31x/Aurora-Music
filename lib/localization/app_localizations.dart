@@ -13,6 +13,24 @@ class AppLocalizations {
 
   static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
+  static final List<Locale> supportedLocales = [
+    const Locale('en'), // English
+    const Locale('cs'), // Czech
+    // Add more locales as needed
+  ];
+
+  static String getLanguageName(String languageCode) {
+    switch (languageCode) {
+      case 'en':
+        return 'English';
+      case 'cs':
+        return 'Čeština';
+      // Add more languages as needed
+      default:
+        return languageCode.toUpperCase();
+    }
+  }
+
   late Map<String, String> _localizedStrings;
 
   Future<bool> load() async {
@@ -36,7 +54,9 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
 
   @override
   bool isSupported(Locale locale) {
-    return ['en', 'cs'].contains(locale.languageCode);
+    return AppLocalizations.supportedLocales
+        .map((e) => e.languageCode)
+        .contains(locale.languageCode);
   }
 
   @override

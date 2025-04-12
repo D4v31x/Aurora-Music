@@ -1,21 +1,19 @@
 import 'dart:async';
 import 'package:aurora_music_v01/services/spotify_service.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
-import '../localization/app_localizations.dart';
 import '../models/utils.dart';
 import 'dart:io';
 import 'dart:convert';
 import '../models/playlist_model.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:audio_session/audio_session.dart';
 
 class AudioPlayerService extends ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final OnAudioQuery _audioQuery = OnAudioQuery();
-
 
   List<SongModel> _playlist = [];
   List<Playlist> _playlists = [];
@@ -45,7 +43,7 @@ class AudioPlayerService extends ChangeNotifier {
   final ValueNotifier<SongModel?> currentSongNotifier = ValueNotifier(null);
 
   final _currentSongController = StreamController<SongModel?>.broadcast();
-Stream<SongModel?> get currentSongStream => _currentSongController.stream;
+  Stream<SongModel?> get currentSongStream => _currentSongController.stream;
   List<SpotifySongModel> _spotifyPlaylist = [];
   int _currentSpotifyIndex = 0;
 
@@ -58,7 +56,7 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
   Duration? get sleepTimerDuration => _sleepTimerDuration;
 
   Set<String> _likedSongs = {};
-  Playlist? _likedSongsPlaylist;
+  late Playlist? _likedSongsPlaylist;
 
   List<SongModel> _songs = [];
   List<SongModel> get songs => _songs;
@@ -66,10 +64,35 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
   static const String LIKED_SONGS_PLAYLIST_ID = 'liked_songs';
   String _likedPlaylistName = 'Favorite Songs'; // Default English name
 
+  // New settings properties
+  bool _gaplessPlayback = true;
+  bool _volumeNormalization = false;
+  double _playbackSpeed = 1.0;
+  String _defaultSortOrder = 'title';
+  bool _autoPlaylists = true;
+  int _cacheSize = 100; // in MB
+  bool _mediaControls = true;
+
+  // Settings getters
+  bool get gaplessPlayback => _gaplessPlayback;
+  bool get volumeNormalization => _volumeNormalization;
+  double get playbackSpeed => _playbackSpeed;
+  String get defaultSortOrder => _defaultSortOrder;
+  bool get autoPlaylists => _autoPlaylists;
+  int get cacheSize => _cacheSize;
+  bool get mediaControls => _mediaControls;
+
+  // Add ValueNotifiers for reactive state
+  final ValueNotifier<bool> isPlayingNotifier = ValueNotifier<bool>(false);
+  final ValueNotifier<List<Playlist>> playlistsNotifier = ValueNotifier<List<Playlist>>([]);
+  final ValueNotifier<bool> isShuffleNotifier = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> isRepeatNotifier = ValueNotifier<bool>(false);
+
   AudioPlayerService() {
     _init();
     loadLibrary();
     initializeLikedSongsPlaylist();
+    _loadSettings();
     audioPlayer.playerStateStream.listen((playerState) {
       notifyListeners();
     });
@@ -81,6 +104,7 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
 
     _audioPlayer.playerStateStream.listen((playerState) {
       _isPlaying = playerState.playing;
+      isPlayingNotifier.value = _isPlaying;
       notifyListeners();
     });
 
@@ -266,7 +290,7 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
     final artistPlayCounts = <String, int>{};
 
     for (var artist in allArtists) {
-      final artistNames = splitArtists(artist.artist ?? '');
+      final artistNames = splitArtists(artist.artist);
       for (var name in artistNames) {
         artistPlayCounts[name] = (_artistPlayCounts[name] ?? 0);
       }
@@ -292,8 +316,15 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
 
   // Playback Control
   Future<void> setPlaylist(List<SongModel> songs, int startIndex) async {
+    if (songs.isEmpty || startIndex < 0 || startIndex >= songs.length) return;
+
     _playlist = songs;
     _currentIndex = startIndex;
+    
+    if (_gaplessPlayback) {
+      await _applySettings(); // This will set up the concatenating audio source
+    }
+    
     await play();
   }
 
@@ -301,13 +332,17 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
     if (index != null) {
       _currentIndex = index;
     }
+
     if (_currentIndex >= 0 && _currentIndex < _playlist.length) {
       final song = _playlist[_currentIndex];
-      final url = song.uri;
-
-      if (url != null) {
-        currentSongNotifier.value = song;
-
+      
+      if (_gaplessPlayback) {
+        // For gapless playback, we just need to seek to the correct index
+        await _audioPlayer.seek(Duration.zero, index: _currentIndex);
+        await _audioPlayer.play();
+      } else {
+        // Non-gapless playback - load each song individually
+        final url = song.uri ?? song.data;
         final artworkBytes = await getCurrentSongArtwork();
         Uri? artUri;
         if (artworkBytes != null) {
@@ -321,27 +356,25 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
         final mediaItem = MediaItem(
           id: song.id.toString(),
           album: song.album ?? 'Unknown Album',
-          title: song.title ?? 'Unknown Title',
+          title: song.title,
           artist: song.artist ?? 'Unknown Artist',
           artUri: artUri,
           duration: Duration(milliseconds: song.duration ?? 0),
         );
 
         await _audioPlayer.setAudioSource(
-          AudioSource.uri(
-            Uri.parse(url),
-            tag: mediaItem,
-          ),
+          AudioSource.uri(Uri.parse(url), tag: mediaItem),
           preload: true,
         );
-
         await _audioPlayer.play();
-        _isPlaying = true;
-        _incrementPlayCount(song);
-        await updateCurrentArtwork();
-        _currentSongController.add(song);
-        notifyListeners();
       }
+
+      _isPlaying = true;
+      _incrementPlayCount(song);
+      await updateCurrentArtwork();
+      _currentSongController.add(song);
+      currentSongNotifier.value = song;
+      notifyListeners();
     }
   }
 
@@ -387,7 +420,6 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
         );
         await audioPlayer.setAudioSource(AudioSource.uri(Uri.file(downloadedFilePath), tag: mediaItem));
       } else {
-
         return;
       }
     } else {
@@ -409,6 +441,7 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
   Future<void> pause() async {
     await _audioPlayer.pause();
     _isPlaying = false;
+    isPlayingNotifier.value = false;
     notifyListeners();
   }
 
@@ -416,12 +449,14 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
     if (_audioPlayer.playing) return;
     await _audioPlayer.play();
     _isPlaying = true;
+    isPlayingNotifier.value = true;
     notifyListeners();
   }
 
   Future<void> stop() async {
     await _audioPlayer.stop();
     _isPlaying = false;
+    isPlayingNotifier.value = false;
     notifyListeners();
   }
 
@@ -447,11 +482,13 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
 
   void toggleShuffle() {
     _isShuffle = !_isShuffle;
+    isShuffleNotifier.value = _isShuffle;
     notifyListeners();
   }
 
   void toggleRepeat() {
     _isRepeat = !_isRepeat;
+    isRepeatNotifier.value = _isRepeat;
     notifyListeners();
   }
 
@@ -474,7 +511,6 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
         size: 1000,
       );
     } catch (e) {
-
       return null;
     }
   }
@@ -493,7 +529,6 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
       );
       currentArtwork.value = artwork;
     } catch (e) {
-
       currentArtwork.value = null;
     }
   }
@@ -657,6 +692,297 @@ Stream<SongModel?> get currentSongStream => _currentSongController.stream;
 
   // Getter for the playlist name
   String get likedPlaylistName => _likedPlaylistName;
+
+  Future<void> _loadSettings() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/settings.json');
+
+    if (await file.exists()) {
+      final contents = await file.readAsString();
+      final json = jsonDecode(contents);
+      
+      _gaplessPlayback = json['gaplessPlayback'] ?? true;
+      _volumeNormalization = json['volumeNormalization'] ?? false;
+      _playbackSpeed = (json['playbackSpeed'] ?? 1.0).toDouble();
+      _defaultSortOrder = json['defaultSortOrder'] ?? 'title';
+      _autoPlaylists = json['autoPlaylists'] ?? true;
+      _cacheSize = json['cacheSize'] ?? 100;
+      _mediaControls = json['mediaControls'] ?? true;
+
+      // Apply settings to audio player
+      await _applySettings();
+    }
+  }
+
+  Future<void> _saveSettings() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/settings.json');
+
+    final json = {
+      'gaplessPlayback': _gaplessPlayback,
+      'volumeNormalization': _volumeNormalization,
+      'playbackSpeed': _playbackSpeed,
+      'defaultSortOrder': _defaultSortOrder,
+      'autoPlaylists': _autoPlaylists,
+      'cacheSize': _cacheSize,
+      'mediaControls': _mediaControls,
+    };
+
+    await file.writeAsString(jsonEncode(json));
+  }
+
+  Future<void> _applySettings() async {
+    // Apply playback speed
+    await _audioPlayer.setSpeed(_playbackSpeed);
+
+    // Apply volume normalization using regular volume control
+    if (_volumeNormalization) {
+      await _audioPlayer.setVolume(1.0);
+    }
+
+    // Configure gapless playback
+    if (_gaplessPlayback) {
+      // Create a concatenating audio source for gapless playback
+      if (_playlist.isNotEmpty) {
+        final playlist = ConcatenatingAudioSource(
+          children: _playlist.map((song) => AudioSource.uri(
+            Uri.parse(song.uri ?? song.data),
+            tag: MediaItem(
+              id: song.id.toString(),
+              album: song.album ?? 'Unknown Album',
+              title: song.title,
+              artist: song.artist ?? 'Unknown Artist',
+              duration: Duration(milliseconds: song.duration ?? 0),
+            ),
+          )).toList(),
+        );
+        
+        // Set the audio source with the current index
+        await _audioPlayer.setAudioSource(
+          playlist,
+          initialIndex: _currentIndex,
+          initialPosition: _audioPlayer.position,
+        );
+      }
+    }
+  }
+
+  // Settings update methods
+  Future<void> setGaplessPlayback(bool value) async {
+    _gaplessPlayback = value;
+    await _saveSettings();
+    notifyListeners();
+  }
+
+  Future<void> setVolumeNormalization(bool value) async {
+    _volumeNormalization = value;
+    await _applySettings();
+    await _saveSettings();
+    notifyListeners();
+  }
+
+  Future<void> setPlaybackSpeed(double value) async {
+    _playbackSpeed = value;
+    await _applySettings();
+    await _saveSettings();
+    notifyListeners();
+  }
+
+  Future<void> setDefaultSortOrder(String value) async {
+    _defaultSortOrder = value;
+    await _saveSettings();
+    _sortPlaylist();
+    notifyListeners();
+  }
+
+  Future<void> setAutoPlaylists(bool value) async {
+    _autoPlaylists = value;
+    await _saveSettings();
+    if (_autoPlaylists) {
+      _updateAutoPlaylists();
+    } else {
+      // Remove auto-generated playlists
+      _playlists.removeWhere((p) => 
+        p.id == 'most_played' || p.id == 'recently_added'
+      );
+      savePlaylists();
+    }
+    notifyListeners();
+  }
+
+  Future<void> setCacheSize(int value) async {
+    _cacheSize = value;
+    await _saveSettings();
+    await _manageCacheSize();
+    notifyListeners();
+  }
+
+  Future<void> setMediaControls(bool value) async {
+    _mediaControls = value;
+    await _saveSettings();
+    
+    // Update the audio session configuration
+    final session = await AudioSession.instance;
+    if (!_mediaControls) {
+      // Disable media notifications
+      await session.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        androidAudioAttributes: AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.music,
+          usage: AndroidAudioUsage.media,
+        ),
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+        androidWillPauseWhenDucked: true,
+      ));
+    } else {
+      // Enable media notifications
+      await session.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        androidAudioAttributes: AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.music,
+          usage: AndroidAudioUsage.media,
+        ),
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+        androidWillPauseWhenDucked: true,
+      ));
+
+      // Re-initialize the audio service if needed
+      if (_audioPlayer.playing) {
+        // Update the current media item to refresh the notification
+        final currentSong = this.currentSong;
+        if (currentSong != null) {
+          await _audioPlayer.setAudioSource(
+            AudioSource.uri(
+              Uri.parse(currentSong.data),
+              tag: MediaItem(
+                id: currentSong.id.toString(),
+                album: currentSong.album ?? '',
+                title: currentSong.title,
+                artist: currentSong.artist ?? 'Unknown Artist',
+                artUri: Uri.parse('file://${currentSong.data}'),
+              ),
+            ),
+          );
+        }
+      }
+    }
+    
+    notifyListeners();
+  }
+
+  void _sortPlaylist() {
+    switch (_defaultSortOrder) {
+      case 'title':
+        _playlist.sort((a, b) => (a.title).compareTo(b.title));
+        break;
+      case 'artist':
+        _playlist.sort((a, b) => (a.artist ?? '').compareTo(b.artist ?? ''));
+        break;
+      case 'album':
+        _playlist.sort((a, b) => (a.album ?? '').compareTo(b.album ?? ''));
+        break;
+      case 'date_added':
+        // Implement date added sorting if you track this information
+        break;
+    }
+  }
+
+  Future<void> _manageCacheSize() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final cacheDir = Directory('${directory.path}/artwork_cache');
+    
+    if (await cacheDir.exists()) {
+      final files = await cacheDir.list().toList();
+      final totalSize = files.fold<int>(0, (sum, file) => 
+        sum + (file is File ? file.lengthSync() : 0));
+      
+      if (totalSize > _cacheSize * 1024 * 1024) {
+        // Sort files by last access time
+        files.sort((a, b) => 
+          a.statSync().accessed.compareTo(b.statSync().accessed));
+        
+        // Delete oldest files until we're under the limit
+        var currentSize = totalSize;
+        for (var file in files) {
+          if (currentSize <= _cacheSize * 1024 * 1024) break;
+          if (file is File) {
+            final fileSize = file.lengthSync();
+            await file.delete();
+            currentSize -= fileSize;
+          }
+        }
+      }
+    }
+  }
+
+  void _updateAutoPlaylists() {
+    if (!_autoPlaylists) return;
+
+    // Create "Most Played" playlist
+    getMostPlayedTracks().then((tracks) {
+      final existingIndex = _playlists.indexWhere((p) => p.name == 'Most Played');
+      
+      if (existingIndex != -1) {
+        // Update existing playlist
+        _playlists[existingIndex] = Playlist(
+          id: 'most_played',
+          name: 'Most Played',
+          songs: tracks,
+        );
+      } else {
+        // Create new playlist
+        _playlists.add(Playlist(
+          id: 'most_played',
+          name: 'Most Played',
+          songs: tracks,
+        ));
+      }
+      
+      savePlaylists();
+      notifyListeners();
+    });
+
+    // Create "Recently Added" playlist
+    _audioQuery.querySongs(
+      sortType: SongSortType.DATE_ADDED,
+      orderType: OrderType.DESC_OR_GREATER,
+    ).then((tracks) {
+      final existingIndex = _playlists.indexWhere((p) => p.name == 'Recently Added');
+      
+      if (existingIndex != -1) {
+        // Update existing playlist
+        _playlists[existingIndex] = Playlist(
+          id: 'recently_added',
+          name: 'Recently Added',
+          songs: tracks,
+        );
+      } else {
+        // Create new playlist
+        _playlists.add(Playlist(
+          id: 'recently_added',
+          name: 'Recently Added',
+          songs: tracks,
+        ));
+      }
+      
+      savePlaylists();
+      notifyListeners();
+    });
+  }
+
+  // Add this new method
+  Future<List<SongModel>> getRecentlyPlayed() async {
+    final allSongs = await _audioQuery.querySongs();
+    final recentlyPlayedSongs = allSongs.where((song) => 
+      _trackPlayCounts.containsKey(song.id.toString())
+    ).toList();
+    
+    recentlyPlayedSongs.sort((a, b) => 
+      (_trackPlayCounts[b.id.toString()] ?? 0).compareTo(_trackPlayCounts[a.id.toString()] ?? 0)
+    );
+    
+    return recentlyPlayedSongs.take(3).toList();
+  }
 }
 
 class SpotifySongModel {

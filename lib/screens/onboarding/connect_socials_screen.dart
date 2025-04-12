@@ -3,31 +3,41 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../widgets/aurora_background.dart';
 import 'final_screen.dart';
 
-class ConnectSocialsScreen extends StatelessWidget {
+class ConnectSocialsScreen extends StatefulWidget {
   const ConnectSocialsScreen({super.key});
 
+  @override
+  State<ConnectSocialsScreen> createState() => _ConnectSocialsScreenState();
+}
+
+class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
+  bool _isExiting = false;
+
   void _navigateToFinal(BuildContext context) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const FinalScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-      ),
-    );
+    setState(() => _isExiting = true);
+    
+    Future.delayed(const Duration(milliseconds: 600), () {
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const FinalScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      );
+    });
   }
 
   Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!await launchUrl(Uri.parse(url))) {
+      throw Exception('Could not launch $url');
     }
   }
 
@@ -36,105 +46,208 @@ class ConnectSocialsScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          const AuroraBackground(),
+          Image.asset(
+            'assets/images/background/welcome_bg.jpg',
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+          ).animate().blur(duration: 300.ms),
+          
           SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                child: Column(
-                  children: [
-                    const Spacer(flex: 1),
-                    Text(
-                      'Stay Connected',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ).animate().fadeIn(duration: 600.ms),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Join our community and stay updated',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white70,
-                      ),
-                      textAlign: TextAlign.center,
-                    ).animate().fadeIn(delay: 200.ms),
-                    const SizedBox(height: 48),
-                    _buildSocialCard(
-                      context,
-                      'Official Website',
-                      Icons.language_outlined,
-                      'd4v31x.github.io/Aurora_WEB',
-                      'Latest news and updates',
-                      () => _launchUrl('https://d4v31x.github.io/Aurora_WEB/index.html'),
-                    ).animate().fadeIn(delay: 400.ms),
-                    const SizedBox(height: 16),
-                    _buildSocialCard(
-                      context,
-                      'Instagram Page',
-                      Icons.discord,
-                      'instagram.com/aurora.software',
-                      'Updates and behind-the-code things',
-                      () => _launchUrl('https://instagram.com/aurora.software'),
-                    ).animate().fadeIn(delay: 600.ms),
-                    const SizedBox(height: 16),
-                    _buildSocialCard(
-                      context,
-                      'GitHub Repository',
-                      Icons.code,
-                      'github.com/D4v31x/aurora-music',
-                      'Watch the development in close',
-                      () => _launchUrl('https://github.com/D4v31x/aurora-music'),
-                    ).animate().fadeIn(delay: 800.ms),
-                    const Spacer(flex: 2),
-                    Text(
-                      'You can find these links later in settings',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white70,
-                      ),
-                      textAlign: TextAlign.center,
-                    ).animate().fadeIn(delay: 900.ms),
-                    const SizedBox(height: 24),
-                    Container(
-                      width: double.infinity,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(28),
-                        color: Colors.white.withOpacity(0.15),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.2),
-                          width: 1,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Spacer(flex: 1),
+                  Text(
+                    'Connect\nwith us',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      fontSize: 46,
+                      fontFamily: 'Outfit',
+                    ),
+                  )
+                  .animate()
+                    .fadeIn(
+                      duration: 300.ms,
+                      delay: 500.ms,
+                      curve: Curves.easeInOut
+                    )
+                    .moveX(begin: -30, end: 0)
+                  .animate(
+                    target: _isExiting ? 1.0 : 0.0,
+                    autoPlay: false,
+                  )
+                    .custom(
+                      duration: 400.ms,
+                      curve: Curves.easeInOut,
+                      builder: (context, value, child) => 
+                        Transform(
+                          transform: Matrix4.identity()
+                            ..setEntry(3, 2, 0.001)
+                            ..rotateY(value * 0.5)
+                            ..translate(value * 100.0),
+                          alignment: Alignment.centerRight,
+                          child: Opacity(opacity: 1.0 - value, child: child),
                         ),
+                    ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  Container(
+                    width: 185,
+                    height: 2,
+                    color: Colors.white,
+                  )
+                  .animate()
+                    .scaleX(
+                      begin: 0, 
+                      end: 1,
+                      duration: 250.ms,
+                      delay: 400.ms,
+                      curve: Curves.easeInOut,
+                      alignment: Alignment.centerLeft
+                    )
+                  .animate(
+                    target: _isExiting ? 1.0 : 0.0,
+                    autoPlay: false,
+                  )
+                    .custom(
+                      duration: 400.ms,
+                      curve: Curves.easeInOut,
+                      builder: (context, value, child) => 
+                        Transform.scale(
+                          scaleX: 1.0 - value,
+                          alignment: Alignment.centerRight,
+                          child: child,
+                        ),
+                    ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  Text(
+                    'To keep track with us, follow\nus on our socials!',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white70,
+                      fontSize: 20,
+                      fontFamily: 'Outfit',
+                    ),
+                  )
+                  .animate()
+                    .fadeIn(
+                      duration: 300.ms,
+                      delay: 700.ms,
+                      curve: Curves.easeInOut
+                    )
+                    .moveX(begin: -30, end: 0)
+                  .animate(
+                    target: _isExiting ? 1.0 : 0.0,
+                    autoPlay: false,
+                  )
+                    .custom(
+                      duration: 400.ms,
+                      curve: Curves.easeInOut,
+                      builder: (context, value, child) => 
+                        Transform(
+                          transform: Matrix4.identity()
+                            ..setEntry(3, 2, 0.001)
+                            ..rotateY(value * 0.5)
+                            ..translate(value * 100.0),
+                          alignment: Alignment.centerRight,
+                          child: Opacity(opacity: 1.0 - value, child: child),
+                        ),
+                    ),
+
+                  const SizedBox(height: 48),
+
+                  _buildSocialButton(
+                    'Instagram',
+                    'https://instagram.com/your_handle',
+                  ).animate()
+                    .fadeIn(
+                      duration: 300.ms,
+                      delay: 800.ms,
+                      curve: Curves.easeInOut
+                    )
+                    .moveY(begin: 20, end: 0),
+
+                  const SizedBox(height: 16),
+
+                  _buildSocialButton(
+                    'Web',
+                    'https://your-website.com',
+                  ).animate()
+                    .fadeIn(
+                      duration: 300.ms,
+                      delay: 900.ms,
+                      curve: Curves.easeInOut
+                    )
+                    .moveY(begin: 20, end: 0),
+
+                  const SizedBox(height: 16),
+
+                  _buildSocialButton(
+                    'GitHub',
+                    'https://github.com/your-repo',
+                  ).animate()
+                    .fadeIn(
+                      duration: 300.ms,
+                      delay: 1000.ms,
+                      curve: Curves.easeInOut
+                    )
+                    .moveY(begin: 20, end: 0),
+
+                  const Spacer(flex: 2),
+                  
+                  Container(
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      color: Colors.white.withOpacity(0.15),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(28),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: ElevatedButton(
-                            onPressed: () => _navigateToFinal(context),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(28),
-                              ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(28),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: ElevatedButton(
+                          onPressed: () => _navigateToFinal(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
                             ),
-                            child: const Text(
-                              'Next',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          ),
+                          child: const Text(
+                            'Continue',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Outfit',
                             ),
                           ),
                         ),
                       ),
-                    ).animate().scale(delay: 1000.ms),
-                    const Spacer(flex: 1),
-                  ],
-                ),
+                    ),
+                  )
+                  .animate()
+                    .fadeIn(
+                      duration: 300.ms,
+                      delay: 1100.ms,
+                      curve: Curves.easeInOut
+                    )
+                    .moveY(begin: 20, end: 0),
+                  
+                  const SizedBox(height: 48),
+                ],
               ),
             ),
           ),
@@ -143,14 +256,7 @@ class ConnectSocialsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSocialCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    String link,
-    String description,
-    VoidCallback onTap,
-  ) {
+  Widget _buildSocialButton(String platform, String url) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
@@ -167,56 +273,21 @@ class ConnectSocialsScreen extends StatelessWidget {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: onTap,
+              onTap: () => _launchUrl(url),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
                 child: Row(
                   children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        icon,
+                    Text(
+                      platform,
+                      style: const TextStyle(
                         color: Colors.white,
-                        size: 24,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Outfit',
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            link,
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            description,
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    const Spacer(),
                     Icon(
                       Icons.arrow_forward_ios,
                       color: Colors.white.withOpacity(0.7),

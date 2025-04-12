@@ -10,12 +10,11 @@ import '../services/Audio_Player_Service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../services/expandable_player_controller.dart';
-import 'now_playing.dart';
 
 class FolderDetailScreen extends StatefulWidget {
   final String folderPath;
 
-  const FolderDetailScreen({Key? key, required this.folderPath}) : super(key: key);
+  const FolderDetailScreen({super.key, required this.folderPath});
 
   @override
   State<FolderDetailScreen> createState() => _FolderDetailScreenState();
