@@ -1847,6 +1847,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (!mounted) return;
 
+
     showDialog(
       context: context,
       builder: (context) => AuroraAboutDialog(
