@@ -26,6 +26,7 @@ import '../widgets/changelog_dialog.dart';
 import '../widgets/expandable_bottom.dart';
 import '../widgets/home/quick_access_section.dart';
 import '../widgets/home/suggested_tracks_section.dart';
+import '../widgets/home/suggested_artists_section.dart';
 import 'AlbumDetailScreen.dart';
 import 'Artist_screen.dart';
 import 'FolderDetail_screen.dart';
@@ -1377,7 +1378,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
                 ),
                 const SizedBox(height: 10.0),
-                buildSuggestedArtistsSection(),
+                SuggestedArtistsSection(
+                  randomArtists: randomArtists,
+                  artistService: _artistService,
+                ),
               ],
             ),
           ),

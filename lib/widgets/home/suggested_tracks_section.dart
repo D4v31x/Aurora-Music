@@ -52,53 +52,79 @@ class SuggestedTracksSection extends StatelessWidget {
 
         return RepaintBoundary(
           child: AnimationLimiter(
-            child: Column(
-              children: AnimationConfiguration.toStaggeredList(
-                duration: const Duration(milliseconds: 375),
-                childAnimationBuilder: (widget) => SlideAnimation(
-                  verticalOffset: 50.0,
-                  child: FadeInAnimation(child: widget),
-                ),
-                children: topThreeSongs.map((song) {
-                  final isLiked = likedSongsPlaylist?.songs.any((s) => s.id == song.id) ?? false;
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => _onSuggestedSongTap(context, song, topThreeSongs),
-                        child: glassmorphicContainer(
-                          child: ListTile(
-                            leading: RepaintBoundary(
-                              child: artworkService.buildCachedArtwork(
-                                song.id,
-                                size: 50,
-                              ),
-                            ),
-                            title: Text(
-                              song.title,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            subtitle: Text(
-                              splitArtists(song.artist ?? '').join(', '),
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                            trailing: Icon(
-                              isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: isLiked ? Colors.pink : Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
+            child: topThreeSongs.length > 5 
+              ? ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: topThreeSongs.length,
+                  itemBuilder: (context, index) {
+                    final song = topThreeSongs[index];
+                    final isLiked = likedSongsPlaylist?.songs.any((s) => s.id == song.id) ?? false;
+                    
+                    return _buildSongItem(context, song, isLiked, topThreeSongs, artworkService, index);
+                  },
+                )
+              : Column(
+                  children: AnimationConfiguration.toStaggeredList(
+                    duration: const Duration(milliseconds: 375),
+                    childAnimationBuilder: (widget) => SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(child: widget),
                     ),
-                  );
-                }).toList(),
-              ),
-            ),
+                    children: topThreeSongs.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final song = entry.value;
+                      final isLiked = likedSongsPlaylist?.songs.any((s) => s.id == song.id) ?? false;
+
+                      return _buildSongItem(context, song, isLiked, topThreeSongs, artworkService, index);
+                    }).toList(),
+                  ),
+                ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSongItem(
+    BuildContext context, 
+    SongModel song, 
+    bool isLiked, 
+    List<SongModel> topThreeSongs, 
+    ArtworkCacheService artworkService,
+    int index,
+  ) {
+    return Padding(
+      key: ValueKey(song.id), // Add key for better list performance
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _onSuggestedSongTap(context, song, topThreeSongs),
+          child: glassmorphicContainer(
+            child: ListTile(
+              leading: RepaintBoundary(
+                child: artworkService.buildCachedArtwork(
+                  song.id,
+                  size: 50,
+                ),
+              ),
+              title: Text(
+                song.title,
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                splitArtists(song.artist ?? '').join(', '),
+                style: const TextStyle(color: Colors.grey),
+              ),
+              trailing: Icon(
+                isLiked ? Icons.favorite : Icons.favorite_border,
+                color: isLiked ? Colors.pink : Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
