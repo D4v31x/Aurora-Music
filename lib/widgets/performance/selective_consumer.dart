@@ -36,6 +36,56 @@ class SelectiveConsumer<T> extends StatelessWidget {
 
 /// Consumer specifically optimized for AudioPlayerService that only rebuilds
 /// when the current song changes, not on every playback state change
+class AudioPlayerSongConsumer extends StatelessWidget {
+  final Widget Function(BuildContext context, dynamic audioService, Widget? child) builder;
+  final Widget? child;
+
+  const AudioPlayerSongConsumer({
+    super.key,
+    required this.builder,
+    this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Selector(
+      selector: (context, audioService) => audioService.currentSong,
+      shouldRebuild: (previous, current) => previous?.id != current?.id,
+      builder: (context, currentSong, child) {
+        final audioService = Provider.of(context, listen: false);
+        return builder(context, audioService, child);
+      },
+      child: child,
+    );
+  }
+}
+
+/// Consumer that only rebuilds when playback state changes
+class AudioPlayerPlaybackConsumer extends StatelessWidget {
+  final Widget Function(BuildContext context, dynamic audioService, Widget? child) builder;
+  final Widget? child;
+
+  const AudioPlayerPlaybackConsumer({
+    super.key,
+    required this.builder,
+    this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Selector(
+      selector: (context, audioService) => audioService.isPlaying,
+      builder: (context, isPlaying, child) {
+        final audioService = Provider.of(context, listen: false);
+        return builder(context, audioService, child);
+      },
+      child: child,
+    );
+  }
+}
+
+/// Consumer specifically optimized for AudioPlayerService that only rebuilds
+/// when the current song changes, not on every playback state change
 class AudioPlayerConsumer extends StatelessWidget {
   final Widget Function(BuildContext context, dynamic audioService, Widget? child) builder;
   final Widget? child;

@@ -5,6 +5,7 @@ import 'package:palette_generator/palette_generator.dart';
 import '../services/Audio_Player_Service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/performance/performance_manager.dart';
+import '../widgets/performance/selective_consumer.dart';
 
 class MiniPlayer extends StatefulWidget {
   final SongModel currentSong;
@@ -90,20 +91,32 @@ class _MiniPlayerState extends State<MiniPlayer> {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final textColor = dominantColor != null ? getTextColor(dominantColor!) : Colors.white;
 
-    return Consumer<AudioPlayerService>(
+    return AudioPlayerPlaybackConsumer(
       builder: (context, audioPlayerService, child) {
         return RepaintBoundary(
-          child: Material(
-      color: Colors.transparent,
-      child: Container(
-        height: _minHeight + bottomPadding,
-        decoration: BoxDecoration(
-          color: dominantColor?.withOpacity(0.95) ?? Colors.black.withOpacity(0.95),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          ),
-        ),
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              bottom: bottomPadding + 16.0, // Add bottom spacing for island effect
+            ),
+            child: Material(
+              color: Colors.transparent,
+              elevation: 8.0, // Add elevation for floating effect
+              borderRadius: BorderRadius.circular(16.0), // Full border radius for island effect
+              child: Container(
+                height: _minHeight,
+                decoration: BoxDecoration(
+                  color: dominantColor?.withOpacity(0.95) ?? Colors.black.withOpacity(0.95),
+                  borderRadius: BorderRadius.circular(16.0), // Full border radius
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 8.0,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
         child: Row(
           children: [
             // Artwork s Hero animací
@@ -228,17 +241,19 @@ class _MiniPlayerState extends State<MiniPlayer> {
                 ),
               ),
             ),
-            // Tlačítko pro přehrávání/pauzu
+            // Play/pause button with isolation from expansion
             GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () {
+                // Prevent parent gesture detection to avoid expansion
                 if (audioPlayerService.isPlaying) {
                   audioPlayerService.pause();
                 } else {
                   audioPlayerService.resume();
                 }
               },
-              child: Padding(
+              child: Container(
+                // Add a larger tap area to prevent accidental expansion
                 padding: const EdgeInsets.all(16.0),
                 child: Icon(
                   audioPlayerService.isPlaying 

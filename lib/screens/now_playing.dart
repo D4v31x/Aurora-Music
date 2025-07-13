@@ -12,6 +12,8 @@ import '../services/expandable_player_controller.dart';
 import '../services/lyrics_service.dart';  // Genius lyrics fetching service
 // Importujte službu pro timed lyrics
 import '../widgets/artist_card.dart';
+import '../widgets/performance/selective_consumer.dart'; // Add selective consumer import
+import '../widgets/performance/optimized_artwork.dart'; // Add optimized artwork import
 import 'Artist_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../models/timed_lyrics.dart';

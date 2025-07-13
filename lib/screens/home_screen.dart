@@ -27,6 +27,7 @@ import '../widgets/expandable_bottom.dart';
 import '../widgets/home/quick_access_section.dart';
 import '../widgets/home/suggested_tracks_section.dart';
 import '../widgets/home/suggested_artists_section.dart';
+import '../utils/debouncer.dart'; // Add debouncer import
 import 'AlbumDetailScreen.dart';
 import 'Artist_screen.dart';
 import 'FolderDetail_screen.dart';
@@ -102,10 +103,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _hasShownChangelog = false;
   String _currentVersion = '';
   final NotificationManager _notificationManager = NotificationManager();
+  
+  // Performance optimizations
+  late final Debouncer _scrollDebouncer;
+  late final Debouncer _searchDebouncer;
+  late final BatchProcessor<String> _searchBatchProcessor;
 
   @override
   void initState() {
     super.initState();
+    
+    // Initialize performance optimizations
+    _scrollDebouncer = Debouncer(delay: const Duration(milliseconds: 100));
+    _searchDebouncer = Debouncer(delay: const Duration(milliseconds: 300));
+    _searchBatchProcessor = BatchProcessor<String>(
+      delay: const Duration(milliseconds: 300),
+      onBatch: _performBatchedSearch,
+    );
+    
     _scrollController.addListener(_scrollListener);
     _searchController.addListener(_onSearchChanged);
     final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
@@ -254,15 +269,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _scrollListener() {
-    if (_scrollController.offset > 180 && _showAppBar) {
-      setState(() {
-        _showAppBar = false;
-      });
-    } else if (_scrollController.offset <= 180 && !_showAppBar) {
-      setState(() {
-        _showAppBar = true;
-      });
-    }
+    _scrollDebouncer.call(() {
+      if (!mounted) return;
+      
+      final isScrolled = _scrollController.offset > 180;
+      if (_isTabBarScrolled != isScrolled) {
+        setState(() {
+          _isTabBarScrolled = isScrolled;
+        });
+      }
+      
+      if (_scrollController.offset > 180 && _showAppBar) {
+        setState(() {
+          _showAppBar = false;
+        });
+      } else if (_scrollController.offset <= 180 && !_showAppBar) {
+        setState(() {
+          _showAppBar = true;
+        });
+      }
+    });
   }
 
   void enqueueAppBarMessage(String message, {Duration duration = const Duration(seconds: 3)}) {
@@ -308,6 +334,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Provider.of<AudioPlayerService>(context, listen: false).removeListener(_updateCurrentSong);
     _appBarTextController.dispose();
     _notificationManager.dispose();
+    
+    // Dispose performance optimization instances
+    _scrollDebouncer.dispose();
+    _searchDebouncer.dispose();
+    _searchBatchProcessor.dispose();
+    
     super.dispose();
   }
 
@@ -1502,6 +1534,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
+    _searchBatchProcessor.add(query);
+  }
+
+  void _performBatchedSearch(List<String> queries) {
+    if (!mounted) return;
+    
+    final query = queries.isNotEmpty ? queries.last : '';
 
     if (query.isEmpty) {
       setState(() {
@@ -1511,17 +1550,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       return;
     }
 
-    setState(() {
-      _filteredSongs = songs.where((song) {
+    // Use compute for expensive search operations to avoid blocking UI
+    _searchDebouncer.call(() async {
+      if (!mounted) return;
+      
+      final filteredSongs = songs.where((song) {
         final titleMatch = song.title.toLowerCase().contains(query);
         final artistMatch = (song.artist ?? '').toLowerCase().contains(query);
         return titleMatch || artistMatch;
       }).toList();
 
-      _filteredArtists = artists.where((artist) {
+      final filteredArtists = artists.where((artist) {
         final artistName = artist.artist.toLowerCase();
         return artistName.contains(query);
       }).toList();
+
+      if (mounted) {
+        setState(() {
+          _filteredSongs = filteredSongs;
+          _filteredArtists = filteredArtists;
+        });
+      }
     });
   }
 
@@ -1853,31 +1902,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       initialData: '',
       builder: (context, snapshot) {
         final message = snapshot.data ?? '';
+        
+        // Calculate adaptive text color based on current background
+        Color textColor = Colors.white;
+        if (dominantColor != null) {
+          // Use the utility to get appropriate text color
+          textColor = (0.299 * dominantColor!.red + 
+                      0.587 * dominantColor!.green + 
+                      0.114 * dominantColor!.blue) / 255 > 0.5 
+                      ? Colors.black 
+                      : Colors.white;
+        }
 
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           child: message.isEmpty
-              ? Text(
-            AppLocalizations.of(context).translate('aurora_music'),
-            key: const ValueKey('default'),
-            style: const TextStyle(
-              fontFamily: 'ProductSans',
-              color: Colors.white,
-              fontSize: 34,
-              fontWeight: FontWeight.bold,
-            ),
-          )
+              ? AnimatedDefaultTextStyle(
+                  key: const ValueKey('default'),
+                  duration: const Duration(milliseconds: 300),
+                  style: TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: textColor,
+                    fontSize: 34,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context).translate('aurora_music'),
+                  ),
+                )
               : AutoScrollText(
-            key: ValueKey(message),
-            text: message,
-            style: const TextStyle(
-              fontFamily: 'ProductSans',
-              color: Colors.white,
-              fontSize: 34,
-              fontWeight: FontWeight.bold,
-            ),
-            onMessageComplete: (message) => _notificationManager.showDefaultTitle(),
-          ),
+                  key: ValueKey(message),
+                  text: message,
+                  style: TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: textColor,
+                    fontSize: 34,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  onMessageComplete: (message) => _notificationManager.showDefaultTitle(),
+                ),
         );
       },
     );

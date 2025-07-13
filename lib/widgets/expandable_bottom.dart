@@ -86,8 +86,11 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
                 child: GestureDetector(
                   onVerticalDragUpdate: (details) {
                     if (!mounted) return;
-                    _controller.value -= details.primaryDelta! / 
-                                       (MediaQuery.of(context).size.height - widget.minHeight);
+                    // Only handle drag if not at collapsed state to avoid conflicts with miniplayer tap area
+                    if (_controller.value > 0.1) {
+                      _controller.value -= details.primaryDelta! / 
+                                         (MediaQuery.of(context).size.height - widget.minHeight);
+                    }
                   },
                   onVerticalDragEnd: (details) {
                     if (!mounted || _controller.isAnimating) return;
@@ -115,37 +118,47 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
                   },
                   onTap: () {
                     if (!mounted) return;
+                    // Only expand on tap if at collapsed state and not tapping play/pause area
                     if (_controller.value == 0.0) {
                       expand();
                       expandablePlayerController.expand();
-                }
-              },
-              child: RepaintBoundary(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.8),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20.0)
+                    }
+                  },
+                  child: RepaintBoundary(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.8),
+                        borderRadius: BorderRadius.vertical(
+                          top: const Radius.circular(20.0),
+                          // Add dynamic bottom radius for better morphing
+                          bottom: Radius.circular(_controller.value > 0.8 ? 0.0 : 16.0),
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          // Enhanced fade transition for smoother morphing
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: _controller,
+                              builder: (context, child) => Opacity(
+                                opacity: (1.0 - _controller.value).clamp(0.0, 1.0),
+                                child: widget.minChild,
+                              ),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: _controller,
+                              builder: (context, child) => Opacity(
+                                opacity: _controller.value.clamp(0.0, 1.0),
+                                child: widget.maxChild,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: FadeTransition(
-                          opacity: ReverseAnimation(_controller),
-                          child: widget.minChild,
-                        ),
-                      ),
-                      Positioned.fill(
-                        child: FadeTransition(
-                          opacity: _controller,
-                          child: widget.maxChild,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ),
           ),
         );
