@@ -75,12 +75,15 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
         return AnimatedBuilder(
           animation: _controller,
           builder: (BuildContext context, Widget? child) {
+            final bottomPadding = MediaQuery.of(context).padding.bottom;
+            final islandSpacing = _controller.value == 0.0 ? 16.0 : 0.0; // Island spacing when collapsed
+            
             return Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
+              bottom: islandSpacing + bottomPadding,
+              left: islandSpacing,
+              right: islandSpacing,
               height: widget.minHeight + 
-                     (MediaQuery.of(context).size.height - widget.minHeight) * 
+                     (MediaQuery.of(context).size.height - widget.minHeight - islandSpacing - bottomPadding) * 
                      _heightFactor.value,
               child: RepaintBoundary(
                 child: GestureDetector(
@@ -114,19 +117,17 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
                     }
                   },
                   onTap: () {
-                    if (!mounted) return;
-                    if (_controller.value == 0.0) {
-                      expand();
-                      expandablePlayerController.expand();
-                }
-              },
-              child: RepaintBoundary(
+                    // Only handle tap if not directly on the mini player content
+                    // The mini player now handles its own expansion logic
+                    if (!mounted || _controller.value > 0.0) return;
+                  },
+                  child: RepaintBoundary(
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.8),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20.0)
-                    ),
+                    borderRadius: _controller.value == 0.0 
+                      ? BorderRadius.circular(16.0) // Fully rounded when collapsed (island)
+                      : const BorderRadius.vertical(top: Radius.circular(20.0)), // Top-only when expanded
                   ),
                   child: Stack(
                     children: [

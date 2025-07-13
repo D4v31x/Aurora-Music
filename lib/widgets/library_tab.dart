@@ -210,44 +210,51 @@ class _LibraryTabState extends State<LibraryTab> {
   }
 
   Widget _buildAnimatedItemsList(List<dynamic> items, Function(dynamic)? onItemTap) {
+    const double itemWidth = 120.0;
+    const double itemHeight = 120.0;
+    
     return AnimationLimiter(
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: min(3, items.length),
+        cacheExtent: 300, // Optimize cache for horizontal scrolling
+        itemExtent: itemWidth + 10, // Fixed width for better performance
         itemBuilder: (context, index) {
           final item = items[index];
-          return AnimationConfiguration.staggeredList(
-            position: index,
-            duration: const Duration(milliseconds: 375),
-            child: SlideAnimation(
-              horizontalOffset: 50.0,
-              child: FadeInAnimation(
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: onItemTap != null ? () => onItemTap(item) : null,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: glassmorphicContainer(
-                        child: SizedBox(
-                          width: 120,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              getItemIcon(item),
-                              const SizedBox(height: 8),
-                              Text(
-                                getItemTitle(item),
-                                style: const TextStyle(color: Colors.white),
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+          return RepaintBoundary( // Add RepaintBoundary for each item
+            child: AnimationConfiguration.staggeredList(
+              position: index,
+              duration: const Duration(milliseconds: 375),
+              child: SlideAnimation(
+                horizontalOffset: 50.0,
+                child: FadeInAnimation(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: onItemTap != null ? () => onItemTap(item) : null,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: glassmorphicContainer(
+                          child: SizedBox(
+                            width: itemWidth,
+                            height: itemHeight,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                getItemIcon(item),
+                                const SizedBox(height: 8),
+                                Text(
+                                  getItemTitle(item),
+                                  style: const TextStyle(color: Colors.white),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
                   ),
                 ),
               ),

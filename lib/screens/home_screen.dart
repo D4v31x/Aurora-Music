@@ -27,6 +27,7 @@ import '../widgets/expandable_bottom.dart';
 import '../widgets/home/quick_access_section.dart';
 import '../widgets/home/suggested_tracks_section.dart';
 import '../widgets/home/suggested_artists_section.dart';
+import '../utils/color_utils.dart';
 import 'AlbumDetailScreen.dart';
 import 'Artist_screen.dart';
 import 'FolderDetail_screen.dart';
@@ -57,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late bool isDarkMode;
   final Color _dominantColor = Colors.black;
   late TabController _tabController;
+  int _currentTabIndex = 0; // Track current tab index for IndexedStack
   late final LocalCachingArtistService _artistService = LocalCachingArtistService();
   late final ValueNotifier<SongModel?> _currentSongNotifier = ValueNotifier<SongModel?>(null);
   bool isWelcomeBackVisible = true;
@@ -67,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   List<SongModel> randomSongs = [];
   Color? dominantColor;
   Color? textColor;
+  Color _adaptiveTextColor = Colors.white; // For top bar text adaptation
   AnimationController? _animationController;
   Animation<Offset>? _slideAnimation;
   final ScrollController _scrollController = ScrollController();
@@ -113,7 +116,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     audioPlayerService.addListener(_updateCurrentSong);
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
-      if (mounted) setState(() {});
+      if (mounted && _tabController.index != _currentTabIndex) {
+        setState(() {
+          _currentTabIndex = _tabController.index;
+        });
+      }
     });
 
     _searchAnimationController = AnimationController(
@@ -237,6 +244,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _updateCurrentSong() {
     final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
     _currentSongNotifier.value = audioPlayerService.currentSong;
+    
+    // Update adaptive text color when song changes
+    _updateAdaptiveTextColor(audioPlayerService.currentSong);
   }
 
   void _randomizeContent() {
@@ -309,6 +319,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _appBarTextController.dispose();
     _notificationManager.dispose();
     super.dispose();
+  }
+  
+  /// Updates adaptive text color based on current song's artwork
+  Future<void> _updateAdaptiveTextColor(SongModel? song) async {
+    if (song == null) {
+      setState(() {
+        _adaptiveTextColor = Colors.white;
+      });
+      return;
+    }
+    
+    try {
+      final artwork = await _artworkService.getArtwork(song.id);
+      if (artwork != null && mounted) {
+        final adaptiveColor = await ColorUtils.getOptimalTextColorFromArtwork(MemoryImage(artwork));
+        setState(() {
+          _adaptiveTextColor = adaptiveColor;
+        });
+      }
+    } catch (e) {
+      // Fallback to white if color extraction fails
+      if (mounted) {
+        setState(() {
+          _adaptiveTextColor = Colors.white;
+        });
+      }
+    }
   }
 
   Future<void> _loadLibraryData() async {
@@ -1857,27 +1894,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           child: message.isEmpty
-              ? Text(
-            AppLocalizations.of(context).translate('aurora_music'),
-            key: const ValueKey('default'),
-            style: const TextStyle(
-              fontFamily: 'ProductSans',
-              color: Colors.white,
-              fontSize: 34,
-              fontWeight: FontWeight.bold,
-            ),
-          )
+              ? AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 300),
+                  style: TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: _adaptiveTextColor,
+                    fontSize: 34,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context).translate('aurora_music'),
+                    key: const ValueKey('default'),
+                  ),
+                )
               : AutoScrollText(
-            key: ValueKey(message),
-            text: message,
-            style: const TextStyle(
-              fontFamily: 'ProductSans',
-              color: Colors.white,
-              fontSize: 34,
-              fontWeight: FontWeight.bold,
-            ),
-            onMessageComplete: (message) => _notificationManager.showDefaultTitle(),
-          ),
+                  key: ValueKey(message),
+                  text: message,
+                  style: TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: _adaptiveTextColor,
+                    fontSize: 34,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  onMessageComplete: (message) => _notificationManager.showDefaultTitle(),
+                ),
         );
       },
     );
@@ -1966,13 +2006,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
               ],
-              body: TabBarView(
-                controller: _tabController,
+              body: IndexedStack(
+                index: _currentTabIndex,
                 children: [
-                  buildHomeTab(),
-                  const LibraryTab(), // Use the separated LibraryTab widget
-                  buildSearchTab(),
-                  buildSettingsTab(),
+                  _KeepAliveTabContent(child: buildHomeTab()),
+                  const _KeepAliveTabContent(child: LibraryTab()),
+                  _KeepAliveTabContent(child: buildSearchTab()),
+                  _KeepAliveTabContent(child: buildSettingsTab()),
                 ],
               ),
             ),
@@ -2232,5 +2272,28 @@ class NotificationManager {
   void dispose() {
     _notificationTimer?.cancel();
     _notificationController.close();
+  }
+}
+
+/// Wrapper widget to keep tab content alive for better performance
+class _KeepAliveTabContent extends StatefulWidget {
+  final Widget child;
+  
+  const _KeepAliveTabContent({required this.child});
+  
+  @override
+  State<_KeepAliveTabContent> createState() => _KeepAliveTabContentState();
+}
+
+class _KeepAliveTabContentState extends State<_KeepAliveTabContent> 
+    with AutomaticKeepAliveClientMixin {
+  
+  @override
+  bool get wantKeepAlive => true;
+  
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }
