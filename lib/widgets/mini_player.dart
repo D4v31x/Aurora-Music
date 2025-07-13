@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:palette_generator/palette_generator.dart';
 import '../services/Audio_Player_Service.dart';
 import '../services/artwork_cache_service.dart';
+import '../services/performance/performance_manager.dart';
 
 class MiniPlayer extends StatefulWidget {
   final SongModel currentSong;
@@ -21,6 +22,9 @@ class _MiniPlayerState extends State<MiniPlayer> {
   final _artworkService = ArtworkCacheService();
   Color? dominantColor;
   final double _minHeight = 65.0;
+  
+  // Cache for palette colors to avoid expensive recalculation
+  static final Map<int, Color> _paletteCache = {};
 
   @override
   void initState() {
@@ -37,6 +41,16 @@ class _MiniPlayerState extends State<MiniPlayer> {
   }
 
   Future<void> _updateDominantColor() async {
+    // Check cache first
+    if (_paletteCache.containsKey(widget.currentSong.id)) {
+      if (mounted) {
+        setState(() {
+          dominantColor = _paletteCache[widget.currentSong.id];
+        });
+      }
+      return;
+    }
+
     final artwork = await _artworkService.getArtwork(widget.currentSong.id);
     if (artwork != null) {
       final paletteGenerator = await PaletteGenerator.fromImageProvider(
@@ -44,8 +58,18 @@ class _MiniPlayerState extends State<MiniPlayer> {
         size: const Size(50, 50), // menší velikost pro rychlejší zpracování
       );
       if (mounted) {
+        final color = paletteGenerator.dominantColor?.color ?? Colors.black;
+        
+        // Cache the result
+        _paletteCache[widget.currentSong.id] = color;
+        
+        // Clean up cache if it gets too large
+        if (PerformanceManager.shouldCleanup(_paletteCache)) {
+          PerformanceManager.cleanupCache(_paletteCache);
+        }
+        
         setState(() {
-          dominantColor = paletteGenerator.dominantColor?.color ?? Colors.black;
+          dominantColor = color;
         });
       }
     }
@@ -63,11 +87,13 @@ class _MiniPlayerState extends State<MiniPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final textColor = dominantColor != null ? getTextColor(dominantColor!) : Colors.white;
 
-    return Material(
+    return Consumer<AudioPlayerService>(
+      builder: (context, audioPlayerService, child) {
+        return RepaintBoundary(
+          child: Material(
       color: Colors.transparent,
       child: Container(
         height: _minHeight + bottomPadding,
@@ -225,7 +251,9 @@ class _MiniPlayerState extends State<MiniPlayer> {
             ),
           ],
         ),
-      ),
+          ),
+        ));
+      },
     );
   }
 }

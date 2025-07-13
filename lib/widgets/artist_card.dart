@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/local_caching_service.dart';
+import '../services/performance/performance_manager.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -13,6 +14,10 @@ class ArtistCard extends StatefulWidget {
     required this.artistName,
     required this.onTap,
   });
+
+  // Static cache to prevent duplicate API calls
+  static final Map<String, String> _artistInfoCache = {};
+  static final Set<String> _pendingRequests = {};
 
   static List<String> splitArtistNames(String artistNames) {
     return artistNames
@@ -51,13 +56,39 @@ class _ArtistCardState extends State<ArtistCard> {
   }
 
   Future<void> _fetchArtistInfo() async {
+    String primaryArtist = ArtistCard.splitArtistNames(widget.artistName).first;
+    
+    // Check cache first
+    if (ArtistCard._artistInfoCache.containsKey(primaryArtist)) {
+      if (mounted) {
+        setState(() {
+          _artistInfo = ArtistCard._artistInfoCache[primaryArtist]!;
+        });
+      }
+      return;
+    }
+    
+    // Check if request is already pending
+    if (ArtistCard._pendingRequests.contains(primaryArtist)) {
+      // Wait for existing request and check cache again
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (ArtistCard._artistInfoCache.containsKey(primaryArtist) && mounted) {
+        setState(() {
+          _artistInfo = ArtistCard._artistInfoCache[primaryArtist]!;
+        });
+      }
+      return;
+    }
+
     try {
-      String primaryArtist = ArtistCard.splitArtistNames(widget.artistName).first;
+      ArtistCard._pendingRequests.add(primaryArtist);
 
       final url = 'https://en.wikipedia.org/api/rest_v1/page/summary/${Uri.encodeComponent(primaryArtist)}';
       final response = await http.get(Uri.parse(url));
       
       if (!mounted) return;
+      
+      String artistInfo = 'Musical artist'; // Default value
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -66,21 +97,40 @@ class _ArtistCardState extends State<ArtistCard> {
         RegExp regExp = RegExp(r'(?:is|was) (?:an?|the) ([A-Za-z\s-]+?(singer|musician|rapper|band|group|artist|producer|composer|songwriter|DJ)[A-Za-z\s-]*?)(?:\.|\,|who|from)');
         var match = regExp.firstMatch(description);
         
-        if (!mounted) return;
-        
+        if (match != null) {
+          artistInfo = match.group(1)?.trim() ?? 'Musical artist';
+        }
+      }
+      
+      // Cache the result
+      ArtistCard._artistInfoCache[primaryArtist] = artistInfo;
+      
+      // Clean up cache if it gets too large
+      if (PerformanceManager.shouldCleanup(ArtistCard._artistInfoCache)) {
+        PerformanceManager.cleanupCache(ArtistCard._artistInfoCache);
+      }
+      
+      if (mounted) {
         setState(() {
-          if (match != null) {
-            _artistInfo = match.group(1)?.trim() ?? '';
-          } else {
-            _artistInfo = 'Musical artist';
-          }
+          _artistInfo = artistInfo;
         });
       }
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _artistInfo = 'Musical artist';
-      });
+      // Cache default value to prevent repeated failed requests
+      ArtistCard._artistInfoCache[primaryArtist] = 'Musical artist';
+      
+      // Clean up cache if needed
+      if (PerformanceManager.shouldCleanup(ArtistCard._artistInfoCache)) {
+        PerformanceManager.cleanupCache(ArtistCard._artistInfoCache);
+      }
+      
+      if (mounted) {
+        setState(() {
+          _artistInfo = 'Musical artist';
+        });
+      }
+    } finally {
+      ArtistCard._pendingRequests.remove(primaryArtist);
     }
   }
 
@@ -141,33 +191,35 @@ class _ArtistCardState extends State<ArtistCard> {
           children: [
             Hero(
               tag: 'artist_image_${widget.artistName}',
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 8,
-                      spreadRadius: 2,
+              child: RepaintBoundary(
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _artistImagePath != null
+                        ? Image.file(
+                      File(_artistImagePath!),
+                      fit: BoxFit.cover,
+                      width: 80,
+                      height: 80,
+                    )
+                        : Image.asset(
+                      'assets/images/logo/default_art.png',
+                      fit: BoxFit.cover,
+                      width: 80,
+                      height: 80,
                     ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: _artistImagePath != null
-                      ? Image.file(
-                    File(_artistImagePath!),
-                    fit: BoxFit.cover,
-                    width: 80,
-                    height: 80,
-                  )
-                      : Image.asset(
-                    'assets/images/logo/default_art.png',
-                    fit: BoxFit.cover,
-                    width: 80,
-                    height: 80,
                   ),
                 ),
               ),

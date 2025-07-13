@@ -126,6 +126,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         if (!mounted) return;
 
         final task = tasks[i];
+        // Batch update: progress and current task together
         setState(() {
           _currentTask = task.$1;
           _progress = i / tasks.length;
@@ -143,6 +144,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           // Only show warnings for critical errors
           if (task.$1 != 'Setting up Analytics') {
             if (mounted) {
+              // Batch update: warnings and connectivity issues together
               setState(() {
                 _warnings.add('Issue with ${task.$1.toLowerCase()}');
                 _hasConnectivityIssues = true;
