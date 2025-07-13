@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 /// Performance management service to prevent memory leaks and optimize caching
 class PerformanceManager {
   static const int maxCacheSize = 200;  // Maximum cached items
