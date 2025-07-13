@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:palette_generator/palette_generator.dart';
 import '../services/Audio_Player_Service.dart';
 import '../services/artwork_cache_service.dart';
+import '../services/expandable_player_controller.dart';
 
 class MiniPlayer extends StatefulWidget {
   final SongModel currentSong;
@@ -61,6 +62,11 @@ class _MiniPlayerState extends State<MiniPlayer> {
     return luminance > 0.5 ? Colors.black : Colors.white;
   }
 
+  void _onExpandableTap() {
+    final expandableController = Provider.of<ExpandablePlayerController>(context, listen: false);
+    expandableController.expand();
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
@@ -73,128 +79,136 @@ class _MiniPlayerState extends State<MiniPlayer> {
         height: _minHeight + bottomPadding,
         decoration: BoxDecoration(
           color: dominantColor?.withOpacity(0.95) ?? Colors.black.withOpacity(0.95),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          ),
+          borderRadius: BorderRadius.circular(16), // Full border radius for island style
         ),
         child: Row(
           children: [
-            // Artwork s Hero animací
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Hero(
-                tag: 'currentArtwork',
-                createRectTween: (begin, end) {
-                  return MaterialRectCenterArcTween(begin: begin, end: end);
-                },
-                child: Material(
-                  color: Colors.transparent,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: _artworkService.buildCachedArtwork(
-                        widget.currentSong.id,
-                        size: 48,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Informace o skladbě s Hero animacemi
+            // Expandable area (artwork + song info) - taps here expand the player
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _onExpandableTap,
+                child: Row(
                   children: [
-                    Hero(
-                      tag: 'currentTitle',
-                      placeholderBuilder: (context, size, child) {
-                        return child;
-                      },
-                      flightShuttleBuilder: (flightContext, animation, direction, fromContext, toContext) {
-                        return DefaultTextStyleTransition(
-                          style: TextStyleTween(
-                            begin: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            end: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ).animate(animation),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: Text(
-                              widget.currentSong.title,
-                              style: const TextStyle(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                    // Artwork s Hero animací
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Hero(
+                        tag: 'currentArtwork',
+                        createRectTween: (begin, end) {
+                          return MaterialRectCenterArcTween(begin: begin, end: end);
+                        },
+                        child: Material(
+                          color: Colors.transparent,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: SizedBox(
+                              width: 48,
+                              height: 48,
+                              child: _artworkService.buildCachedArtwork(
+                                widget.currentSong.id,
+                                size: 48,
+                              ),
                             ),
                           ),
-                        );
-                      },
-                      child: Material(
-                        color: Colors.transparent,
-                        child: Text(
-                          widget.currentSong.title,
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Hero(
-                      tag: 'currentArtist',
-                      placeholderBuilder: (context, size, child) {
-                        return child;
-                      },
-                      flightShuttleBuilder: (flightContext, animation, direction, fromContext, toContext) {
-                        return DefaultTextStyleTransition(
-                          style: TextStyleTween(
-                            begin: TextStyle(
-                              color: textColor.withOpacity(0.7),
-                              fontSize: 12,
+                    // Informace o skladbě s Hero animacemi
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Hero(
+                              tag: 'currentTitle',
+                              placeholderBuilder: (context, size, child) {
+                                return child;
+                              },
+                              flightShuttleBuilder: (flightContext, animation, direction, fromContext, toContext) {
+                                return DefaultTextStyleTransition(
+                                  style: TextStyleTween(
+                                    begin: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    end: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ).animate(animation),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: Text(
+                                      widget.currentSong.title,
+                                      style: const TextStyle(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Material(
+                                color: Colors.transparent,
+                                child: Text(
+                                  widget.currentSong.title,
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                             ),
-                            end: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 18,
+                            const SizedBox(height: 2),
+                            Hero(
+                              tag: 'currentArtist',
+                              placeholderBuilder: (context, size, child) {
+                                return child;
+                              },
+                              flightShuttleBuilder: (flightContext, animation, direction, fromContext, toContext) {
+                                return DefaultTextStyleTransition(
+                                  style: TextStyleTween(
+                                    begin: TextStyle(
+                                      color: textColor.withOpacity(0.7),
+                                      fontSize: 12,
+                                    ),
+                                    end: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 18,
+                                    ),
+                                  ).animate(animation),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: Text(
+                                      widget.currentSong.artist ?? 'Unknown Artist',
+                                      style: const TextStyle(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Material(
+                                color: Colors.transparent,
+                                child: Text(
+                                  widget.currentSong.artist ?? 'Unknown Artist',
+                                  style: TextStyle(
+                                    color: textColor.withOpacity(0.7),
+                                    fontSize: 12,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                             ),
-                          ).animate(animation),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: Text(
-                              widget.currentSong.artist ?? 'Unknown Artist',
-                              style: const TextStyle(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        );
-                      },
-                      child: Material(
-                        color: Colors.transparent,
-                        child: Text(
-                          widget.currentSong.artist ?? 'Unknown Artist',
-                          style: TextStyle(
-                            color: textColor.withOpacity(0.7),
-                            fontSize: 12,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          ],
                         ),
                       ),
                     ),
@@ -202,9 +216,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                 ),
               ),
             ),
-            // Tlačítko pro přehrávání/pauzu
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
+            // Control area - taps here control playback directly without expanding
+            InkWell(
               onTap: () {
                 if (audioPlayerService.isPlaying) {
                   audioPlayerService.pause();
@@ -212,7 +225,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                   audioPlayerService.resume();
                 }
               },
-              child: Padding(
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
                 padding: const EdgeInsets.all(16.0),
                 child: Icon(
                   audioPlayerService.isPlaying 

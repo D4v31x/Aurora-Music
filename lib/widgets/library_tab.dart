@@ -22,9 +22,13 @@ class LibraryTab extends StatefulWidget {
   State<LibraryTab> createState() => _LibraryTabState();
 }
 
-class _LibraryTabState extends State<LibraryTab> {
+class _LibraryTabState extends State<LibraryTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
 
     return SingleChildScrollView(
@@ -210,10 +214,14 @@ class _LibraryTabState extends State<LibraryTab> {
   }
 
   Widget _buildAnimatedItemsList(List<dynamic> items, Function(dynamic)? onItemTap) {
+    const double itemWidth = 120.0;
+    const double itemSpacing = 10.0;
+    
     return AnimationLimiter(
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: min(3, items.length),
+        itemExtent: itemWidth + itemSpacing, // Performance optimization
         itemBuilder: (context, index) {
           final item = items[index];
           return AnimationConfiguration.staggeredList(
@@ -222,28 +230,31 @@ class _LibraryTabState extends State<LibraryTab> {
             child: SlideAnimation(
               horizontalOffset: 50.0,
               child: FadeInAnimation(
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: onItemTap != null ? () => onItemTap(item) : null,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: glassmorphicContainer(
-                        child: SizedBox(
-                          width: 120,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              getItemIcon(item),
-                              const SizedBox(height: 8),
-                              Text(
-                                getItemTitle(item),
-                                style: const TextStyle(color: Colors.white),
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                child: RepaintBoundary( // Performance optimization
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: onItemTap != null ? () => onItemTap(item) : null,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: itemSpacing),
+                        child: glassmorphicContainer(
+                          child: SizedBox(
+                            width: itemWidth,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                getItemIcon(item),
+                                const SizedBox(height: 8),
+                                Text(
+                                  getItemTitle(item),
+                                  style: const TextStyle(color: Colors.white),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -260,16 +271,20 @@ class _LibraryTabState extends State<LibraryTab> {
 
   Widget getItemIcon(dynamic item) {
     if (item is SongModel) {
-      return QueryArtworkWidget(
-        id: item.id,
-        type: ArtworkType.AUDIO,
-        nullArtworkWidget: const Icon(Icons.music_note, color: Colors.white, size: 60),
+      return RepaintBoundary(
+        child: QueryArtworkWidget(
+          id: item.id,
+          type: ArtworkType.AUDIO,
+          nullArtworkWidget: const Icon(Icons.music_note, color: Colors.white, size: 60),
+        ),
       );
     } else if (item is AlbumModel) {
-      return QueryArtworkWidget(
-        id: item.id,
-        type: ArtworkType.ALBUM,
-        nullArtworkWidget: const Icon(Icons.album, color: Colors.white, size: 60),
+      return RepaintBoundary(
+        child: QueryArtworkWidget(
+          id: item.id,
+          type: ArtworkType.ALBUM,
+          nullArtworkWidget: const Icon(Icons.album, color: Colors.white, size: 60),
+        ),
       );
     } else if (item is Playlist) {
       return const Icon(Icons.playlist_play, color: Colors.white, size: 60);

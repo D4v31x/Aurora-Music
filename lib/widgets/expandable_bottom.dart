@@ -75,10 +75,15 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
     return AnimatedBuilder(
       animation: _controller,
       builder: (BuildContext context, Widget? child) {
+        // Island-style positioning with margins when collapsed
+        final isCollapsed = _controller.value == 0.0;
+        final bottomMargin = isCollapsed ? 12.0 : 0.0;
+        final horizontalMargin = isCollapsed ? 16.0 : 0.0;
+        
         return Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
+          bottom: bottomMargin,
+          left: horizontalMargin,
+          right: horizontalMargin,
           height: widget.minHeight + 
                  (MediaQuery.of(context).size.height - widget.minHeight) * 
                  _heightFactor.value,
@@ -113,20 +118,21 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
                   }
                 }
               },
-              onTap: () {
-                if (!mounted) return;
-                if (_controller.value == 0.0) {
-                  expand();
-                  expandablePlayerController.expand();
-                }
-              },
               child: RepaintBoundary(
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.8),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20.0)
-                    ),
+                    borderRadius: isCollapsed 
+                        ? BorderRadius.circular(16.0)  // Full border radius for island style
+                        : const BorderRadius.vertical(top: Radius.circular(20.0)),
+                    boxShadow: isCollapsed ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        offset: const Offset(0, 4),
+                        blurRadius: 8,
+                        spreadRadius: 0,
+                      ),
+                    ] : null,
                   ),
                   child: Stack(
                     children: [
