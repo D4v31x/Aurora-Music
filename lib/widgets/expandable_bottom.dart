@@ -75,25 +75,28 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
         return AnimatedBuilder(
           animation: _controller,
           builder: (BuildContext context, Widget? child) {
+            final bottomPadding = MediaQuery.of(context).padding.bottom;
+            final minHeightWithMargin = widget.minHeight + 32 + bottomPadding; // Account for margins
+            
             return Positioned(
               bottom: 0,
               left: 0,
               right: 0,
-              height: widget.minHeight + 
-                     (MediaQuery.of(context).size.height - widget.minHeight) * 
+              height: minHeightWithMargin + 
+                     (MediaQuery.of(context).size.height - minHeightWithMargin) * 
                      _heightFactor.value,
               child: RepaintBoundary(
                 child: GestureDetector(
                   onVerticalDragUpdate: (details) {
                     if (!mounted) return;
                     _controller.value -= details.primaryDelta! / 
-                                       (MediaQuery.of(context).size.height - widget.minHeight);
+                                       (MediaQuery.of(context).size.height - minHeightWithMargin);
                   },
                   onVerticalDragEnd: (details) {
                     if (!mounted || _controller.isAnimating) return;
 
                     final double velocity = details.velocity.pixelsPerSecond.dy / 
-                                         (MediaQuery.of(context).size.height - widget.minHeight);
+                                         (MediaQuery.of(context).size.height - minHeightWithMargin);
                     
                     if (velocity.abs() > 1.0) {
                       if (velocity > 0) {
@@ -121,12 +124,15 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
                 }
               },
               child: RepaintBoundary(
-                child: Container(
+                child: AnimatedContainer(
+                  duration: Duration(milliseconds: (_controller.value * 200).round()),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.8),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20.0)
-                    ),
+                    color: _controller.value > 0.3 
+                        ? Colors.black.withOpacity(0.95) 
+                        : Colors.transparent,
+                    borderRadius: _controller.value > 0.3
+                        ? const BorderRadius.vertical(top: Radius.circular(20.0))
+                        : BorderRadius.zero,
                   ),
                   child: Stack(
                     children: [
@@ -149,8 +155,6 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
             ),
           ),
         );
-      },
-    );
       },
     );
   }
