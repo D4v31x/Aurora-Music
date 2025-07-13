@@ -27,7 +27,50 @@ import '../widgets/expandable_bottom.dart';
 import '../widgets/home/quick_access_section.dart';
 import '../widgets/home/suggested_tracks_section.dart';
 import '../widgets/home/suggested_artists_section.dart';
-import '../utils/debouncer.dart'; // Add debouncer import
+import '../widgets/performance/keep_alive_wrapper.dart'; // Add keep alive wrapper import
+
+/// Search parameters for compute function
+class SearchParams {
+  final List<SongModel> songs;
+  final List<ArtistModel> artists;
+  final String query;
+
+  const SearchParams({
+    required this.songs,
+    required this.artists,
+    required this.query,
+  });
+}
+
+/// Search results structure
+class SearchResults {
+  final List<SongModel> songs;
+  final List<ArtistModel> artists;
+
+  const SearchResults({
+    required this.songs,
+    required this.artists,
+  });
+}
+
+/// Isolate function for expensive search operations
+SearchResults performSearch(SearchParams params) {
+  final filteredSongs = params.songs.where((song) {
+    final titleMatch = song.title.toLowerCase().contains(params.query);
+    final artistMatch = (song.artist ?? '').toLowerCase().contains(params.query);
+    return titleMatch || artistMatch;
+  }).toList();
+
+  final filteredArtists = params.artists.where((artist) {
+    final artistName = artist.artist.toLowerCase();
+    return artistName.contains(params.query);
+  }).toList();
+
+  return SearchResults(
+    songs: filteredSongs,
+    artists: filteredArtists,
+  );
+}
 import 'AlbumDetailScreen.dart';
 import 'Artist_screen.dart';
 import 'FolderDetail_screen.dart';
@@ -666,17 +709,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
   }
 
-  void _onSongTap(SongModel song) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-    final expandableController = Provider.of<ExpandablePlayerController>(context, listen: false);
+  void _onSongTap(SongModel song) async {
+    // Use microtask to prevent blocking UI during expensive operations
+    await Future.microtask(() {
+      final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+      final expandableController = Provider.of<ExpandablePlayerController>(context, listen: false);
 
-    List<SongModel> playlist = _tabController.index == 2 ? _filteredSongs : randomSongs;
-    int initialIndex = playlist.indexOf(song);
+      List<SongModel> playlist = _tabController.index == 2 ? _filteredSongs : randomSongs;
+      int initialIndex = playlist.indexOf(song);
 
-    audioPlayerService.setPlaylist(playlist, initialIndex);
-    audioPlayerService.play();
+      audioPlayerService.setPlaylist(playlist, initialIndex);
+      audioPlayerService.play();
 
-    expandableController.show();
+      expandableController.show();
+    });
   }
 
   Future<Uint8List?> _getArtwork(int id) async {
@@ -1247,49 +1293,106 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildAnimatedItemsList(List<dynamic> items, Function(dynamic)? onItemTap) {
     return AnimationLimiter(
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: min(3, items.length),
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return AnimationConfiguration.staggeredList(
-            position: index,
-            duration: const Duration(milliseconds: 375),
-            child: SlideAnimation(
-              horizontalOffset: 50.0,
-              child: FadeInAnimation(
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: onItemTap != null ? () => onItemTap(item) : null,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: glassmorphicContainer(
-                        child: SizedBox(
-                          width: 120,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              getItemIcon(item),
-                              const SizedBox(height: 8),
-                              Text(
-                                getItemTitle(item),
-                                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+      child: items.length > 5 
+        ? SizedBox(
+            height: 200,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: min(items.length, 10), // Limit to prevent performance issues
+              cacheExtent: 150.0,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return RepaintBoundary(
+                  key: ValueKey(item.hashCode),
+                  child: AnimationConfiguration.staggeredList(
+                    position: index,
+                    duration: const Duration(milliseconds: 375),
+                    child: SlideAnimation(
+                      horizontalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: Container(
+                          width: 140,
+                          margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: _buildItemWidget(item, onItemTap),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          )
+        : ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: min(3, items.length),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return AnimationConfiguration.staggeredList(
+                position: index,
+                duration: const Duration(milliseconds: 375),
+                child: SlideAnimation(
+                  horizontalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onItemTap != null ? () => onItemTap(item) : null,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: glassmorphicContainer(
+                            child: SizedBox(
+                              width: 120,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  getItemIcon(item),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    getItemTitle(item),
+                                    style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
+              );
+            },
+          ),
+    );
+  }
+
+  Widget _buildItemWidget(dynamic item, Function(dynamic)? onItemTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onItemTap != null ? () => onItemTap(item) : null,
+        child: glassmorphicContainer(
+          child: SizedBox(
+            width: 120,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                getItemIcon(item),
+                const SizedBox(height: 8),
+                Text(
+                  getItemTitle(item),
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
@@ -1510,7 +1613,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(height: 10),
-          ..._filteredSongs.map(buildSongListTile),
+          // Optimize for large search results with ListView.builder
+          if (_filteredSongs.length > 10)
+            SizedBox(
+              height: min(400, _filteredSongs.length * 72.0),
+              child: ListView.builder(
+                itemCount: _filteredSongs.length,
+                cacheExtent: 200.0,
+                itemBuilder: (context, index) {
+                  return RepaintBoundary(
+                    key: ValueKey(_filteredSongs[index].id),
+                    child: buildSongListTile(_filteredSongs[index]),
+                  );
+                },
+              ),
+            )
+          else
+            ..._filteredSongs.map(buildSongListTile),
         ],
       ],
     );
@@ -1554,22 +1673,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _searchDebouncer.call(() async {
       if (!mounted) return;
       
-      final filteredSongs = songs.where((song) {
-        final titleMatch = song.title.toLowerCase().contains(query);
-        final artistMatch = (song.artist ?? '').toLowerCase().contains(query);
-        return titleMatch || artistMatch;
-      }).toList();
+      try {
+        final results = await compute(
+          performSearch,
+          SearchParams(
+            songs: songs,
+            artists: artists,
+            query: query,
+          ),
+        );
 
-      final filteredArtists = artists.where((artist) {
-        final artistName = artist.artist.toLowerCase();
-        return artistName.contains(query);
-      }).toList();
+        if (mounted) {
+          setState(() {
+            _filteredSongs = results.songs;
+            _filteredArtists = results.artists;
+          });
+        }
+      } catch (e) {
+        // Fallback to synchronous search if compute fails
+        final filteredSongs = songs.where((song) {
+          final titleMatch = song.title.toLowerCase().contains(query);
+          final artistMatch = (song.artist ?? '').toLowerCase().contains(query);
+          return titleMatch || artistMatch;
+        }).toList();
 
-      if (mounted) {
-        setState(() {
-          _filteredSongs = filteredSongs;
-          _filteredArtists = filteredArtists;
-        });
+        final filteredArtists = artists.where((artist) {
+          final artistName = artist.artist.toLowerCase();
+          return artistName.contains(query);
+        }).toList();
+
+        if (mounted) {
+          setState(() {
+            _filteredSongs = filteredSongs;
+            _filteredArtists = filteredArtists;
+          });
+        }
       }
     });
   }
@@ -1788,33 +1926,36 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget buildCachedArtwork(int id, {double size = 50}) {
-    return FutureBuilder<ImageProvider<Object>>(
-      future: _getCachedImageProvider(id),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
+    return RepaintBoundary(
+      key: ValueKey('artwork_$id'),
+      child: FutureBuilder<ImageProvider<Object>>(
+        future: _getCachedImageProvider(id),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                  image: snapshot.data!,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            );
+          }
+          return Container(
             width: size,
             height: size,
             decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: snapshot.data!,
-                fit: BoxFit.cover,
-              ),
             ),
+            child: const Icon(Icons.music_note, color: Colors.white),
           );
-        }
-        return Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(Icons.music_note, color: Colors.white),
-        );
-      },
+        },
+      ),
     );
   }
 
@@ -2032,10 +2173,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               body: TabBarView(
                 controller: _tabController,
                 children: [
-                  buildHomeTab(),
-                  const LibraryTab(), // Use the separated LibraryTab widget
-                  buildSearchTab(),
-                  buildSettingsTab(),
+                  TabContentWrapper(
+                    isActive: _tabController.index == 0,
+                    preloadWhenInactive: true,
+                    child: buildHomeTab(),
+                  ),
+                  TabContentWrapper(
+                    isActive: _tabController.index == 1,
+                    preloadWhenInactive: false,
+                    child: const LibraryTab(),
+                  ),
+                  TabContentWrapper(
+                    isActive: _tabController.index == 2,
+                    preloadWhenInactive: false,
+                    child: buildSearchTab(),
+                  ),
+                  TabContentWrapper(
+                    isActive: _tabController.index == 3,
+                    preloadWhenInactive: false,
+                    child: buildSettingsTab(),
+                  ),
                 ],
               ),
             ),

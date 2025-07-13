@@ -91,7 +91,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final textColor = dominantColor != null ? getTextColor(dominantColor!) : Colors.white;
 
-    return AudioPlayerPlaybackConsumer(
+    return Consumer<AudioPlayerService>(
       builder: (context, audioPlayerService, child) {
         return RepaintBoundary(
           child: Padding(

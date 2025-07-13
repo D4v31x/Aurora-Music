@@ -48,11 +48,11 @@ class AudioPlayerSongConsumer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Selector(
+    return Selector<dynamic, dynamic>(
       selector: (context, audioService) => audioService.currentSong,
       shouldRebuild: (previous, current) => previous?.id != current?.id,
       builder: (context, currentSong, child) {
-        final audioService = Provider.of(context, listen: false);
+        final audioService = Provider.of<dynamic>(context, listen: false);
         return builder(context, audioService, child);
       },
       child: child,
@@ -73,10 +73,10 @@ class AudioPlayerPlaybackConsumer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Selector(
+    return Selector<dynamic, bool>(
       selector: (context, audioService) => audioService.isPlaying,
       builder: (context, isPlaying, child) {
-        final audioService = Provider.of(context, listen: false);
+        final audioService = Provider.of<dynamic>(context, listen: false);
         return builder(context, audioService, child);
       },
       child: child,
