@@ -1994,10 +1994,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               body: TabBarView(
                 controller: _tabController,
                 children: [
-                  buildHomeTab(),
+                  HomeTab(
+                    currentSong: currentSong,
+                    randomSongs: randomSongs,
+                    randomArtists: randomArtists,
+                    onSuggestedSongTap: _onSuggestedSongTap,
+                    onRefreshLibrary: _refreshLibrary,
+                    artworkService: _artworkService,
+                    artistService: _artistService,
+                  ),
                   const LibraryTab(), // Use the separated LibraryTab widget
-                  buildSearchTab(),
-                  buildSettingsTab(),
+                  SearchTab(
+                    isInitialized: _isInitialized,
+                    searchController: _searchController,
+                    searchFocusNode: _searchFocusNode,
+                    filteredSongs: _filteredSongs,
+                    artists: artists,
+                    onSearchChanged: _onSearchChanged,
+                    onSongTap: _onSongTap,
+                  ),
+                  SettingsTab(
+                    currentSong: currentSong,
+                    currentVersion: _currentVersion,
+                    onCheckForUpdates: checkForUpdates,
+                    onShowAboutDialog: _showAboutDialog,
+                  ),
                 ],
               ),
             ),
@@ -2257,5 +2278,544 @@ class NotificationManager {
   void dispose() {
     _notificationTimer?.cancel();
     _notificationController.close();
+  }
+}
+
+// Separate tab widgets for performance optimization with AutomaticKeepAliveClientMixin
+class HomeTab extends StatefulWidget {
+  final SongModel? currentSong;
+  final List<SongModel> randomSongs;
+  final List<String> randomArtists;
+  final Function(SongModel, List<SongModel>) onSuggestedSongTap;
+  final VoidCallback onRefreshLibrary;
+  final ArtworkCacheService artworkService;
+  final LocalCachingArtistService artistService;
+
+  const HomeTab({
+    super.key,
+    required this.currentSong,
+    required this.randomSongs,
+    required this.randomArtists,
+    required this.onSuggestedSongTap,
+    required this.onRefreshLibrary,
+    required this.artworkService,
+    required this.artistService,
+  });
+
+  @override
+  State<HomeTab> createState() => _HomeTabState();
+}
+
+class _HomeTabState extends State<HomeTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return RefreshIndicator(
+      onRefresh: () async => widget.onRefreshLibrary(),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          left: 20.0,
+          right: 20.0,
+          top: 20.0,
+          bottom: widget.currentSong != null ? 90.0 : 30.0,
+        ),
+        child: AnimationLimiter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: AnimationConfiguration.toStaggeredList(
+              duration: const Duration(milliseconds: 375),
+              childAnimationBuilder: (widget) => SlideAnimation(
+                verticalOffset: 50.0,
+                child: FadeInAnimation(child: widget),
+              ),
+              children: [
+                const SizedBox(height: 20.0),
+                Text(
+                  AppLocalizations.of(context).translate('quick_access'),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
+                ),
+                const SizedBox(height: 10.0),
+                _buildQuickAccessSection(),
+                const SizedBox(height: 30.0),
+                Text(
+                  AppLocalizations.of(context).translate('suggested_tracks'),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
+                ),
+                const SizedBox(height: 10.0),
+                _buildSuggestedTracksSection(),
+                const SizedBox(height: 30.0),
+                Text(
+                  AppLocalizations.of(context).translate('suggested_artists'),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
+                ),
+                const SizedBox(height: 10.0),
+                _buildSuggestedArtistsSection(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickAccessSection() {
+    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final likedSongsPlaylist = audioPlayerService.likedSongsPlaylist;
+
+    return AnimationLimiter(
+      child: Column(
+        children: AnimationConfiguration.toStaggeredList(
+          duration: const Duration(milliseconds: 375),
+          childAnimationBuilder: (widget) => SlideAnimation(
+            verticalOffset: 50.0,
+            child: FadeInAnimation(child: widget),
+          ),
+          children: [
+            if (likedSongsPlaylist != null)
+              glassmorphicContainer(
+                child: ListTile(
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      'assets/images/UI/liked_icon.png',
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  title: Text(
+                    likedSongsPlaylist.name,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    '${likedSongsPlaylist.songs.length} ${AppLocalizations.of(context).translate('tracks')}',
+                    style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PlaylistDetailScreen(
+                          playlist: likedSongsPlaylist,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            if (likedSongsPlaylist == null)
+              glassmorphicContainer(
+                child: const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'No data to display',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuggestedTracksSection() {
+    if (widget.randomSongs.isEmpty) {
+      return glassmorphicContainer(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            AppLocalizations.of(context).translate('No_data'),
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+
+    final topThreeSongs = widget.randomSongs.take(3).toList();
+    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final likedSongsPlaylist = audioPlayerService.likedSongsPlaylist;
+
+    return AnimationLimiter(
+      child: Column(
+        children: AnimationConfiguration.toStaggeredList(
+          duration: const Duration(milliseconds: 375),
+          childAnimationBuilder: (widget) => SlideAnimation(
+            verticalOffset: 50.0,
+            child: FadeInAnimation(child: widget),
+          ),
+          children: topThreeSongs.map((song) {
+            final isLiked = likedSongsPlaylist?.songs.any((s) => s.id == song.id) ?? false;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: RepaintBoundary(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => widget.onSuggestedSongTap(song, topThreeSongs),
+                    borderRadius: BorderRadius.circular(12),
+                    child: glassmorphicContainer(
+                      child: ListTile(
+                        leading: widget.artworkService.buildCachedArtwork(
+                          song.id,
+                          size: 50,
+                        ),
+                        title: Text(
+                          song.title,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          splitArtists(song.artist ?? '').join(', '),
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                        trailing: Icon(
+                          isLiked ? Icons.favorite : Icons.favorite_border,
+                          color: isLiked ? Colors.pink : Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuggestedArtistsSection() {
+    if (widget.randomArtists.isEmpty) {
+      return glassmorphicContainer(
+        child: const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'No data',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 150,
+      child: AnimationLimiter(
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: widget.randomArtists.length,
+          separatorBuilder: (context, index) => const SizedBox(width: 10),
+          itemBuilder: (context, index) {
+            final artist = widget.randomArtists[index];
+
+            return AnimationConfiguration.staggeredList(
+              position: index,
+              duration: const Duration(milliseconds: 375),
+              child: SlideAnimation(
+                horizontalOffset: 50.0,
+                child: FadeInAnimation(
+                  child: FutureBuilder<String?>(
+                    future: widget.artistService.fetchArtistImage(artist),
+                    builder: (context, snapshot) {
+                      final imagePath = snapshot.data;
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ArtistDetailsScreen(
+                                artistName: artist,
+                                artistImagePath: imagePath,
+                              ),
+                            ),
+                          );
+                        },
+                        child: glassmorphicContainer(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircleAvatar(
+                                  radius: 40,
+                                  backgroundImage: imagePath != null ? FileImage(File(imagePath)) : null,
+                                  child: imagePath == null
+                                      ? const Icon(Icons.person, size: 40, color: Colors.white)
+                                      : null,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(artist, style: const TextStyle(color: Colors.white)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class SearchTab extends StatefulWidget {
+  final bool isInitialized;
+  final TextEditingController searchController;
+  final FocusNode searchFocusNode;
+  final List<SongModel> filteredSongs;
+  final List<ArtistModel> artists;
+  final VoidCallback onSearchChanged;
+  final Function(SongModel) onSongTap;
+
+  const SearchTab({
+    super.key,
+    required this.isInitialized,
+    required this.searchController,
+    required this.searchFocusNode,
+    required this.filteredSongs,
+    required this.artists,
+    required this.onSearchChanged,
+    required this.onSongTap,
+  });
+
+  @override
+  State<SearchTab> createState() => _SearchTabState();
+}
+
+class _SearchTabState extends State<SearchTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    if (!widget.isInitialized) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextField(
+            controller: widget.searchController,
+            focusNode: widget.searchFocusNode,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).translate('search'),
+              hintStyle: const TextStyle(color: Colors.white54),
+              prefixIcon: const Icon(Icons.search, color: Colors.white54),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: const BorderSide(color: Colors.white24),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: const BorderSide(color: Colors.white24),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: const BorderSide(color: Colors.white),
+              ),
+            ),
+            onChanged: (_) => widget.onSearchChanged(),
+          ),
+        ),
+        Expanded(
+          child: _buildSearchResults(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchResults() {
+    if (widget.searchController.text.isEmpty) {
+      return Center(
+        child: Text(
+          AppLocalizations.of(context).translate('Start_type'),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
+        ),
+      );
+    }
+
+    final query = widget.searchController.text.toLowerCase();
+    final matchingArtists = widget.artists.where(
+          (artist) => artist.artist.toLowerCase().contains(query),
+    ).toList();
+
+    final closestArtist = matchingArtists.isNotEmpty ? matchingArtists.first : null;
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        if (closestArtist != null) ...[
+          ArtistCard(
+            artistName: closestArtist.artist,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ArtistDetailsScreen(
+                    artistName: closestArtist.artist,
+                    artistImagePath: null,
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
+        if (widget.filteredSongs.isNotEmpty) ...[
+          Text(
+            AppLocalizations.of(context).translate('songs'),
+            style: TextStyle(
+              color: Theme.of(context).textTheme.titleLarge?.color,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...widget.filteredSongs.map(_buildSongListTile),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSongListTile(SongModel song) {
+    return RepaintBoundary(
+      child: ListTile(
+        leading: QueryArtworkWidget(
+          id: song.id,
+          type: ArtworkType.AUDIO,
+          nullArtworkWidget: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.music_note, color: Colors.white),
+          ),
+        ),
+        title: Text(
+          song.title,
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+        ),
+        subtitle: Text(
+          song.artist ?? '',
+          style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7)),
+        ),
+        trailing: Icon(Icons.favorite_border, color: Theme.of(context).iconTheme.color),
+        onTap: () => widget.onSongTap(song),
+      ),
+    );
+  }
+}
+
+class SettingsTab extends StatefulWidget {
+  final SongModel? currentSong;
+  final String currentVersion;
+  final VoidCallback onCheckForUpdates;
+  final VoidCallback onShowAboutDialog;
+
+  const SettingsTab({
+    super.key,
+    required this.currentSong,
+    required this.currentVersion,
+    required this.onCheckForUpdates,
+    required this.onShowAboutDialog,
+  });
+
+  @override
+  State<SettingsTab> createState() => _SettingsTabState();
+}
+
+class _SettingsTabState extends State<SettingsTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0)
+          .copyWith(bottom: widget.currentSong != null ? 90.0 : 30.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Theme Switcher
+          ListTile(
+            leading: Icon(
+              themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+              color: Theme.of(context).iconTheme.color,
+            ),
+            title: Text(
+              'Theme',
+              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+            ),
+            trailing: Switch(
+              value: themeProvider.isDarkMode,
+              onChanged: (value) => themeProvider.toggleTheme(),
+            ),
+            subtitle: Text(
+              themeProvider.isDarkMode ? 'Dark Mode' : 'Light Mode',
+              style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
+            ),
+          ),
+
+          // About Section
+          const SizedBox(height: 30),
+          Text(
+            AppLocalizations.of(context).translate('about'),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).textTheme.titleLarge?.color,
+            ),
+          ),
+          const SizedBox(height: 10),
+          glassmorphicContainer(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.info_outline, color: Colors.white),
+                  title: Text(
+                    AppLocalizations.of(context).translate('about_aurora'),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  trailing: const Icon(Icons.chevron_right, color: Colors.white),
+                  onTap: widget.onShowAboutDialog,
+                ),
+                const Divider(color: Colors.white24),
+                ListTile(
+                  leading: const Icon(Icons.system_update, color: Colors.white),
+                  title: Text(
+                    AppLocalizations.of(context).translate('check_updates'),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    'Version ${widget.currentVersion}',
+                    style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                  ),
+                  onTap: widget.onCheckForUpdates,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
