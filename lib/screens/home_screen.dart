@@ -679,6 +679,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  /// Calculate dynamic text color based on background brightness
+  Color getDynamicTextColor() {
+    final colors = isDarkMode ? [
+      const Color(0xFF1A237E), // Dark blue
+      const Color(0xFF311B92), // Dark violet
+      const Color(0xFF512DA8), // Medium violet
+      const Color(0xFF7B1FA2), // Purple
+    ] : [
+      const Color(0xFFE3F2FD), // Light blue
+      const Color(0xFFBBDEFB), // Lighter blue
+      const Color(0xFF90CAF9), // Medium light blue
+      const Color(0xFF64B5F6), // Blue
+    ];
+    
+    // Calculate average brightness of gradient colors
+    double totalLuminance = 0;
+    for (Color color in colors) {
+      final luminance = (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
+      totalLuminance += luminance;
+    }
+    final averageLuminance = totalLuminance / colors.length;
+    
+    // Return white for dark backgrounds, black for light backgrounds
+    return averageLuminance > 0.5 ? Colors.black : Colors.white;
+  }
+
   Widget buildSettingsCategory({required String title, required List<Widget> children}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1610,27 +1636,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _onSuggestedSongTap(song, topThreeSongs),
-                  child: glassmorphicContainer(
-                    child: ListTile(
-                      leading: _artworkService.buildCachedArtwork(
-                        song.id,
-                        size: 50,
-                      ),
-                      title: Text(
-                        song.title,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      subtitle: Text(
-                        splitArtists(song.artist ?? '').join(', '),
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                      trailing: Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.pink : Colors.white,
+              child: RepaintBoundary( // Performance optimization
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _onSuggestedSongTap(song, topThreeSongs),
+                    borderRadius: BorderRadius.circular(12),
+                    child: glassmorphicContainer(
+                      child: ListTile(
+                        leading: _artworkService.buildCachedArtwork(
+                          song.id,
+                          size: 50,
+                        ),
+                        title: Text(
+                          song.title,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          splitArtists(song.artist ?? '').join(', '),
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                        trailing: Icon(
+                          isLiked ? Icons.favorite : Icons.favorite_border,
+                          color: isLiked ? Colors.pink : Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -1842,6 +1871,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget buildAppBarTitle() {
+    final dynamicTextColor = getDynamicTextColor();
+    
     return StreamBuilder<String>(
       stream: _notificationManager.notificationStream,
       initialData: '',
@@ -1854,9 +1885,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ? Text(
             AppLocalizations.of(context).translate('aurora_music'),
             key: const ValueKey('default'),
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'ProductSans',
-              color: Colors.white,
+              color: dynamicTextColor,
               fontSize: 34,
               fontWeight: FontWeight.bold,
             ),
@@ -1864,9 +1895,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               : AutoScrollText(
             key: ValueKey(message),
             text: message,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'ProductSans',
-              color: Colors.white,
+              color: dynamicTextColor,
               fontSize: 34,
               fontWeight: FontWeight.bold,
             ),
@@ -1938,7 +1969,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           labelPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
                           indicatorPadding: const EdgeInsets.symmetric(vertical: 8.0),
                           indicator: OutlineIndicator(
-                            color: Colors.white,
+                            color: getDynamicTextColor(),
                             strokeWidth: 2,
                             radius: const Radius.circular(20),
                             text: [
@@ -1984,6 +2015,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildTabItem(String text) {
+    final dynamicTextColor = getDynamicTextColor();
+    
     return Container(
       constraints: const BoxConstraints(minWidth: 80),
       height: 30,
@@ -1993,8 +2026,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Text(
             text,
             maxLines: 1,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: dynamicTextColor,
               fontSize: 14,
               fontFamily: 'ProductSans',
               fontWeight: FontWeight.w500,
