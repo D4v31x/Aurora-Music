@@ -1979,7 +1979,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             if (currentSong != null)
               ExpandableBottomSheet(
                 key: _expandableKey,
-                minHeight: 60,
+                minHeight: 65, // Updated to match MiniPlayer height
                 minChild: MiniPlayer(currentSong: currentSong),
                 maxChild: const NowPlayingScreen(),
               ),
