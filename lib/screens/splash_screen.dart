@@ -16,9 +16,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'package:appwrite/appwrite.dart';
-import '../services/analytics_service.dart';
-import '../services/error_reporting_service.dart';
 
 
 class SplashScreen extends StatefulWidget {
@@ -41,12 +38,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   String _currentTask = '';
   final List<String> _completedTasks = [];
   double _progress = 0.0;
-  late Client _appwriteClient;
-  late AnalyticsService _analyticsService;
-  late ErrorReportingService _errorReportingService;
   final List<String> _warnings = [];
   bool _hasConnectivityIssues = false;
-  late Account _account;
 
   @override
   void initState() {
@@ -126,7 +119,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         ('Initializing Services', _initializeServices()),
         ('Loading Library', _loadAppData()),
         ('Caching Artwork', _preloadImages()),
-        if (!_hasConnectivityIssues) ('Setting up Analytics', _setupAnalytics()),
         ('Final Preparations', _finalizeInitialization()),
       ];
 
@@ -204,29 +196,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         return;
       }
 
-      // Initialize Appwrite client
-      _appwriteClient = Client()
-        ..setEndpoint(dotenv.env['APPWRITE_ENDPOINT'] ?? '')
-        ..setProject(dotenv.env['APPWRITE_PROJECT_ID'] ?? '')
-        ..setSelfSigned(status: true);
-
-      // Test Appwrite connection first
-      try {
-        final account = Account(_appwriteClient);
-        await account.get();
-        
-        _analyticsService = AnalyticsService(_appwriteClient);
-        _errorReportingService = ErrorReportingService(_appwriteClient);
-        
-      } catch (e) {
-        setState(() {
-          _warnings.add('Cloud services unavailable');
-          _warnings.add('Playlist sync disabled');
-          _hasConnectivityIssues = true;
-        });
-        await Future.delayed(const Duration(seconds: 1));
-      }
-
       // Test image service connectivity
       try {
         final result = await InternetAddress.lookup('api.deezer.com');
@@ -251,30 +220,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     }
   }
 
-  Future<void> _setupAnalytics() async {
-    // Skip if services weren't initialized or we have connectivity issues
-    if (_hasConnectivityIssues || 
-        _warnings.isNotEmpty || 
-        !_isServicesInitialized()) {
-      return;
-    }
 
-    try {
-      await _analyticsService.initialize();
-      await _analyticsService.logAppStart();
-    } catch (e) {
-      print('Analytics setup delayed: $e');
-    }
-  }
-
-  // Add helper method to check if services are initialized
-  bool _isServicesInitialized() {
-    try {
-      return _analyticsService != null;
-    } catch (e) {
-      return false;
-    }
-  }
 
   Future<void> _loadAppData() async {
     try {
@@ -450,16 +396,18 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           child: screen,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const curve = Curves.easeOutCubic;
+          const curve = Curves.easeOutQuart;
 
-          var scaleAnimation = Tween<double>(
-            begin: 0.95,
-            end: 1.0,
+          // Slide up animation
+          var slideAnimation = Tween<Offset>(
+            begin: const Offset(0.0, 1.0),
+            end: Offset.zero,
           ).animate(CurvedAnimation(
             parent: animation,
             curve: curve,
           ));
 
+          // Fade animation
           var fadeAnimation = Tween<double>(
             begin: 0.0,
             end: 1.0,
@@ -468,9 +416,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             curve: curve,
           ));
 
-          var blurAnimation = Tween<double>(
-            begin: 5,
-            end: 0,
+          // Rotation animation for a subtle effect
+          var rotationAnimation = Tween<double>(
+            begin: 0.05,
+            end: 0.0,
           ).animate(CurvedAnimation(
             parent: animation,
             curve: curve,
@@ -478,35 +427,54 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
           return Stack(
             children: [
+              // Gradient background that matches theme
               Positioned.fill(
-                child: Image.asset(
-                  'assets/images/background/Bcg_V0.0.9.png',
-                  fit: BoxFit.cover,
+                child: AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, _) {
+                    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: isDarkMode ? [
+                            const Color(0xFF1A237E), // Dark blue
+                            const Color(0xFF311B92), // Dark violet
+                            const Color(0xFF512DA8), // Medium violet
+                            const Color(0xFF7B1FA2), // Purple
+                          ] : [
+                            const Color(0xFFCFD8DC), // Light blue-grey
+                            const Color(0xFFBBDEFB), // Lighter blue
+                            const Color(0xFF90CAF9), // Medium light blue
+                            const Color(0xFF64B5F6), // Blue
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
+              // Animated content
               AnimatedBuilder(
                 animation: animation,
-                builder: (context, child) {
-                  return BackdropFilter(
-                    filter: ImageFilter.blur(
-                      sigmaX: blurAnimation.value,
-                      sigmaY: blurAnimation.value,
-                    ),
+                builder: (context, _) {
+                  return SlideTransition(
+                    position: slideAnimation,
                     child: FadeTransition(
                       opacity: fadeAnimation,
-                      child: Transform.scale(
-                        scale: scaleAnimation.value,
+                      child: Transform.rotate(
+                        angle: rotationAnimation.value,
                         child: child,
                       ),
                     ),
                   );
                 },
-                child: child,
               ),
             ],
           );
         },
-        transitionDuration: const Duration(milliseconds: 800),
+        transitionDuration: const Duration(milliseconds: 1200),
       ),
     );
   }

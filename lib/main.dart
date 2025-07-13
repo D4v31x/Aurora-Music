@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:appwrite/appwrite.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:ui' as ui;
 import 'dart:convert';
@@ -20,12 +19,6 @@ import 'screens/splash_screen.dart';
 import 'localization/locale_provider.dart';
 import 'providers/theme_provider.dart';
 
-/// Global Appwrite client configuration
-/// These are initialized in the main function and used throughout the app
-late Client client;
-late Account account;
-late Databases databases;
-String? currentUserId;
 
 /// Service responsible for tracking and managing application errors
 /// Implements error recording, storage, and synchronization with Appwrite
@@ -147,100 +140,6 @@ Map<String, dynamic> processErrorsForAppwrite(List<ErrorRecord> errors) {
   };
 }
 
-/// Synchronizes user data with Appwrite database
-/// Includes device information, app version, and error logs
-Future<void> syncUserData() async {
-  if (currentUserId == null) {
-    return;
-  }
-
-  try {
-    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-
-    String? deviceModel;
-    String? osVersion;
-    String? manufacturer;
-
-    // Get platform-specific device information
-    if (Platform.isAndroid) {
-      final androidInfo = await deviceInfo.androidInfo;
-      deviceModel = androidInfo.model;
-      osVersion = androidInfo.version.release;
-      manufacturer = androidInfo.manufacturer;
-    } else if (Platform.isIOS) {
-      final iosInfo = await deviceInfo.iosInfo;
-      deviceModel = iosInfo.utsname.machine;
-      osVersion = iosInfo.systemVersion;
-      manufacturer = 'Apple';
-    }
-
-    // Process error data
-    final errorTracker = ErrorTrackingService();
-    final pendingErrors = await errorTracker.loadPendingErrors();
-    final processedErrorData = processErrorsForAppwrite(pendingErrors);
-
-    final documentId = 'user_$currentUserId';
-
-    // Verify environment variables
-    final databaseId = dotenv.env['APPWRITE_DATABASE_ID'];
-    final collectionId = dotenv.env['APPWRITE_COLLECTION_ID'];
-
-    if (databaseId == null || collectionId == null) {
-      return;
-    }
-
-    // Prepare document data for Appwrite
-    final Map<String, dynamic> documentData = {
-      'user_id': currentUserId,
-      'app_version': packageInfo.version,
-      'build_number': packageInfo.buildNumber,
-      'full_version': '${packageInfo.version}+${packageInfo.buildNumber}',
-      'device_model': deviceModel ?? 'Unknown',
-      'manufacturer': manufacturer ?? 'Unknown',
-      'os_version': osVersion ?? 'Unknown',
-      'last_opened': DateTime.now().toIso8601String(),
-      'error_count': processedErrorData['error_count'],
-      'recent_errors': processedErrorData['recent_errors'],
-      'last_error_time': processedErrorData['last_error_time'],
-    };
-
-    try {
-      // Attempt to create new document
-      await databases.createDocument(
-        databaseId: databaseId,
-        collectionId: collectionId,
-        documentId: documentId,
-        data: documentData,
-        permissions: [
-          Permission.read(Role.user(currentUserId!)),
-          Permission.write(Role.user(currentUserId!)),
-        ],
-      );
-    } catch (e) {
-      if (e is AppwriteException && e.code == 409) {
-        // Document exists, update it instead
-        try {
-          await databases.updateDocument(
-            databaseId: databaseId,
-            collectionId: collectionId,
-            documentId: documentId,
-            data: documentData,
-          );
-        } catch (updateError) {
-          return;
-        }
-      }
-    }
-
-    // Clear errors after successful sync
-    await errorTracker.clearPendingErrors();
-
-  } catch (e) {
-    // Silent failure to prevent sync loops
-  }
-}
-
 /// Precaches commonly used shaders for better performance
 Future<void> _precacheShaders() async {
   final shaderWarmUpTask = Future(() async {
@@ -290,35 +189,6 @@ void main() async {
     // Load environment variables
     await dotenv.load(fileName: ".env");
 
-    // Initialize Appwrite client
-    client = Client()
-      ..setEndpoint(dotenv.env['APPWRITE_ENDPOINT']!)
-      ..setProject(dotenv.env['APPWRITE_PROJECT_ID']!)
-      ..setSelfSigned(status: true);
-
-    account = Account(client);
-    databases = Databases(client);
-
-    // Create or restore anonymous session
-    try {
-      final session = await account.createAnonymousSession();
-      currentUserId = session.userId;
-    } catch (e) {
-      if (e is AppwriteException && e.code == 401) {
-        try {
-          final session = await account.getSession(sessionId: 'current');
-          currentUserId = session.userId;
-        } catch (sessionError) {
-          // Session creation/restoration failed
-        }
-      }
-    }
-
-    // Sync user data if we have a valid user ID
-    if (currentUserId != null) {
-      await syncUserData();
-    }
-
 
     // Load user preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -346,7 +216,6 @@ void main() async {
         ],
         child: MyApp(
           languageCode: languageCode,
-          account: account,
         ),
       ),
     );
@@ -361,9 +230,8 @@ void main() async {
 /// Root application widget
 class MyApp extends StatefulWidget {
   final String languageCode;
-  final Account account;
 
-  const MyApp({super.key, required this.languageCode, required this.account});
+  const MyApp({super.key, required this.languageCode});
 
   @override
   _MyAppState createState() => _MyAppState();

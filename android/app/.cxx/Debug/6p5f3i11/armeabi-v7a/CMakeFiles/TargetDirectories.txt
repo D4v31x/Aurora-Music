@@ -1,0 +1,2 @@
+C:/Users/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/CMakeFiles/rebuild_cache.dir

@@ -29,7 +29,7 @@ class AlbumsScreen extends StatelessWidget {
         opacity: const AlwaysStoppedAnimation(1.0),
         child: Stack(
           children: [
-            buildBackground(audioPlayerService.currentSong),
+            buildBackground(context, audioPlayerService.currentSong),
             Scaffold(
               backgroundColor: Colors.transparent,
               appBar: buildAppBar(context, 'Albums'),
@@ -146,10 +146,10 @@ class AlbumsScreen extends StatelessWidget {
       title: Center(
         child: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'ProductSans',
             fontStyle: FontStyle.normal,
-            color: Colors.white,
+            color: Theme.of(context).textTheme.headlineLarge?.color,
             fontSize: 32,
             fontWeight: FontWeight.normal,
           ),
@@ -158,38 +158,29 @@ class AlbumsScreen extends StatelessWidget {
     );
   }
 
-  Widget buildBackground(SongModel? currentSong) {
-    return FutureBuilder<Uint8List?>(
-      future: currentSong != null
-          ? OnAudioQuery().queryArtwork(currentSong.id, ArtworkType.AUDIO)
-          : null,
-      builder: (context, snapshot) {
-        ImageProvider backgroundImage;
-        if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-          backgroundImage = MemoryImage(snapshot.data!);
-        } else {
-          backgroundImage = AssetImage(
-              MediaQuery.of(context).platformBrightness == Brightness.dark
-                  ? 'assets/images/background/dark_back.jpg'
-                  : 'assets/images/background/light_back.jpg');
-        }
-
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: backgroundImage,
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
-            ),
-          ),
-        );
-      },
+  Widget buildBackground(BuildContext context, SongModel? currentSong) {
+    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDarkMode ? [
+            // Dark blue to violet gradient for dark mode
+            const Color(0xFF1A237E), // Dark blue
+            const Color(0xFF311B92), // Dark violet
+            const Color(0xFF512DA8), // Medium violet
+            const Color(0xFF7B1FA2), // Purple
+          ] : [
+            // Light blue gradient for light mode
+            const Color(0xFFE3F2FD), // Light blue
+            const Color(0xFFBBDEFB), // Lighter blue
+            const Color(0xFF90CAF9), // Medium light blue
+            const Color(0xFF64B5F6), // Blue
+          ],
+        ),
+      ),
     );
   }
 }
@@ -213,7 +204,7 @@ class ArtistsScreen extends StatelessWidget {
         opacity: const AlwaysStoppedAnimation(1.0),
         child: Stack(
           children: [
-            buildBackground(audioPlayerService.currentSong),
+            buildBackground(context, audioPlayerService.currentSong),
             Scaffold(
               backgroundColor: Colors.transparent,
               appBar: buildAppBar(context, 'Artists'),
@@ -315,7 +306,7 @@ class ArtistsScreen extends StatelessWidget {
     );
   }
 
-  Widget buildBackground(SongModel? currentSong) {
+  Widget buildBackground(BuildContext context, SongModel? currentSong) {
     return FutureBuilder<Uint8List?>(
       future: currentSong != null
           ? OnAudioQuery().queryArtwork(currentSong.id, ArtworkType.AUDIO)
@@ -365,7 +356,7 @@ class FoldersScreen extends StatelessWidget {
         opacity: const AlwaysStoppedAnimation(1.0),
         child: Stack(
           children: [
-            buildBackground(audioPlayerService.currentSong),
+            buildBackground(context, audioPlayerService.currentSong),
             Scaffold(
               backgroundColor: Colors.transparent,
               appBar: buildAppBar(context, 'Folders'),
@@ -454,7 +445,7 @@ class FoldersScreen extends StatelessWidget {
     );
   }
 
-  Widget buildBackground(SongModel? currentSong) {
+  Widget buildBackground(BuildContext context, SongModel? currentSong) {
     return FutureBuilder<Uint8List?>(
       future: currentSong != null
           ? OnAudioQuery().queryArtwork(currentSong.id, ArtworkType.AUDIO)

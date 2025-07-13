@@ -21,7 +21,6 @@ import '../models/utils.dart';
 import '../services/Audio_Player_Service.dart';
 import '../localization/locale_provider.dart';
 import '../localization/app_localizations.dart';
-import '../services/spotify_service.dart';
 import '../widgets/about_dialog.dart';
 import '../widgets/changelog_dialog.dart';
 import '../widgets/expandable_bottom.dart';
@@ -75,7 +74,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _isScanning = false;
   int _scannedSongs = 0;
   int _totalSongs = 0;
-  late final SpotifyService _spotifyService = SpotifyService();
   final List<Map<String, dynamic>> _recentlyPlayedTracks = [];
   final List<Map<String, dynamic>> _spotifyPlaylists = [];
   final TextEditingController _searchController = TextEditingController();
@@ -631,7 +629,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final themeProvider = Provider.of<ThemeProvider>(context);
     isDarkMode = themeProvider.isDarkMode;
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
-    _updateBackgroundImage(audioPlayerService.currentSong);
   }
 
   void _onSongTap(SongModel song) {
@@ -643,29 +640,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     audioPlayerService.setPlaylist(playlist, initialIndex);
     audioPlayerService.play();
-    _updateBackgroundImage(song);
 
     expandableController.show();
-  }
-
-  Future<void> _updateBackgroundImage(SongModel? song) async {
-    if (song == null) {
-      _currentBackgroundImage = AssetImage(
-        isDarkMode
-            ? 'assets/images/background/dark_back.jpg'
-            : 'assets/images/background/light_back.jpg',
-      ) as ImageProvider<Object>;
-    } else {
-      final artwork = await _getArtwork(song.id);
-      _currentBackgroundImage = (artwork != null
-          ? MemoryImage(artwork)
-          : AssetImage(
-        isDarkMode
-            ? 'assets/images/background/dark_back.jpg'
-            : 'assets/images/background/light_back.jpg',
-      )) as ImageProvider<Object>;
-    }
-    setState(() {});
   }
 
   Future<Uint8List?> _getArtwork(int id) async {
@@ -679,24 +655,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget buildBackground(SongModel? currentSong) {
-    _currentBackgroundImage ??= AssetImage(
-      isDarkMode
-          ? 'assets/images/background/dark_back.jpg'
-          : 'assets/images/background/light_back.jpg',
-    );
-
     return AnimatedContainer(
       duration: const Duration(milliseconds: 500),
       decoration: BoxDecoration(
-        image: DecorationImage(
-          image: _currentBackgroundImage!,
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          color: Colors.black.withOpacity(0.5),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDarkMode ? [
+            // Dark blue to violet gradient for dark mode
+            const Color(0xFF1A237E), // Dark blue
+            const Color(0xFF311B92), // Dark violet
+            const Color(0xFF512DA8), // Medium violet
+            const Color(0xFF7B1FA2), // Purple
+          ] : [
+            // Light blue gradient for light mode
+            const Color(0xFFE3F2FD), // Light blue
+            const Color(0xFFBBDEFB), // Lighter blue
+            const Color(0xFF90CAF9), // Medium light blue
+            const Color(0xFF64B5F6), // Blue
+          ],
         ),
       ),
     );
@@ -708,10 +685,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).textTheme.titleLarge?.color,
           ),
         ),
         const SizedBox(height: 10.0),
@@ -721,33 +698,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget buildThemeSelector() {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, _) {
-        return glassmorphicContainer(
-          child: ListTile(
-            title: Text(
-              AppLocalizations.of(context).translate('theme'),
-              style: const TextStyle(color: Colors.white),
-            ),
-            trailing: Switch(
-              value: themeProvider.isDarkMode,
-              onChanged: (value) {
-                themeProvider.toggleTheme();
-                _updateBackgroundImage(Provider.of<AudioPlayerService>(context, listen: false).currentSong);
-              },
-              activeColor: Colors.white,
-              inactiveTrackColor: Colors.white.withOpacity(0.3),
-            ),
-            subtitle: Text(
-              themeProvider.isDarkMode
-                  ? AppLocalizations.of(context).translate('dark_mode')
-                  : AppLocalizations.of(context).translate('light_mode'),
-              style: TextStyle(color: Colors.white.withOpacity(0.7)),
-            ),
-          ),
-        );
-      },
+  Widget buildThemeSwitcher() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return ListTile(
+      leading: Icon(
+        themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+        color: Theme.of(context).iconTheme.color,
+      ),
+      title: Text(
+        'Theme',
+        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+      ),
+      trailing: Switch(
+        value: themeProvider.isDarkMode,
+        onChanged: (value) => themeProvider.toggleTheme(),
+      ),
+      subtitle: Text(
+        themeProvider.isDarkMode ? 'Dark Mode' : 'Light Mode',
+        style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
+      ),
     );
   }
 
@@ -761,6 +730,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          buildThemeSwitcher(),
           // Playback Settings
           buildSettingsCategory(
             title: AppLocalizations.of(context).translate('playback'),
@@ -770,52 +740,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   children: [
                     // Gapless Playback
                     ListTile(
-                      leading: const Icon(Icons.play_circle_outline, color: Colors.white),
-                      title: const Text(
+                      leading: Icon(Icons.play_circle_outline, color: Theme.of(context).iconTheme.color),
+                      title: Text(
                         'Gapless Playback',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                       ),
                       trailing: Switch(
                         value: audioPlayerService.gaplessPlayback,
                         onChanged: (value) => audioPlayerService.setGaplessPlayback(value),
-                        activeColor: Colors.white,
-                        inactiveTrackColor: Colors.white.withOpacity(0.3),
+                        activeColor: Theme.of(context).primaryColor,
+                        inactiveTrackColor: Theme.of(context).primaryColor.withOpacity(0.3),
                       ),
                     ),
-                    const Divider(color: Colors.white24),
+                    Divider(color: Theme.of(context).dividerColor),
 
                     // Volume Normalization
                     ListTile(
-                      leading: const Icon(Icons.volume_up_outlined, color: Colors.white),
-                      title: const Text(
+                      leading: Icon(Icons.volume_up_outlined, color: Theme.of(context).iconTheme.color),
+                      title: Text(
                         'Volume Normalization',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                       ),
                       trailing: Switch(
                         value: audioPlayerService.volumeNormalization,
                         onChanged: (value) => audioPlayerService.setVolumeNormalization(value),
-                        activeColor: Colors.white,
-                        inactiveTrackColor: Colors.white.withOpacity(0.3),
+                        activeColor: Theme.of(context).primaryColor,
+                        inactiveTrackColor: Theme.of(context).primaryColor.withOpacity(0.3),
                       ),
                     ),
-                    const Divider(color: Colors.white24),
+                    Divider(color: Theme.of(context).dividerColor),
 
                     // Playback Speed
                     ListTile(
-                      leading: const Icon(Icons.speed, color: Colors.white),
-                      title: const Text(
+                      leading: Icon(Icons.speed, color: Theme.of(context).iconTheme.color),
+                      title: Text(
                         'Playback Speed',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                       ),
                       trailing: DropdownButton<double>(
-                        dropdownColor: Colors.grey[900],
+                        dropdownColor: Theme.of(context).cardColor,
                         value: audioPlayerService.playbackSpeed,
                         items: [0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((speed) {
                           return DropdownMenuItem<double>(
                             value: speed,
                             child: Text(
                               '${speed}x',
-                              style: const TextStyle(color: Colors.white),
+                              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
                             ),
                           );
                         }).toList(),
@@ -825,7 +795,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           }
                         },
                         underline: Container(),
-                        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                        icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).iconTheme.color),
                       ),
                     ),
                   ],
@@ -843,20 +813,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   children: [
                     // Default Sort Order
                     ListTile(
-                      leading: const Icon(Icons.sort, color: Colors.white),
-                      title: const Text(
+                      leading: Icon(Icons.sort, color: Theme.of(context).iconTheme.color),
+                      title: Text(
                         'Default Sort Order',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                       ),
                       trailing: DropdownButton<String>(
-                        dropdownColor: Colors.grey[900],
+                        dropdownColor: Theme.of(context).cardColor,
                         value: audioPlayerService.defaultSortOrder,
                         items: ['title', 'artist', 'album', 'date_added'].map((sort) {
                           return DropdownMenuItem<String>(
                             value: sort,
                             child: Text(
                               sort.replaceAll('_', ' ').toUpperCase(),
-                              style: const TextStyle(color: Colors.white),
+                              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
                             ),
                           );
                         }).toList(),
@@ -866,23 +836,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           }
                         },
                         underline: Container(),
-                        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                        icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).iconTheme.color),
                       ),
                     ),
-                    const Divider(color: Colors.white24),
+                    Divider(color: Theme.of(context).dividerColor),
 
                     // Auto Playlists
                     ListTile(
-                      leading: const Icon(Icons.playlist_add_check, color: Colors.white),
-                      title: const Text(
+                      leading: Icon(Icons.playlist_add_check, color: Theme.of(context).iconTheme.color),
+                      title: Text(
                         'Auto Playlists',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                       ),
                       trailing: Switch(
                         value: audioPlayerService.autoPlaylists,
                         onChanged: (value) => audioPlayerService.setAutoPlaylists(value),
-                        activeColor: Colors.white,
-                        inactiveTrackColor: Colors.white.withOpacity(0.3),
+                        activeColor: Theme.of(context).primaryColor,
+                        inactiveTrackColor: Theme.of(context).primaryColor.withOpacity(0.3),
                       ),
                     ),
                   ],
@@ -900,20 +870,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   children: [
                     // Cache Size
                     ListTile(
-                      leading: const Icon(Icons.memory, color: Colors.white),
-                      title: const Text(
+                      leading: Icon(Icons.memory, color: Theme.of(context).iconTheme.color),
+                      title: Text(
                         'Cache Size',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                       ),
                       trailing: DropdownButton<int>(
-                        dropdownColor: Colors.grey[900],
+                        dropdownColor: Theme.of(context).cardColor,
                         value: audioPlayerService.cacheSize,
                         items: [100, 250, 500, 1000, 2000].map((size) {
                           return DropdownMenuItem<int>(
                             value: size,
                             child: Text(
                               '${size}MB',
-                              style: const TextStyle(color: Colors.white),
+                              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
                             ),
                           );
                         }).toList(),
@@ -923,23 +893,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           }
                         },
                         underline: Container(),
-                        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                        icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).iconTheme.color),
                       ),
                     ),
-                    const Divider(color: Colors.white24),
+                    Divider(color: Theme.of(context).dividerColor),
 
                     // Media Controls
                     ListTile(
-                      leading: const Icon(Icons.notifications, color: Colors.white),
-                      title: const Text(
+                      leading: Icon(Icons.notifications, color: Theme.of(context).iconTheme.color),
+                      title: Text(
                         'Media Controls',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                       ),
                       trailing: Switch(
                         value: audioPlayerService.mediaControls,
                         onChanged: (value) => audioPlayerService.setMediaControls(value),
-                        activeColor: Colors.white,
-                        inactiveTrackColor: Colors.white.withOpacity(0.3),
+                        activeColor: Theme.of(context).primaryColor,
+                        inactiveTrackColor: Theme.of(context).primaryColor.withOpacity(0.3),
                       ),
                     ),
                   ],
@@ -1269,7 +1239,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               const SizedBox(height: 8),
                               Text(
                                 getItemTitle(item),
-                                style: const TextStyle(color: Colors.white),
+                                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                                 textAlign: TextAlign.center,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -1341,11 +1311,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: TextField(
             controller: _searchController,
             focusNode: _searchFocusNode,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
             decoration: InputDecoration(
               hintText: AppLocalizations.of(context).translate('search_hint'),
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-              prefixIcon: const Icon(Icons.search, color: Colors.white),
+              hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6)),
+              prefixIcon: Icon(Icons.search, color: Theme.of(context).iconTheme.color),
               suffixIcon: _isSearching
                   ? IconButton(
                 icon: const Icon(Icons.clear, color: Colors.white),
@@ -1388,21 +1358,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 const SizedBox(height: 20.0),
                 Text(
                   AppLocalizations.of(context).translate('quick_access'),
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
                 ),
                 const SizedBox(height: 10.0),
                 buildQuickAccessSection(),
                 const SizedBox(height: 30.0),
                 Text(
                   AppLocalizations.of(context).translate('suggested_tracks'),
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
                 ),
                 const SizedBox(height: 10.0),
                 buildSuggestedTracksSection(),
                 const SizedBox(height: 30.0),
                 Text(
                   AppLocalizations.of(context).translate('suggested_artists'),
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
                 ),
                 const SizedBox(height: 10.0),
                 buildSuggestedArtistsSection(),
@@ -1458,7 +1428,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget buildSearchResults() {
     if (_searchController.text.isEmpty) {
       return Center(
-        child: Text(AppLocalizations.of(context).translate('Start_type'), style: TextStyle(color: Colors.white70)),
+        child: Text(
+          AppLocalizations.of(context).translate('Start_type'),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
+        ),
       );
     }
 
@@ -1492,8 +1465,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         if (_filteredSongs.isNotEmpty) ...[
           Text(
             AppLocalizations.of(context).translate('songs'),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).textTheme.titleLarge?.color,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -1510,13 +1483,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       leading: buildCachedArtwork(song.id),
       title: Text(
         song.title,
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
       ),
       subtitle: Text(
         song.artist ?? '',
-        style: TextStyle(color: Colors.white.withOpacity(0.7)),
+        style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7)),
       ),
-      trailing: const Icon(Icons.favorite_border, color: Colors.white),
+      trailing: Icon(Icons.favorite_border, color: Theme.of(context).iconTheme.color),
       onTap: () => _onSongTap(song),
     );
   }
@@ -1865,8 +1838,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     audioPlayerService.setPlaylist(suggestedSongs, initialIndex);
     audioPlayerService.play();
-    _updateBackgroundImage(song);
-
     expandableController.show();
   }
 

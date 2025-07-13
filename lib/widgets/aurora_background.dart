@@ -31,25 +31,27 @@ class AuroraBackground extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: isDarkMode ? [
+                  // Dark blue to violet gradient for dark mode
                   Color.lerp(
-                    const Color(0xFF3400CE),
-                    const Color(0xFF1E0077),
+                    const Color(0xFF1A237E), // Dark blue
+                    const Color(0xFF311B92), // Dark violet
                     value,
                   )!,
                   Color.lerp(
-                    const Color(0xFF7144FF),
-                    const Color(0xFF000000),
+                    const Color(0xFF512DA8), // Medium violet
+                    const Color(0xFF7B1FA2), // Purple
                     value,
                   )!,
                 ] : [
+                  // Light blue gradient for light mode
                   Color.lerp(
-                    const Color(0xFF007BDE),
-                    const Color(0xFF00BCD4),
+                    const Color(0xFFE3F2FD), // Light blue
+                    const Color(0xFFBBDEFB), // Lighter blue
                     value,
                   )!,
                   Color.lerp(
-                    const Color(0xFF0018A6),
-                    const Color(0xFF581B8C),
+                    const Color(0xFF90CAF9), // Medium light blue
+                    const Color(0xFF64B5F6), // Blue
                     value,
                   )!,
                 ],
@@ -88,14 +90,15 @@ class _ThemeSelectionBackground extends StatelessWidget {
                       begin: Alignment.topLeft.add(Alignment(value * 0.2, value * 0.2)),
                       end: Alignment.bottomRight.add(Alignment(-value * 0.2, -value * 0.2)),
                       colors: [
+                        // Dark blue to violet gradient
                         Color.lerp(
-                          const Color(0xFF3400CE),
-                          const Color(0xFF1E0077),
+                          const Color(0xFF1A237E), // Dark blue
+                          const Color(0xFF311B92), // Dark violet
                           (value * 0.5 + 0.5).abs(),
                         )!,
                         Color.lerp(
-                          const Color(0xFF7144FF),
-                          const Color(0xFF000000),
+                          const Color(0xFF512DA8), // Medium violet
+                          const Color(0xFF7B1FA2), // Purple
                           value,
                         )!,
                       ],
@@ -119,14 +122,15 @@ class _ThemeSelectionBackground extends StatelessWidget {
                       begin: Alignment.topLeft.add(Alignment(-value * 0.2, -value * 0.2)),
                       end: Alignment.bottomRight.add(Alignment(value * 0.2, value * 0.2)),
                       colors: [
+                        // Light blue gradient
                         Color.lerp(
-                          const Color(0xFF007BDE),
-                          const Color(0xFF00BCD4),
+                          const Color(0xFFE3F2FD), // Light blue
+                          const Color(0xFFBBDEFB), // Lighter blue
                           (value * 0.5 + 0.5).abs(),
                         )!,
                         Color.lerp(
-                          const Color(0xFF0018A6),
-                          const Color(0xFF581B8C),
+                          const Color(0xFF90CAF9), // Medium light blue
+                          const Color(0xFF64B5F6), // Blue
                           value,
                         )!,
                       ],

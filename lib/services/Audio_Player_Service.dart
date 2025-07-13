@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:aurora_music_v01/services/spotify_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -29,7 +28,7 @@ class AudioPlayerService extends ChangeNotifier {
   Map<String, int> _artistPlayCounts = {};
   Map<String, int> _playlistPlayCounts = {};
   Map<String, int> _folderAccessCounts = {};
-  
+
   // Getters
   AudioPlayer get audioPlayer => _audioPlayer;
   List<SongModel> get playlist => _playlist;
@@ -38,7 +37,10 @@ class AudioPlayerService extends ChangeNotifier {
   bool get isPlaying => _isPlaying;
   bool get isShuffle => _isShuffle;
   bool get isRepeat => _isRepeat;
-  SongModel? get currentSong => _currentIndex >= 0 && _currentIndex < _playlist.length ? _playlist[_currentIndex] : null;
+  SongModel? get currentSong =>
+      _currentIndex >= 0 && _currentIndex < _playlist.length
+          ? _playlist[_currentIndex]
+          : null;
   final ValueNotifier<Uint8List?> currentArtwork = ValueNotifier(null);
   final ValueNotifier<SongModel?> currentSongNotifier = ValueNotifier(null);
 
@@ -46,6 +48,8 @@ class AudioPlayerService extends ChangeNotifier {
   Stream<SongModel?> get currentSongStream => _currentSongController.stream;
   List<SpotifySongModel> _spotifyPlaylist = [];
   int _currentSpotifyIndex = 0;
+  final _errorController = StreamController<String>.broadcast();
+  Stream<String> get errorStream => _errorController.stream;
 
   Timer? _sleepTimer;
   Duration? _remainingTime;
@@ -84,9 +88,12 @@ class AudioPlayerService extends ChangeNotifier {
 
   // Add ValueNotifiers for reactive state
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier<bool>(false);
-  final ValueNotifier<List<Playlist>> playlistsNotifier = ValueNotifier<List<Playlist>>([]);
+  final ValueNotifier<List<Playlist>> playlistsNotifier =
+      ValueNotifier<List<Playlist>>([]);
   final ValueNotifier<bool> isShuffleNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isRepeatNotifier = ValueNotifier<bool>(false);
+
+  
 
   AudioPlayerService() {
     _init();
@@ -99,23 +106,41 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   Future<void> _init() async {
-    await _loadPlayCounts();
-    await _loadPlaylists();
+  // Configure audio session
+  final session = await AudioSession.instance;
+  await session.configure(const AudioSessionConfiguration(
+    avAudioSessionCategory: AVAudioSessionCategory.playback,
+    androidAudioAttributes: AndroidAudioAttributes(
+      contentType: AndroidAudioContentType.music,
+      usage: AndroidAudioUsage.media,
+    ),
+    androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+    androidWillPauseWhenDucked: true,
+  ));
 
-    _audioPlayer.playerStateStream.listen((playerState) {
-      _isPlaying = playerState.playing;
-      isPlayingNotifier.value = _isPlaying;
-      notifyListeners();
-    });
+  await _loadPlayCounts();
+  await _loadPlaylists();
 
-    _audioPlayer.positionStream.listen((position) {
-      final duration = _audioPlayer.duration;
-      if (duration != null && position >= duration) {
-        skip();
-      }
-    });
-  }
+  _audioPlayer.playerStateStream.listen((playerState) {
+    _isPlaying = playerState.playing;
+    isPlayingNotifier.value = _isPlaying;
+    notifyListeners();
+  });
 
+  _audioPlayer.positionStream.listen((position) {
+    final duration = _audioPlayer.duration;
+    if (duration != null && position >= duration) {
+      skip();
+    }
+  });
+  _startCacheCleanup();
+}
+
+void _startCacheCleanup() {
+  Timer.periodic(const Duration(hours: 24), (timer) async {
+    await _manageCacheSize();
+  });
+}
   // Playlist Management
   Future<void> _loadPlaylists() async {
     final directory = await getApplicationDocumentsDirectory();
@@ -124,12 +149,15 @@ class AudioPlayerService extends ChangeNotifier {
     if (await file.exists()) {
       final contents = await file.readAsString();
       final json = jsonDecode(contents) as List;
-      _playlists = json.map((playlistJson) => Playlist(
-        id: playlistJson['id'],
-        name: playlistJson['name'],
-        songs: (playlistJson['songs'] as List).map((songJson) =>
-            SongModel(songJson)).toList(),
-      )).toList();
+      _playlists = json
+          .map((playlistJson) => Playlist(
+                id: playlistJson['id'],
+                name: playlistJson['name'],
+                songs: (playlistJson['songs'] as List)
+                    .map((songJson) => SongModel(songJson))
+                    .toList(),
+              ))
+          .toList();
     }
   }
 
@@ -137,11 +165,13 @@ class AudioPlayerService extends ChangeNotifier {
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/playlists.json');
 
-    final json = _playlists.map((playlist) => {
-      'id': playlist.id,
-      'name': playlist.name,
-      'songs': playlist.songs.map((song) => song.getMap).toList(),
-    }).toList();
+    final json = _playlists
+        .map((playlist) => {
+              'id': playlist.id,
+              'name': playlist.name,
+              'songs': playlist.songs.map((song) => song.getMap).toList(),
+            })
+        .toList();
 
     await file.writeAsString(jsonEncode(json));
   }
@@ -185,7 +215,8 @@ class AudioPlayerService extends ChangeNotifier {
   void renamePlaylist(String playlistId, String newName) {
     final playlistIndex = _playlists.indexWhere((p) => p.id == playlistId);
     if (playlistIndex != -1) {
-      _playlists[playlistIndex] = _playlists[playlistIndex].copyWith(name: newName);
+      _playlists[playlistIndex] =
+          _playlists[playlistIndex].copyWith(name: newName);
       savePlaylists();
       notifyListeners();
     }
@@ -244,10 +275,12 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   void _incrementPlayCount(SongModel song) {
-    _trackPlayCounts[song.id.toString()] = (_trackPlayCounts[song.id.toString()] ?? 0) + 1;
+    _trackPlayCounts[song.id.toString()] =
+        (_trackPlayCounts[song.id.toString()] ?? 0) + 1;
 
     if (song.albumId != null) {
-      _albumPlayCounts[song.albumId.toString()] = (_albumPlayCounts[song.albumId.toString()] ?? 0) + 1;
+      _albumPlayCounts[song.albumId.toString()] =
+          (_albumPlayCounts[song.albumId.toString()] ?? 0) + 1;
     }
 
     if (song.artistId != null) {
@@ -275,13 +308,15 @@ class AudioPlayerService extends ChangeNotifier {
   Future<List<SongModel>> getMostPlayedTracks() async {
     final allSongs = await _audioQuery.querySongs();
     final sortedTracks = allSongs
-      ..sort((a, b) => (_trackPlayCounts[b.id.toString()] ?? 0).compareTo(_trackPlayCounts[a.id.toString()] ?? 0));
+      ..sort((a, b) => (_trackPlayCounts[b.id.toString()] ?? 0)
+          .compareTo(_trackPlayCounts[a.id.toString()] ?? 0));
     return sortedTracks.take(10).toList();
   }
 
   Future<List<AlbumModel>> getMostPlayedAlbums() async {
     final albums = await _audioQuery.queryAlbums();
-    albums.sort((a, b) => (_albumPlayCounts[b.id.toString()] ?? 0).compareTo(_albumPlayCounts[a.id.toString()] ?? 0));
+    albums.sort((a, b) => (_albumPlayCounts[b.id.toString()] ?? 0)
+        .compareTo(_albumPlayCounts[a.id.toString()] ?? 0));
     return albums.take(10).toList();
   }
 
@@ -297,14 +332,16 @@ class AudioPlayerService extends ChangeNotifier {
     }
 
     final sortedArtists = allArtists
-      ..sort((a, b) => (artistPlayCounts[b.artist] ?? 0).compareTo(artistPlayCounts[a.artist] ?? 0));
+      ..sort((a, b) => (artistPlayCounts[b.artist] ?? 0)
+          .compareTo(artistPlayCounts[a.artist] ?? 0));
 
     return sortedArtists.take(10).toList();
   }
 
   List<Playlist> getThreePlaylists() {
     final sortedPlaylists = _playlists.toList()
-      ..sort((a, b) => (_playlistPlayCounts[b.id] ?? 0).compareTo(_playlistPlayCounts[a.id] ?? 0));
+      ..sort((a, b) => (_playlistPlayCounts[b.id] ?? 0)
+          .compareTo(_playlistPlayCounts[a.id] ?? 0));
     return sortedPlaylists.take(3).toList();
   }
 
@@ -315,65 +352,134 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   // Playback Control
-  Future<void> setPlaylist(List<SongModel> songs, int startIndex) async {
-    if (songs.isEmpty || startIndex < 0 || startIndex >= songs.length) return;
+Future<void> setPlaylist(List<SongModel> songs, int startIndex) async {
+  try {
+    if (songs.isEmpty || startIndex < 0 || startIndex >= songs.length) {
+      _errorController.add('Invalid playlist or start index');
+      return;
+    }
 
     _playlist = songs;
     _currentIndex = startIndex;
-    
+
     if (_gaplessPlayback) {
-      await _applySettings(); // This will set up the concatenating audio source
+      final playlistSource = ConcatenatingAudioSource(
+        children: _playlist.map((song) => AudioSource.uri(
+          Uri.parse(song.uri ?? song.data),
+          tag: MediaItem(
+            id: song.id.toString(),
+            album: song.album ?? 'Unknown Album',
+            title: song.title,
+            artist: song.artist ?? 'Unknown Artist',
+            duration: Duration(milliseconds: song.duration ?? 0),
+          ),
+        )).toList(),
+      );
+      await _audioPlayer.setAudioSource(
+        playlistSource,
+        initialIndex: _currentIndex,
+        initialPosition: Duration.zero,
+      );
     }
-    
+
     await play();
+  } catch (e) {
+    _errorController.add('Failed to set playlist: $e');
+    notifyListeners();
   }
+}
+
+Future<void> updatePlaylist(List<SongModel> newSongs) async {
+  try {
+    if (_gaplessPlayback && _audioPlayer.audioSource is ConcatenatingAudioSource) {
+      final newSource = ConcatenatingAudioSource(
+        children: newSongs.map((song) => AudioSource.uri(
+          Uri.parse(song.uri ?? song.data),
+          tag: MediaItem(
+            id: song.id.toString(),
+            album: song.album ?? 'Unknown Album',
+            title: song.title,
+            artist: song.artist ?? 'Unknown Artist',
+            duration: Duration(milliseconds: song.duration ?? 0),
+          ),
+        )).toList(),
+      );
+
+      // Preserve current playback position
+      final currentPosition = _audioPlayer.position;
+      final currentIndex = _audioPlayer.currentIndex ?? _currentIndex;
+
+      await _audioPlayer.setAudioSource(
+        newSource,
+        initialIndex: currentIndex,
+        initialPosition: currentPosition,
+      );
+
+      _playlist = newSongs;
+      _currentIndex = currentIndex;
+      notifyListeners();
+    } else {
+      _playlist = newSongs;
+      _currentIndex = 0;
+      await setPlaylist(newSongs, 0);
+    }
+  } catch (e) {
+    _errorController.add('Failed to update playlist: $e');
+    notifyListeners();
+  }
+}
 
   Future<void> play({int? index}) async {
-    if (index != null) {
-      _currentIndex = index;
-    }
-
-    if (_currentIndex >= 0 && _currentIndex < _playlist.length) {
-      final song = _playlist[_currentIndex];
-      
-      if (_gaplessPlayback) {
-        // For gapless playback, we just need to seek to the correct index
-        await _audioPlayer.seek(Duration.zero, index: _currentIndex);
-        await _audioPlayer.play();
-      } else {
-        // Non-gapless playback - load each song individually
-        final url = song.uri ?? song.data;
-        final artworkBytes = await getCurrentSongArtwork();
-        Uri? artUri;
-        if (artworkBytes != null) {
-          final directory = await getApplicationDocumentsDirectory();
-          final filePath = '${directory.path}/${song.id}_artwork.jpg';
-          final file = File(filePath);
-          await file.writeAsBytes(artworkBytes);
-          artUri = Uri.file(filePath);
-        }
-
-        final mediaItem = MediaItem(
-          id: song.id.toString(),
-          album: song.album ?? 'Unknown Album',
-          title: song.title,
-          artist: song.artist ?? 'Unknown Artist',
-          artUri: artUri,
-          duration: Duration(milliseconds: song.duration ?? 0),
-        );
-
-        await _audioPlayer.setAudioSource(
-          AudioSource.uri(Uri.parse(url), tag: mediaItem),
-          preload: true,
-        );
-        await _audioPlayer.play();
+    try {
+      if (index != null) {
+        _currentIndex = index;
       }
 
-      _isPlaying = true;
-      _incrementPlayCount(song);
-      await updateCurrentArtwork();
-      _currentSongController.add(song);
-      currentSongNotifier.value = song;
+      if (_currentIndex >= 0 && _currentIndex < _playlist.length) {
+        final song = _playlist[_currentIndex];
+
+        if (_gaplessPlayback) {
+          await _audioPlayer.seek(Duration.zero, index: _currentIndex);
+          await _audioPlayer.play();
+        } else {
+          final url = song.uri ?? song.data;
+          final artworkBytes = await getCurrentSongArtwork();
+          Uri? artUri;
+          if (artworkBytes != null) {
+            final directory = await getApplicationDocumentsDirectory();
+            final filePath = '${directory.path}/${song.id}_artwork.jpg';
+            final file = File(filePath);
+            await file.writeAsBytes(artworkBytes);
+            artUri = Uri.file(filePath);
+          }
+
+          final mediaItem = MediaItem(
+            id: song.id.toString(),
+            album: song.album ?? 'Unknown Album',
+            title: song.title,
+            artist: song.artist ?? 'Unknown Artist',
+            artUri: artUri,
+            duration: Duration(milliseconds: song.duration ?? 0),
+          );
+
+          await _audioPlayer.setAudioSource(
+            AudioSource.uri(Uri.parse(url), tag: mediaItem),
+            preload: true,
+          );
+          await _audioPlayer.play();
+        }
+
+        _isPlaying = true;
+        _incrementPlayCount(song);
+        await updateCurrentArtwork();
+        _currentSongController.add(song);
+        currentSongNotifier.value = song;
+        notifyListeners();
+      }
+    } catch (e) {
+      _isPlaying = false;
+      isPlayingNotifier.value = false;
+      _currentSongController.addError('Failed to play song: $e');
       notifyListeners();
     }
   }
@@ -388,54 +494,13 @@ class AudioPlayerService extends ChangeNotifier {
     if (_spotifyPlaylist.isEmpty) return;
 
     final playlist = ConcatenatingAudioSource(
-      children: _spotifyPlaylist.map((song) =>
-          AudioSource.uri(
-              Uri.parse(song.uri),
-              tag: song.toMediaItem()
-          )
-      ).toList(),
+      children: _spotifyPlaylist
+          .map((song) =>
+              AudioSource.uri(Uri.parse(song.uri), tag: song.toMediaItem()))
+          .toList(),
     );
 
     audioPlayer.setAudioSource(playlist, initialIndex: _currentSpotifyIndex);
-  }
-
-  Future<void> playSpotifySong() async {
-    if (_spotifyPlaylist.isEmpty) return;
-
-    final currentSong = _spotifyPlaylist[_currentSpotifyIndex];
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/${currentSong.id}.mp3';
-    final file = File(filePath);
-
-    if (!await file.exists()) {
-      final downloadedFilePath = await SpotifyService().downloadSpotifySong(currentSong.id);
-      if (downloadedFilePath != null) {
-        final mediaItem = MediaItem(
-          id: currentSong.id,
-          album: currentSong.album,
-          title: currentSong.title,
-          artist: currentSong.artist,
-          duration: Duration(milliseconds: currentSong.duration),
-          artUri: Uri.parse(currentSong.artworkUrl),
-        );
-        await audioPlayer.setAudioSource(AudioSource.uri(Uri.file(downloadedFilePath), tag: mediaItem));
-      } else {
-        return;
-      }
-    } else {
-      final mediaItem = MediaItem(
-        id: currentSong.id,
-        album: currentSong.album,
-        title: currentSong.title,
-        artist: currentSong.artist,
-        duration: Duration(milliseconds: currentSong.duration),
-        artUri: Uri.parse(currentSong.artworkUrl),
-      );
-      await audioPlayer.setAudioSource(AudioSource.uri(Uri.file(filePath), tag: mediaItem));
-    }
-
-    await audioPlayer.play();
-    notifyListeners();
   }
 
   Future<void> pause() async {
@@ -496,7 +561,8 @@ class AudioPlayerService extends ChangeNotifier {
     if (_playlist.length <= 1) return _currentIndex;
     int newIndex;
     do {
-      newIndex = (DateTime.now().millisecondsSinceEpoch % _playlist.length).toInt();
+      newIndex =
+          (DateTime.now().millisecondsSinceEpoch % _playlist.length).toInt();
     } while (newIndex == _currentIndex);
     return newIndex;
   }
@@ -617,7 +683,9 @@ class AudioPlayerService extends ChangeNotifier {
 
   void _updateLikedSongsPlaylist() async {
     final allSongs = await _audioQuery.querySongs();
-    final likedSongs = allSongs.where((song) => _likedSongs.contains(song.id.toString())).toList();
+    final likedSongs = allSongs
+        .where((song) => _likedSongs.contains(song.id.toString()))
+        .toList();
 
     _likedSongsPlaylist = Playlist(
       id: LIKED_SONGS_PLAYLIST_ID,
@@ -658,13 +726,15 @@ class AudioPlayerService extends ChangeNotifier {
     _savePlayCounts();
     savePlaylists();
     _currentSongController.close();
+    _errorController.close();
     _sleepTimer?.cancel();
     super.dispose();
   }
 
   // Ensure that _folderAccessCounts is correctly populated
   void _incrementFolderAccessCount(String folderPath) {
-    _folderAccessCounts[folderPath] = (_folderAccessCounts[folderPath] ?? 0) + 1;
+    _folderAccessCounts[folderPath] =
+        (_folderAccessCounts[folderPath] ?? 0) + 1;
     notifyListeners();
   }
 
@@ -700,7 +770,7 @@ class AudioPlayerService extends ChangeNotifier {
     if (await file.exists()) {
       final contents = await file.readAsString();
       final json = jsonDecode(contents);
-      
+
       _gaplessPlayback = json['gaplessPlayback'] ?? true;
       _volumeNormalization = json['volumeNormalization'] ?? false;
       _playbackSpeed = (json['playbackSpeed'] ?? 1.0).toDouble();
@@ -745,18 +815,20 @@ class AudioPlayerService extends ChangeNotifier {
       // Create a concatenating audio source for gapless playback
       if (_playlist.isNotEmpty) {
         final playlist = ConcatenatingAudioSource(
-          children: _playlist.map((song) => AudioSource.uri(
-            Uri.parse(song.uri ?? song.data),
-            tag: MediaItem(
-              id: song.id.toString(),
-              album: song.album ?? 'Unknown Album',
-              title: song.title,
-              artist: song.artist ?? 'Unknown Artist',
-              duration: Duration(milliseconds: song.duration ?? 0),
-            ),
-          )).toList(),
+          children: _playlist
+              .map((song) => AudioSource.uri(
+                    Uri.parse(song.uri ?? song.data),
+                    tag: MediaItem(
+                      id: song.id.toString(),
+                      album: song.album ?? 'Unknown Album',
+                      title: song.title,
+                      artist: song.artist ?? 'Unknown Artist',
+                      duration: Duration(milliseconds: song.duration ?? 0),
+                    ),
+                  ))
+              .toList(),
         );
-        
+
         // Set the audio source with the current index
         await _audioPlayer.setAudioSource(
           playlist,
@@ -802,9 +874,8 @@ class AudioPlayerService extends ChangeNotifier {
       _updateAutoPlaylists();
     } else {
       // Remove auto-generated playlists
-      _playlists.removeWhere((p) => 
-        p.id == 'most_played' || p.id == 'recently_added'
-      );
+      _playlists.removeWhere(
+          (p) => p.id == 'most_played' || p.id == 'recently_added');
       savePlaylists();
     }
     notifyListeners();
@@ -820,7 +891,7 @@ class AudioPlayerService extends ChangeNotifier {
   Future<void> setMediaControls(bool value) async {
     _mediaControls = value;
     await _saveSettings();
-    
+
     // Update the audio session configuration
     final session = await AudioSession.instance;
     if (!_mediaControls) {
@@ -866,7 +937,7 @@ class AudioPlayerService extends ChangeNotifier {
         }
       }
     }
-    
+
     notifyListeners();
   }
 
@@ -887,41 +958,63 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
-  Future<void> _manageCacheSize() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final cacheDir = Directory('${directory.path}/artwork_cache');
-    
-    if (await cacheDir.exists()) {
-      final files = await cacheDir.list().toList();
-      final totalSize = files.fold<int>(0, (sum, file) => 
+Future<void> _manageCacheSize() async {
+  final directory = await getApplicationDocumentsDirectory();
+  final cacheDir = Directory('${directory.path}/artwork_cache');
+  final spotifyCacheDir = Directory('${directory.path}');
+
+  int totalSize = 0;
+
+  // Clean artwork cache
+  if (await cacheDir.exists()) {
+    final files = await cacheDir.list().toList();
+    totalSize += files.fold<int>(0, (sum, file) =>
         sum + (file is File ? file.lengthSync() : 0));
-      
-      if (totalSize > _cacheSize * 1024 * 1024) {
-        // Sort files by last access time
-        files.sort((a, b) => 
-          a.statSync().accessed.compareTo(b.statSync().accessed));
-        
-        // Delete oldest files until we're under the limit
-        var currentSize = totalSize;
-        for (var file in files) {
-          if (currentSize <= _cacheSize * 1024 * 1024) break;
-          if (file is File) {
-            final fileSize = file.lengthSync();
-            await file.delete();
-            currentSize -= fileSize;
-          }
+
+    if (totalSize > _cacheSize * 1024 * 1024) {
+      files.sort((a, b) => a.statSync().accessed.compareTo(b.statSync().accessed));
+      var currentSize = totalSize;
+      for (var file in files) {
+        if (currentSize <= _cacheSize * 1024 * 1024) break;
+        if (file is File) {
+          final fileSize = file.lengthSync();
+          await file.delete();
+          currentSize -= fileSize;
         }
       }
     }
   }
+
+  // Clean Spotify song cache
+  if (await spotifyCacheDir.exists()) {
+    final files = await spotifyCacheDir.list().toList();
+    final spotifyFiles = files.where((file) => file is File && file.path.endsWith('.mp3')).toList();
+    totalSize += spotifyFiles.fold<int>(0, (sum, file) =>
+        sum + (file is File ? file.lengthSync() : 0));
+
+    if (totalSize > _cacheSize * 1024 * 1024) {
+      spotifyFiles.sort((a, b) => a.statSync().accessed.compareTo(b.statSync().accessed));
+      var currentSize = totalSize;
+      for (var file in spotifyFiles) {
+        if (currentSize <= _cacheSize * 1024 * 1024) break;
+        if (file is File) {
+          final fileSize = file.lengthSync();
+          await file.delete();
+          currentSize -= fileSize;
+        }
+      }
+    }
+  }
+}
 
   void _updateAutoPlaylists() {
     if (!_autoPlaylists) return;
 
     // Create "Most Played" playlist
     getMostPlayedTracks().then((tracks) {
-      final existingIndex = _playlists.indexWhere((p) => p.name == 'Most Played');
-      
+      final existingIndex =
+          _playlists.indexWhere((p) => p.name == 'Most Played');
+
       if (existingIndex != -1) {
         // Update existing playlist
         _playlists[existingIndex] = Playlist(
@@ -937,18 +1030,21 @@ class AudioPlayerService extends ChangeNotifier {
           songs: tracks,
         ));
       }
-      
+
       savePlaylists();
       notifyListeners();
     });
 
     // Create "Recently Added" playlist
-    _audioQuery.querySongs(
+    _audioQuery
+        .querySongs(
       sortType: SongSortType.DATE_ADDED,
       orderType: OrderType.DESC_OR_GREATER,
-    ).then((tracks) {
-      final existingIndex = _playlists.indexWhere((p) => p.name == 'Recently Added');
-      
+    )
+        .then((tracks) {
+      final existingIndex =
+          _playlists.indexWhere((p) => p.name == 'Recently Added');
+
       if (existingIndex != -1) {
         // Update existing playlist
         _playlists[existingIndex] = Playlist(
@@ -964,7 +1060,7 @@ class AudioPlayerService extends ChangeNotifier {
           songs: tracks,
         ));
       }
-      
+
       savePlaylists();
       notifyListeners();
     });
@@ -973,14 +1069,13 @@ class AudioPlayerService extends ChangeNotifier {
   // Add this new method
   Future<List<SongModel>> getRecentlyPlayed() async {
     final allSongs = await _audioQuery.querySongs();
-    final recentlyPlayedSongs = allSongs.where((song) => 
-      _trackPlayCounts.containsKey(song.id.toString())
-    ).toList();
-    
-    recentlyPlayedSongs.sort((a, b) => 
-      (_trackPlayCounts[b.id.toString()] ?? 0).compareTo(_trackPlayCounts[a.id.toString()] ?? 0)
-    );
-    
+    final recentlyPlayedSongs = allSongs
+        .where((song) => _trackPlayCounts.containsKey(song.id.toString()))
+        .toList();
+
+    recentlyPlayedSongs.sort((a, b) => (_trackPlayCounts[b.id.toString()] ?? 0)
+        .compareTo(_trackPlayCounts[a.id.toString()] ?? 0));
+
     return recentlyPlayedSongs.take(3).toList();
   }
 }
