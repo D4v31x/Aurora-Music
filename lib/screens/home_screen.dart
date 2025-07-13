@@ -24,6 +24,8 @@ import '../localization/app_localizations.dart';
 import '../widgets/about_dialog.dart';
 import '../widgets/changelog_dialog.dart';
 import '../widgets/expandable_bottom.dart';
+import '../widgets/home/quick_access_section.dart';
+import '../widgets/home/suggested_tracks_section.dart';
 import 'AlbumDetailScreen.dart';
 import 'Artist_screen.dart';
 import 'FolderDetail_screen.dart';
@@ -1361,14 +1363,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
                 ),
                 const SizedBox(height: 10.0),
-                buildQuickAccessSection(),
+                const QuickAccessSection(),
                 const SizedBox(height: 30.0),
                 Text(
                   AppLocalizations.of(context).translate('suggested_tracks'),
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
                 ),
                 const SizedBox(height: 10.0),
-                buildSuggestedTracksSection(),
+                SuggestedTracksSection(randomSongs: randomSongs),
                 const SizedBox(height: 30.0),
                 Text(
                   AppLocalizations.of(context).translate('suggested_artists'),
@@ -1896,13 +1898,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
-    final currentSong = audioPlayerService.currentSong;
-    final expandableController = Provider.of<ExpandablePlayerController>(context);
+    return Consumer2<AudioPlayerService, ExpandablePlayerController>(
+      builder: (context, audioPlayerService, expandableController, child) {
+        final currentSong = audioPlayerService.currentSong;
 
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
+        return WillPopScope(
+          onWillPop: _onWillPop,
+          child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
@@ -1980,6 +1982,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ],
         ),
       ),
+        );
+      },
     );
   }
 

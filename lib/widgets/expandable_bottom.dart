@@ -64,60 +64,60 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
 
   @override
   Widget build(BuildContext context) {
-    final expandablePlayerController = Provider.of<ExpandablePlayerController>(context);
+    return Consumer<ExpandablePlayerController>(
+      builder: (context, expandablePlayerController, child) {
+        if (expandablePlayerController.isExpanded && !isExpanded) {
+          expand();
+        } else if (!expandablePlayerController.isExpanded && isExpanded) {
+          collapse();
+        }
 
-    if (expandablePlayerController.isExpanded && !isExpanded) {
-      expand();
-    } else if (!expandablePlayerController.isExpanded && isExpanded) {
-      collapse();
-    }
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (BuildContext context, Widget? child) {
+            return Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: widget.minHeight + 
+                     (MediaQuery.of(context).size.height - widget.minHeight) * 
+                     _heightFactor.value,
+              child: RepaintBoundary(
+                child: GestureDetector(
+                  onVerticalDragUpdate: (details) {
+                    if (!mounted) return;
+                    _controller.value -= details.primaryDelta! / 
+                                       (MediaQuery.of(context).size.height - widget.minHeight);
+                  },
+                  onVerticalDragEnd: (details) {
+                    if (!mounted || _controller.isAnimating) return;
 
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (BuildContext context, Widget? child) {
-        return Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: widget.minHeight + 
-                 (MediaQuery.of(context).size.height - widget.minHeight) * 
-                 _heightFactor.value,
-          child: RepaintBoundary(
-            child: GestureDetector(
-              onVerticalDragUpdate: (details) {
-                if (!mounted) return;
-                _controller.value -= details.primaryDelta! / 
-                                   (MediaQuery.of(context).size.height - widget.minHeight);
-              },
-              onVerticalDragEnd: (details) {
-                if (!mounted || _controller.isAnimating) return;
-
-                final double velocity = details.velocity.pixelsPerSecond.dy / 
-                                     (MediaQuery.of(context).size.height - widget.minHeight);
-                
-                if (velocity.abs() > 1.0) {
-                  if (velocity > 0) {
-                    collapse();
-                    expandablePlayerController.collapse();
-                  } else {
-                    expand();
-                    expandablePlayerController.expand();
-                  }
-                } else {
-                  if (_controller.value < 0.5) {
-                    collapse();
-                    expandablePlayerController.collapse();
-                  } else {
-                    expand();
-                    expandablePlayerController.expand();
-                  }
-                }
-              },
-              onTap: () {
-                if (!mounted) return;
-                if (_controller.value == 0.0) {
-                  expand();
-                  expandablePlayerController.expand();
+                    final double velocity = details.velocity.pixelsPerSecond.dy / 
+                                         (MediaQuery.of(context).size.height - widget.minHeight);
+                    
+                    if (velocity.abs() > 1.0) {
+                      if (velocity > 0) {
+                        collapse();
+                        expandablePlayerController.collapse();
+                      } else {
+                        expand();
+                        expandablePlayerController.expand();
+                      }
+                    } else {
+                      if (_controller.value < 0.5) {
+                        collapse();
+                        expandablePlayerController.collapse();
+                      } else {
+                        expand();
+                        expandablePlayerController.expand();
+                      }
+                    }
+                  },
+                  onTap: () {
+                    if (!mounted) return;
+                    if (_controller.value == 0.0) {
+                      expand();
+                      expandablePlayerController.expand();
                 }
               },
               child: RepaintBoundary(
@@ -149,6 +149,8 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
             ),
           ),
         );
+      },
+    );
       },
     );
   }
