@@ -64,14 +64,10 @@ class ThemeUtils {
         iconTheme: IconThemeData(color: textPrimaryLight),
       ),
       textTheme: _createTextTheme(textPrimaryLight, textSecondaryLight),
-      cardTheme: CardTheme(
-        color: surfaceLight,
-        elevation: 4,
-        shadowColor: Colors.black26,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
+      // Using direct properties instead of CardTheme
+      cardColor: surfaceLight,
+      shadowColor: Colors.black26,
+      cardTheme: null, // Explicitly set to null to avoid type issues
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
@@ -132,14 +128,10 @@ class ThemeUtils {
         iconTheme: IconThemeData(color: textPrimaryDark),
       ),
       textTheme: _createTextTheme(textPrimaryDark, textSecondaryDark),
-      cardTheme: CardTheme(
-        color: surfaceDark,
-        elevation: 4,
-        shadowColor: Colors.black54,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
+      // Using direct properties instead of CardTheme
+      cardColor: surfaceDark,
+      shadowColor: Colors.black54,
+      cardTheme: null, // Explicitly set to null to avoid type issues
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,

@@ -1,5 +1,5 @@
 import 'dart:collection';
-import '../constants/app_config.dart';
+import 'package:aurora_music_v01/constants/app_config.dart';
 
 /// Performance management service to prevent memory leaks and optimize caching
 class PerformanceManager {

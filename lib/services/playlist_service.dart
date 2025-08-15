@@ -6,7 +6,6 @@ import 'package:on_audio_query/on_audio_query.dart';
 import '../models/playlist_model.dart';
 import '../services/logging_service.dart';
 import '../services/play_count_service.dart';
-import '../utils/file_utils.dart';
 import '../utils/validation_utils.dart';
 
 /// Service responsible for playlist management

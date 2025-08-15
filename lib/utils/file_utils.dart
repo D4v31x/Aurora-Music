@@ -30,7 +30,7 @@ class FileUtils {
     try {
       return await File(path).exists();
     } catch (e) {
-      LoggingService.warning('Failed to check file existence: $path', 'FileUtils', e);
+      LoggingService.error('Failed to check file existence: $path', 'FileUtils', e);
       return false;
     }
   }
@@ -59,7 +59,7 @@ class FileUtils {
       }
       return false;
     } catch (e) {
-      LoggingService.warning('Failed to delete file: $path', 'FileUtils', e);
+      LoggingService.error('Failed to delete file: $path', 'FileUtils', e);
       return false;
     }
   }
@@ -73,7 +73,7 @@ class FileUtils {
       }
       return 0;
     } catch (e) {
-      LoggingService.warning('Failed to get file size: $path', 'FileUtils', e);
+      LoggingService.error('Failed to get file size: $path', 'FileUtils', e);
       return 0;
     }
   }

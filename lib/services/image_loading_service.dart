@@ -47,7 +47,7 @@ class ImageLoadingService {
 
       return artwork;
     } catch (e) {
-      LoggingService.warning('Failed to load artwork for song $songId', 'ImageLoadingService', e);
+      LoggingService.error('Failed to load artwork for song $songId', 'ImageLoadingService', e);
       return null;
     }
   }
@@ -82,7 +82,7 @@ class ImageLoadingService {
 
       return artwork;
     } catch (e) {
-      LoggingService.warning('Failed to load album artwork for $albumId', 'ImageLoadingService', e);
+      LoggingService.error('Failed to load album artwork for $albumId', 'ImageLoadingService', e);
       return null;
     }
   }
@@ -117,7 +117,7 @@ class ImageLoadingService {
 
       return artwork;
     } catch (e) {
-      LoggingService.warning('Failed to load artist artwork for $artistId', 'ImageLoadingService', e);
+      LoggingService.error('Failed to load artist artwork for $artistId', 'ImageLoadingService', e);
       return null;
     }
   }

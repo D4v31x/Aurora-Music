@@ -143,7 +143,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             });
           }
         } catch (e) {
-          LoggingService.warning('Task failed: ${task.$1}', 'SplashScreen', e);
+          LoggingService.error('Task failed: ${task.$1}', 'SplashScreen', e);
           // Only show warnings for critical errors
           if (task.$1 != 'Setting up Analytics') {
             if (mounted) {
