@@ -147,6 +147,6 @@ class _FinalScreenState extends State<FinalScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }

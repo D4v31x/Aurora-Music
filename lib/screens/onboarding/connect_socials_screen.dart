@@ -162,6 +162,7 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
           ),
         ],
       ),
+    )
     );
   }
 
@@ -210,6 +211,6 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
