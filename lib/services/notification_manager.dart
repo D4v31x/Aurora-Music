@@ -1,13 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pub_semver/pub_semver.dart';
-
-class VersionCheckResult {
-  final bool isUpdateAvailable;
-  final Version? latestVersion;
-
-  VersionCheckResult({required this.isUpdateAvailable, this.latestVersion});
-}
 
 class NotificationManager {
   String _currentNotification = '';

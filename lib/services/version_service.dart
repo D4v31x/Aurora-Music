@@ -4,7 +4,13 @@ import 'package:http/http.dart' as http;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'notification_manager.dart';
+
+class VersionCheckResult {
+  final bool isUpdateAvailable;
+  final Version? latestVersion;
+
+  VersionCheckResult({required this.isUpdateAvailable, this.latestVersion});
+}
 
 class VersionService {
   static const String _githubApiUrl = 'https://api.github.com/repos/D4v31x/Aurora-Music/releases/latest';
