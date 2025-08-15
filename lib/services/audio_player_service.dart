@@ -51,14 +51,6 @@ class AudioPlayerService extends ChangeNotifier {
   final _errorController = StreamController<String>.broadcast();
   Stream<String> get errorStream => _errorController.stream;
 
-  Timer? _sleepTimer;
-  Duration? _remainingTime;
-  Duration? _sleepTimerDuration;
-
-  bool get isSleepTimerActive => _sleepTimer?.isActive ?? false;
-  Duration? get remainingTime => _remainingTime;
-  Duration? get sleepTimerDuration => _sleepTimerDuration;
-
   Set<String> _likedSongs = {};
   late Playlist? _likedSongsPlaylist;
 
@@ -629,30 +621,9 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
     }
   }
 
-  void setSleepTimer(Duration duration) {
-    cancelSleepTimer();
-    _remainingTime = duration;
-    _sleepTimerDuration = duration;
-    _sleepTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingTime != null) {
-        _remainingTime = _remainingTime! - const Duration(seconds: 1);
-        if (_remainingTime!.inSeconds <= 0) {
-          pause();
-          cancelSleepTimer();
-        }
-        notifyListeners();
-      }
-    });
-    notifyListeners();
-  }
 
-  void cancelSleepTimer() {
-    _sleepTimer?.cancel();
-    _sleepTimer = null;
-    _remainingTime = null;
-    _sleepTimerDuration = null;
-    notifyListeners();
-  }
+
+
 
   Future<void> initializeLikedSongsPlaylist() async {
     await loadLikedSongs();

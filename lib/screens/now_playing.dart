@@ -10,6 +10,7 @@ import '../localization/app_localizations.dart';
 import '../services/audio_player_service.dart';
 import '../services/expandable_player_controller.dart';
 import '../services/background_manager_service.dart';
+import '../services/sleep_timer_controller.dart';
 import '../services/lyrics_service.dart';  // Genius lyrics fetching service
 // Importujte službu pro timed lyrics
 import '../widgets/artist_card.dart';
@@ -645,17 +646,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
               itemBuilder: (BuildContext context) => [
                 PopupMenuItem<String>(
                   value: 'sleep_timer',
-                  child: Row(
-                    children: [
-                      Icon(
-                        audioPlayerService.isSleepTimerActive 
-                            ? Icons.timer 
-                            : Icons.timer_outlined,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 12),
-                      Text( AppLocalizations.of(context).translate('sleep_timer'), style: const TextStyle(color: Colors.white)),
-                    ],
+                  child: Consumer<SleepTimerController>(
+                    builder: (context, sleepTimer, child) {
+                      return Row(
+                        children: [
+                          Icon(
+                            sleepTimer.isActive 
+                                ? Icons.timer 
+                                : Icons.timer_outlined,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 12),
+                          Text( AppLocalizations.of(context).translate('sleep_timer'), style: const TextStyle(color: Colors.white)),
+                        ],
+                      );
+                    },
                   ),
                 ),
                 PopupMenuItem<String>(
@@ -806,6 +811,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
 
   void _showSleepTimerOptions(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    final sleepTimerController = Provider.of<SleepTimerController>(context, listen: false);
     int? selectedMinutes;
     showModalBottomSheet(
       context: context,
@@ -880,11 +886,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                 const SizedBox(height: 32),
                 Row(
                   children: [
-                    if (audioPlayerService.isSleepTimerActive)
+                    if (sleepTimerController.isActive)
                       Expanded(
                         child: TextButton.icon(
                           onPressed: () {
-                            audioPlayerService.cancelSleepTimer();
+                            sleepTimerController.cancelTimer();
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.timer_off, color: Colors.redAccent),
@@ -898,12 +904,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                           ),
                         ),
                       ),
-                    if (audioPlayerService.isSleepTimerActive)
+                    if (sleepTimerController.isActive)
                       const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: selectedMinutes != null ? () {
-                          audioPlayerService.setSleepTimer(Duration(minutes: selectedMinutes!));
+                          sleepTimerController.startTimer(
+                            Duration(minutes: selectedMinutes!),
+                            () => audioPlayerService.pause(), // Callback to pause when timer completes
+                          );
                           Navigator.pop(context);
                           setState(() {
                             _isTimerExpanded = true;
@@ -1061,16 +1070,18 @@ String _formatDuration(Duration duration) {
 }
 
   Widget _buildSleepTimerIndicator(AudioPlayerService audioPlayerService) {
-    if (!audioPlayerService.isSleepTimerActive) return const SizedBox.shrink();
+    return Consumer<SleepTimerController>(
+      builder: (context, sleepTimerController, child) {
+        if (!sleepTimerController.isActive) return const SizedBox.shrink();
 
-    final remainingTime = audioPlayerService.remainingTime;
-    if (remainingTime == null) return const SizedBox.shrink();
+        final remainingTime = sleepTimerController.remainingTime;
+        if (remainingTime == null) return const SizedBox.shrink();
 
-    final minutes = remainingTime.inMinutes;
-    final seconds = (remainingTime.inSeconds % 60).toString().padLeft(2, '0');
-    final progress = audioPlayerService.sleepTimerDuration != null
-        ? remainingTime.inSeconds / audioPlayerService.sleepTimerDuration!.inSeconds
-        : 0.0;
+        final minutes = remainingTime.inMinutes;
+        final seconds = (remainingTime.inSeconds % 60).toString().padLeft(2, '0');
+        final progress = sleepTimerController.duration != null
+            ? remainingTime.inSeconds / sleepTimerController.duration!.inSeconds
+            : 0.0;
 
     return Container(
       width: 90.0,
@@ -1183,6 +1194,8 @@ String _formatDuration(Duration duration) {
           ),
         ),
       ),
+    );
+      },
     );
   }
 

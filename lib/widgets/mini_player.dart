@@ -109,62 +109,86 @@ class _MiniPlayerState extends State<MiniPlayer> {
                 margin: EdgeInsets.only(
                   left: 16.0,
                   right: 16.0,
-                  bottom: bottomPadding + 16.0, // Add space underneath
+                  bottom: bottomPadding + 16.0,
                 ),
                 height: _minHeight,
                 decoration: BoxDecoration(
-                  color: dominantColor?.withOpacity(0.95) ?? Colors.black.withOpacity(0.95),
-                  borderRadius: BorderRadius.circular(32.0), // Pill-shaped design
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: dominantColor != null ? [
+                      dominantColor!.withOpacity(0.95),
+                      dominantColor!.withOpacity(0.85),
+                    ] : [
+                      Colors.black.withOpacity(0.95),
+                      Colors.black.withOpacity(0.85),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(32.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: (dominantColor?.withOpacity(0.3) ?? Colors.black.withOpacity(0.3)),
                       blurRadius: 20.0,
                       spreadRadius: 0.0,
                       offset: const Offset(0, 8),
                     ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4.0,
+                      spreadRadius: 0.0,
+                      offset: const Offset(0, 2),
+                    ),
                   ],
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 0.5,
+                  ),
                 ),
                 child: Row(
                   children: [
-                    // Artwork with Hero animation and enhanced styling
+                    // Artwork with enhanced Hero animation
                     Padding(
-                      padding: const EdgeInsets.all(12.0),
+                      padding: const EdgeInsets.all(10.0),
                       child: Hero(
-                        tag: 'playerArtwork', // updated to match NowPlayingScreen
+                        tag: 'playerArtwork',
                         createRectTween: (begin, end) {
                           return MaterialRectCenterArcTween(begin: begin, end: end);
                         },
                         child: Material(
                           color: Colors.transparent,
                           child: Container(
-                            width: 40,
-                            height: 40,
+                            width: 44,
+                            height: 44,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20), // Circular artwork
+                              borderRadius: BorderRadius.circular(22),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 8.0,
+                                  color: Colors.black.withOpacity(0.4),
+                                  blurRadius: 12.0,
                                   spreadRadius: 0.0,
-                                  offset: const Offset(0, 2),
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.2),
+                                width: 1.0,
+                              ),
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(22),
                               child: _artworkService.buildCachedArtwork(
                                 widget.currentSong.id,
-                                size: 40,
+                                size: 44,
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                    // Song information with Hero animations
+                    // Song information with enhanced Hero animations
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,15 +201,16 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                   widget.currentSong.title,
                                   style: TextStyle(
                                     color: textColor,
-                                    fontSize: 14,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.2,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 3),
                             Hero(
                               tag: 'playerArtist',
                               child: Material(
@@ -193,8 +218,9 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                 child: Text(
                                   widget.currentSong.artist ?? 'Unknown Artist',
                                   style: TextStyle(
-                                    color: textColor.withOpacity(0.7),
+                                    color: textColor.withOpacity(0.75),
                                     fontSize: 12,
+                                    fontWeight: FontWeight.w400,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -205,29 +231,43 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         ),
                       ),
                     ),
-                    // Play/pause button with enhanced styling
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        if (audioPlayerService.isPlaying) {
-                          audioPlayerService.pause();
-                        } else {
-                          audioPlayerService.resume();
-                        }
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 12.0),
-                        padding: const EdgeInsets.all(12.0),
-                        decoration: BoxDecoration(
-                          color: textColor.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Icon(
-                          audioPlayerService.isPlaying 
-                              ? Icons.pause_rounded 
-                              : Icons.play_arrow_rounded,
-                          color: textColor,
-                          size: 28,
+                    // Enhanced play/pause button
+                    Padding(
+                      padding: const EdgeInsets.only(right: 14.0),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          if (audioPlayerService.isPlaying) {
+                            audioPlayerService.pause();
+                          } else {
+                            audioPlayerService.resume();
+                          }
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: textColor.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: textColor.withOpacity(0.2),
+                              width: 0.5,
+                            ),
+                          ),
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            transitionBuilder: (Widget child, Animation<double> animation) {
+                              return ScaleTransition(scale: animation, child: child);
+                            },
+                            child: Icon(
+                              audioPlayerService.isPlaying 
+                                  ? Icons.pause_rounded 
+                                  : Icons.play_arrow_rounded,
+                              key: ValueKey(audioPlayerService.isPlaying),
+                              color: textColor,
+                              size: 26,
+                            ),
+                          ),
                         ),
                       ),
                     ),
