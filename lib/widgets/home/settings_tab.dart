@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../../services/Audio_Player_Service.dart';
+import '../../services/audio_player_service.dart';
 import '../../localization/app_localizations.dart';
 import '../../localization/locale_provider.dart';
 import '../../providers/theme_provider.dart';

@@ -7,7 +7,7 @@ import 'dart:typed_data';
 import 'package:provider/provider.dart';
 // Load Genius API keys from .env
 import '../localization/app_localizations.dart';
-import '../services/Audio_Player_Service.dart';
+import '../services/audio_player_service.dart';
 import '../services/expandable_player_controller.dart';
 import '../services/lyrics_service.dart';  // Genius lyrics fetching service
 // Importujte službu pro timed lyrics

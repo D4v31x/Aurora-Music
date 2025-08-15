@@ -4,7 +4,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../models/utils.dart';
-import '../services/Audio_Player_Service.dart';
+import '../services/audio_player_service.dart';
 import '../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';

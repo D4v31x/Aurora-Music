@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
 import '../../screens/PlaylistDetail_screen.dart';
-import '../../services/Audio_Player_Service.dart';
+import '../../services/audio_player_service.dart';
 import '../../localization/app_localizations.dart';
 import '../glassmorphic_container.dart';
 

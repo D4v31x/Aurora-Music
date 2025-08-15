@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../services/Audio_Player_Service.dart';
+import '../services/audio_player_service.dart';
 import '../widgets/glassmorphic_container.dart';
 import 'Artist_screen.dart';
 import 'FolderDetail_screen.dart';

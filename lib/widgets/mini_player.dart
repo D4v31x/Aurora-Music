@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:palette_generator/palette_generator.dart';
-import '../services/Audio_Player_Service.dart';
+import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/performance/performance_manager.dart';
 import '../services/expandable_player_controller.dart';

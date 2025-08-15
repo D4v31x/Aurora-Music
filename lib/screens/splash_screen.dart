@@ -4,9 +4,10 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';  // Import this for ImageFilter
-import '../services/Audio_Player_Service.dart';
+import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/user_preferences.dart';
+import '../services/logging_service.dart';
 import '../constants/animation_constants.dart';
 import 'welcome_screen.dart';
 import 'home_screen.dart';
@@ -142,7 +143,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             });
           }
         } catch (e) {
-          print('Task failed: ${task.$1} with error: $e');
+          LoggingService.warning('Task failed: ${task.$1}', 'SplashScreen', e);
           // Only show warnings for critical errors
           if (task.$1 != 'Setting up Analytics') {
             if (mounted) {
@@ -172,7 +173,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         await _checkOnboardingStatus();
       }
     } catch (e) {
-      print('Initialization error: $e');
+      LoggingService.error('Initialization error', 'SplashScreen', e);
       if (!_warnings.contains('Some features may be limited')) {
         _warnings.add('Some features may be limited');
       }

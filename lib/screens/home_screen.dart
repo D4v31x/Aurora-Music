@@ -9,7 +9,7 @@ import 'package:permission_handler/permission_handler.dart' as permissionhandler
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../models/utils.dart';
-import '../services/Audio_Player_Service.dart';
+import '../services/audio_player_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/changelog_dialog.dart';
 import '../widgets/expandable_bottom.dart';

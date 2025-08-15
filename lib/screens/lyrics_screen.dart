@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../models/timed_lyrics.dart';
-import '../services/Audio_Player_Service.dart';
+import '../services/audio_player_service.dart';
 import '../services/lyrics_service.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';

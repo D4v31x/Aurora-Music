@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../localization/app_localizations.dart';
-import '../../services/Audio_Player_Service.dart';
+import '../../services/audio_player_service.dart';
 import '../../services/expandable_player_controller.dart';
 import '../../screens/Artist_screen.dart';
 import '../artist_card.dart';

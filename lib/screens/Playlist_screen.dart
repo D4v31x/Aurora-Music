@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/Audio_Player_Service.dart';
+import '../services/audio_player_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
 import 'PlaylistDetail_screen.dart';

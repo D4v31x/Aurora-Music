@@ -1,9 +1,10 @@
 import 'dart:collection';
+import '../constants/app_config.dart';
 
 /// Performance management service to prevent memory leaks and optimize caching
 class PerformanceManager {
-  static const int maxCacheSize = 200;  // Maximum cached items
-  static const Duration cacheCleanupInterval = Duration(minutes: 5);
+  static const int maxCacheSize = AppConfig.maxCacheSize;
+  static const Duration cacheCleanupInterval = AppConfig.cacheCleanupInterval;
   
   /// Clean up oversized caches by removing oldest entries
   static void cleanupCache<K, V>(Map<K, V> cache, {int? maxSize}) {

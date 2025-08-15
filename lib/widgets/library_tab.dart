@@ -11,7 +11,7 @@ import '../screens/PlaylistDetail_screen.dart';
 import '../screens/Playlist_screen.dart';
 import '../screens/categories.dart';
 import '../screens/tracks_screen.dart';
-import '../services/Audio_Player_Service.dart';
+import '../services/audio_player_service.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../localization/app_localizations.dart';
 
