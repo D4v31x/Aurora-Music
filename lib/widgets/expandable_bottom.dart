@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../services/expandable_player_controller.dart';
+import '../constants/animation_constants.dart';
 
 class ExpandableBottomSheet extends StatefulWidget {
   final Widget minChild;
@@ -28,11 +29,11 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500), // smoother
+      duration: AnimationConstants.slow, // Use consistent timing
     );
     _heightFactor = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeInOutCubic, // smoother curve
+      curve: AnimationConstants.easeInOutCubic, // Use consistent curve
     );
   }
 
@@ -48,8 +49,8 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
     if (!mounted) return;
     await _controller.animateTo(
       0.0,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
+      duration: AnimationConstants.slow,
+      curve: AnimationConstants.easeInOutCubic,
     );
   }
 
@@ -57,8 +58,8 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
     if (!mounted) return;
     await _controller.animateTo(
       1.0,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
+      duration: AnimationConstants.slow,
+      curve: AnimationConstants.easeInOutCubic,
     );
   }
 
@@ -126,8 +127,8 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
                       final v = _controller.value;
                       final bool expandedMode = v > 0.02; // threshold
                       return AnimatedContainer(
-                        duration: const Duration(milliseconds: 350),
-                        curve: Curves.easeInOutCubic,
+                        duration: AnimationConstants.normal,
+                        curve: AnimationConstants.easeInOutCubic,
                         margin: EdgeInsets.zero, // no outer pill duplication
                         padding: EdgeInsets.only(bottom: bottomPadding * (1 - v)),
                         decoration: expandedMode

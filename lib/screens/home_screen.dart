@@ -492,9 +492,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<AudioPlayerService, ExpandablePlayerController>(
-      builder: (context, audioPlayerService, expandableController, child) {
-        final currentSong = audioPlayerService.currentSong;
+    return Selector2<AudioPlayerService, ExpandablePlayerController, SongModel?>(
+      selector: (context, audioService, expandableController) => audioService.currentSong,
+      builder: (context, currentSong, child) {
+        final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+        final expandableController = Provider.of<ExpandablePlayerController>(context);
 
         return WillPopScope(
           onWillPop: _onWillPop,
