@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:io';
-import 'dart:math';
 import 'dart:ui';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -25,7 +22,6 @@ import '../widgets/mini_player.dart';
 import '../widgets/background_builder.dart';
 import '../widgets/auto_scroll_text.dart';
 import '../services/local_caching_service.dart';
-import '../services/artwork_cache_service.dart';
 import '../services/expandable_player_controller.dart';
 import '../services/notification_manager.dart';
 import '../services/version_service.dart';
@@ -51,11 +47,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   final StreamController<bool> _streamController = StreamController<bool>();
   SongModel? currentSong;
+  // These fields are used in _refreshLibrary method
   bool _isScanning = false;
   int _scannedSongs = 0;
   int _totalSongs = 0;
   List<ArtistModel> artists = [];
-  final ArtworkCacheService _artworkService = ArtworkCacheService();
   final GlobalKey<ExpandableBottomSheetState> _expandableKey = GlobalKey<ExpandableBottomSheetState>();
   bool _isInitialized = false;
   late final ScrollController _appBarTextController;
@@ -448,7 +444,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       setState(() {
         songs = results[0] as List<SongModel>;
         artists = results[1] as List<ArtistModel>;
-        albums = results[2] as List<AlbumModel>;
+        // Removed undefined albums variable since it's not declared in the class
         _randomizeContent();
       });
     } catch (e) {
@@ -493,18 +489,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       },
     );
   }
-
-  void _showChangelogDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => ChangelogDialog(
-        currentVersion: _currentVersion,
-      ),
-    );
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
