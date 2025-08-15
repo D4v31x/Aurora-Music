@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
+import 'package:mesh/mesh.dart';
 import '../services/audio_player_service.dart';
 import '../widgets/glassmorphic_container.dart';
 import 'Artist_screen.dart';
@@ -162,22 +163,20 @@ class AlbumsScreen extends StatelessWidget {
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 500),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDarkMode ? [
-            // Dark blue to violet gradient for dark mode
-            const Color(0xFF1A237E), // Dark blue
-            const Color(0xFF311B92), // Dark violet
-            const Color(0xFF512DA8), // Medium violet
-            const Color(0xFF7B1FA2), // Purple
-          ] : [
-            // Light blue gradient for light mode
-            const Color(0xFFE3F2FD), // Light blue
-            const Color(0xFFBBDEFB), // Lighter blue
-            const Color(0xFF90CAF9), // Medium light blue
-            const Color(0xFF64B5F6), // Blue
+      child: OMeshGradient(
+        mesh: OMeshRect(
+          width: 2,
+          height: 2,
+          fallbackColor: isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFE3F2FD),
+          vertices: [
+            // Top-left corner
+            (0.0, 0.0).v.to(isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFE3F2FD)),
+            // Top-right corner  
+            (1.0, 0.0).v.to(isDarkMode ? const Color(0xFF311B92) : const Color(0xFFBBDEFB)),
+            // Bottom-left corner
+            (0.0, 1.0).v.to(isDarkMode ? const Color(0xFF512DA8) : const Color(0xFF90CAF9)),
+            // Bottom-right corner
+            (1.0, 1.0).v.to(isDarkMode ? const Color(0xFF7B1FA2) : const Color(0xFF64B5F6)),
           ],
         ),
       ),
@@ -307,37 +306,26 @@ class ArtistsScreen extends StatelessWidget {
   }
 
   Widget buildBackground(BuildContext context, SongModel? currentSong) {
-    return FutureBuilder<Uint8List?>(
-      future: currentSong != null
-          ? OnAudioQuery().queryArtwork(currentSong.id, ArtworkType.AUDIO)
-          : null,
-      builder: (context, snapshot) {
-        ImageProvider backgroundImage;
-        if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-          backgroundImage = MemoryImage(snapshot.data!);
-        } else {
-          backgroundImage = AssetImage(
-              MediaQuery.of(context).platformBrightness == Brightness.dark
-                  ? 'assets/images/background/dark_back.jpg'
-                  : 'assets/images/background/light_back.jpg');
-        }
-
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: backgroundImage,
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
-            ),
-          ),
-        );
-      },
+    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      child: OMeshGradient(
+        mesh: OMeshRect(
+          width: 2,
+          height: 2,
+          fallbackColor: isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFE3F2FD),
+          vertices: [
+            // Top-left corner
+            (0.0, 0.0).v.to(isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFE3F2FD)),
+            // Top-right corner  
+            (1.0, 0.0).v.to(isDarkMode ? const Color(0xFF311B92) : const Color(0xFFBBDEFB)),
+            // Bottom-left corner
+            (0.0, 1.0).v.to(isDarkMode ? const Color(0xFF512DA8) : const Color(0xFF90CAF9)),
+            // Bottom-right corner
+            (1.0, 1.0).v.to(isDarkMode ? const Color(0xFF7B1FA2) : const Color(0xFF64B5F6)),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -446,37 +434,26 @@ class FoldersScreen extends StatelessWidget {
   }
 
   Widget buildBackground(BuildContext context, SongModel? currentSong) {
-    return FutureBuilder<Uint8List?>(
-      future: currentSong != null
-          ? OnAudioQuery().queryArtwork(currentSong.id, ArtworkType.AUDIO)
-          : null,
-      builder: (context, snapshot) {
-        ImageProvider backgroundImage;
-        if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-          backgroundImage = MemoryImage(snapshot.data!);
-        } else {
-          backgroundImage = AssetImage(
-              MediaQuery.of(context).platformBrightness == Brightness.dark
-                  ? 'assets/images/background/dark_back.jpg'
-                  : 'assets/images/background/light_back.jpg');
-        }
-
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: backgroundImage,
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
-            ),
-          ),
-        );
-      },
+    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      child: OMeshGradient(
+        mesh: OMeshRect(
+          width: 2,
+          height: 2,
+          fallbackColor: isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFE3F2FD),
+          vertices: [
+            // Top-left corner
+            (0.0, 0.0).v.to(isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFE3F2FD)),
+            // Top-right corner  
+            (1.0, 0.0).v.to(isDarkMode ? const Color(0xFF311B92) : const Color(0xFFBBDEFB)),
+            // Bottom-left corner
+            (0.0, 1.0).v.to(isDarkMode ? const Color(0xFF512DA8) : const Color(0xFF90CAF9)),
+            // Bottom-right corner
+            (1.0, 1.0).v.to(isDarkMode ? const Color(0xFF7B1FA2) : const Color(0xFF64B5F6)),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:mesh/mesh.dart';
 import '../services/audio_player_service.dart';
 import '../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -93,16 +94,22 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
               return ValueListenableBuilder<Color>(
                 valueListenable: _dominantColorNotifier,
                 builder: (context, dominantColor, _) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          dominantColor.withOpacity(0.8),
-                          Colors.black,
-                        ],
-                      ),
+                  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+                  return OMeshGradient(
+                    mesh: OMeshRect(
+                      width: 2,
+                      height: 2,
+                      fallbackColor: isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFE3F2FD),
+                      vertices: [
+                        // Top-left corner
+                        (0.0, 0.0).v.to(isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFE3F2FD)),
+                        // Top-right corner  
+                        (1.0, 0.0).v.to(isDarkMode ? const Color(0xFF311B92) : const Color(0xFFBBDEFB)),
+                        // Bottom-left corner
+                        (0.0, 1.0).v.to(isDarkMode ? const Color(0xFF512DA8) : const Color(0xFF90CAF9)),
+                        // Bottom-right corner
+                        (1.0, 1.0).v.to(isDarkMode ? const Color(0xFF7B1FA2) : const Color(0xFF64B5F6)),
+                      ],
                     ),
                     child: CustomScrollView(
                       controller: _scrollController,

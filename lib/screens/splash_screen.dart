@@ -3,6 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mesh/mesh.dart';
 import 'dart:ui';  // Import this for ImageFilter
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
@@ -448,23 +449,21 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       animation: animation,
                       builder: (context, _) {
                         final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-                        return Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: isDarkMode ? [
-                                const Color(0xFF1A237E), // Dark blue
-                                const Color(0xFF311B92), // Dark violet
-                                const Color(0xFF512DA8), // Medium violet
-                                const Color(0xFF7B1FA2), // Purple
-                              ] : [
-                                const Color(0xFFCFD8DC), // Light blue-grey
-                                const Color(0xFFBBDEFB), // Lighter blue
-                                const Color(0xFF90CAF9), // Medium light blue
-                                const Color(0xFF64B5F6), // Blue
-                              ],
-                            ),
+                        return OMeshGradient(
+                          mesh: OMeshRect(
+                            width: 2,
+                            height: 2,
+                            fallbackColor: isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFCFD8DC),
+                            vertices: [
+                              // Top-left corner
+                              (0.0, 0.0).v.to(isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFCFD8DC)),
+                              // Top-right corner  
+                              (1.0, 0.0).v.to(isDarkMode ? const Color(0xFF311B92) : const Color(0xFFBBDEFB)),
+                              // Bottom-left corner
+                              (0.0, 1.0).v.to(isDarkMode ? const Color(0xFF512DA8) : const Color(0xFF90CAF9)),
+                              // Bottom-right corner
+                              (1.0, 1.0).v.to(isDarkMode ? const Color(0xFF7B1FA2) : const Color(0xFF64B5F6)),
+                            ],
                           ),
                         );
                       },

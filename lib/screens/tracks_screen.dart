@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:mesh/mesh.dart';
 import '../models/playlist_model.dart';
 import '../models/utils.dart';
 import '../services/audio_player_service.dart';
@@ -202,40 +203,26 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
   }
 
   Widget buildBackground(SongModel? currentSong) {
-    return FutureBuilder<Uint8List?>(
-      future: currentSong != null
-          ? OnAudioQuery().queryArtwork(currentSong.id, ArtworkType.AUDIO)
-          : null,
-      builder: (context, snapshot) {
-        ImageProvider backgroundImage;
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.data != null) {
-          backgroundImage = MemoryImage(snapshot.data!);
-        } else {
-          backgroundImage = AssetImage(
-              MediaQuery
-                  .of(context)
-                  .platformBrightness == Brightness.dark
-                  ? 'assets/images/background/dark_back.jpg'
-                  : 'assets/images/background/light_back.jpg');
-        }
-
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: backgroundImage,
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
-            ),
-          ),
-        );
-      },
+    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      child: OMeshGradient(
+        mesh: OMeshRect(
+          width: 2,
+          height: 2,
+          fallbackColor: isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFE3F2FD),
+          vertices: [
+            // Top-left corner
+            (0.0, 0.0).v.to(isDarkMode ? const Color(0xFF1A237E) : const Color(0xFFE3F2FD)),
+            // Top-right corner  
+            (1.0, 0.0).v.to(isDarkMode ? const Color(0xFF311B92) : const Color(0xFFBBDEFB)),
+            // Bottom-left corner
+            (0.0, 1.0).v.to(isDarkMode ? const Color(0xFF512DA8) : const Color(0xFF90CAF9)),
+            // Bottom-right corner
+            (1.0, 1.0).v.to(isDarkMode ? const Color(0xFF7B1FA2) : const Color(0xFF64B5F6)),
+          ],
+        ),
+      ),
     );
   }
 
