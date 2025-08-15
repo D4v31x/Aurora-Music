@@ -6,6 +6,7 @@ import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/performance/performance_manager.dart';
 import '../services/expandable_player_controller.dart';
+import '../services/background_manager_service.dart';
 
 class MiniPlayer extends StatefulWidget {
   final SongModel currentSong;
@@ -50,6 +51,12 @@ class _MiniPlayerState extends State<MiniPlayer> {
         });
       }
       return;
+    }
+
+    // Update background manager colors
+    if (mounted) {
+      final backgroundManager = Provider.of<BackgroundManagerService>(context, listen: false);
+      await backgroundManager.updateColorsFromSong(widget.currentSong);
     }
 
     final artwork = await _artworkService.getArtwork(widget.currentSong.id);

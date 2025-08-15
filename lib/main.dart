@@ -11,6 +11,7 @@ import 'services/audio_player_service.dart';
 import 'services/expandable_player_controller.dart';
 import 'services/error_tracking_service.dart';
 import 'services/shader_warmup_service.dart';
+import 'services/background_manager_service.dart';
 import 'localization/app_localizations.dart';
 import 'screens/splash_screen.dart';
 import 'localization/locale_provider.dart';
@@ -60,6 +61,7 @@ void main() async {
           ChangeNotifierProvider(create: (context) => AudioPlayerService()),
           ChangeNotifierProvider(create: (context) => ExpandablePlayerController()),
           ChangeNotifierProvider(create: (context) => ThemeProvider()),
+          ChangeNotifierProvider(create: (context) => BackgroundManagerService()),
           Provider<ErrorTrackingService>.value(value: errorTracker),
         ],
         child: MyApp(

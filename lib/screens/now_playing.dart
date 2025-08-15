@@ -9,9 +9,11 @@ import 'package:provider/provider.dart';
 import '../localization/app_localizations.dart';
 import '../services/audio_player_service.dart';
 import '../services/expandable_player_controller.dart';
+import '../services/background_manager_service.dart';
 import '../services/lyrics_service.dart';  // Genius lyrics fetching service
 // Importujte službu pro timed lyrics
 import '../widgets/artist_card.dart';
+import '../widgets/app_background.dart';
 import 'Artist_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../models/timed_lyrics.dart';
@@ -132,6 +134,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
     
     try {
       final provider = await _getCachedImageProvider(song.id);
+      
+      // Also update background colors
+      final backgroundManager = Provider.of<BackgroundManagerService>(context, listen: false);
+      await backgroundManager.updateColorsFromSong(song);
+      
       if (mounted) {
         setState(() {
           _currentArtwork = provider ?? const AssetImage('assets/images/logo/default_art.png') as ImageProvider<Object>;
@@ -197,26 +204,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
   }
 
   // Upravený build method pro pozadí
-  Widget _buildBackground() {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 500),
-      child: Container(
-        key: ValueKey(_currentArtwork),
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: _currentArtwork ?? const AssetImage('assets/images/logo/default_art.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-          child: Container(
-            color: Colors.black.withOpacity(0.3),
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   void dispose() {
@@ -706,16 +693,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
             ),
           ],
         ),
-        body: Stack(
-          children: [
-            _buildBackground(),
-            SafeArea(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
-                children: [
-                  const SizedBox(height: 30),
-                  _buildArtworkWithInfo(audioPlayerService),
-                  const SizedBox(height: 110),
+        body: AppBackground(
+          child: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
+              children: [
+                const SizedBox(height: 30),
+                _buildArtworkWithInfo(audioPlayerService),
+                const SizedBox(height: 110),
                   StreamBuilder<Duration?>(
                     stream: audioPlayerService.audioPlayer.durationStream,
                     builder: (context, snapshot) {
@@ -814,7 +799,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                 ],
               ),
             ),
-          ],
         ),
       ),
     );

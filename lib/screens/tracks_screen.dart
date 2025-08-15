@@ -7,8 +7,10 @@ import 'package:on_audio_query/on_audio_query.dart';
 import '../models/playlist_model.dart';
 import '../models/utils.dart';
 import '../services/audio_player_service.dart';
+import '../services/background_manager_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
+import '../widgets/app_background.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 
@@ -187,57 +189,18 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
       tag: 'tracks_screen',
       child: FadeTransition(
         opacity: _fadeAnimation,
-        child: Stack(
-          children: [
-            buildBackground(audioPlayerService.currentSong),
-            Scaffold(
-              backgroundColor: Colors.transparent,
-              appBar: buildAppBar(),
-              body: buildBody(audioPlayerService),
-            ),
-          ],
+        child: AppBackground(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: buildAppBar(),
+            body: buildBody(audioPlayerService),
+          ),
         ),
       ),
     );
   }
 
-  Widget buildBackground(SongModel? currentSong) {
-    return FutureBuilder<Uint8List?>(
-      future: currentSong != null
-          ? OnAudioQuery().queryArtwork(currentSong.id, ArtworkType.AUDIO)
-          : null,
-      builder: (context, snapshot) {
-        ImageProvider backgroundImage;
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.data != null) {
-          backgroundImage = MemoryImage(snapshot.data!);
-        } else {
-          backgroundImage = AssetImage(
-              MediaQuery
-                  .of(context)
-                  .platformBrightness == Brightness.dark
-                  ? 'assets/images/background/dark_back.jpg'
-                  : 'assets/images/background/light_back.jpg');
-        }
 
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: backgroundImage,
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   AppBar buildAppBar() {
     return AppBar(
