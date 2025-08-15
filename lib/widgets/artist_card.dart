@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:mesh/mesh.dart';
 import '../services/local_caching_service.dart';
 import '../services/performance/performance_manager.dart';
 import 'package:http/http.dart' as http;
@@ -161,19 +162,12 @@ class _ArtistCardState extends State<ArtistCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: widget.onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0.2),
-            ],
-          ),
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
             color: Colors.white.withOpacity(0.1),
@@ -187,8 +181,22 @@ class _ArtistCardState extends State<ArtistCard> {
             ),
           ],
         ),
-        child: Row(
-          children: [
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: OMeshGradient(
+            mesh: OMeshRect(
+              width: 2,
+              height: 1,
+              fallbackColor: Colors.white.withOpacity(0.1),
+              vertices: [
+                // Left side
+                (0.0, 0.5).v.to(Colors.white.withOpacity(0.1)),
+                // Right side
+                (1.0, 0.5).v.to(Colors.white.withOpacity(0.2)),
+              ],
+            ),
+            child: Row(
+              children: [
             Hero(
               tag: 'artist_image_${widget.artistName}',
               child: RepaintBoundary(
@@ -258,6 +266,8 @@ class _ArtistCardState extends State<ArtistCard> {
               size: 30,
             ),
           ],
+        ),
+          ),
         ),
       ),
     );

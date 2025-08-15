@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mesh/mesh.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -35,27 +36,41 @@ class AuroraAboutDialog extends StatelessWidget {
               // Top Logo Section with gradient background
               Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withOpacity(0.15),
-                      Colors.white.withOpacity(0.05),
-                    ],
-                  ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                child: Column(
-                  children: [
-                    Image.asset(
-                      'assets/images/logo/Music_full_logo.png',
-                      width: 190,
-                      height: 70,
-                      fit: BoxFit.contain,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                  child: OMeshGradient(
+                    mesh: OMeshRect(
+                      width: 2,
+                      height: 2,
+                      fallbackColor: Colors.white.withOpacity(0.1),
+                      vertices: [
+                        // Top-left corner
+                        (0.0, 0.0).v.to(Colors.white.withOpacity(0.15)),
+                        // Top-right corner  
+                        (1.0, 0.0).v.to(Colors.white.withOpacity(0.15)),
+                        // Bottom-left corner
+                        (0.0, 1.0).v.to(Colors.white.withOpacity(0.05)),
+                        // Bottom-right corner
+                        (1.0, 1.0).v.to(Colors.white.withOpacity(0.05)),
+                      ],
                     ),
-                  ],
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'assets/images/logo/Music_full_logo.png',
+                            width: 190,
+                            height: 70,
+                            fit: BoxFit.contain,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
 

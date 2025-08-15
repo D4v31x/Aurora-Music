@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mesh/mesh.dart';
 
 /// Theme utilities for consistent styling throughout the app
 class ThemeUtils {
@@ -340,20 +341,45 @@ class ThemeUtils {
     return luminance > 0.5 ? Colors.black : Colors.white;
   }
 
-  /// Creates a gradient decoration
-  static BoxDecoration createGradientDecoration({
+  /// Creates a mesh gradient widget
+  static Widget createMeshGradient({
     required List<Color> colors,
-    Alignment begin = Alignment.topLeft,
-    Alignment end = Alignment.bottomRight,
     double borderRadius = 0,
   }) {
-    return BoxDecoration(
-      gradient: LinearGradient(
-        colors: colors,
-        begin: begin,
-        end: end,
+    // Convert colors list to mesh vertices
+    final vertices = <OMeshVertex>[];
+    if (colors.length >= 4) {
+      vertices.addAll([
+        (0.0, 0.0).v.to(colors[0]), // Top-left
+        (1.0, 0.0).v.to(colors[1]), // Top-right  
+        (0.0, 1.0).v.to(colors[2]), // Bottom-left
+        (1.0, 1.0).v.to(colors[3]), // Bottom-right
+      ]);
+    } else if (colors.length >= 2) {
+      vertices.addAll([
+        (0.0, 0.0).v.to(colors[0]),
+        (1.0, 1.0).v.to(colors[1]),
+      ]);
+    } else {
+      vertices.add((0.5, 0.5).v.to(colors.isNotEmpty ? colors[0] : Colors.transparent));
+    }
+    
+    Widget meshWidget = OMeshGradient(
+      mesh: OMeshRect(
+        width: 2,
+        height: 2,
+        fallbackColor: colors.isNotEmpty ? colors[0] : Colors.transparent,
+        vertices: vertices,
       ),
-      borderRadius: BorderRadius.circular(borderRadius),
     );
+    
+    if (borderRadius > 0) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: meshWidget,
+      );
+    }
+    
+    return meshWidget;
   }
 }
