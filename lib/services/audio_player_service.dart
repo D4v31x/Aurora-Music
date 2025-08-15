@@ -51,6 +51,9 @@ class AudioPlayerService extends ChangeNotifier {
   final _errorController = StreamController<String>.broadcast();
   Stream<String> get errorStream => _errorController.stream;
 
+  // Sleep timer
+  Timer? _sleepTimer;
+
   Set<String> _likedSongs = {};
   late Playlist? _likedSongsPlaylist;
 
@@ -84,9 +87,10 @@ class AudioPlayerService extends ChangeNotifier {
       ValueNotifier<List<Playlist>>([]);
   final ValueNotifier<bool> isShuffleNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isRepeatNotifier = ValueNotifier<bool>(false);
-
   
-
+  // Sleep timer related properties
+  final ValueNotifier<Duration?> sleepTimerDurationNotifier = ValueNotifier<Duration?>(null);
+  
   AudioPlayerService() {
     _init();
     loadLibrary();
@@ -1048,6 +1052,36 @@ Future<void> _manageCacheSize() async {
         .compareTo(_trackPlayCounts[a.id.toString()] ?? 0));
 
     return recentlyPlayedSongs.take(3).toList();
+  }
+
+  // Sleep timer methods
+  bool get isSleepTimerActive => _sleepTimer?.isActive ?? false;
+
+  Duration? get sleepTimerDuration => sleepTimerDurationNotifier.value;
+
+  void startSleepTimer(Duration duration) {
+    // Cancel any existing timer first
+    cancelSleepTimer();
+    
+    // Set the sleep timer duration for the UI
+    sleepTimerDurationNotifier.value = duration;
+    
+    // Create a new timer
+    _sleepTimer = Timer(duration, () {
+      // When timer completes, stop playback
+      stop();
+      // Reset the timer notification
+      sleepTimerDurationNotifier.value = null;
+    });
+    
+    notifyListeners();
+  }
+
+  void cancelSleepTimer() {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    sleepTimerDurationNotifier.value = null;
+    notifyListeners();
   }
 }
 
