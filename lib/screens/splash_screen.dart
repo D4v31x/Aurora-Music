@@ -7,6 +7,7 @@ import 'dart:ui';  // Import this for ImageFilter
 import '../services/Audio_Player_Service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/user_preferences.dart';
+import '../constants/animation_constants.dart';
 import 'welcome_screen.dart';
 import 'home_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -126,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         if (!mounted) return;
 
         final task = tasks[i];
-        // Batch update: progress and current task together
+        // Batch update: progress, current task, and completed tasks together
         setState(() {
           _currentTask = task.$1;
           _progress = i / tasks.length;
@@ -135,6 +136,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         try {
           await task.$2;
           if (mounted) {
+            // Batch completed task update
             setState(() {
               _completedTasks.add(task.$1);
             });
@@ -161,6 +163,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       }
 
       if (mounted) {
+        // Batch final state update
         setState(() {
           _currentTask = 'Complete';
           _progress = 1.0;
@@ -189,6 +192,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           throw Exception('No internet connection');
         }
       } catch (e) {
+        // Batch update for connectivity warnings
         setState(() {
           _warnings.add('No internet connection');
           _warnings.add('Offline mode active');
@@ -205,6 +209,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           throw Exception('Image service unavailable');
         }
       } catch (e) {
+        // Single state update for default artwork warning
         setState(() {
           _warnings.add('Using default artwork');
         });
@@ -213,6 +218,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     } catch (e) {
       if (!_warnings.contains('Some features may be limited')) {
+        // Batch update for error warnings
         setState(() {
           _warnings.add('Some features may be limited');
           _hasConnectivityIssues = true;
@@ -336,7 +342,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _finalizeInitialization() async {
-    await Future.delayed(const Duration(milliseconds: 200));
+    // Reduced delay for faster initialization
+    await Future.delayed(AnimationConstants.shortDelay);
   }
 
   Future<void> _loadVersionInfo() async {
@@ -351,10 +358,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   void _initializeAnimations() {
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: AnimationConstants.normal,
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(_fadeController);
+    _fadeAnimation = Tween<double>(
+      begin: AnimationConstants.visibleOpacity,
+      end: AnimationConstants.hiddenOpacity,
+    ).animate(_fadeController);
 
     _fadeController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -398,7 +408,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           child: screen,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const curve = Curves.easeOutQuart;
+          const curve = AnimationConstants.easeOutQuart;
 
           // Slide up animation
           var slideAnimation = Tween<Offset>(
@@ -411,8 +421,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
           // Fade animation
           var fadeAnimation = Tween<double>(
-            begin: 0.0,
-            end: 1.0,
+            begin: AnimationConstants.hiddenOpacity,
+            end: AnimationConstants.visibleOpacity,
           ).animate(CurvedAnimation(
             parent: animation,
             curve: curve,
@@ -420,63 +430,69 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
           // Rotation animation for a subtle effect
           var rotationAnimation = Tween<double>(
-            begin: 0.05,
-            end: 0.0,
+            begin: AnimationConstants.subtleRotation,
+            end: AnimationConstants.hiddenOpacity,
           ).animate(CurvedAnimation(
             parent: animation,
             curve: curve,
           ));
 
-          return Stack(
-            children: [
-              // Gradient background that matches theme
-              Positioned.fill(
-                child: AnimatedBuilder(
-                  animation: animation,
-                  builder: (context, _) {
-                    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-                    return Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: isDarkMode ? [
-                            const Color(0xFF1A237E), // Dark blue
-                            const Color(0xFF311B92), // Dark violet
-                            const Color(0xFF512DA8), // Medium violet
-                            const Color(0xFF7B1FA2), // Purple
-                          ] : [
-                            const Color(0xFFCFD8DC), // Light blue-grey
-                            const Color(0xFFBBDEFB), // Lighter blue
-                            const Color(0xFF90CAF9), // Medium light blue
-                            const Color(0xFF64B5F6), // Blue
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              // Animated content
-              AnimatedBuilder(
-                animation: animation,
-                builder: (context, _) {
-                  return SlideTransition(
-                    position: slideAnimation,
-                    child: FadeTransition(
-                      opacity: fadeAnimation,
-                      child: Transform.rotate(
-                        angle: rotationAnimation.value,
-                        child: child,
-                      ),
+          return RepaintBoundary(
+            child: Stack(
+              children: [
+                // Gradient background that matches theme
+                Positioned.fill(
+                  child: RepaintBoundary(
+                    child: AnimatedBuilder(
+                      animation: animation,
+                      builder: (context, _) {
+                        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: isDarkMode ? [
+                                const Color(0xFF1A237E), // Dark blue
+                                const Color(0xFF311B92), // Dark violet
+                                const Color(0xFF512DA8), // Medium violet
+                                const Color(0xFF7B1FA2), // Purple
+                              ] : [
+                                const Color(0xFFCFD8DC), // Light blue-grey
+                                const Color(0xFFBBDEFB), // Lighter blue
+                                const Color(0xFF90CAF9), // Medium light blue
+                                const Color(0xFF64B5F6), // Blue
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ],
+                  ),
+                ),
+                // Animated content
+                RepaintBoundary(
+                  child: AnimatedBuilder(
+                    animation: animation,
+                    builder: (context, _) {
+                      return SlideTransition(
+                        position: slideAnimation,
+                        child: FadeTransition(
+                          opacity: fadeAnimation,
+                          child: Transform.rotate(
+                            angle: rotationAnimation.value,
+                            child: child,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           );
         },
-        transitionDuration: const Duration(milliseconds: 1200),
+        transitionDuration: AnimationConstants.pageTransition * 2, // 1200ms
       ),
     );
   }
@@ -491,25 +507,31 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/background/Bcg_V0.0.9.png',
-              fit: BoxFit.cover,
+      body: RepaintBoundary(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: RepaintBoundary(
+                child: Image.asset(
+                  'assets/images/background/Bcg_V0.0.9.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
-          ),
-          Center(
-            child: Lottie.asset(
-              'assets/animations/Splash.json',
-              controller: _fadeController,
-              onLoaded: (composition) {
-                _fadeController.duration = composition.duration;
-                _fadeController.forward();
-              },
+            Center(
+              child: RepaintBoundary(
+                child: Lottie.asset(
+                  'assets/animations/Splash.json',
+                  controller: _fadeController,
+                  onLoaded: (composition) {
+                    _fadeController.duration = composition.duration;
+                    _fadeController.forward();
+                  },
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -577,6 +599,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _warmupShaders() async {
+    // Use a smaller size for faster warmup
+    const size = Size(50, 50);
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
     final paint = Paint();
@@ -585,18 +609,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     paint.shader = LinearGradient(
       colors: [Colors.white, Colors.white.withOpacity(0.0)],
       stops: const [0.8, 1.0],
-    ).createShader(const Rect.fromLTWH(0, 0, 100, 100));
-    canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), paint);
+    ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
 
-    // Warm up blur effects
-    final filter = ImageFilter.blur(sigmaX: 10, sigmaY: 10);
+    // Warm up blur effects with reduced sigma for faster processing
+    final filter = ImageFilter.blur(sigmaX: 5, sigmaY: 5);
     canvas.drawRect(
-      const Rect.fromLTWH(0, 0, 100, 100),
+      Rect.fromLTWH(0, 0, size.width, size.height),
       Paint()..imageFilter = filter,
     );
 
-    // Record and compile
+    // Record and compile with smaller image size
     final picture = recorder.endRecording();
-    await picture.toImage(100, 100);
+    await picture.toImage(size.width.toInt(), size.height.toInt());
+    picture.dispose();
   }
 }

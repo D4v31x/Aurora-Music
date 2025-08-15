@@ -9,6 +9,11 @@ class ArtworkCacheService {
   factory ArtworkCacheService() => _instance;
   ArtworkCacheService._internal();
 
+  // Cache size limits to prevent memory issues
+  static const int _maxArtworkCacheSize = 100;
+  static const int _maxImageProviderCacheSize = 100;
+  static const int _maxArtistCacheSize = 50;
+
   final Map<int, Uint8List?> _artworkCache = {};
   final Map<int, ImageProvider<Object>?> _imageProviderCache = {};
   final OnAudioQuery _audioQuery = OnAudioQuery();
@@ -16,17 +21,42 @@ class ArtworkCacheService {
   final Map<int, Uint8List?> _artistArtworkCache = {};
   final Map<int, ImageProvider<Object>?> _artistImageProviderCache = {};
 
+  // LRU tracking for cache eviction
+  final List<int> _artworkAccessOrder = [];
+  final List<int> _artistAccessOrder = [];
+
   Future<void> initialize() async {
     await _initializeCache();
     await _preloadCommonArtwork();
   }
 
   Future<void> _initializeCache() async {
-    // Vyčistíme existující cache při inicializaci
+    // Clear existing cache and access tracking
     _artworkCache.clear();
     _imageProviderCache.clear();
     _artistArtworkCache.clear();
     _artistImageProviderCache.clear();
+    _artworkAccessOrder.clear();
+    _artistAccessOrder.clear();
+  }
+
+  void _updateAccessOrder(int id, bool isArtist) {
+    final accessOrder = isArtist ? _artistAccessOrder : _artworkAccessOrder;
+    accessOrder.remove(id);
+    accessOrder.add(id);
+  }
+
+  void _evictLRUIfNeeded(bool isArtist) {
+    final cache = isArtist ? _artistArtworkCache : _artworkCache;
+    final imageCache = isArtist ? _artistImageProviderCache : _imageProviderCache;
+    final accessOrder = isArtist ? _artistAccessOrder : _artworkAccessOrder;
+    final maxSize = isArtist ? _maxArtistCacheSize : _maxArtworkCacheSize;
+
+    if (cache.length >= maxSize && accessOrder.isNotEmpty) {
+      final lruId = accessOrder.removeAt(0);
+      cache.remove(lruId);
+      imageCache.remove(lruId);
+    }
   }
 
   Future<void> _preloadCommonArtwork() async {
@@ -60,16 +90,19 @@ class ArtworkCacheService {
   Future<ImageProvider<Object>> getCachedImageProvider(int id) async {
     try {
       if (_imageProviderCache.containsKey(id)) {
+        _updateAccessOrder(id, false);
         return _imageProviderCache[id] ?? 
                const AssetImage('assets/images/logo/default_art.png') as ImageProvider<Object>;
       }
 
+      _evictLRUIfNeeded(false);
       final artwork = await _getArtwork(id);
       final ImageProvider<Object> provider = artwork != null 
           ? MemoryImage(artwork) 
           : const AssetImage('assets/images/logo/default_art.png') as ImageProvider<Object>;
       
       _imageProviderCache[id] = provider;
+      _updateAccessOrder(id, false);
       return provider;
     } catch (e) {
       
@@ -98,33 +131,35 @@ class ArtworkCacheService {
   }
 
   Widget buildCachedArtwork(int id, {double size = 50}) {
-    return FutureBuilder<ImageProvider<Object>>(
-      future: getCachedImageProvider(id),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
+    return RepaintBoundary(
+      child: FutureBuilder<ImageProvider<Object>>(
+        future: getCachedImageProvider(id),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                  image: snapshot.data!,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            );
+          }
+          return Container(
             width: size,
             height: size,
             decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: snapshot.data!,
-                fit: BoxFit.cover,
-              ),
             ),
+            child: const Icon(Icons.music_note, color: Colors.white),
           );
-        }
-        return Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(Icons.music_note, color: Colors.white),
-        );
-      },
+        },
+      ),
     );
   }
 
@@ -134,21 +169,26 @@ class ArtworkCacheService {
 
   Future<void> preloadArtwork(int id) async {
     try {
-      if (_artworkCache.containsKey(id)) return;
+      if (_artworkCache.containsKey(id)) {
+        _updateAccessOrder(id, false);
+        return;
+      }
 
+      _evictLRUIfNeeded(false);
       final artwork = await _audioQuery.queryArtwork(
         id,
         ArtworkType.AUDIO,
         quality: 100,
         size: 1000,
       ).timeout(
-        const Duration(seconds: 5),
+        const Duration(seconds: 3), // Reduced timeout for better performance
         onTimeout: () => null,
       );
 
       if (artwork != null) {
         _artworkCache[id] = artwork;
         _imageProviderCache[id] = MemoryImage(artwork);
+        _updateAccessOrder(id, false);
       }
     } catch (e) {
       
@@ -157,21 +197,26 @@ class ArtworkCacheService {
 
   Future<void> preloadArtistArtwork(int id) async {
     try {
-      if (_artistArtworkCache.containsKey(id)) return;
+      if (_artistArtworkCache.containsKey(id)) {
+        _updateAccessOrder(id, true);
+        return;
+      }
 
+      _evictLRUIfNeeded(true);
       final artwork = await _audioQuery.queryArtwork(
         id,
         ArtworkType.ARTIST,
         quality: 100,
         size: 1000,
       ).timeout(
-        const Duration(seconds: 5),
+        const Duration(seconds: 3), // Reduced timeout for better performance
         onTimeout: () => null,
       );
 
       if (artwork != null) {
         _artistArtworkCache[id] = artwork;
         _artistImageProviderCache[id] = MemoryImage(artwork);
+        _updateAccessOrder(id, true);
       }
     } catch (e) {
       
@@ -181,6 +226,7 @@ class ArtworkCacheService {
   Future<ImageProvider<Object>> getArtistImageProvider(int id) async {
     try {
       if (_artistImageProviderCache.containsKey(id)) {
+        _updateAccessOrder(id, true);
         return _artistImageProviderCache[id] ?? 
                const AssetImage('assets/images/logo/default_art.png');
       }
@@ -199,5 +245,7 @@ class ArtworkCacheService {
     _imageProviderCache.clear();
     _artistArtworkCache.clear();
     _artistImageProviderCache.clear();
+    _artworkAccessOrder.clear();
+    _artistAccessOrder.clear();
   }
 } 

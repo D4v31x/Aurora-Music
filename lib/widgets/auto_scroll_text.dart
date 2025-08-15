@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../localization/app_localizations.dart';
+import '../constants/animation_constants.dart';
 
 class AutoScrollText extends StatefulWidget {
   final String text;
@@ -24,6 +25,7 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
   late Animation<double> _fadeAnimation;
   String _displayedText = '';
   Timer? _messageTimer;
+  Timer? _scrollTimer;
   bool _isAnimating = false;
 
   @override
@@ -34,11 +36,14 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
 
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: AnimationConstants.normal,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    _fadeAnimation = Tween<double>(
+      begin: AnimationConstants.hiddenOpacity,
+      end: AnimationConstants.visibleOpacity,
+    ).animate(
+      CurvedAnimation(parent: _fadeController, curve: AnimationConstants.easeInOut),
     );
 
     _fadeController.forward();
@@ -55,37 +60,38 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
     final maxScroll = _scrollController.position.maxScrollExtent;
     if (maxScroll <= 0) return;
 
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (!mounted) return;
-      _startScrolling();
+    _scrollTimer?.cancel();
+    _scrollTimer = Timer(const Duration(milliseconds: 800), () {
+      if (mounted) _startScrolling();
     });
   }
 
   void _startScrolling() {
-    if (!mounted || _isAnimating) return;
+    if (!mounted || _isAnimating || !_scrollController.hasClients) return;
     _isAnimating = true;
 
-    const baseDuration = 3000;
+    const baseDuration = 2500; // Slightly faster for better responsiveness
     final maxScroll = _scrollController.position.maxScrollExtent;
 
     _scrollController.animateTo(
       maxScroll,
-      duration: Duration(milliseconds: baseDuration),
-      curve: Curves.linear,
+      duration: const Duration(milliseconds: baseDuration),
+      curve: AnimationConstants.linear,
     ).then((_) {
-      return Future.delayed(const Duration(milliseconds: 500));
+      return Future.delayed(AnimationConstants.mediumDelay);
     }).then((_) {
-      if (!mounted) {
+      if (mounted && _scrollController.hasClients) {
         return _scrollController.animateTo(
           0,
-          duration: const Duration(milliseconds: 500),
+          duration: AnimationConstants.slow,
           curve: Curves.easeOut,
         );
       }
     }).then((_) {
       if (!mounted) return;
       _isAnimating = false;
-      Future.delayed(const Duration(milliseconds: 1000), () {
+      _scrollTimer?.cancel();
+      _scrollTimer = Timer(const Duration(milliseconds: 1000), () {
         if (mounted) _startScrolling();
       });
     });
@@ -138,6 +144,7 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
         _scrollController.jumpTo(0);
       }
       _isAnimating = false;
+      _scrollTimer?.cancel();
       _startScrollIfNeeded();
       _startMessageTimer();
     }
@@ -146,6 +153,7 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
   @override
   void dispose() {
     _messageTimer?.cancel();
+    _scrollTimer?.cancel();
     _scrollController.dispose();
     _fadeController.dispose();
     super.dispose();
@@ -153,18 +161,20 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        controller: _scrollController,
-        physics: const NeverScrollableScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            _displayedText,
-            style: widget.style,
-            maxLines: 1,
+    return RepaintBoundary(
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          controller: _scrollController,
+          physics: const NeverScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              _displayedText,
+              style: widget.style,
+              maxLines: 1,
+            ),
           ),
         ),
       ),
