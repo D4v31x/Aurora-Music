@@ -15,7 +15,6 @@ import '../widgets/artist_card.dart';
 import 'Artist_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../models/timed_lyrics.dart';
-import 'lyrics_screen.dart'; // Importujte model
 
 class NowPlayingScreen extends StatefulWidget {
   const NowPlayingScreen({super.key});
@@ -26,76 +25,83 @@ class NowPlayingScreen extends StatefulWidget {
 
 class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
-  String? _lyrics;
   final Map<int, Uint8List?> _artworkCache = {};
   final Map<int, ImageProvider<Object>?> _imageProviderCache = {};
   ImageProvider<Object>? _currentArtwork;
   bool _isLoadingArtwork = true;
   int? _lastSongId;
 
-  // Přidáme proměnné pro timed lyrics
   List<TimedLyric>? _timedLyrics;
   int _currentLyricIndex = 0;
 
-  // Přidejte tyto proměnné
   late AnimationController _timerExpandController;
   bool _isTimerExpanded = false;
   Timer? _autoCollapseTimer;
 
-  // Přidáme proměnnou pro zdroj přehrávání
-  final String _playingSource = "Library"; // Výchozí hodnota
-
   bool _isDragging = false;
+
+  StreamSubscription<Duration>? _positionSub; // position stream subscription
+
+  int? _pendingSongLoadId; // track song load to prevent race after dispose
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
     _initializeArtwork();
-    _initializeTimedLyrics();
+    _initializeTimedLyrics(Provider.of<AudioPlayerService>(context, listen: false));
     _timerExpandController = AnimationController(
       duration: const Duration(milliseconds: 300), // Rychlejší animace
       vsync: this,
     );
   }
 
-  Future<void> _initializeTimedLyrics() async {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+  Future<void> _initializeTimedLyrics(AudioPlayerService audioPlayerService) async {
+    if (!mounted) return;
+    final song = audioPlayerService.currentSong;
+    if (song == null) return;
+    _pendingSongLoadId = song.id;
     final timedLyricsService = TimedLyricsService();
+    final artistRaw = song.artist ?? '';
+    final titleRaw = song.title; // assume non-nullable
+    final artist = artistRaw.trim().isEmpty ? 'Unknown' : artistRaw.trim();
+    final title = titleRaw.trim().isEmpty ? 'Unknown' : titleRaw.trim();
 
-    if (audioPlayerService.currentSong != null) {
-      final song = audioPlayerService.currentSong!;
-      // Nejprve se pokusíme načíst z lokálního úložiště
-      var lyrics = await timedLyricsService.loadLyricsFromFile(song.artist ?? 'Unknown', song.title ?? 'Unknown');
+    // Load cached
+    var lyrics = await timedLyricsService.loadLyricsFromFile(artist, title);
+    if (!mounted || song.id != _pendingSongLoadId) return;
+    if (lyrics == null) {
+      lyrics = await timedLyricsService.fetchTimedLyrics(artist, title);
+    }
+    if (!mounted || song.id != _pendingSongLoadId) return;
+    setState(() {
+      _timedLyrics = lyrics;
+      _currentLyricIndex = 0;
+    });
 
-      lyrics ??= await timedLyricsService.fetchTimedLyrics(song.artist ?? 'Unknown', song.title ?? 'Unknown');
-
-      setState(() {
-        _timedLyrics = lyrics;
-        _currentLyricIndex = 0;
+    if (_positionSub == null) {
+      _positionSub = audioPlayerService.audioPlayer.positionStream.listen((position) {
+        if (!mounted) return;
+        _updateCurrentLyric(position);
       });
     }
-
-    // Přihlaste se k poslechu pozice přehrávání
-    audioPlayerService.audioPlayer.positionStream.listen((position) {
-      _updateCurrentLyric(position);
-    });
   }
 
   void _updateCurrentLyric(Duration position) {
+    if (!mounted) return; // guard
     if (_timedLyrics == null || _timedLyrics!.isEmpty) return;
-
     for (int i = 0; i < _timedLyrics!.length; i++) {
       if (position < _timedLyrics![i].time) {
-        setState(() {
-          _currentLyricIndex = i > 0 ? i - 1 : 0;
-        });
+        final newIndex = i > 0 ? i - 1 : 0;
+        if (newIndex != _currentLyricIndex && mounted) {
+          setState(() => _currentLyricIndex = newIndex);
+        }
         break;
       }
       if (i == _timedLyrics!.length - 1) {
-        setState(() {
-          _currentLyricIndex = i;
-        });
+        if (_currentLyricIndex != i && mounted) {
+          setState(() => _currentLyricIndex = i);
+        }
       }
     }
   }
@@ -170,25 +176,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
       );
     }
 
-    return Hero(
-      tag: 'playerArtwork',
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8), // Smaller border radius
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(8), // Match container radius
-          child: _currentArtwork != null
-              ? Image(image: _currentArtwork!, fit: BoxFit.cover)
-              : const Center(child: CircularProgressIndicator()),
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: _currentArtwork != null
+            ? Image(image: _currentArtwork!, fit: BoxFit.cover)
+            : const Center(child: CircularProgressIndicator()),
       ),
     );
   }
@@ -221,6 +224,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
     _scrollController.dispose();
     _timerExpandController.dispose();
     _autoCollapseTimer?.cancel();
+    _positionSub?.cancel();
+    _pendingSongLoadId = null;
     super.dispose();
   }
 
@@ -233,37 +238,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
 
 
 
-  Widget _glassmorphicContainer({required Widget child}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(15),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1.5,
-            ),
-          ),
-          child: child,
-        ),
-      ),
-    );
-  }
-
   // Update the artwork and song info section
   Widget _buildArtworkWithInfo(AudioPlayerService audioPlayerService) {
     final artworkSize = MediaQuery.of(context).size.width * 0.6;
-    
     return Padding(
       padding: const EdgeInsets.only(top: 0),
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.topCenter,
         children: [
-          // Info container positioned under the artwork
           Positioned(
             top: artworkSize - 25,
             child: Container(
@@ -279,16 +262,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ScrollingText(
-                    text: audioPlayerService.currentSong?.title ?? 'No song playing',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                  Hero(
+                    tag: 'playerTitle',
+                    child: ScrollingText(
+                      text: audioPlayerService.currentSong?.title ?? 'No song playing',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
-                    Text(
+                  Hero(
+                    tag: 'playerArtist',
+                    child: Text(
                       audioPlayerService.currentSong?.artist ?? 'Unknown artist',
                       style: TextStyle(
                         fontSize: 16,
@@ -297,16 +285,19 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          // Artwork on top
           SizedBox(
             width: artworkSize,
             height: artworkSize,
-            child: _buildArtwork(),
+            child: Hero(
+              tag: 'playerArtwork',
+              child: _buildArtwork(),
+            ),
           ),
         ],
       ),
@@ -328,7 +319,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final width = constraints.maxWidth;
-                    final progress = position.inMilliseconds / duration.inMilliseconds;
+                    // Prevent NaN when duration is zero
+                    final progress = (duration.inMilliseconds > 0)
+                        ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
+                        : 0.0;
                     return GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onHorizontalDragStart: (details) {
@@ -336,7 +330,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                         audioPlayerService.pause();
                       },
                       onHorizontalDragUpdate: (details) {
-                        final RenderBox box = context.findRenderObject() as RenderBox;
                         final tapPos = details.localPosition;
                         final percentage = (tapPos.dx / width).clamp(0.0, 1.0);
                         final newPosition = duration * percentage;
@@ -347,7 +340,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                         audioPlayerService.resume();
                       },
                       onTapDown: (details) {
-                        final RenderBox box = context.findRenderObject() as RenderBox;
                         final tapPos = details.localPosition;
                         final percentage = (tapPos.dx / width).clamp(0.0, 1.0);
                         final newPosition = duration * percentage;
@@ -427,200 +419,117 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
           ),
         ),
         const SizedBox(height: 20),
-        Hero(
-          tag: 'lyrics-box', // Unique tag for Hero
-          child: Stack(
-            children: [
-              // Glassmorphic container with enhanced blur
-              TweenAnimationBuilder<double>(
-                duration: const Duration(milliseconds: 500),
-                tween: Tween(begin: 0.0, end: 1.0),
-                builder: (context, value, child) {
-                  return Transform.scale(
-                    scale: 0.95 + (0.05 * value),
-                    child: Opacity(
-                      opacity: value,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 8 * value, sigmaY: 8 * value),
-                          child: Container(
-                            width: double.infinity,
-                            height: 280,
-                            margin: const EdgeInsets.symmetric(horizontal: 20),
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.7),
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 15,
-                                  spreadRadius: -5,
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                if (_timedLyrics != null && _timedLyrics!.isNotEmpty)
-                                  ..._buildAnimatedLyricLines()
-                                else
-                                  _buildNoLyricsPlaceholder(),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              // Enhanced maximize button
-              Positioned(
-                top: 8,
-                right: 28,
-                child: TweenAnimationBuilder<double>(
-                  duration: const Duration(milliseconds: 300),
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  builder: (context, value, child) {
-                    return Transform.scale(
-                      scale: value,
-                      child: GestureDetector(
-                        onTap: _navigateToFullLyrics,
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                spreadRadius: -2,
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.open_in_full,
-                            color: Colors.white.withOpacity(0.9),
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+        Container(
+          width: double.infinity,
+          height: 220,
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.15), width: 1.5),
+          ),
+          child: Center(
+            child: (_timedLyrics != null && _timedLyrics!.isNotEmpty)
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: _buildAnimatedLyricLines(),
+                  )
+                : _buildNoLyricsPlaceholder(),
           ),
         ),
       ],
     );
   }
 
-  void _navigateToFullLyrics() {
-    Navigator.of(context).push(
-      FullLyricsScreen.route(),
-    );
-  }
-
 
   List<Widget> _buildAnimatedLyricLines() {
+    if (_timedLyrics == null || _timedLyrics!.isEmpty) return [];
+
     final currentIndex = _currentLyricIndex;
-    const visibleLines = 5;
-    final startIndex = (currentIndex - 2).clamp(0, _timedLyrics!.length - 1);
-    final endIndex = (currentIndex + 2).clamp(0, _timedLyrics!.length - 1);
+    final startIndex = max(0, currentIndex - 2);
+    final endIndex = min(_timedLyrics!.length - 1, currentIndex + 2);
 
     return _timedLyrics!
         .sublist(startIndex, endIndex + 1)
         .asMap()
         .entries
         .map((entry) {
-      final index = entry.key + startIndex;
-      final lyric = entry.value;
-      final isCurrent = index == currentIndex;
+          final index = entry.key + startIndex;
+          final lyric = entry.value;
+          final isCurrent = index == currentIndex;
 
-      final distanceFromCenter = (index - currentIndex).abs();
-      final opacity = 1.0 - (distanceFromCenter * 0.25);
-      final scale = 1.0 - (distanceFromCenter * 0.08);
-      final slideOffset = distanceFromCenter * 0.15;
+          final distanceFromCenter = (index - currentIndex).abs();
+          final opacity = 1.0 - (distanceFromCenter * 0.25);
+          final scale = 1.0 - (distanceFromCenter * 0.08);
+          final slideOffset = distanceFromCenter * 0.15; // fraction for AnimatedSlide
 
-      return TweenAnimationBuilder<double>(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeOutCubic,
-        tween: Tween<double>(begin: 0.0, end: 1.0),
-        builder: (context, value, child) {
-          return Transform(
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001)
-              ..scale(scale)
-              ..translate(0.0, 20.0 * (1 - value)),
-            alignment: Alignment.center,
-            child: AnimatedOpacity(
-              opacity: opacity.clamp(0.3, 1.0) * value,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-              child: AnimatedSlide(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
-                offset: Offset(0, isCurrent ? 0 : slideOffset),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width - 80, // Account for padding
-                  child: ShaderMask(
-                    shaderCallback: (Rect bounds) {
-                      return LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: [Colors.white, Colors.white.withOpacity(0.0)],
-                        stops: const [0.8, 1.0],
-                      ).createShader(bounds);
-                    },
-                    blendMode: BlendMode.dstIn,
-                    child: AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOut,
-                      style: TextStyle(
-                        color: isCurrent
-                            ? Colors.white
-                            : Colors.white.withOpacity(0.6),
-                        fontSize: isCurrent ? 18 : 14,
-                        fontFamily: 'ProductSans',
-                        fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                        height: 1.2,
-                        letterSpacing: isCurrent ? 0.2 : 0.0,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 16,
-                        ),
-                        child: Text(
-                          lyric.text,
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.fade,
-                          softWrap: true,
+          return TweenAnimationBuilder<double>(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
+            tween: Tween<double>(begin: 0.0, end: 1.0),
+            builder: (context, value, child) {
+              return Transform(
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.001)
+                  ..scale(scale)
+                  ..translate(0.0, 20.0 * (1 - value)),
+                alignment: Alignment.center,
+                child: AnimatedOpacity(
+                  opacity: opacity.clamp(0.3, 1.0) * value,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                  child: AnimatedSlide(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    offset: Offset(0, isCurrent ? 0 : slideOffset),
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width - 80,
+                      child: ShaderMask(
+                        shaderCallback: (Rect bounds) {
+                          return LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [Colors.white, Colors.white.withOpacity(0.0)],
+                            stops: const [0.8, 1.0],
+                          ).createShader(bounds);
+                        },
+                        blendMode: BlendMode.dstIn,
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOut,
+                          style: TextStyle(
+                            color: isCurrent
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.6),
+                            fontSize: isCurrent ? 18 : 14,
+                            fontFamily: 'ProductSans',
+                            fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                            height: 1.2,
+                            letterSpacing: isCurrent ? 0.2 : 0.0,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 16,
+                            ),
+                            child: Text(
+                              lyric.text,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.fade,
+                              softWrap: true,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           );
-        },
-      );
-    }).toList();
+        }).toList();
   }
 
   Widget _buildNoLyricsPlaceholder() {
@@ -693,11 +602,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
     final expandablePlayerController = Provider.of<ExpandablePlayerController>(context);
 
     // Aktualizujte artwork pouze když se změní písnička
-    if (audioPlayerService.currentSong != null &&
-        (_currentArtwork == null || audioPlayerService.currentSong?.id != _lastSongId)) {
-      _lastSongId = audioPlayerService.currentSong?.id;
-      _updateArtwork(audioPlayerService.currentSong!);
-      _initializeTimedLyrics(); // Inicializujte timed lyrics p��i změně písničky
+    if (audioPlayerService.currentSong != null && audioPlayerService.currentSong!.id != _lastSongId) {
+      final song = audioPlayerService.currentSong!;
+      _lastSongId = song.id;
+      _pendingSongLoadId = song.id;
+      // Defer heavy work to next frame to avoid doing it during build of possibly deactivating context
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (audioPlayerService.currentSong == null || audioPlayerService.currentSong!.id != song.id) return;
+        _updateArtwork(song);
+        _initializeTimedLyrics(audioPlayerService);
+      });
     }
 
     // Add WillPopScope wrapper
@@ -905,47 +820,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
     );
   }
 
-  // Vytvořte widget pro zobrazení časovaných textů
-  Widget _buildTimedLyrics() {
-    if (_timedLyrics == null || _timedLyrics!.isEmpty) {
-      return Text( AppLocalizations.of(context).translate(
-        'no_lyrics'),
-        style: const TextStyle(color: Colors.white, fontSize: 16),
-        textAlign: TextAlign.center,
-      );
-    }
-
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _timedLyrics!.length,
-      itemBuilder: (context, index) {
-        final lyric = _timedLyrics![index];
-        final isCurrent = index == _currentLyricIndex;
-        return AnimatedOpacity(
-          opacity: isCurrent ? 1.0 : 0.5,
-          duration: const Duration(milliseconds: 300),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Text(
-              lyric.text,
-              style: TextStyle(
-                color: isCurrent ? Colors.blueAccent : Colors.white,
-                fontSize: isCurrent ? 18 : 16,
-                fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   void _showSleepTimerOptions(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
     int? selectedMinutes;
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -981,7 +858,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                   ),
                 ),
                 const SizedBox(height: 32),
-                // Nový design pro předvolby
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -992,7 +868,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                   ],
                 ),
                 const SizedBox(height: 24),
-                // Vlastní časovač
                 GestureDetector(
                   onTap: () => _showNumberPicker(context, (value) => setState(() => selectedMinutes = value)),
                   child: Container(
@@ -1007,8 +882,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                       children: [
                         Icon(Icons.add, color: Colors.white.withOpacity(0.8)),
                         const SizedBox(width: 8),
-                        Text( AppLocalizations.of(context).translate(
-                          'own_timer'),
+                        Text(AppLocalizations.of(context).translate('own_timer'),
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.8),
                             fontSize: 16,
@@ -1020,7 +894,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                   ),
                 ),
                 const SizedBox(height: 32),
-                // Tlačítka
                 Row(
                   children: [
                     if (audioPlayerService.isSleepTimerActive)
@@ -1031,7 +904,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.timer_off, color: Colors.redAccent),
-                          label:Text( AppLocalizations.of(context).translate('cancel'), style: const TextStyle(color: Colors.redAccent)),
+                          label: Text(AppLocalizations.of(context).translate('cancel'), style: const TextStyle(color: Colors.redAccent)),
                           style: TextButton.styleFrom(
                             backgroundColor: Colors.redAccent.withOpacity(0.1),
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1048,14 +921,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                         onPressed: selectedMinutes != null ? () {
                           audioPlayerService.setSleepTimer(Duration(minutes: selectedMinutes!));
                           Navigator.pop(context);
-                          // Po nastavení časovače rozbalíme indikátor
-                          this.setState(() {
+                          setState(() {
                             _isTimerExpanded = true;
-                            // Nastavíme časovač pro sbalení po 3 sekundách
                             _autoCollapseTimer?.cancel();
                             _autoCollapseTimer = Timer(const Duration(seconds: 3), () {
                               if (mounted) {
-                                this.setState(() {
+                                setState(() {
                                   _isTimerExpanded = false;
                                 });
                               }
@@ -1070,9 +941,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child:Text( AppLocalizations.of(context).translate('set'),
+                        child: Text(
+                          AppLocalizations.of(context).translate('set'),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ))
+                    ),
                   ],
                 ),
               ],
@@ -1138,8 +1014,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text( AppLocalizations.of(context).translate(
-                  'set_minutes'),
+                Text(AppLocalizations.of(context).translate('set_minutes'),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -1175,8 +1050,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child:Text( AppLocalizations.of(context).translate('set'),
-                ),)
+                  child: Text(
+                    AppLocalizations.of(context).translate('set'),
+                  ),
+                ),
               ],
             ),
           ),
@@ -1185,7 +1062,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
     );
   }
 
-// Helper function to format duration into mm:ss
+  // Helper function to format duration into mm:ss
 String _formatDuration(Duration duration) {
   String twoDigits(int n) => n.toString().padLeft(2, '0');
   final minutes = twoDigits(duration.inMinutes.remainder(60));

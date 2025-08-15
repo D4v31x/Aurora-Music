@@ -106,47 +106,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_scrollListener);
-    _searchController.addListener(_onSearchChanged);
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-    _currentSongNotifier.value = audioPlayerService.currentSong;
-    audioPlayerService.addListener(_updateCurrentSong);
-    _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(() {
-      if (mounted) setState(() {});
-    });
-
-    _searchAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _searchAnimation = CurvedAnimation(
-      parent: _searchAnimationController,
-      curve: Curves.easeInOut,
-    );
-    _searchFocusNode.addListener(() {
-      setState(() {
-        _isSearching = _searchFocusNode.hasFocus;
-      });
-      if (_searchFocusNode.hasFocus) {
-        _searchAnimationController.forward();
-      } else {
-        _searchAnimationController.reverse();
-      }
-    });
-
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController!,
-      curve: Curves.easeInOut,
-    ));
-
+    _initializeControllers();
+    _setupListeners();
+    _setupAnimations();
+    
     _loadLibraryData();
     _initializeData().then((_) {
       setState(() {
@@ -156,7 +119,80 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
 
     fetchSongs();
+    _setupDelayedUI();
+    checkForNewVersion();
+    _showWelcomeMessage();
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowChangelog();
+    });
+
+    _loadVersionInfo();
+  }
+  
+  void _initializeControllers() {
+    _tabController = TabController(length: 4, vsync: this);
+    _searchAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _appBarTextController = ScrollController();
+  }
+  
+  void _setupListeners() {
+    _scrollController.addListener(_scrollListener);
+    _searchController.addListener(_onSearchChanged);
+    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    _currentSongNotifier.value = audioPlayerService.currentSong;
+    audioPlayerService.addListener(_updateCurrentSong);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
+    _searchFocusNode.addListener(_handleSearchFocus);
+    _setupScrollListener();
+  }
+  
+  void _setupScrollListener() {
+    _scrollController.addListener(() {
+      final isScrolled = _scrollController.offset > 180;
+      if (_isTabBarScrolled != isScrolled) {
+        setState(() {
+          _isTabBarScrolled = isScrolled;
+        });
+      }
+    });
+  }
+  
+  void _handleSearchFocus() {
+    setState(() {
+      _isSearching = _searchFocusNode.hasFocus;
+    });
+    if (_searchFocusNode.hasFocus) {
+      _searchAnimationController.forward();
+    } else {
+      _searchAnimationController.reverse();
+    }
+  }
+  
+  void _setupAnimations() {
+    _searchAnimation = CurvedAnimation(
+      parent: _searchAnimationController,
+      curve: Curves.easeInOut,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController!,
+      curve: Curves.easeInOut,
+    ));
+  }
+  
+  void _setupDelayedUI() {
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
         setState(() {
@@ -172,10 +208,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         });
       }
     });
-
-    checkForNewVersion();
-
-    // Show welcome message after startup
+  }
+  
+  void _showWelcomeMessage() {
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
         _notificationManager.showNotification(
@@ -185,22 +220,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         );
       }
     });
-
-    _appBarTextController = ScrollController();
-    _scrollController.addListener(() {
-      final isScrolled = _scrollController.offset > 180;
-      if (_isTabBarScrolled != isScrolled) {
-        setState(() {
-          _isTabBarScrolled = isScrolled;
-        });
-      }
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndShowChangelog();
-    });
-
-    _loadVersionInfo();
   }
 
   Future<void> _loadVersionInfo() async {
@@ -222,6 +241,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _showChangelogDialog();
         _hasShownChangelog = true;
       }
+    }
+  }
+  
+  Future<void> _checkForUpdatesWithUI() async {
+    _notificationManager.showNotification(
+      AppLocalizations.of(context).translate('checking_for_updates'),
+      duration: const Duration(seconds: 2),
+    );
+
+    VersionCheckResult result = await checkForNewVersion();
+    _handleVersionCheckResult(result);
+  }
+  
+  void _handleVersionCheckResult(VersionCheckResult result) {
+    if (result.isUpdateAvailable && result.latestVersion != null) {
+      _notificationManager.showNotification(
+        AppLocalizations.of(context).translate('update_found'),
+        duration: const Duration(seconds: 3),
+        onComplete: () {
+          _showUpdateAvailableDialog(result.latestVersion!);
+          _notificationManager.showDefaultTitle();
+        },
+      );
+    } else {
+      _notificationManager.showNotification(
+        AppLocalizations.of(context).translate('no_update_found'),
+        duration: const Duration(seconds: 3),
+        onComplete: () => _notificationManager.showDefaultTitle(),
+      );
     }
   }
 
@@ -396,33 +444,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return VersionCheckResult(isUpdateAvailable: false, latestVersion: null);
   }
 
-  void _showUpToDateSnackBar() {
-    setState(() {
-      appBarMessage = AppLocalizations.of(context).translate('app_up_to_date');
-      isAppBarMessageVisible = true;
-    });
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          isAppBarMessageVisible = false;
-        });
-      }
-    });
-  }
-
-  void _showVersionCheckErrorSnackBar() {
-    setState(() {
-      appBarMessage = AppLocalizations.of(context).translate('version_check_error');
-      isAppBarMessageVisible = true;
-    });
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        setState(() {
-          isAppBarMessageVisible = false;
-        });
-      }
-    });
-  }
+  // Methods removed as part of DRY refactoring (these were unused)
 
   void _showUpdateAvailableDialog(Version latestVersion) {
     showDialog(
@@ -631,7 +653,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.didChangeDependencies();
     final themeProvider = Provider.of<ThemeProvider>(context);
     isDarkMode = themeProvider.isDarkMode;
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    // Access AudioPlayerService only when needed
   }
 
   void _onSongTap(SongModel song) {
@@ -1794,30 +1816,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  void checkForUpdates() async {
-    _notificationManager.showNotification(
-      AppLocalizations.of(context).translate('checking_for_updates'),
-      duration: const Duration(seconds: 2),
-    );
-
-    VersionCheckResult result = await checkForNewVersion();
-
-    if (result.isUpdateAvailable && result.latestVersion != null) {
-      _notificationManager.showNotification(
-        AppLocalizations.of(context).translate('update_found'),
-        duration: const Duration(seconds: 3),
-        onComplete: () {
-          _showUpdateAvailableDialog(result.latestVersion!);
-          _notificationManager.showDefaultTitle();
-        },
-      );
-    } else {
-      _notificationManager.showNotification(
-        AppLocalizations.of(context).translate('no_update_found'),
-        duration: const Duration(seconds: 3),
-        onComplete: () => _notificationManager.showDefaultTitle(),
-      );
-    }
+  Future<void> checkForUpdates() async {
+    await _checkForUpdatesWithUI();
   }
 
   void _showAboutDialog() async {
