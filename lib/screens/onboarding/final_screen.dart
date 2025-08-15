@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../home_screen.dart';
+import 'shared_animations.dart';
+import '../../constants/animation_constants.dart';
 
 class FinalScreen extends StatefulWidget {
   const FinalScreen({super.key});
@@ -22,7 +24,7 @@ class _FinalScreenState extends State<FinalScreen> {
 
     setState(() => _isExiting = true);
     
-    Future.delayed(const Duration(milliseconds: 600), () {
+    Future.delayed(AnimationConstants.pageTransition, () {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) {
@@ -34,14 +36,14 @@ class _FinalScreenState extends State<FinalScreen> {
                   end: Offset.zero,
                 ).animate(CurvedAnimation(
                   parent: animation,
-                  curve: Curves.easeOutCubic,
+                  curve: AnimationConstants.easeInOutCubic,
                 )),
                 child: const HomeScreen(),
               ),
             );
           },
           transitionDuration: const Duration(milliseconds: 800),
-          reverseTransitionDuration: const Duration(milliseconds: 600),
+          reverseTransitionDuration: AnimationConstants.pageTransition,
         ),
       );
     });
@@ -50,14 +52,17 @@ class _FinalScreenState extends State<FinalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Image.asset(
-            'assets/images/background/welcome_bg.jpg',
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-          ).animate().blur(duration: 300.ms),
+      body: RepaintBoundary(
+        child: Stack(
+          children: [
+            RepaintBoundary(
+              child: Image.asset(
+                'assets/images/background/welcome_bg.jpg',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              ).animate().blur(duration: AnimationConstants.normal),
+            ),
           
           SafeArea(
             child: Padding(
@@ -74,31 +79,7 @@ class _FinalScreenState extends State<FinalScreen> {
                       fontSize: 46,
                       fontFamily: 'Outfit',
                     ),
-                  )
-                  .animate()
-                    .fadeIn(
-                      duration: 300.ms,
-                      delay: 500.ms,
-                      curve: Curves.easeInOut
-                    )
-                    .moveX(begin: -30, end: 0)
-                  .animate(
-                    target: _isExiting ? 1.0 : 0.0,
-                    autoPlay: false,
-                  )
-                    .custom(
-                      duration: 400.ms,
-                      curve: Curves.easeInOut,
-                      builder: (context, value, child) => 
-                        Transform(
-                          transform: Matrix4.identity()
-                            ..setEntry(3, 2, 0.001)
-                            ..rotateY(value * 0.5)
-                            ..translate(value * 100.0),
-                          alignment: Alignment.centerRight,
-                          child: Opacity(opacity: 1.0 - value, child: child),
-                        ),
-                    ),
+                  ).addHeadingAnimations(isExiting: _isExiting),
                   
                   const SizedBox(height: 16),
                   
@@ -106,30 +87,7 @@ class _FinalScreenState extends State<FinalScreen> {
                     width: 185,
                     height: 2,
                     color: Colors.white,
-                  )
-                  .animate()
-                    .scaleX(
-                      begin: 0, 
-                      end: 1,
-                      duration: 250.ms,
-                      delay: 400.ms,
-                      curve: Curves.easeInOut,
-                      alignment: Alignment.centerLeft
-                    )
-                  .animate(
-                    target: _isExiting ? 1.0 : 0.0,
-                    autoPlay: false,
-                  )
-                    .custom(
-                      duration: 400.ms,
-                      curve: Curves.easeInOut,
-                      builder: (context, value, child) => 
-                        Transform.scale(
-                          scaleX: 1.0 - value,
-                          alignment: Alignment.centerRight,
-                          child: child,
-                        ),
-                    ),
+                  ).addDividerAnimations(isExiting: _isExiting),
                   
                   const SizedBox(height: 24),
                   
@@ -140,31 +98,7 @@ class _FinalScreenState extends State<FinalScreen> {
                       fontSize: 20,
                       fontFamily: 'Outfit',
                     ),
-                  )
-                  .animate()
-                    .fadeIn(
-                      duration: 300.ms,
-                      delay: 700.ms,
-                      curve: Curves.easeInOut
-                    )
-                    .moveX(begin: -30, end: 0)
-                  .animate(
-                    target: _isExiting ? 1.0 : 0.0,
-                    autoPlay: false,
-                  )
-                    .custom(
-                      duration: 400.ms,
-                      curve: Curves.easeInOut,
-                      builder: (context, value, child) => 
-                        Transform(
-                          transform: Matrix4.identity()
-                            ..setEntry(3, 2, 0.001)
-                            ..rotateY(value * 0.5)
-                            ..translate(value * 100.0),
-                          alignment: Alignment.centerRight,
-                          child: Opacity(opacity: 1.0 - value, child: child),
-                        ),
-                    ),
+                  ).addSubtitleAnimations(isExiting: _isExiting),
 
                   const Spacer(flex: 2),
                   
@@ -204,14 +138,7 @@ class _FinalScreenState extends State<FinalScreen> {
                         ),
                       ),
                     ),
-                  )
-                  .animate()
-                    .fadeIn(
-                      duration: 300.ms,
-                      delay: 1000.ms,
-                      curve: Curves.easeInOut
-                    )
-                    .moveY(begin: 20, end: 0),
+                  ).addButtonAnimations(),
                   
                   const SizedBox(height: 48),
                 ],

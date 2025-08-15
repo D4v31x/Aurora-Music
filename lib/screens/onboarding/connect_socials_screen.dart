@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'final_screen.dart';
+import 'shared_animations.dart';
+import '../../constants/animation_constants.dart';
 
 class ConnectSocialsScreen extends StatefulWidget {
   const ConnectSocialsScreen({super.key});
@@ -18,7 +20,7 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
   void _navigateToFinal(BuildContext context) {
     setState(() => _isExiting = true);
     
-    Future.delayed(const Duration(milliseconds: 600), () {
+    Future.delayed(AnimationConstants.pageTransition, () {
       Navigator.of(context).push(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
@@ -29,7 +31,7 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
               child: child,
             );
           },
-          transitionDuration: const Duration(milliseconds: 300),
+          transitionDuration: AnimationConstants.normal,
         ),
       );
     });
@@ -44,14 +46,17 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Image.asset(
-            'assets/images/background/welcome_bg.jpg',
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-          ).animate().blur(duration: 300.ms),
+      body: RepaintBoundary(
+        child: Stack(
+          children: [
+            RepaintBoundary(
+              child: Image.asset(
+                'assets/images/background/welcome_bg.jpg',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              ).animate().blur(duration: AnimationConstants.normal),
+            ),
           
           SafeArea(
             child: Padding(
@@ -68,31 +73,7 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
                       fontSize: 46,
                       fontFamily: 'Outfit',
                     ),
-                  )
-                  .animate()
-                    .fadeIn(
-                      duration: 300.ms,
-                      delay: 500.ms,
-                      curve: Curves.easeInOut
-                    )
-                    .moveX(begin: -30, end: 0)
-                  .animate(
-                    target: _isExiting ? 1.0 : 0.0,
-                    autoPlay: false,
-                  )
-                    .custom(
-                      duration: 400.ms,
-                      curve: Curves.easeInOut,
-                      builder: (context, value, child) => 
-                        Transform(
-                          transform: Matrix4.identity()
-                            ..setEntry(3, 2, 0.001)
-                            ..rotateY(value * 0.5)
-                            ..translate(value * 100.0),
-                          alignment: Alignment.centerRight,
-                          child: Opacity(opacity: 1.0 - value, child: child),
-                        ),
-                    ),
+                  ).addHeadingAnimations(isExiting: _isExiting),
                   
                   const SizedBox(height: 16),
                   
@@ -100,30 +81,7 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
                     width: 185,
                     height: 2,
                     color: Colors.white,
-                  )
-                  .animate()
-                    .scaleX(
-                      begin: 0, 
-                      end: 1,
-                      duration: 250.ms,
-                      delay: 400.ms,
-                      curve: Curves.easeInOut,
-                      alignment: Alignment.centerLeft
-                    )
-                  .animate(
-                    target: _isExiting ? 1.0 : 0.0,
-                    autoPlay: false,
-                  )
-                    .custom(
-                      duration: 400.ms,
-                      curve: Curves.easeInOut,
-                      builder: (context, value, child) => 
-                        Transform.scale(
-                          scaleX: 1.0 - value,
-                          alignment: Alignment.centerRight,
-                          child: child,
-                        ),
-                    ),
+                  ).addDividerAnimations(isExiting: _isExiting),
                   
                   const SizedBox(height: 24),
                   
@@ -134,70 +92,28 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
                       fontSize: 20,
                       fontFamily: 'Outfit',
                     ),
-                  )
-                  .animate()
-                    .fadeIn(
-                      duration: 300.ms,
-                      delay: 700.ms,
-                      curve: Curves.easeInOut
-                    )
-                    .moveX(begin: -30, end: 0)
-                  .animate(
-                    target: _isExiting ? 1.0 : 0.0,
-                    autoPlay: false,
-                  )
-                    .custom(
-                      duration: 400.ms,
-                      curve: Curves.easeInOut,
-                      builder: (context, value, child) => 
-                        Transform(
-                          transform: Matrix4.identity()
-                            ..setEntry(3, 2, 0.001)
-                            ..rotateY(value * 0.5)
-                            ..translate(value * 100.0),
-                          alignment: Alignment.centerRight,
-                          child: Opacity(opacity: 1.0 - value, child: child),
-                        ),
-                    ),
+                  ).addSubtitleAnimations(isExiting: _isExiting),
 
                   const SizedBox(height: 48),
 
                   _buildSocialButton(
                     'Instagram',
                     'https://instagram.com/your_handle',
-                  ).animate()
-                    .fadeIn(
-                      duration: 300.ms,
-                      delay: 800.ms,
-                      curve: Curves.easeInOut
-                    )
-                    .moveY(begin: 20, end: 0),
+                  ).addContentAnimations(delay: const Duration(milliseconds: 800)),
 
                   const SizedBox(height: 16),
 
                   _buildSocialButton(
                     'Web',
                     'https://your-website.com',
-                  ).animate()
-                    .fadeIn(
-                      duration: 300.ms,
-                      delay: 900.ms,
-                      curve: Curves.easeInOut
-                    )
-                    .moveY(begin: 20, end: 0),
+                  ).addContentAnimations(delay: const Duration(milliseconds: 900)),
 
                   const SizedBox(height: 16),
 
                   _buildSocialButton(
                     'GitHub',
                     'https://github.com/your-repo',
-                  ).animate()
-                    .fadeIn(
-                      duration: 300.ms,
-                      delay: 1000.ms,
-                      curve: Curves.easeInOut
-                    )
-                    .moveY(begin: 20, end: 0),
+                  ).addContentAnimations(delay: const Duration(milliseconds: 1000)),
 
                   const Spacer(flex: 2),
                   
@@ -237,14 +153,7 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
                         ),
                       ),
                     ),
-                  )
-                  .animate()
-                    .fadeIn(
-                      duration: 300.ms,
-                      delay: 1100.ms,
-                      curve: Curves.easeInOut
-                    )
-                    .moveY(begin: 20, end: 0),
+                  ).addButtonAnimations(delay: const Duration(milliseconds: 1100)),
                   
                   const SizedBox(height: 48),
                 ],
@@ -257,31 +166,32 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
   }
 
   Widget _buildSocialButton(String platform, String url) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.white.withOpacity(0.1),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
+    return RepaintBoundary(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white.withOpacity(0.1),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.2),
+            width: 1,
+          ),
         ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => _launchUrl(url),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-                child: Row(
-                  children: [
-                    Text(
-                      platform,
-                      style: const TextStyle(
-                        color: Colors.white,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _launchUrl(url),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                  child: Row(
+                    children: [
+                      Text(
+                        platform,
+                        style: const TextStyle(
+                          color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Outfit',
