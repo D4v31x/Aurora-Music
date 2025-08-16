@@ -66,8 +66,19 @@ void main() async {
           ChangeNotifierProvider(create: (context) => SleepTimerController()),
           Provider<ErrorTrackingService>.value(value: errorTracker),
         ],
-        child: MyApp(
-          languageCode: languageCode,
+        child: Builder(
+          builder: (context) {
+            // Connect the services after providers are initialized
+            final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+            final backgroundManager = Provider.of<BackgroundManagerService>(context, listen: false);
+            
+            // Set the background manager in the audio player service
+            audioPlayerService.setBackgroundManager(backgroundManager);
+            
+            return MyApp(
+              languageCode: languageCode,
+            );
+          },
         ),
       ),
     );
@@ -134,6 +145,7 @@ class _MyAppState extends State<MyApp> {
         ],
         home: Builder(
           builder: (context) {
+            // Wrap the entire app with the AppBackground widget
             return const SplashScreen();
           },
         ),

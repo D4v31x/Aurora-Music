@@ -12,7 +12,7 @@ class AnimatedMeshGradient extends StatefulWidget {
   const AnimatedMeshGradient({
     super.key,
     required this.colors,
-    this.animationDuration = const Duration(seconds: 8),
+    this.animationDuration = const Duration(seconds: 4), // Faster animation (was 8)
     this.enableAnimation = true,
   });
 
@@ -43,7 +43,7 @@ class _AnimatedMeshGradientState extends State<AnimatedMeshGradient>
     );
 
     _colorTransitionController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 400), // Faster transitions (was 800ms)
       vsync: this,
     );
 

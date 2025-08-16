@@ -11,6 +11,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
 import '../services/local_caching_service.dart';
 import '../widgets/glassmorphic_container.dart';
+import '../widgets/app_background.dart';
 
 class ArtistDetailsScreen extends StatefulWidget {
   final String artistName;
@@ -70,11 +71,32 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     if (widget.artistImagePath != null) {
       final PaletteGenerator paletteGenerator = await PaletteGenerator.fromImageProvider(
         FileImage(File(widget.artistImagePath!)),
+        maximumColorCount: 8, // Get more colors for a rich mesh gradient
         size: const Size(100, 100),
       );
+      
+      // Set dominant color for local use
       setState(() {
         _dominantColor = paletteGenerator.dominantColor?.color ?? Colors.deepPurple.shade900;
       });
+      
+      // Extract all colors for the mesh gradient
+      final List<Color> colors = [];
+      
+      // Add colors in priority order
+      if (paletteGenerator.dominantColor?.color != null) colors.add(paletteGenerator.dominantColor!.color);
+      if (paletteGenerator.vibrantColor?.color != null) colors.add(paletteGenerator.vibrantColor!.color);
+      if (paletteGenerator.lightVibrantColor?.color != null) colors.add(paletteGenerator.lightVibrantColor!.color);
+      if (paletteGenerator.darkVibrantColor?.color != null) colors.add(paletteGenerator.darkVibrantColor!.color);
+      if (paletteGenerator.mutedColor?.color != null) colors.add(paletteGenerator.mutedColor!.color);
+      if (paletteGenerator.lightMutedColor?.color != null) colors.add(paletteGenerator.lightMutedColor!.color);
+      if (paletteGenerator.darkMutedColor?.color != null) colors.add(paletteGenerator.darkMutedColor!.color);
+      
+      // Background colors are now only controlled by the currently playing song
+      // Previously updated the background manager with these colors
+      // if (colors.isNotEmpty) {
+      //   Provider.of<BackgroundManagerService>(context, listen: false).setCustomColors(colors);
+      // }
     }
   }
 
@@ -91,23 +113,10 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                       ? Future.value(widget.artistImagePath)
                       : _artistService.fetchArtistImage(widget.artistName),
               builder: (context, imageSnapshot) {
-              return Container(
-              decoration: BoxDecoration(
-              image: imageSnapshot.hasData && imageSnapshot.data != null
-              ? DecorationImage(
-              image: FileImage(File(imageSnapshot.data!)),
-              fit: BoxFit.cover,
-              colorFilter: ColorFilter.mode(
-              _dominantColor.withOpacity(0.3),
-              BlendMode.srcOver,
-              ),
-              )
-                  : const DecorationImage(
-              image: AssetImage('assets/images/background/dark_back.jpg'),
-              fit: BoxFit.cover,
-              ),
-              ),
-              child: BackdropFilter(
+              // Use the AppBackground component with mesh gradient
+              return AppBackground(
+                enableAnimation: true,
+                child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50
               ),
               child: Container(

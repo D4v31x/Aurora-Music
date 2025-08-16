@@ -7,6 +7,7 @@ import '../models/playlist_model.dart';
 import '../services/audio_player_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
+import '../widgets/app_background.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final Playlist playlist;
@@ -80,17 +81,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         );
 
         return Scaffold(
-          body: Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(
-                  MediaQuery.of(context).platformBrightness == Brightness.dark
-                      ? 'assets/images/background/dark_back.jpg'
-                      : 'assets/images/background/light_back.jpg',
-                ),
-                fit: BoxFit.cover,
-              ),
-            ),
+          body: AppBackground(
+            enableAnimation: true,
             child: CustomScrollView(
               controller: _scrollController,
               slivers: [

@@ -174,4 +174,17 @@ class BackgroundManagerService extends ChangeNotifier {
       _defaultDarkQuaternary,
     ];
   }
+  
+  /// Set custom colors directly for the mesh gradient
+  /// This method allows setting colors from palette generators or other sources
+  void setCustomColors(List<Color> colors) {
+    if (colors.isEmpty) {
+      _useDefaultColors();
+      return;
+    }
+    
+    // Take up to 9 colors for the mesh (3x3 grid)
+    _currentColors = colors.take(9).toList();
+    notifyListeners();
+  }
 }

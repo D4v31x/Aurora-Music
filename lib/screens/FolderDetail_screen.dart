@@ -10,6 +10,7 @@ import '../services/audio_player_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../services/expandable_player_controller.dart';
+import '../widgets/app_background.dart';
 
 class FolderDetailScreen extends StatefulWidget {
   final String folderPath;
@@ -230,44 +231,12 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
     final folderName = widget.folderPath.split(Platform.pathSeparator).last;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background Image Layer
-          Positioned.fill(
-            child: currentSong != null
-                ? FutureBuilder<Uint8List?>(
-                    future: OnAudioQuery().queryArtwork(
-                      currentSong.id,
-                      ArtworkType.AUDIO,
-                    ),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done &&
-                          snapshot.data != null) {
-                        return Image.memory(
-                          snapshot.data!,
-                          fit: BoxFit.cover,
-                        );
-                      }
-                      return Container(
-                        color: Colors.black,
-                      );
-                    },
-                  )
-                : Container(
-                    color: Colors.black,
-                  ),
-          ),
-          // Blur Overlay
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                color: Colors.black.withOpacity(0.3),
-              ),
-            ),
-          ),
-          // Content Layer
-          FutureBuilder<List<SongModel>>(
+      body: AppBackground(
+        enableAnimation: true,
+        child: Stack(
+          children: [
+            // Content Layer
+            FutureBuilder<List<SongModel>>(
             future: _songsFuture,
             builder: (context, songsSnapshot) {
               if (songsSnapshot.connectionState == ConnectionState.waiting) {
@@ -309,6 +278,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
             },
           ),
         ],
+        ),
       ),
     );
   }

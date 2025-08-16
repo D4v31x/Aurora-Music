@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/audio_player_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
+import '../widgets/app_background.dart';
 import 'PlaylistDetail_screen.dart';
 
 class PlaylistsScreenList extends StatelessWidget {
@@ -13,30 +14,10 @@ class PlaylistsScreenList extends StatelessWidget {
   Widget build(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
 
-    return Stack(
-      children: [
-        // Background
-        Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(
-                MediaQuery.of(context).platformBrightness == Brightness.dark
-                    ? 'assets/images/background/dark_back.jpg'
-                    : 'assets/images/background/light_back.jpg',
-              ),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
-            ),
-          ),
-        ),
-        // Main content
-        Scaffold(
-          backgroundColor: Colors.transparent,
+    return AppBackground(
+      enableAnimation: true,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0.0,
@@ -133,9 +114,7 @@ class PlaylistsScreenList extends StatelessWidget {
                       ),
                     )
                   else
-                    Consumer<AudioPlayerService>(
-                      builder: (context, audioPlayerService, child) {
-                      return ListView.builder(
+                    ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: audioPlayerService.playlists.length,
@@ -175,16 +154,13 @@ class PlaylistsScreenList extends StatelessWidget {
                             ),
                           ),
                         );
-                      }
-                      );
-                      }
-                      )
+                      },
+                    ),
                 ],
               ),
             ),
           ),
         ),
-      ],
     );
   }
 

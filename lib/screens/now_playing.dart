@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import '../localization/app_localizations.dart';
 import '../services/audio_player_service.dart';
 import '../services/expandable_player_controller.dart';
-import '../services/background_manager_service.dart';
 import '../services/sleep_timer_controller.dart';
 import '../services/lyrics_service.dart';  // Genius lyrics fetching service
 // Importujte službu pro timed lyrics
@@ -136,9 +135,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
     try {
       final provider = await _getCachedImageProvider(song.id);
       
-      // Also update background colors
-      final backgroundManager = Provider.of<BackgroundManagerService>(context, listen: false);
-      await backgroundManager.updateColorsFromSong(song);
+      // Background colors are now automatically updated by AudioPlayerService
+      // Previously updated background colors here:
+      // final backgroundManager = Provider.of<BackgroundManagerService>(context, listen: false);
+      // await backgroundManager.updateColorsFromSong(song);
       
       if (mounted) {
         setState(() {
@@ -611,6 +611,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> with SingleTickerPr
         return false;
       },
       child: Scaffold(
+        backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,

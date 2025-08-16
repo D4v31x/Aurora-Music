@@ -19,7 +19,7 @@ import '../widgets/home/settings_tab.dart';
 import 'now_playing.dart';
 import '../widgets/outline_indicator.dart';
 import '../widgets/mini_player.dart';
-import '../widgets/background_builder.dart';
+import '../widgets/app_background.dart';
 import '../widgets/auto_scroll_text.dart';
 import '../services/local_caching_service.dart';
 import '../services/expandable_player_controller.dart';
@@ -504,7 +504,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
-            BackgroundBuilder.buildBackground(currentSong, isDarkMode),
+            // Using the app background widget to provide consistent UI
+            Positioned.fill(child: AppBackground(child: Container())),
             NestedScrollView(
               controller: _scrollController,
               headerSliverBuilder: (context, innerBoxIsScrolled) => [

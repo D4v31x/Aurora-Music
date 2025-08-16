@@ -8,6 +8,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
 import '../services/artwork_cache_service.dart';
 import '../widgets/glassmorphic_container.dart';
+import '../widgets/app_background.dart';
 
 class AlbumDetailScreen extends StatefulWidget {
   final String albumName;
@@ -72,8 +73,35 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
       if (artwork != null) {
         final paletteGenerator = await PaletteGenerator.fromImageProvider(
           MemoryImage(artwork),
+          maximumColorCount: 8, // Get more colors for a richer mesh gradient
         );
+        
+        // Set the dominant color for the UI
         _dominantColorNotifier.value = paletteGenerator.dominantColor?.color ?? Colors.deepPurple.shade900;
+        
+        // Extract colors for the mesh background
+        final List<Color> colors = [];
+        
+        // Add colors from palette in priority order
+        if (paletteGenerator.dominantColor?.color != null) colors.add(paletteGenerator.dominantColor!.color);
+        if (paletteGenerator.vibrantColor?.color != null) colors.add(paletteGenerator.vibrantColor!.color);
+        if (paletteGenerator.lightVibrantColor?.color != null) colors.add(paletteGenerator.lightVibrantColor!.color);
+        if (paletteGenerator.darkVibrantColor?.color != null) colors.add(paletteGenerator.darkVibrantColor!.color);
+        if (paletteGenerator.mutedColor?.color != null) colors.add(paletteGenerator.mutedColor!.color);
+        if (paletteGenerator.lightMutedColor?.color != null) colors.add(paletteGenerator.lightMutedColor!.color);
+        if (paletteGenerator.darkMutedColor?.color != null) colors.add(paletteGenerator.darkMutedColor!.color);
+        
+        // Background colors are now only controlled by the currently playing song
+        // Previously updated background manager with extracted colors here
+        // if (colors.isNotEmpty) {
+        //   Provider.of<BackgroundManagerService>(context, listen: false).setCustomColors(colors);
+        // } else {
+        //   Provider.of<BackgroundManagerService>(context, listen: false).updateColorsFromArtwork(artwork);
+        // }
+      } else {
+        // Background colors are now only controlled by the currently playing song
+        // Previously used default colors if no artwork
+        // Provider.of<BackgroundManagerService>(context, listen: false).updateColorsFromArtwork(null);
       }
     }
   }
@@ -93,17 +121,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
               return ValueListenableBuilder<Color>(
                 valueListenable: _dominantColorNotifier,
                 builder: (context, dominantColor, _) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          dominantColor.withOpacity(0.8),
-                          Colors.black,
-                        ],
-                      ),
-                    ),
+                  // Use the mesh background with dominant color
+                  return AppBackground(
+                    enableAnimation: true,
                     child: CustomScrollView(
                       controller: _scrollController,
                       slivers: [

@@ -6,6 +6,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../services/audio_player_service.dart';
 import '../widgets/glassmorphic_container.dart';
+import '../widgets/app_background.dart';
 import 'Artist_screen.dart';
 import 'FolderDetail_screen.dart';
 import 'AlbumDetailScreen.dart';
@@ -159,28 +160,9 @@ class AlbumsScreen extends StatelessWidget {
   }
 
   Widget buildBackground(BuildContext context, SongModel? currentSong) {
-    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 500),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDarkMode ? [
-            // Dark blue to violet gradient for dark mode
-            const Color(0xFF1A237E), // Dark blue
-            const Color(0xFF311B92), // Dark violet
-            const Color(0xFF512DA8), // Medium violet
-            const Color(0xFF7B1FA2), // Purple
-          ] : [
-            // Light blue gradient for light mode
-            const Color(0xFFE3F2FD), // Light blue
-            const Color(0xFFBBDEFB), // Lighter blue
-            const Color(0xFF90CAF9), // Medium light blue
-            const Color(0xFF64B5F6), // Blue
-          ],
-        ),
-      ),
+    return AppBackground(
+      enableAnimation: true,
+      child: Container(), // Empty container since this is just a background
     );
   }
 }
@@ -307,37 +289,9 @@ class ArtistsScreen extends StatelessWidget {
   }
 
   Widget buildBackground(BuildContext context, SongModel? currentSong) {
-    return FutureBuilder<Uint8List?>(
-      future: currentSong != null
-          ? OnAudioQuery().queryArtwork(currentSong.id, ArtworkType.AUDIO)
-          : null,
-      builder: (context, snapshot) {
-        ImageProvider backgroundImage;
-        if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-          backgroundImage = MemoryImage(snapshot.data!);
-        } else {
-          backgroundImage = AssetImage(
-              MediaQuery.of(context).platformBrightness == Brightness.dark
-                  ? 'assets/images/background/dark_back.jpg'
-                  : 'assets/images/background/light_back.jpg');
-        }
-
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: backgroundImage,
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
-            ),
-          ),
-        );
-      },
+    return AppBackground(
+      enableAnimation: true,
+      child: Container(), // Empty container since this is just a background
     );
   }
 }
@@ -446,37 +400,9 @@ class FoldersScreen extends StatelessWidget {
   }
 
   Widget buildBackground(BuildContext context, SongModel? currentSong) {
-    return FutureBuilder<Uint8List?>(
-      future: currentSong != null
-          ? OnAudioQuery().queryArtwork(currentSong.id, ArtworkType.AUDIO)
-          : null,
-      builder: (context, snapshot) {
-        ImageProvider backgroundImage;
-        if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-          backgroundImage = MemoryImage(snapshot.data!);
-        } else {
-          backgroundImage = AssetImage(
-              MediaQuery.of(context).platformBrightness == Brightness.dark
-                  ? 'assets/images/background/dark_back.jpg'
-                  : 'assets/images/background/light_back.jpg');
-        }
-
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: backgroundImage,
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
-            ),
-          ),
-        );
-      },
+    return AppBackground(
+      enableAnimation: true,
+      child: Container(), // Empty container since this is just a background
     );
   }
 }

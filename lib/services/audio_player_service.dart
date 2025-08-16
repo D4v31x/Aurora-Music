@@ -9,10 +9,14 @@ import 'dart:convert';
 import '../models/playlist_model.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:audio_session/audio_session.dart';
+import 'background_manager_service.dart';
 
 class AudioPlayerService extends ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final OnAudioQuery _audioQuery = OnAudioQuery();
+  
+  // Background manager for mesh gradient colors
+  BackgroundManagerService? _backgroundManager;
 
   List<SongModel> _playlist = [];
   List<Playlist> _playlists = [];
@@ -99,6 +103,18 @@ class AudioPlayerService extends ChangeNotifier {
     audioPlayer.playerStateStream.listen((playerState) {
       notifyListeners();
     });
+  }
+
+  /// Set the background manager service for updating mesh gradient colors
+  void setBackgroundManager(BackgroundManagerService backgroundManager) {
+    _backgroundManager = backgroundManager;
+  }
+
+  /// Update background colors based on current song
+  Future<void> _updateBackgroundColors() async {
+    if (_backgroundManager != null && currentSong != null) {
+      await _backgroundManager!.updateColorsFromSong(currentSong);
+    }
   }
 
   Future<void> _init() async {
@@ -468,6 +484,7 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
         _isPlaying = true;
         _incrementPlayCount(song);
         await updateCurrentArtwork();
+        await _updateBackgroundColors(); // Update mesh gradient colors based on current song
         _currentSongController.add(song);
         currentSongNotifier.value = song;
         notifyListeners();
