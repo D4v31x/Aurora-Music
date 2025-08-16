@@ -1,7 +1,10 @@
 import 'dart:ui';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:permission_handler/permission_handler.dart' as permission_handler;
 import 'theme_selection.dart';
 
 class PermissionsScreen extends StatefulWidget {
@@ -15,8 +18,86 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
   bool _isExiting = false;
   bool _mediaPermission = false;
   bool _notificationPermission = false;
+  bool _isRequestingPermissions = false;
 
-  void _navigateToThemeSelection(BuildContext context) {
+  @override
+  void initState() {
+    super.initState();
+    _checkCurrentPermissions();
+  }
+
+  Future<void> _checkCurrentPermissions() async {
+    try {
+      if (Platform.isAndroid) {
+        final mediaStatus = await OnAudioQuery().permissionsStatus();
+        final notificationStatus = await permission_handler.Permission.notification.status;
+        
+        setState(() {
+          _mediaPermission = mediaStatus;
+          _notificationPermission = notificationStatus.isGranted;
+        });
+      } else {
+        // For other platforms, assume permissions are granted
+        setState(() {
+          _mediaPermission = true;
+          _notificationPermission = true;
+        });
+      }
+    } catch (e) {
+      // If permission check fails, assume not granted
+      setState(() {
+        _mediaPermission = false;
+        _notificationPermission = false;
+      });
+    }
+  }
+
+  Future<void> _requestPermissions() async {
+    if (_isRequestingPermissions) return;
+    
+    setState(() {
+      _isRequestingPermissions = true;
+    });
+
+    try {
+      if (Platform.isAndroid) {
+        // Request media permission
+        if (!_mediaPermission) {
+          final granted = await OnAudioQuery().permissionsRequest();
+          setState(() {
+            _mediaPermission = granted;
+          });
+        }
+
+        // Request notification permission
+        if (!_notificationPermission) {
+          final status = await permission_handler.Permission.notification.request();
+          setState(() {
+            _notificationPermission = status.isGranted;
+          });
+        }
+      }
+    } catch (e) {
+      // Handle permission request errors
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error requesting permissions: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isRequestingPermissions = false;
+      });
+    }
+  }
+
+  void _navigateToThemeSelection(BuildContext context) async {
+    // Request permissions before continuing
+    await _requestPermissions();
+    
     setState(() => _isExiting = true);
     
     Future.delayed(const Duration(milliseconds: 600), () {
@@ -153,7 +234,11 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
                     'Media Library',
                     'For access to your audio files',
                     _mediaPermission,
-                    (value) => setState(() => _mediaPermission = value),
+                    (value) async {
+                      if (value && !_mediaPermission) {
+                        await _requestPermissions();
+                      }
+                    },
                   ).animate()
                     .fadeIn(duration: 300.ms, delay: 800.ms, curve: Curves.easeInOut)
                     .moveY(begin: 20, end: 0)
@@ -181,7 +266,11 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
                     'Notifications',
                     'For background service',
                     _notificationPermission,
-                    (value) => setState(() => _notificationPermission = value),
+                    (value) async {
+                      if (value && !_notificationPermission) {
+                        await _requestPermissions();
+                      }
+                    },
                   ).animate()
                     .fadeIn(duration: 300.ms, delay: 900.ms, curve: Curves.easeInOut)
                     .moveY(begin: 20, end: 0)
@@ -221,7 +310,7 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                         child: ElevatedButton(
-                          onPressed: () => _navigateToThemeSelection(context),
+                          onPressed: _isRequestingPermissions ? null : () => _navigateToThemeSelection(context),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             foregroundColor: Colors.white,
@@ -230,14 +319,23 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
                               borderRadius: BorderRadius.circular(28),
                             ),
                           ),
-                          child: const Text(
-                            'Continue',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Outfit',
-                            ),
-                          ),
+                          child: _isRequestingPermissions
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Text(
+                                'Continue',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Outfit',
+                                ),
+                              ),
                         ),
                       ),
                     ),

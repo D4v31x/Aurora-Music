@@ -17,6 +17,7 @@ import 'localization/app_localizations.dart';
 import 'screens/splash_screen.dart';
 import 'localization/locale_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/performance_mode_provider.dart';
 
 
 /// Application entry point
@@ -62,6 +63,7 @@ void main() async {
           ChangeNotifierProvider(create: (context) => AudioPlayerService()),
           ChangeNotifierProvider(create: (context) => ExpandablePlayerController()),
           ChangeNotifierProvider(create: (context) => ThemeProvider()),
+          ChangeNotifierProvider(create: (context) => PerformanceModeProvider()),
           ChangeNotifierProvider(create: (context) => BackgroundManagerService()),
           ChangeNotifierProvider(create: (context) => SleepTimerController()),
           Provider<ErrorTrackingService>.value(value: errorTracker),
@@ -71,9 +73,15 @@ void main() async {
             // Connect the services after providers are initialized
             final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
             final backgroundManager = Provider.of<BackgroundManagerService>(context, listen: false);
+            final performanceProvider = Provider.of<PerformanceModeProvider>(context, listen: false);
             
             // Set the background manager in the audio player service
             audioPlayerService.setBackgroundManager(backgroundManager);
+            
+            // Initialize performance provider
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              performanceProvider.initialize();
+            });
             
             return MyApp(
               languageCode: languageCode,

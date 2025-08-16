@@ -2,21 +2,24 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mesh/mesh.dart';
+import 'package:provider/provider.dart';
+import '../providers/performance_mode_provider.dart';
 
 /// Animated mesh gradient that transitions between color sets
 /// Used for smooth transitions as songs change with continuous movement
+/// Performance-aware: adapts animation complexity based on device capabilities
 class AnimatedMeshBackground extends StatefulWidget {
   final List<Color> colors;
-  final Duration animationDuration;
+  final Duration? animationDuration;
   final Duration transitionDuration;
-  final double animationSpeed;
+  final double? animationSpeed;
 
   const AnimatedMeshBackground({
     super.key,
     required this.colors,
-    this.animationDuration = const Duration(seconds: 3), // Much faster animation (was 5 seconds)
-    this.transitionDuration = const Duration(milliseconds: 400), // Faster transitions (was 800ms)
-    this.animationSpeed = 2.5, // Much faster movement speed (was 1.6)
+    this.animationDuration, // Now optional - uses performance settings
+    this.transitionDuration = const Duration(milliseconds: 400),
+    this.animationSpeed, // Now optional - uses performance settings
   });
 
   @override
@@ -28,6 +31,8 @@ class _AnimatedMeshBackgroundState extends State<AnimatedMeshBackground>
   late List<Color> _currentColors;
   late AnimationController _animationController;
   late Animation<double> _animation;
+  PerformanceModeProvider? _performanceProvider;
+  bool _isHighPerformance = true;
   
   // Initial vertex positions for 4x4 grid with flowing pattern coverage
   final List<OVertex> _baseVertices = [
@@ -45,11 +50,29 @@ class _AnimatedMeshBackgroundState extends State<AnimatedMeshBackground>
   void initState() {
     super.initState();
     _currentColors = _ensureColors(widget.colors);
+    _setupAnimation();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Get performance provider
+    _performanceProvider = Provider.of<PerformanceModeProvider>(context);
+    if (_performanceProvider?.isInitialized == true) {
+      _updatePerformanceSettings();
+    }
+  }
+
+  void _setupAnimation() {
+    // Get performance settings or use defaults
+    final animationDuration = widget.animationDuration ?? 
+      (_isHighPerformance ? const Duration(seconds: 3) : const Duration(seconds: 6));
     
     // Create an animation controller for continuous movement
     _animationController = AnimationController(
       vsync: this,
-      duration: widget.animationDuration,
+      duration: animationDuration,
     );
     
     // Create a looping animation
@@ -58,8 +81,32 @@ class _AnimatedMeshBackgroundState extends State<AnimatedMeshBackground>
       end: 2 * pi, // Full rotation in radians
     ).animate(_animationController);
     
-    // Start the animation in a loop
-    _animationController.repeat();
+    // Start the animation in a loop only if complex animations are enabled
+    if (_isHighPerformance) {
+      _animationController.repeat();
+    }
+  }
+
+  void _updatePerformanceSettings() {
+    if (_performanceProvider == null) return;
+    
+    final shouldEnable = _performanceProvider!.shouldEnableMeshBackground;
+    final oldHighPerformance = _isHighPerformance;
+    _isHighPerformance = shouldEnable && _performanceProvider!.shouldEnableComplexAnimations;
+    
+    // If performance settings changed, update animation
+    if (oldHighPerformance != _isHighPerformance) {
+      _restartAnimation();
+    }
+  }
+
+  void _restartAnimation() {
+    _animationController.dispose();
+    _setupAnimation();
+    
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -72,19 +119,20 @@ class _AnimatedMeshBackgroundState extends State<AnimatedMeshBackground>
       });
     }
     
-    // Update animation duration if it changed
-    if (oldWidget.animationDuration != widget.animationDuration) {
-      _animationController.duration = widget.animationDuration;
-      // Reset the animation with the new duration
+    // Update animation settings if widget properties changed
+    final newDuration = widget.animationDuration ?? 
+      (_isHighPerformance ? const Duration(seconds: 3) : const Duration(seconds: 6));
+    
+    if (_animationController.duration != newDuration) {
+      _animationController.duration = newDuration;
       _animationController.reset();
-      _animationController.repeat();
+      if (_isHighPerformance) {
+        _animationController.repeat();
+      }
     }
     
-    // Update animation speed if it changed
-    if (oldWidget.animationSpeed != widget.animationSpeed) {
-      _animationController.value = 0.0;
-      _animationController.repeat();
-    }
+    // Update performance settings
+    _updatePerformanceSettings();
   }
   
   @override
@@ -95,8 +143,17 @@ class _AnimatedMeshBackgroundState extends State<AnimatedMeshBackground>
 
   // Generate animated vertices based on the animation value
   List<OVertex> _animateVertices(double animationValue) {
+    if (!_isHighPerformance) {
+      // For low-performance devices, return static vertices
+      return _baseVertices;
+    }
+    
     final List<OVertex> animatedVertices = [];
     final random = Random(42); // Fixed seed for deterministic movement
+    
+    // Get animation speed from performance settings or widget
+    final animationSpeed = widget.animationSpeed ?? 
+      (_performanceProvider?.animationSettings.meshAnimationSpeed ?? 2.5);
     
     // Apply different movement patterns to each vertex
     for (int i = 0; i < _baseVertices.length; i++) {
@@ -125,7 +182,7 @@ class _AnimatedMeshBackgroundState extends State<AnimatedMeshBackground>
       }
       
       // Slightly larger amplitude to ensure full coverage
-      final amplitude = 0.06 * edgeFactor * widget.animationSpeed; // Increased amplitude for coverage
+      final amplitude = 0.06 * edgeFactor * animationSpeed; // Use dynamic animation speed
       
       // Apply smooth movement pattern with controlled speed
       final xOffset = sin(animationValue * xFrequency + xPhaseOffset) * amplitude;
@@ -184,8 +241,21 @@ class _AnimatedMeshBackgroundState extends State<AnimatedMeshBackground>
 
   @override
   Widget build(BuildContext context) {
+    // If mesh background is disabled, show a simple gradient
+    if (_performanceProvider?.shouldEnableMeshBackground == false) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: _currentColors.take(2).toList(),
+          ),
+        ),
+      );
+    }
+    
     return RepaintBoundary(
-      child: AnimatedBuilder(
+      child: _isHighPerformance ? AnimatedBuilder(
         animation: _animation,
         builder: (context, child) {
           final animatedVertices = _animateVertices(_animation.value);
@@ -204,6 +274,20 @@ class _AnimatedMeshBackgroundState extends State<AnimatedMeshBackground>
             ),
           );
         },
+      ) : 
+      // Static mesh for low-performance devices
+      AnimatedOMeshGradient(
+        duration: widget.transitionDuration,
+        size: Size.infinite,
+        curve: Curves.easeInOut,
+        mesh: OMeshRect(
+          width: 4,
+          height: 4,
+          colorSpace: OMeshColorSpace.lab,
+          fallbackColor: _currentColors.first,
+          vertices: _baseVertices,
+          colors: _getColorsList(_currentColors),
+        ),
       ),
     );
   }

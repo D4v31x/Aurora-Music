@@ -63,6 +63,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     }
   }
 
+  // Permission requests moved to onboarding flow
+  // This prevents startup crashes and improves UX
+  /*
   Future<bool> _requestPermissions() async {
     try {
       if (Platform.isWindows) {
@@ -111,12 +114,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       return false;
     }
   }
+  */
 
   Future<void> _initializeApp() async {
     try {
-      final hasPermissions = await _requestPermissions();
-      if (!hasPermissions) return;
-
+      // Skip permission requests during splash - they will be handled in onboarding
+      
       final tasks = [
         ('Warming shaders', _warmupShaders()),
         ('Initializing Services', _initializeServices()),
@@ -691,29 +694,27 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 
   Future<void> _warmupShaders() async {
-    // Use a smaller size for faster warmup
-    const size = Size(50, 50);
+    // Simplified shader warmup for better performance on low-end devices
+    const size = Size(25, 25); // Even smaller size for faster warmup
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
     final paint = Paint();
 
-    // Warm up common gradients
+    // Simple gradient warmup - essential for UI performance
     paint.shader = LinearGradient(
       colors: [Colors.white, Colors.white.withOpacity(0.0)],
       stops: const [0.8, 1.0],
     ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
 
-    // Warm up blur effects with reduced sigma for faster processing
-    final filter = ImageFilter.blur(sigmaX: 5, sigmaY: 5);
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..imageFilter = filter,
-    );
-
-    // Record and compile with smaller image size
-    final picture = recorder.endRecording();
-    await picture.toImage(size.width.toInt(), size.height.toInt());
-    picture.dispose();
+    // Skip blur warmup on low-performance devices to speed up initialization
+    try {
+      final picture = recorder.endRecording();
+      await picture.toImage(size.width.toInt(), size.height.toInt());
+      picture.dispose();
+    } catch (e) {
+      // If shader warmup fails, continue silently
+    }
+  }
   }
 }
