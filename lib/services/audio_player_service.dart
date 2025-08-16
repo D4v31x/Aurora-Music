@@ -148,7 +148,7 @@ class AudioPlayerService extends ChangeNotifier {
 
   // Listen to sequence state changes for gapless playback
   _audioPlayer.sequenceStateStream.listen((sequenceState) {
-    if (sequenceState != null && _gaplessPlayback) {
+    if (sequenceState != null && _gaplessPlayback && _playlist.isNotEmpty) {
       final currentIndex = sequenceState.currentIndex;
       if (currentIndex != null && currentIndex != _currentIndex && currentIndex < _playlist.length) {
         _currentIndex = currentIndex;
