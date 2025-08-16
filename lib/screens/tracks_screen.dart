@@ -8,6 +8,7 @@ import '../models/playlist_model.dart';
 import '../models/utils.dart';
 import '../services/audio_player_service.dart';
 import '../services/background_manager_service.dart';
+import '../providers/performance_mode_provider.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/app_background.dart';
@@ -90,7 +91,13 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
       bool permissionStatus = await _audioQuery.permissionsStatus();
 
       if (!permissionStatus) {
-        permissionStatus = await _audioQuery.permissionsRequest();
+        // Don't automatically request permissions - let user decide
+        setState(() {
+          _errorMessage = 'Permission to access media library is required. '
+              'Please grant permissions in the onboarding or app settings.';
+          _isLoading = false;
+        });
+        return;
       }
 
       if (permissionStatus) {
@@ -109,11 +116,6 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
         } else {
           _loadMoreSongs();
         }
-      } else {
-        setState(() {
-          _errorMessage = 'Permission to access media library was denied.';
-          _isLoading = false;
-        });
       }
     } catch (e) {
       setState(() {

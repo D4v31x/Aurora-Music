@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/background_manager_service.dart';
+import '../utils/device_capabilities.dart';
 import 'mesh_background.dart';
 import 'animated_mesh_background.dart';
 
@@ -20,6 +21,29 @@ class AppBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<BackgroundManagerService>(
       builder: (context, backgroundManager, _) {
+        // Check if complex backgrounds should be enabled
+        final shouldEnableComplexBackground = DeviceCapabilities.shouldEnableBackgroundEffects;
+        
+        // Use simple gradient for low-end devices
+        if (!shouldEnableComplexBackground) {
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: backgroundManager.currentColors.take(2).toList(),
+                    ),
+                  ),
+                ),
+              ),
+              child,
+            ],
+          );
+        }
+        
         return Stack(
           children: [
             // Mesh gradient background using the mesh package
@@ -28,15 +52,20 @@ class AppBackground extends StatelessWidget {
                 child: enableAnimation
                     ? AnimatedMeshBackground(
                         colors: backgroundManager.currentColors,
-                        animationDuration: const Duration(seconds: 7),
+                        // Use performance-aware settings
+                        animationDuration: DeviceCapabilities.isLowEndDevice 
+                            ? const Duration(seconds: 10) 
+                            : const Duration(seconds: 7),
                         transitionDuration: const Duration(milliseconds: 400),
-                        animationSpeed: 1.2, // Slightly reduced from 1.5 to prevent artifacts
+                        animationSpeed: DeviceCapabilities.isLowEndDevice 
+                            ? 0.8 
+                            : 1.2,
                       )
                     : MeshBackground(
                         colors: backgroundManager.currentColors,
-                        animated: true,
+                        animated: shouldEnableComplexBackground,
                         animationDuration: const Duration(seconds: 10),
-                        animationSpeed: 0.8, // Slightly reduced from 1.0 to prevent artifacts
+                        animationSpeed: 0.8,
                       ),
               ),
             ),

@@ -298,6 +298,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> fetchSongs() async {
     try {
       if (Platform.isAndroid) {
+        // Check permissions first
         final statuses = await [
           permissionhandler.Permission.audio,
           permissionhandler.Permission.storage,
@@ -315,9 +316,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             songs = processedSongs;
           });
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context).translate('perm_deny')),
+          // Show a more user-friendly message about permissions
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(AppLocalizations.of(context).translate('perm_deny')),
+                action: SnackBarAction(
+                  label: 'Grant Permissions',
+                  onPressed: () async {
+                    // Try requesting permissions again
+                    await fetchSongs();
+                  },
+                ),
+              ),
+            );
+          }
+          
+          // Set empty song list but don't crash the app
+          setState(() {
+            songs = [];
+          });
+        }
             ),
           );
         }
