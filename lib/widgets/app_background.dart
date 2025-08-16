@@ -30,11 +30,13 @@ class AppBackground extends StatelessWidget {
                         colors: backgroundManager.currentColors,
                         animationDuration: const Duration(seconds: 3), // Faster for more noticeable movement
                         enableAnimation: true,
+                        songId: backgroundManager.currentSongId, // Pass song ID for wave direction changes
                       )
                     : AnimatedMeshGradient(
                         colors: backgroundManager.currentColors,
                         animationDuration: const Duration(seconds: 5),
                         enableAnimation: false,
+                        songId: backgroundManager.currentSongId,
                       ),
               ),
             ),

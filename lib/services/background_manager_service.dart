@@ -8,6 +8,7 @@ import 'dart:typed_data';
 class BackgroundManagerService extends ChangeNotifier {
   List<Color> _currentColors = _getDefaultColors();
   bool _isDarkMode = true;
+  int? _currentSongId; // Track current song for wave direction changes
   
   static const Color _defaultDarkPrimary = Color(0xFF1A237E);
   static const Color _defaultDarkSecondary = Color(0xFF311B92);
@@ -21,6 +22,7 @@ class BackgroundManagerService extends ChangeNotifier {
 
   List<Color> get currentColors => _currentColors;
   bool get isDarkMode => _isDarkMode;
+  int? get currentSongId => _currentSongId;
 
   /// Set the theme mode
   void setDarkMode(bool darkMode) {
@@ -67,6 +69,11 @@ class BackgroundManagerService extends ChangeNotifier {
       return;
     }
 
+    // Update current song ID for wave direction tracking
+    final newSongId = song.id;
+    final songChanged = _currentSongId != newSongId;
+    _currentSongId = newSongId;
+    
     try {
       final artworkData = await OnAudioQuery().queryArtwork(
         song.id,
@@ -76,12 +83,21 @@ class BackgroundManagerService extends ChangeNotifier {
       );
       
       await updateColorsFromArtwork(artworkData);
+      
+      // Always notify listeners when song changes, even if colors are the same
+      // This ensures wave direction updates
+      if (songChanged) {
+        notifyListeners();
+      }
     } catch (e) {
       _useDefaultColors();
+      if (songChanged) {
+        notifyListeners();
+      }
     }
   }
 
-  /// Extract colors from palette generator
+  /// Extract colors from palette generator with enhanced variations for wave effects
   List<Color> _extractColorsFromPalette(PaletteGenerator palette) {
     final colors = <Color>[];
 
@@ -112,13 +128,52 @@ class BackgroundManagerService extends ChangeNotifier {
       colors.add(palette.lightMutedColor!.color);
     }
 
-    // Ensure we have at least 2 colors and max 4
+    // Enhanced color variations for dramatic wave effects
     if (colors.length < 2 && colors.isNotEmpty) {
       final baseColor = colors.first;
       colors.add(_adjustColorBrightness(baseColor, _isDarkMode ? 0.7 : 1.3));
     }
+    
+    // Add complementary and analogous colors for richer gradients
+    if (colors.isNotEmpty) {
+      final enhancedColors = _enhanceColorsForWaves(colors);
+      return enhancedColors.take(6).toList(); // Allow up to 6 colors for richer gradients
+    }
 
     return colors.take(4).toList();
+  }
+
+  /// Enhance colors for more dramatic wave effects
+  List<Color> _enhanceColorsForWaves(List<Color> originalColors) {
+    final enhancedColors = <Color>[];
+    
+    for (final color in originalColors) {
+      enhancedColors.add(color);
+      
+      // Add HSV variations for each color
+      final hsvColor = HSVColor.fromColor(color);
+      
+      // Create complementary hue shift (+/-60 degrees for triadic harmony)
+      final complementaryHue = (hsvColor.hue + 120) % 360;
+      final complementaryColor = hsvColor
+          .withHue(complementaryHue)
+          .withSaturation((hsvColor.saturation * 0.8).clamp(0.0, 1.0))
+          .toColor();
+      enhancedColors.add(complementaryColor);
+      
+      // Create analogous color variation (+/-30 degrees)
+      final analogousHue = (hsvColor.hue + 60) % 360;
+      final analogousColor = hsvColor
+          .withHue(analogousHue)
+          .withSaturation((hsvColor.saturation * 1.2).clamp(0.0, 1.0))
+          .withValue((hsvColor.value * 0.9).clamp(0.0, 1.0))
+          .toColor();
+      enhancedColors.add(analogousColor);
+      
+      if (enhancedColors.length >= 6) break; // Limit to 6 colors
+    }
+    
+    return enhancedColors;
   }
 
   /// Adjust color brightness

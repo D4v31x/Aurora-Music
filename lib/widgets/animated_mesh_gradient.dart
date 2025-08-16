@@ -9,12 +9,14 @@ class AnimatedMeshGradient extends StatefulWidget {
   final List<Color> colors;
   final Duration animationDuration;
   final bool enableAnimation;
+  final int? songId; // Add songId to track song changes
 
   const AnimatedMeshGradient({
     super.key,
     required this.colors,
     this.animationDuration = const Duration(seconds: 2), // Much faster animation for noticeable movement
     this.enableAnimation = true,
+    this.songId,
   });
 
   @override
@@ -30,6 +32,8 @@ class _AnimatedMeshGradientState extends State<AnimatedMeshGradient>
 
   List<Color> _currentColors = [];
   List<Color> _targetColors = [];
+  bool _waveDirectionUp = true; // Track wave direction
+  int? _lastSongId;
 
   @override
   void initState() {
@@ -75,6 +79,14 @@ class _AnimatedMeshGradientState extends State<AnimatedMeshGradient>
     
     if (oldWidget.colors != widget.colors) {
       _updateColors(widget.colors);
+    }
+    
+    // Toggle wave direction on song change
+    if (widget.songId != null && widget.songId != _lastSongId) {
+      _lastSongId = widget.songId;
+      setState(() {
+        _waveDirectionUp = !_waveDirectionUp; // Alternate direction for each song
+      });
     }
     
     if (oldWidget.enableAnimation != widget.enableAnimation) {
@@ -152,21 +164,22 @@ class _AnimatedMeshGradientState extends State<AnimatedMeshGradient>
       );
     }
 
-    // Create more dramatic diagonal wave movement
+    // Create more dramatic diagonal wave movement with directional flow
     final wavePhase = animationValue * 2.0; // Double the wave speed
-    final diagonalWave = sin(wavePhase * pi * 2) * 0.8; // Larger wave amplitude
-    final secondaryWave = cos(wavePhase * pi * 1.5 + pi/4) * 0.6; // Secondary wave for complexity
+    final directionMultiplier = _waveDirectionUp ? 1.0 : -1.0; // Change direction based on song
+    final diagonalWave = sin(wavePhase * pi * 2) * 0.8 * directionMultiplier; // Larger wave amplitude with direction
+    final secondaryWave = cos(wavePhase * pi * 1.5 + pi/4) * 0.6 * directionMultiplier; // Secondary wave for complexity
     
     // Create flowing diagonal gradient positions with wave effects
     final begin = Alignment.lerp(
-      Alignment(-1.0 + diagonalWave, -1.0 + secondaryWave),
-      Alignment(1.0 + diagonalWave, -1.0 - secondaryWave),
+      Alignment(-1.0 + diagonalWave, -1.0 + secondaryWave * directionMultiplier),
+      Alignment(1.0 + diagonalWave, -1.0 - secondaryWave * directionMultiplier),
       (sin(wavePhase * pi) * 0.5 + 0.5).clamp(0.0, 1.0),
     ) ?? Alignment.topLeft;
 
     final end = Alignment.lerp(
-      Alignment(1.0 - diagonalWave, 1.0 - secondaryWave),
-      Alignment(-1.0 - diagonalWave, 1.0 + secondaryWave),
+      Alignment(1.0 - diagonalWave, 1.0 - secondaryWave * directionMultiplier),
+      Alignment(-1.0 - diagonalWave, 1.0 + secondaryWave * directionMultiplier),
       (cos(wavePhase * pi + pi/3) * 0.5 + 0.5).clamp(0.0, 1.0),
     ) ?? Alignment.bottomRight;
 
@@ -200,12 +213,12 @@ class _AnimatedMeshGradientState extends State<AnimatedMeshGradient>
     }
 
     // Add dynamic color shift based on animation for wave-like color flow
-    final colorShiftPhase = wavePhase * 0.5;
+    final colorShiftPhase = wavePhase * 0.3; // Slower color phase for smoother transitions
     final shiftedColors = gradientColors.asMap().entries.map((entry) {
       final index = entry.key;
       final color = entry.value;
       final hsvColor = HSVColor.fromColor(color);
-      final hueShift = sin(colorShiftPhase + index * pi / 2) * 15; // Color wave effect
+      final hueShift = sin(colorShiftPhase + index * pi / 2) * 20 * directionMultiplier; // Color wave effect with direction
       return hsvColor.withHue((hsvColor.hue + hueShift) % 360).toColor();
     }).toList();
 
