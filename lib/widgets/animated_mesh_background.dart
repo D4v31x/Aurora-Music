@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mesh/mesh.dart';
 import 'package:provider/provider.dart';
 import '../providers/performance_mode_provider.dart';
+import '../utils/device_capabilities.dart';
 
 /// Animated mesh gradient that transitions between color sets
 /// Used for smooth transitions as songs change with continuous movement
@@ -88,11 +89,16 @@ class _AnimatedMeshBackgroundState extends State<AnimatedMeshBackground>
   }
 
   void _updatePerformanceSettings() {
-    if (_performanceProvider == null) return;
-    
-    final shouldEnable = _performanceProvider!.shouldEnableMeshBackground;
     final oldHighPerformance = _isHighPerformance;
-    _isHighPerformance = shouldEnable && _performanceProvider!.shouldEnableComplexAnimations;
+    
+    if (_performanceProvider?.isInitialized == true) {
+      // Use performance provider if available
+      _isHighPerformance = _performanceProvider!.shouldEnableMeshBackground && 
+                          _performanceProvider!.shouldEnableComplexAnimations;
+    } else {
+      // Fallback to simple device capabilities check
+      _isHighPerformance = DeviceCapabilities.shouldEnableComplexAnimations;
+    }
     
     // If performance settings changed, update animation
     if (oldHighPerformance != _isHighPerformance) {
@@ -241,8 +247,17 @@ class _AnimatedMeshBackgroundState extends State<AnimatedMeshBackground>
 
   @override
   Widget build(BuildContext context) {
+    // Check performance settings
+    bool shouldEnableMesh = _isHighPerformance;
+    
+    if (_performanceProvider?.isInitialized == true) {
+      shouldEnableMesh = _performanceProvider!.shouldEnableMeshBackground;
+    } else {
+      shouldEnableMesh = DeviceCapabilities.shouldEnableBackgroundEffects;
+    }
+    
     // If mesh background is disabled, show a simple gradient
-    if (_performanceProvider?.shouldEnableMeshBackground == false) {
+    if (!shouldEnableMesh) {
       return Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
