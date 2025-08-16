@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/background_manager_service.dart';
 import 'mesh_background.dart';
-import 'animated_mesh_background.dart';
+import 'animated_mesh_gradient.dart';
 
 /// Centralized app background widget that provides consistent background across the app
 /// Replaces all scattered background implementations to prevent stacking
@@ -22,21 +22,19 @@ class AppBackground extends StatelessWidget {
       builder: (context, backgroundManager, _) {
         return Stack(
           children: [
-            // Mesh gradient background using the mesh package
+            // Enhanced animated mesh gradient background with dramatic wave effects
             Positioned.fill(
               child: ClipRect(
                 child: enableAnimation
-                    ? AnimatedMeshBackground(
+                    ? AnimatedMeshGradient(
                         colors: backgroundManager.currentColors,
-                        animationDuration: const Duration(seconds: 7),
-                        transitionDuration: const Duration(milliseconds: 400),
-                        animationSpeed: 1.2, // Slightly reduced from 1.5 to prevent artifacts
+                        animationDuration: const Duration(seconds: 3), // Faster for more noticeable movement
+                        enableAnimation: true,
                       )
-                    : MeshBackground(
+                    : AnimatedMeshGradient(
                         colors: backgroundManager.currentColors,
-                        animated: true,
-                        animationDuration: const Duration(seconds: 10),
-                        animationSpeed: 0.8, // Slightly reduced from 1.0 to prevent artifacts
+                        animationDuration: const Duration(seconds: 5),
+                        enableAnimation: false,
                       ),
               ),
             ),

@@ -10,7 +10,7 @@ import '../services/user_preferences.dart';
 import '../services/logging_service.dart';
 import '../constants/animation_constants.dart';
 import '../widgets/app_background.dart';
-import 'welcome_screen.dart';
+import 'setup_screen.dart';
 import 'home_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -483,7 +483,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     if (mounted) {
       if (isFirstTime) {
         await UserPreferences.setFirstTimeUser(false);
-        _navigateToScreenWithHero(const WelcomeScreen());
+        _navigateToScreenWithHero(const SetupScreen());
       } else {
         _navigateToScreenWithHero(const HomeScreen());
       }
@@ -683,7 +683,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     if (!onboardingCompleted) {
       // First time only - show onboarding
-      _navigateToScreenWithHero(const WelcomeScreen());
+      _navigateToScreenWithHero(const SetupScreen());
     } else {
       // All subsequent launches - go straight to home
       _navigateToScreenWithHero(const HomeScreen());
