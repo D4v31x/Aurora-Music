@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:math';
 import '../constants/animation_constants.dart';
 
 /// Animated mesh gradient background that creates a dynamic gradient effect
@@ -8,12 +9,14 @@ class AnimatedMeshGradient extends StatefulWidget {
   final List<Color> colors;
   final Duration animationDuration;
   final bool enableAnimation;
+  final int? songId; // Add songId to track song changes
 
   const AnimatedMeshGradient({
     super.key,
     required this.colors,
-    this.animationDuration = const Duration(seconds: 4), // Faster animation (was 8)
+    this.animationDuration = const Duration(seconds: 2), // Much faster animation for noticeable movement
     this.enableAnimation = true,
+    this.songId,
   });
 
   @override
@@ -29,6 +32,8 @@ class _AnimatedMeshGradientState extends State<AnimatedMeshGradient>
 
   List<Color> _currentColors = [];
   List<Color> _targetColors = [];
+  bool _waveDirectionUp = true; // Track wave direction
+  int? _lastSongId;
 
   @override
   void initState() {
@@ -74,6 +79,14 @@ class _AnimatedMeshGradientState extends State<AnimatedMeshGradient>
     
     if (oldWidget.colors != widget.colors) {
       _updateColors(widget.colors);
+    }
+    
+    // Toggle wave direction on song change
+    if (widget.songId != null && widget.songId != _lastSongId) {
+      _lastSongId = widget.songId;
+      setState(() {
+        _waveDirectionUp = !_waveDirectionUp; // Alternate direction for each song
+      });
     }
     
     if (oldWidget.enableAnimation != widget.enableAnimation) {
@@ -151,47 +164,74 @@ class _AnimatedMeshGradientState extends State<AnimatedMeshGradient>
       );
     }
 
-    // Create animated gradient positions
+    // Create more dramatic diagonal wave movement with directional flow
+    final wavePhase = animationValue * 2.0; // Double the wave speed
+    final directionMultiplier = _waveDirectionUp ? 1.0 : -1.0; // Change direction based on song
+    final diagonalWave = sin(wavePhase * pi * 2) * 0.8 * directionMultiplier; // Larger wave amplitude with direction
+    final secondaryWave = cos(wavePhase * pi * 1.5 + pi/4) * 0.6 * directionMultiplier; // Secondary wave for complexity
+    
+    // Create flowing diagonal gradient positions with wave effects
     final begin = Alignment.lerp(
-      Alignment.topLeft,
-      Alignment.topRight,
-      (animationValue * 0.5).clamp(0.0, 1.0),
+      Alignment(-1.0 + diagonalWave, -1.0 + secondaryWave * directionMultiplier),
+      Alignment(1.0 + diagonalWave, -1.0 - secondaryWave * directionMultiplier),
+      (sin(wavePhase * pi) * 0.5 + 0.5).clamp(0.0, 1.0),
     ) ?? Alignment.topLeft;
 
     final end = Alignment.lerp(
-      Alignment.bottomRight,
-      Alignment.bottomLeft,
-      (animationValue * 0.5).clamp(0.0, 1.0),
+      Alignment(1.0 - diagonalWave, 1.0 - secondaryWave * directionMultiplier),
+      Alignment(-1.0 - diagonalWave, 1.0 + secondaryWave * directionMultiplier),
+      (cos(wavePhase * pi + pi/3) * 0.5 + 0.5).clamp(0.0, 1.0),
     ) ?? Alignment.bottomRight;
 
-    // Ensure we have at least 4 colors for a rich gradient
+    // Ensure we have at least 4 colors for a rich gradient with dynamic variations
     List<Color> gradientColors;
     if (colors.length >= 4) {
       gradientColors = colors.take(4).toList();
     } else if (colors.length >= 2) {
-      // Expand colors by creating variations
+      // Expand colors by creating vibrant variations
+      final color1 = colors[0];
+      final color2 = colors[1];
       gradientColors = [
-        colors[0],
-        colors[0].withOpacity(0.8),
-        colors[1].withOpacity(0.8),
-        colors[1],
+        color1,
+        Color.lerp(color1, color2, 0.3) ?? color1,
+        Color.lerp(color1, color2, 0.7) ?? color2,
+        color2,
       ];
     } else {
-      // Single color - create variations
+      // Single color - create dramatic variations with HSV manipulation
       final baseColor = colors[0];
+      final hsvColor = HSVColor.fromColor(baseColor);
       gradientColors = [
         baseColor,
-        baseColor.withOpacity(0.7),
-        baseColor.withAlpha(150),
-        baseColor.withOpacity(0.5),
+        hsvColor.withSaturation((hsvColor.saturation + 0.2).clamp(0.0, 1.0))
+               .withValue((hsvColor.value + 0.1).clamp(0.0, 1.0)).toColor(),
+        hsvColor.withHue((hsvColor.hue + 30) % 360)
+               .withSaturation((hsvColor.saturation + 0.1).clamp(0.0, 1.0)).toColor(),
+        hsvColor.withHue((hsvColor.hue + 60) % 360)
+               .withValue((hsvColor.value - 0.1).clamp(0.0, 1.0)).toColor(),
       ];
     }
+
+    // Add dynamic color shift based on animation for wave-like color flow
+    final colorShiftPhase = wavePhase * 0.3; // Slower color phase for smoother transitions
+    final shiftedColors = gradientColors.asMap().entries.map((entry) {
+      final index = entry.key;
+      final color = entry.value;
+      final hsvColor = HSVColor.fromColor(color);
+      final hueShift = sin(colorShiftPhase + index * pi / 2) * 20 * directionMultiplier; // Color wave effect with direction
+      return hsvColor.withHue((hsvColor.hue + hueShift) % 360).toColor();
+    }).toList();
 
     return LinearGradient(
       begin: begin,
       end: end,
-      colors: gradientColors,
-      stops: const [0.0, 0.3, 0.7, 1.0],
+      colors: shiftedColors,
+      stops: [
+        0.0,
+        0.2 + sin(wavePhase) * 0.1,
+        0.7 + cos(wavePhase + pi/2) * 0.1,
+        1.0
+      ], // Dynamic stops for wave effect
     );
   }
 }
