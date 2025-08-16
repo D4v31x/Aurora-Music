@@ -114,5 +114,10 @@
   "set": "Set",
   "theme": "Theme",
   "light_mode": "Light Mode",
-  "dark_mode": "Dark Mode"
+  "dark_mode": "Dark Mode",
+  "grant_permission": "Grant Permission",
+  "no_permission_explanation": "Without permissions, Aurora Music won't be able to access your music library.",
+  "permission_later": "You can grant permissions later in app settings",
+  "library_loaded": "Music library loaded",
+  "library_error": "Error loading music library"
 }

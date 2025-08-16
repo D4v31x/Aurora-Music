@@ -24,7 +24,7 @@
   "update_now": "Aktualizovat",
   "language": "Jazyk",
   "library": "Knihovny",
-  """"
+  "recently_played": "Nedávno přehrávané",
   "recently_played_artists": "Naposledy hraní umělci",
   "recently_played_albums": "Naposledy hrané alba",
   "recently_played_songs": "Naposledy hrané písně",
@@ -106,5 +106,10 @@
   "set": "Nastavit",
   "theme": "Téma",
   "light_mode": "Světlý režim",
-  "dark_mode": "Tmavý režim"
+  "dark_mode": "Tmavý režim",
+  "grant_permission": "Udělit oprávnění",
+  "no_permission_explanation": "Bez oprávnění Aurora Music nemůže přistupovat k vaší hudební knihovně.",
+  "permission_later": "Oprávnění můžete udělit později v nastavení aplikace",
+  "library_loaded": "Hudební knihovna načtena",
+  "library_error": "Chyba při načítání hudební knihovny"
 }

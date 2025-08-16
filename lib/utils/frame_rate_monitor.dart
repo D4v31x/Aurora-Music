@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/scheduler.dart';
 
 /// Simple frame rate monitoring service for performance analysis
 class FrameRateMonitor {
@@ -32,12 +31,11 @@ class FrameRateMonitor {
     _frameCount = 0;
     _frameTimes.clear();
     
-    // Schedule frame callbacks to measure frame rate
-    SchedulerBinding.instance.addPersistentFrameCallback(_onFrame);
-    
-    // Update FPS calculation every second
-    _monitoringTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _calculateFps();
+    // Start the monitoring using a timer-based approach
+    _monitoringTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+      if (_isMonitoring) {
+        _onFrame();
+      }
     });
   }
   
@@ -46,20 +44,25 @@ class FrameRateMonitor {
     if (!_isMonitoring) return;
     
     _isMonitoring = false;
-    SchedulerBinding.instance.removePersistentFrameCallback(_onFrame);
     _monitoringTimer?.cancel();
     _monitoringTimer = null;
   }
   
-  void _onFrame(Duration timestamp) {
+  void _onFrame() {
     if (!_isMonitoring) return;
     
+    final now = Duration(microseconds: DateTime.now().microsecondsSinceEpoch);
     _frameCount++;
-    _frameTimes.add(timestamp);
+    _frameTimes.add(now);
     
-    // Keep only the last 60 frame times (1 second at 60fps)
+    // Keep only the last 60 frame times (approximately 1 second at 60fps)
     if (_frameTimes.length > 60) {
       _frameTimes.removeAt(0);
+    }
+    
+    // Calculate FPS every few frames
+    if (_frameTimes.length >= 2 && _frameCount % 10 == 0) {
+      _calculateFps();
     }
   }
   

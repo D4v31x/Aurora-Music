@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'device_performance_service.dart';
+import 'package:aurora_music_v01/services/device_performance_service.dart';
 
 /// Global performance mode provider that manages performance settings across the app
 class PerformanceModeProvider extends ChangeNotifier {

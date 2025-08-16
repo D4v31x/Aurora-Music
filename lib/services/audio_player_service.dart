@@ -97,12 +97,99 @@ class AudioPlayerService extends ChangeNotifier {
   
   AudioPlayerService() {
     _init();
-    loadLibrary();
-    initializeLikedSongsPlaylist();
     _loadSettings();
+    
+    // Initialize with empty data first - don't try to load music yet
+    _songs = [];
+    _likedSongsPlaylist = Playlist(
+      id: LIKED_SONGS_PLAYLIST_ID,
+      name: _likedPlaylistName,
+      songs: [],
+    );
+    
+    // Don't do any audio query operations in the constructor
+    // All media access will be explicit and user-initiated
+    
     audioPlayer.playerStateStream.listen((playerState) {
       notifyListeners();
     });
+  }
+  
+  // Check permissions safely without crashing the app
+  Future<bool> _checkPermissionStatus() async {
+    try {
+      return await _audioQuery.permissionsStatus();
+    } catch (e) {
+      debugPrint('Permission check error: $e');
+      return false;
+    }
+  }
+  
+  // Public method to initialize music library - should be called only from HomeScreen
+  Future<bool> initializeMusicLibrary() async {
+    try {
+      final hasPermissions = await _checkPermissionStatus();
+      
+      if (!hasPermissions) {
+        debugPrint('No permissions yet - library remains empty');
+        return false;
+      }
+      
+      // Load library from cache first
+      await loadLibrary();
+      
+      // Try to load songs
+      try {
+        final songs = await _audioQuery.querySongs();
+        _songs = songs;
+        
+        // Initialize the liked songs playlist
+        await loadLikedSongs();
+        final likedSongs = songs
+            .where((song) => _likedSongs.contains(song.id.toString()))
+            .toList();
+            
+        _likedSongsPlaylist = Playlist(
+          id: LIKED_SONGS_PLAYLIST_ID,
+          name: _likedPlaylistName,
+          songs: likedSongs,
+        );
+        
+        notifyListeners();
+        return true;
+      } catch (e) {
+        debugPrint('Error loading songs: $e');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Error initializing music library: $e');
+      return false;
+    }
+  }
+  
+  // Public method to request permissions from UI
+  Future<bool> requestPermissions() async {
+    try {
+      final permissionStatus = await _audioQuery.permissionsStatus();
+      
+      if (!permissionStatus) {
+        // Only request if needed
+        final granted = await _audioQuery.permissionsRequest();
+        
+        // If permissions were just granted, initialize the library
+        if (granted) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          await initializeMusicLibrary();
+        }
+        
+        return granted;
+      }
+      
+      return permissionStatus;
+    } catch (e) {
+      debugPrint('Permission request error: $e');
+      return false;
+    }
   }
 
   /// Set the background manager service for updating mesh gradient colors
@@ -673,19 +760,40 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
     await file.writeAsString(jsonEncode(json));
   }
 
-  void _updateLikedSongsPlaylist() async {
-    final allSongs = await _audioQuery.querySongs();
-    final likedSongs = allSongs
-        .where((song) => _likedSongs.contains(song.id.toString()))
-        .toList();
+  void _updateLikedSongsPlaylist() {
+    // Don't try to query audio directly - just use the songs we already have
+    if (_songs.isEmpty) {
+      _likedSongsPlaylist = Playlist(
+        id: LIKED_SONGS_PLAYLIST_ID,
+        name: _likedPlaylistName,
+        songs: [],
+      );
+      return;
+    }
+    
+    try {
+      final likedSongs = _songs
+          .where((song) => _likedSongs.contains(song.id.toString()))
+          .toList();
 
-    _likedSongsPlaylist = Playlist(
-      id: LIKED_SONGS_PLAYLIST_ID,
-      name: _likedPlaylistName,
-      songs: likedSongs,
-    );
+      _likedSongsPlaylist = Playlist(
+        id: LIKED_SONGS_PLAYLIST_ID,
+        name: _likedPlaylistName,
+        songs: likedSongs,
+      );
 
-    notifyListeners();
+      notifyListeners();
+    } catch (e) {
+      // Handle errors by keeping the current playlist or creating an empty one
+      if (_likedSongsPlaylist == null) {
+        _likedSongsPlaylist = Playlist(
+          id: LIKED_SONGS_PLAYLIST_ID,
+          name: _likedPlaylistName,
+          songs: [],
+        );
+      }
+      debugPrint('Error updating liked songs playlist: $e');
+    }
   }
 
   bool isLiked(SongModel song) {

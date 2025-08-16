@@ -61,7 +61,8 @@ void main() async {
     runApp(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (context) => AudioPlayerService()),
+          // Use lazy initialization for the AudioPlayerService to avoid immediate permission issues
+          ChangeNotifierProvider.value(value: AudioPlayerService()), // Use pre-initialized instance
           ChangeNotifierProvider(create: (context) => ExpandablePlayerController()),
           ChangeNotifierProvider(create: (context) => ThemeProvider()),
           ChangeNotifierProvider(create: (context) => PerformanceModeProvider()),

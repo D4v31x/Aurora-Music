@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/performance_mode_provider.dart';
+import '../services/device_performance_service.dart';
 import '../utils/frame_rate_monitor.dart';
 import '../utils/device_capabilities.dart';
 

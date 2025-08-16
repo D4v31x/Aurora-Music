@@ -12,11 +12,7 @@ import '../constants/animation_constants.dart';
 import '../widgets/app_background.dart';
 import 'welcome_screen.dart';
 import 'home_screen.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
 
@@ -237,61 +233,14 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   Future<void> _loadAppData() async {
     try {
-      final audioPlayerService = context.read<AudioPlayerService>();
-
-      if (Platform.isWindows) {
-        // Windows-specific loading logic
-        final directory = await getApplicationDocumentsDirectory();
-        final musicDir = Directory('${directory.path}/Music');
-        
-        if (!await musicDir.exists()) {
-          await musicDir.create(recursive: true);
-        }
-
-        final files = await musicDir.list(recursive: true)
-            .where((entity) => entity is File && 
-                  (entity.path.toLowerCase().endsWith('.mp3') || 
-                   entity.path.toLowerCase().endsWith('.m4a') ||
-                   entity.path.toLowerCase().endsWith('.wav')))
-            .cast<File>()
-            .toList();
-
-        // Convert files to SongModel objects
-        final List<SongModel> windowsSongs = [];
-        for (final file in files) {
-          final fileName = file.path.split(Platform.pathSeparator).last;
-          final title = fileName.substring(0, fileName.lastIndexOf('.'));
-          
-          final song = SongModel({
-            '_id': file.hashCode,
-            'title': title,
-            'artist': 'Unknown Artist',
-            'album': 'Unknown Album',
-            'duration': 0,
-            'uri': file.path,
-            '_data': file.path,
-            'date_added': file.statSync().modified.millisecondsSinceEpoch,
-            'is_music': 1,
-            'size': file.lengthSync(),
-          });
-          
-          windowsSongs.add(song);
-        }
-
-        await audioPlayerService.initializeWithSongs(windowsSongs);
-      } else {
-        // Android loading logic
-        final onAudioQuery = OnAudioQuery();
-        final songs = await onAudioQuery.querySongs(
-          sortType: SongSortType.DATE_ADDED,
-          orderType: OrderType.DESC_OR_GREATER,
-        );
-        await audioPlayerService.initializeWithSongs(songs);
-      }
-
-      await Future.delayed(const Duration(milliseconds: 100));
-    } catch (e) {
+      // Don't try to access media library in splash screen anymore
+      // Just show loading animation and move on
+      // The actual initialization is now handled in home_screen.dart
       
+      // Just a short delay for animation
+      await Future.delayed(const Duration(milliseconds: 500));
+    } catch (e) {
+      debugPrint('Error in splash screen: $e');
     }
   }
 
@@ -316,20 +265,17 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         return;
       }
 
-      // Android artwork loading logic
-      final onAudioQuery = OnAudioQuery();
+      // Only preload artwork from songs already loaded in audioPlayerService
+      // Don't query for additional songs or artists
       if (audioPlayerService.songs.isNotEmpty) {
-        final songsToPreload = audioPlayerService.songs.take(30).toList();
+        final songsToPreload = audioPlayerService.songs.take(10).toList();
         for (final song in songsToPreload) {
           await artworkService.preloadArtwork(song.id);
         }
       }
-
-      final artists = await onAudioQuery.queryArtists();
-      final artistsToPreload = artists.take(20).toList();
-      for (final artist in artistsToPreload) {
-        await artworkService.preloadArtistArtwork(artist.id);
-      }
+      
+      // Don't query for artists directly - removed artist preloading
+      // This prevents permission errors
 
       // Load static images
       final staticImages = [
@@ -717,4 +663,3 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     }
   }
   }
-}

@@ -66,17 +66,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _initializeControllers();
     _setupListeners();
     
-    _loadLibraryData();
-    _initializeData().then((_) {
-      setState(() {
-        _isInitialized = true;
-        _randomizeContent();
-      });
+    // Don't try to access media at startup - delay it
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        // Only initialize after UI is loaded
+        _initializeHomeScreen();
+      }
     });
-
-    fetchSongs();
+    
     _checkAndShowChangelog();
     _showWelcomeMessage();
+  }
+  
+  // Initialize the home screen and check permissions
+  void _initializeHomeScreen() async {
+    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    
+    // Set initialized state
+    setState(() {
+      _isInitialized = true;
+    });
+    
+    // Check if we need to show permission UI
+    await _checkPermissions();
   }
   
   void _initializeControllers() {
@@ -295,98 +307,198 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> fetchSongs() async {
+  // Check for permissions and show appropriate UI
+  Future<void> _checkPermissions() async {
+    if (!mounted) return;
+    
+    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    
     try {
       if (Platform.isAndroid) {
-        // Check permissions first
-        final statuses = await [
-          permissionhandler.Permission.audio,
-          permissionhandler.Permission.storage,
-        ].request();
-
-        bool hasAudioPermission = statuses[permissionhandler.Permission.audio]?.isGranted ?? false;
-        bool hasStoragePermission = statuses[permissionhandler.Permission.storage]?.isGranted ?? false;
-
+        // Check status without requesting (don't force request)
+        final hasAudioPermission = await permissionhandler.Permission.audio.status.isGranted;
+        final hasStoragePermission = await permissionhandler.Permission.storage.status.isGranted;
+        
         if (hasAudioPermission || hasStoragePermission) {
-          final onAudioQuery = OnAudioQuery();
-          final songsResult = await onAudioQuery.querySongs();
-          final processedSongs = await _processSongsInBackground(songsResult);
-
-          setState(() {
-            songs = processedSongs;
-          });
-        } else {
-          // Show a more user-friendly message about permissions
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(AppLocalizations.of(context).translate('perm_deny')),
-                action: SnackBarAction(
-                  label: 'Grant Permissions',
-                  onPressed: () async {
-                    // Try requesting permissions again
-                    await fetchSongs();
-                  },
-                ),
-              ),
-            );
-          }
-          
-          // Set empty song list but don't crash the app
-          setState(() {
-            songs = [];
-          });
-        }
-            ),
+          // If we already have permissions, initialize the library
+          _notificationManager.showNotification(
+            AppLocalizations.of(context).translate('loading_library'),
+            isProgress: true,
           );
+          
+          final success = await audioPlayerService.initializeMusicLibrary();
+          
+          if (success) {
+            _notificationManager.showNotification(
+              AppLocalizations.of(context).translate('library_loaded'),
+              duration: const Duration(seconds: 2),
+              onComplete: () => _notificationManager.showDefaultTitle(),
+            );
+            
+            // Get songs from the audio service
+            setState(() {
+              songs = audioPlayerService.songs;
+              _randomizeContent();
+            });
+          } else {
+            _showPermissionDialog();
+          }
+        } else {
+          // Show permission UI - don't automatically request
+          _showPermissionDialog();
         }
       } else if (Platform.isWindows) {
-        final directory = await getApplicationDocumentsDirectory();
-        final musicDir = Directory('${directory.path}/Music');
-
-        if (!await musicDir.exists()) {
-          await musicDir.create(recursive: true);
+        // Initialize for Windows immediately - no permissions needed
+        _notificationManager.showNotification(
+          AppLocalizations.of(context).translate('loading_library'),
+          isProgress: true,
+        );
+        
+        final success = await audioPlayerService.initializeMusicLibrary();
+        
+        if (success) {
+          _notificationManager.showNotification(
+            AppLocalizations.of(context).translate('library_loaded'),
+            duration: const Duration(seconds: 2),
+            onComplete: () => _notificationManager.showDefaultTitle(),
+          );
         }
-
-        final files = await musicDir
-            .list(recursive: true, followLinks: false)
-            .where((entity) =>
-        entity is File &&
-            (entity.path.toLowerCase().endsWith('.mp3') ||
-                entity.path.toLowerCase().endsWith('.m4a') ||
-                entity.path.toLowerCase().endsWith('.wav')))
-            .cast<File>()
-            .toList();
-
-        final List<SongModel> windowsSongs = files.map(createSongModelFromFile).toList();
-        final processedSongs = await _processSongsInBackground(windowsSongs);
-
+        
         setState(() {
-          songs = processedSongs;
+          songs = audioPlayerService.songs;
+          _randomizeContent();
         });
       }
-    } catch (e, stack) {
-      debugPrint('Error fetching songs: $e\n$stack');
+    } catch (e) {
+      debugPrint('Error in _checkPermissions: $e');
+      if (mounted) {
+        _showPermissionDialog();
+      }
     }
   }
-
-  SongModel createSongModelFromFile(File file) {
-    final fileName = file.path.split(Platform.pathSeparator).last;
-    final title = fileName.contains('.') ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
-
-    return SongModel({
-      '_id': file.hashCode,
-      'title': title,
-      'artist': 'Unknown Artist',
-      'album': 'Unknown Album',
-      'duration': 0,
-      'uri': file.path,
-      '_data': file.path,
-      'date_added': file.statSync().modified.millisecondsSinceEpoch,
-      'is_music': 1,
-      'size': file.lengthSync(),
-    });
+  
+  // Show a dialog to request permissions
+  void _showPermissionDialog() {
+    if (!mounted) return;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context).translate('permission_required')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(AppLocalizations.of(context).translate('permission_explanation')),
+              const SizedBox(height: 12),
+              Text(AppLocalizations.of(context).translate('no_permission_explanation'), 
+                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(AppLocalizations.of(context).translate('cancel')),
+              onPressed: () {
+                Navigator.of(context).pop();
+                // User denied permission - handle accordingly
+                setState(() {
+                  songs = [];
+                });
+                
+                // Show a snackbar explaining how to enable later
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context).translate('permission_later')),
+                    duration: const Duration(seconds: 5),
+                    action: SnackBarAction(
+                      label: AppLocalizations.of(context).translate('settings'),
+                      onPressed: () async {
+                        await permissionhandler.openAppSettings();
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+            TextButton(
+              child: Text(AppLocalizations.of(context).translate('grant_permission')),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                // Request permissions
+                final statuses = await [
+                  permissionhandler.Permission.audio,
+                  permissionhandler.Permission.storage,
+                ].request();
+                
+                final hasAudioPermission = statuses[permissionhandler.Permission.audio]?.isGranted ?? false;
+                final hasStoragePermission = statuses[permissionhandler.Permission.storage]?.isGranted ?? false;
+                
+                if (hasAudioPermission || hasStoragePermission) {
+                  // Permissions granted, initialize library
+                  final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+                  
+                  _notificationManager.showNotification(
+                    AppLocalizations.of(context).translate('loading_library'),
+                    isProgress: true,
+                  );
+                  
+                  final success = await audioPlayerService.initializeMusicLibrary();
+                  
+                  if (success) {
+                    _notificationManager.showNotification(
+                      AppLocalizations.of(context).translate('library_loaded'),
+                      duration: const Duration(seconds: 2),
+                      onComplete: () => _notificationManager.showDefaultTitle(),
+                    );
+                    
+                    // Get songs from the audio service
+                    setState(() {
+                      songs = audioPlayerService.songs;
+                      _randomizeContent();
+                    });
+                  } else {
+                    setState(() {
+                      songs = [];
+                    });
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(AppLocalizations.of(context).translate('library_error')),
+                      ),
+                    );
+                  }
+                } else {
+                  // Still no permissions - handle accordingly
+                  setState(() {
+                    songs = [];
+                  });
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context).translate('perm_deny')),
+                      action: SnackBarAction(
+                        label: AppLocalizations.of(context).translate('settings'),
+                        onPressed: () async {
+                          await permissionhandler.openAppSettings();
+                        },
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
+  
+  // Note: This Windows code has been moved to AudioPlayerService
+  // and is no longer used directly in HomeScreen
+
+  // Windows file handling moved to AudioPlayerService
 
   Future<bool> _onWillPop() async {
     final expandableController = Provider.of<ExpandablePlayerController>(context, listen: false);
@@ -446,30 +558,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
 
 
-  Future<void> _initializeData() async {
-    try {
-      final onAudioQuery = OnAudioQuery();
-
-      final songsFuture = onAudioQuery.querySongs();
-      final artistsFuture = onAudioQuery.queryArtists();
-      final albumsFuture = onAudioQuery.queryAlbums();
-
-      final results = await Future.wait([
-        songsFuture,
-        artistsFuture,
-        albumsFuture,
-      ]);
-
-      setState(() {
-        songs = results[0] as List<SongModel>;
-        artists = results[1] as List<ArtistModel>;
-        // Removed undefined albums variable since it's not declared in the class
-        _randomizeContent();
-      });
-    } catch (e) {
-      debugPrint('Initialization error: $e');
-    }
-  }
+  // All library initialization is now handled by AudioPlayerService
 
 
 
@@ -514,9 +603,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Selector2<AudioPlayerService, ExpandablePlayerController, SongModel?>(
       selector: (context, audioService, expandableController) => audioService.currentSong,
       builder: (context, currentSong, child) {
-        final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-        final expandableController = Provider.of<ExpandablePlayerController>(context);
-
         return WillPopScope(
           onWillPop: _onWillPop,
           child: Scaffold(
