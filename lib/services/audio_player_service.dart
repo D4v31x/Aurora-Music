@@ -145,6 +145,28 @@ class AudioPlayerService extends ChangeNotifier {
       skip();
     }
   });
+
+  // Listen to sequence state changes for gapless playback
+  _audioPlayer.sequenceStateStream.listen((sequenceState) {
+    if (sequenceState != null && _gaplessPlayback) {
+      final currentIndex = sequenceState.currentIndex;
+      if (currentIndex != null && currentIndex != _currentIndex && currentIndex < _playlist.length) {
+        _currentIndex = currentIndex;
+        final currentSong = _playlist[_currentIndex];
+        
+        // Update current song and background colors for gapless transitions
+        _currentSongController.add(currentSong);
+        currentSongNotifier.value = currentSong;
+        
+        // Update artwork and background colors
+        updateCurrentArtwork();
+        _updateBackgroundColors();
+        
+        notifyListeners();
+      }
+    }
+  });
+  
   _startCacheCleanup();
 }
 
