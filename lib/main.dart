@@ -18,6 +18,7 @@ import 'screens/splash_screen.dart';
 import 'localization/locale_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/performance_mode_provider.dart';
+import 'widgets/performance_debug_overlay.dart';
 
 
 /// Application entry point
@@ -153,8 +154,10 @@ class _MyAppState extends State<MyApp> {
         ],
         home: Builder(
           builder: (context) {
-            // Wrap the entire app with the AppBackground widget
-            return const SplashScreen();
+            // Wrap the entire app with the performance debug overlay and AppBackground widget
+            return PerformanceDebugOverlay(
+              child: const SplashScreen(),
+            );
           },
         ),
       ),
