@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'dart:typed_data';
+import 'dart:async';
 
 /// Service that manages background colors and gradients
 /// Extracts colors from artwork or provides defaults
 class BackgroundManagerService extends ChangeNotifier {
   List<Color> _currentColors = _getDefaultColors();
   bool _isDarkMode = true;
+  int? _lastUpdatedSongId; // Track last updated song to prevent redundant updates
+  Timer? _updateDebounceTimer; // Debounce rapid updates
   
   static const Color _defaultDarkPrimary = Color(0xFF1A237E);
   static const Color _defaultDarkSecondary = Color(0xFF311B92);
@@ -67,19 +70,34 @@ class BackgroundManagerService extends ChangeNotifier {
       return;
     }
 
-    try {
-      final artworkData = await OnAudioQuery().queryArtwork(
-        song.id,
-        ArtworkType.AUDIO,
-        quality: 100,
-        size: 200, // Small size for performance
-      );
-      
-      await updateColorsFromArtwork(artworkData);
-    } catch (e) {
-      _useDefaultColors();
+    // Prevent redundant updates for the same song
+    if (_lastUpdatedSongId == song.id) {
+      return;
     }
+
+    // Debounce rapid updates
+    _updateDebounceTimer?.cancel();
+    _updateDebounceTimer = Timer(const Duration(milliseconds: 100), () async {
+      if (!mounted) return; // Check if the service is still active
+      
+      try {
+        final artworkData = await OnAudioQuery().queryArtwork(
+          song.id,
+          ArtworkType.AUDIO,
+          quality: 100,
+          size: 200, // Small size for performance
+        );
+        
+        await updateColorsFromArtwork(artworkData);
+        _lastUpdatedSongId = song.id;
+      } catch (e) {
+        _useDefaultColors();
+      }
+    });
   }
+
+  /// Check if the service is still mounted/active
+  bool get mounted => hasListeners;
 
   /// Extract colors from palette generator
   List<Color> _extractColorsFromPalette(PaletteGenerator palette) {
@@ -186,5 +204,11 @@ class BackgroundManagerService extends ChangeNotifier {
     // Take up to 9 colors for the mesh (3x3 grid)
     _currentColors = colors.take(9).toList();
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _updateDebounceTimer?.cancel();
+    super.dispose();
   }
 }
