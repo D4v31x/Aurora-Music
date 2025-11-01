@@ -19,12 +19,13 @@ class PerformanceDebugOverlay extends StatefulWidget {
   });
 
   @override
-  State<PerformanceDebugOverlay> createState() => _PerformanceDebugOverlayState();
+  State<PerformanceDebugOverlay> createState() =>
+      _PerformanceDebugOverlayState();
 }
 
 class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
   bool _isExpanded = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -32,7 +33,7 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
       FrameRateMonitor.instance.startMonitoring();
     }
   }
-  
+
   @override
   void dispose() {
     FrameRateMonitor.instance.stopMonitoring();
@@ -85,7 +86,9 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                        _isExpanded
+                            ? Icons.keyboard_arrow_up
+                            : Icons.keyboard_arrow_down,
                         color: Colors.white,
                         size: 16,
                       ),
@@ -106,7 +109,7 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
                   ),
                 ),
               ),
-              
+
               if (_isExpanded) ...[
                 const Divider(color: Colors.grey, height: 1),
                 Padding(
@@ -132,11 +135,12 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
 
   Widget _buildFpsIndicator() {
     return StreamBuilder<double>(
-      stream: Stream.periodic(const Duration(milliseconds: 500), (_) => FrameRateMonitor.instance.currentFps),
+      stream: Stream.periodic(const Duration(milliseconds: 500),
+          (_) => FrameRateMonitor.instance.currentFps),
       builder: (context, snapshot) {
         final fps = snapshot.data ?? 0.0;
         final assessment = FrameRateMonitor.instance.getPerformanceAssessment();
-        
+
         Color color;
         switch (assessment) {
           case PerformanceAssessment.excellent:
@@ -152,7 +156,7 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
             color = Colors.red;
             break;
         }
-        
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
@@ -174,11 +178,12 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
 
   Widget _buildPerformanceInfo() {
     return StreamBuilder<double>(
-      stream: Stream.periodic(const Duration(milliseconds: 500), (_) => FrameRateMonitor.instance.currentFps),
+      stream: Stream.periodic(const Duration(milliseconds: 500),
+          (_) => FrameRateMonitor.instance.currentFps),
       builder: (context, snapshot) {
         final fps = snapshot.data ?? 0.0;
         final assessment = FrameRateMonitor.instance.getPerformanceAssessment();
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -250,9 +255,11 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildModeButton('High', PerformanceLevel.high, performanceProvider),
+            _buildModeButton(
+                'High', PerformanceLevel.high, performanceProvider),
             const SizedBox(width: 4),
-            _buildModeButton('Med', PerformanceLevel.medium, performanceProvider),
+            _buildModeButton(
+                'Med', PerformanceLevel.medium, performanceProvider),
             const SizedBox(width: 4),
             _buildModeButton('Low', PerformanceLevel.low, performanceProvider),
           ],
@@ -261,9 +268,10 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
     );
   }
 
-  Widget _buildModeButton(String label, PerformanceLevel level, PerformanceModeProvider provider) {
+  Widget _buildModeButton(
+      String label, PerformanceLevel level, PerformanceModeProvider provider) {
     final isSelected = provider.currentMode == level;
-    
+
     return GestureDetector(
       onTap: () {
         provider.setPerformanceMode(level);

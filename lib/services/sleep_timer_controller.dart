@@ -7,7 +7,7 @@ class SleepTimerController extends ChangeNotifier {
   Timer? _sleepTimer;
   Duration? _remainingTime;
   Duration? _sleepTimerDuration;
-  
+
   bool get isActive => _sleepTimer?.isActive ?? false;
   Duration? get remainingTime => _remainingTime;
   Duration? get duration => _sleepTimerDuration;
@@ -16,11 +16,11 @@ class SleepTimerController extends ChangeNotifier {
     cancelTimer();
     _remainingTime = duration;
     _sleepTimerDuration = duration;
-    
+
     _sleepTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingTime != null) {
         _remainingTime = _remainingTime! - const Duration(seconds: 1);
-        
+
         if (_remainingTime!.inSeconds <= 0) {
           onComplete();
           cancelTimer();
@@ -30,7 +30,7 @@ class SleepTimerController extends ChangeNotifier {
         }
       }
     });
-    
+
     // Initial notification when timer starts
     notifyListeners();
   }

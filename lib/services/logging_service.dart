@@ -36,7 +36,8 @@ class LoggingService {
   }
 
   /// Logs error messages
-  static void error(String message, [String? tag, Object? error, StackTrace? stackTrace]) {
+  static void error(String message,
+      [String? tag, Object? error, StackTrace? stackTrace]) {
     developer.log(
       message,
       name: '$_appName${tag != null ? ' - $tag' : ''}',
@@ -47,7 +48,8 @@ class LoggingService {
   }
 
   /// Logs critical error messages
-  static void critical(String message, [String? tag, Object? error, StackTrace? stackTrace]) {
+  static void critical(String message,
+      [String? tag, Object? error, StackTrace? stackTrace]) {
     developer.log(
       message,
       name: '$_appName${tag != null ? ' - $tag' : ''}',

@@ -13,7 +13,8 @@ class VersionCheckResult {
 }
 
 class VersionService {
-  static const String _githubApiUrl = 'https://api.github.com/repos/D4v31x/Aurora-Music/releases/latest';
+  static const String _githubApiUrl =
+      'https://api.github.com/repos/D4v31x/Aurora-Music/releases/latest';
   static const String _currentVersionString = '0.0.9';
 
   static Future<VersionCheckResult> checkForNewVersion() async {

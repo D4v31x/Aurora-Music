@@ -4,6 +4,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'dart:ui' as ui;
 
 import 'constants/app_config.dart';
@@ -19,7 +20,6 @@ import 'localization/locale_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/performance_mode_provider.dart';
 import 'widgets/performance_debug_overlay.dart';
-
 
 /// Application entry point
 void main() async {
@@ -44,7 +44,8 @@ void main() async {
 
     // Load user preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? languageCode = prefs.getString('languageCode') ?? AppConfig.defaultLanguageCode;
+    String? languageCode =
+        prefs.getString('languageCode') ?? AppConfig.defaultLanguageCode;
 
     // Initialize audio background service
     await JustAudioBackground.init(
@@ -62,29 +63,36 @@ void main() async {
       MultiProvider(
         providers: [
           // Use lazy initialization for the AudioPlayerService to avoid immediate permission issues
-          ChangeNotifierProvider.value(value: AudioPlayerService()), // Use pre-initialized instance
-          ChangeNotifierProvider(create: (context) => ExpandablePlayerController()),
+          ChangeNotifierProvider.value(
+              value: AudioPlayerService()), // Use pre-initialized instance
+          ChangeNotifierProvider(
+              create: (context) => ExpandablePlayerController()),
           ChangeNotifierProvider(create: (context) => ThemeProvider()),
-          ChangeNotifierProvider(create: (context) => PerformanceModeProvider()),
-          ChangeNotifierProvider(create: (context) => BackgroundManagerService()),
+          ChangeNotifierProvider(
+              create: (context) => PerformanceModeProvider()),
+          ChangeNotifierProvider(
+              create: (context) => BackgroundManagerService()),
           ChangeNotifierProvider(create: (context) => SleepTimerController()),
           Provider<ErrorTrackingService>.value(value: errorTracker),
         ],
         child: Builder(
           builder: (context) {
             // Connect the services after providers are initialized
-            final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-            final backgroundManager = Provider.of<BackgroundManagerService>(context, listen: false);
-            final performanceProvider = Provider.of<PerformanceModeProvider>(context, listen: false);
-            
+            final audioPlayerService =
+                Provider.of<AudioPlayerService>(context, listen: false);
+            final backgroundManager =
+                Provider.of<BackgroundManagerService>(context, listen: false);
+            final performanceProvider =
+                Provider.of<PerformanceModeProvider>(context, listen: false);
+
             // Set the background manager in the audio player service
             audioPlayerService.setBackgroundManager(backgroundManager);
-            
+
             // Initialize performance provider
             WidgetsBinding.instance.addPostFrameCallback((_) {
               performanceProvider.initialize();
             });
-            
+
             return MyApp(
               languageCode: languageCode,
             );
@@ -92,7 +100,6 @@ void main() async {
         ),
       ),
     );
-
   } catch (e, stack) {
     final errorTracker = ErrorTrackingService();
     await errorTracker.recordError(e, stack);
@@ -134,34 +141,56 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
-    return LocaleProvider(
-      locale: _locale,
-      setLocale: setLocale,
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        locale: _locale,
-        themeMode: themeProvider.themeMode,
-        theme: themeProvider.lightTheme,
-        darkTheme: themeProvider.darkTheme,
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          ui.Locale('en', ''),
-          ui.Locale('cs', ''),
-        ],
-        home: Builder(
-          builder: (context) {
-            // Wrap the entire app with the performance debug overlay and AppBackground widget
-            return PerformanceDebugOverlay(
-              child: const SplashScreen(),
-            );
-          },
-        ),
-      ),
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        // Update theme provider with dynamic colors
+        if (lightDynamic != null || darkDynamic != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            themeProvider.setDynamicColorSchemes(lightDynamic, darkDynamic);
+          });
+        }
+
+        return LocaleProvider(
+          locale: _locale,
+          setLocale: setLocale,
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            locale: _locale,
+            themeMode: themeProvider.themeMode,
+            theme: themeProvider.lightTheme,
+            darkTheme: themeProvider.darkTheme,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              ui.Locale('en', ''),
+              ui.Locale('cs', ''),
+            ],
+            // Custom hero controller for faster, smoother transitions
+            builder: (context, child) {
+              return HeroControllerScope(
+                controller: HeroController(
+                  createRectTween: (Rect? begin, Rect? end) {
+                    return MaterialRectCenterArcTween(begin: begin, end: end);
+                  },
+                ),
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
+            home: Builder(
+              builder: (context) {
+                // Wrap the entire app with the performance debug overlay and AppBackground widget
+                return PerformanceDebugOverlay(
+                  child: const SplashScreen(),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }

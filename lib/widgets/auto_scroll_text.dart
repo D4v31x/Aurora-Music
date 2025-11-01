@@ -9,17 +9,18 @@ class AutoScrollText extends StatefulWidget {
   final Function(String) onMessageComplete;
 
   const AutoScrollText({
-    Key? key,
+    super.key,
     required this.text,
     required this.style,
     required this.onMessageComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<AutoScrollText> createState() => _AutoScrollTextState();
 }
 
-class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProviderStateMixin {
+class _AutoScrollTextState extends State<AutoScrollText>
+    with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -43,7 +44,8 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
       begin: AnimationConstants.hiddenOpacity,
       end: AnimationConstants.visibleOpacity,
     ).animate(
-      CurvedAnimation(parent: _fadeController, curve: AnimationConstants.easeInOut),
+      CurvedAnimation(
+          parent: _fadeController, curve: AnimationConstants.easeInOut),
     );
 
     _fadeController.forward();
@@ -73,11 +75,13 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
     const baseDuration = 2500; // Slightly faster for better responsiveness
     final maxScroll = _scrollController.position.maxScrollExtent;
 
-    _scrollController.animateTo(
+    _scrollController
+        .animateTo(
       maxScroll,
       duration: const Duration(milliseconds: baseDuration),
       curve: AnimationConstants.linear,
-    ).then((_) {
+    )
+        .then((_) {
       return Future.delayed(AnimationConstants.mediumDelay);
     }).then((_) {
       if (mounted && _scrollController.hasClients) {
@@ -123,8 +127,7 @@ class _AutoScrollTextState extends State<AutoScrollText> with SingleTickerProvid
     _fadeController.reverse().then((_) {
       if (mounted) {
         widget.onMessageComplete(
-            AppLocalizations.of(context).translate('aurora_music')
-        );
+            AppLocalizations.of(context).translate('aurora_music'));
       }
     });
   }

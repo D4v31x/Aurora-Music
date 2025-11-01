@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -12,6 +11,7 @@ import '../screens/Playlist_screen.dart';
 import '../screens/categories.dart';
 import '../screens/tracks_screen.dart';
 import '../services/audio_player_service.dart';
+import '../services/artwork_cache_service.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../localization/app_localizations.dart';
 
@@ -23,6 +23,8 @@ class LibraryTab extends StatefulWidget {
 }
 
 class _LibraryTabState extends State<LibraryTab> {
+  final _artworkService = ArtworkCacheService();
+
   @override
   Widget build(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
@@ -50,15 +52,16 @@ class _LibraryTabState extends State<LibraryTab> {
                 onDetailsTap: () => Navigator.push(
                   context,
                   PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) => const TracksScreen(),
-                    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-                        FadeTransition(opacity: animation, child: child),
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const TracksScreen(),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) =>
+                            FadeTransition(opacity: animation, child: child),
                   ),
                 ),
                 onItemTap: (song) {
                   if (song is SongModel) {
                     audioPlayerService.setPlaylist([song], 0);
-                    audioPlayerService.play();
                   }
                 },
               ),
@@ -75,7 +78,8 @@ class _LibraryTabState extends State<LibraryTab> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => AlbumDetailScreen(albumName: album.album),
+                        builder: (context) =>
+                            AlbumDetailScreen(albumName: album.album),
                       ),
                     );
                   }
@@ -89,13 +93,15 @@ class _LibraryTabState extends State<LibraryTab> {
                     items: audioPlayerService.getThreePlaylists(),
                     onDetailsTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const PlaylistsScreenList()),
+                      MaterialPageRoute(
+                          builder: (context) => const PlaylistsScreenList()),
                     ),
                     onItemTap: (playlist) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => PlaylistDetailScreen(playlist: playlist),
+                          builder: (context) =>
+                              PlaylistDetailScreen(playlist: playlist),
                         ),
                       );
                     },
@@ -108,7 +114,8 @@ class _LibraryTabState extends State<LibraryTab> {
                 items: audioPlayerService.getMostPlayedArtists(),
                 onDetailsTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ArtistsScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const ArtistsScreen()),
                 ),
                 onItemTap: (artist) {
                   if (artist is ArtistModel) {
@@ -129,7 +136,8 @@ class _LibraryTabState extends State<LibraryTab> {
                 items: audioPlayerService.getThreeFolders(),
                 onDetailsTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const FoldersScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const FoldersScreen()),
                 ),
                 onItemTap: (folder) {
                   if (folder is String) {
@@ -157,119 +165,119 @@ class _LibraryTabState extends State<LibraryTab> {
     required VoidCallback onDetailsTap,
     Function(dynamic)? onItemTap,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            GestureDetector(
-              onTap: onDetailsTap,
-              child: glassmorphicContainer(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  child: Text(
-                    AppLocalizations.of(context).translate('details'),
-                    style: const TextStyle(color: Colors.white),
-                  ),
+    return RepaintBoundary(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10.0),
-        SizedBox(
-          height: 150,
-          child: items is Future
-              ? FutureBuilder<List<dynamic>>(
-                  future: items as Future<List<dynamic>>,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No data available'));
-                    } else {
-                      return _buildAnimatedItemsList(snapshot.data!, onItemTap);
-                    }
-                  },
-                )
-              : _buildAnimatedItemsList(items, onItemTap),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAnimatedItemsList(List<dynamic> items, Function(dynamic)? onItemTap) {
-    return AnimationLimiter(
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: min(3, items.length),
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return AnimationConfiguration.staggeredList(
-            position: index,
-            duration: const Duration(milliseconds: 375),
-            child: SlideAnimation(
-              horizontalOffset: 50.0,
-              child: FadeInAnimation(
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: onItemTap != null ? () => onItemTap(item) : null,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: glassmorphicContainer(
-                        child: SizedBox(
-                          width: 120,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              getItemIcon(item),
-                              const SizedBox(height: 8),
-                              Text(
-                                getItemTitle(item),
-                                style: const TextStyle(color: Colors.white),
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+              GestureDetector(
+                onTap: onDetailsTap,
+                child: glassmorphicContainer(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    child: Text(
+                      AppLocalizations.of(context).translate('details'),
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          SizedBox(
+            height: 150,
+            child: items is Future
+                ? FutureBuilder<List<dynamic>>(
+                    future: items as Future<List<dynamic>>,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text('No data available'));
+                      } else {
+                        return _buildOptimizedItemsList(
+                            snapshot.data!, onItemTap);
+                      }
+                    },
+                  )
+                : _buildOptimizedItemsList(items, onItemTap),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildOptimizedItemsList(
+      List<dynamic> items, Function(dynamic)? onItemTap) {
+    final displayItems = items.take(3).toList();
+
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: displayItems.length,
+      itemExtent: 130, // Fixed width for better performance
+      itemBuilder: (context, index) {
+        final item = displayItems[index];
+        return RepaintBoundary(
+          child: Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: glassmorphicContainer(
+              child: InkWell(
+                onTap: onItemTap != null ? () => onItemTap(item) : null,
+                child: SizedBox(
+                  width: 120,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      getItemIcon(item),
+                      const SizedBox(height: 8),
+                      Text(
+                        getItemTitle(item),
+                        style: const TextStyle(color: Colors.white),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget getItemIcon(dynamic item) {
     if (item is SongModel) {
-      return QueryArtworkWidget(
-        id: item.id,
-        type: ArtworkType.AUDIO,
-        nullArtworkWidget: const Icon(Icons.music_note, color: Colors.white, size: 60),
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: _artworkService.buildCachedArtwork(
+          item.id,
+          size: 60,
+        ),
       );
     } else if (item is AlbumModel) {
-      return QueryArtworkWidget(
-        id: item.id,
-        type: ArtworkType.ALBUM,
-        nullArtworkWidget: const Icon(Icons.album, color: Colors.white, size: 60),
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: _artworkService.buildCachedArtwork(
+          item.id,
+          size: 60,
+        ),
       );
     } else if (item is Playlist) {
       return const Icon(Icons.playlist_play, color: Colors.white, size: 60);

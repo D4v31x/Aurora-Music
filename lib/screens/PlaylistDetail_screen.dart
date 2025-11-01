@@ -5,9 +5,9 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../models/playlist_model.dart';
 import '../services/audio_player_service.dart';
+import '../services/artwork_cache_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
-import '../widgets/app_background.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final Playlist playlist;
@@ -19,18 +19,24 @@ class PlaylistDetailScreen extends StatefulWidget {
 }
 
 class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
+  final ArtworkCacheService _artworkService = ArtworkCacheService();
   late ScrollController _scrollController;
-  int _displayedSongsCount = 8;
-  final int _loadMoreStep = 8;
-  bool _isEditingName = false;
   late TextEditingController _nameController;
   final ValueNotifier<bool> _isEditingNotifier = ValueNotifier<bool>(false);
+
+  // Lazy loading state
+  final List<SongModel> _displayedSongs = [];
+  int _currentPage = 0;
+  final int _songsPerPage = 20;
+  bool _isLoading = false;
+  bool _hasMoreSongs = true;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_scrollListener);
     _nameController = TextEditingController(text: widget.playlist.name);
+    _loadMoreSongs();
   }
 
   @override
@@ -43,17 +49,48 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.extentAfter < 200) {
+    if (_scrollController.position.extentAfter < 200 &&
+        !_isLoading &&
+        _hasMoreSongs) {
+      _loadMoreSongs();
+    }
+  }
+
+  void _loadMoreSongs() {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final int startIndex = _currentPage * _songsPerPage;
+    final int endIndex =
+        (startIndex + _songsPerPage).clamp(0, widget.playlist.songs.length);
+
+    if (startIndex < widget.playlist.songs.length) {
+      final newSongs = widget.playlist.songs.sublist(startIndex, endIndex);
+
       setState(() {
-        _displayedSongsCount += _loadMoreStep;
+        _displayedSongs.addAll(newSongs);
+        _currentPage++;
+        _isLoading = false;
+        _hasMoreSongs = endIndex < widget.playlist.songs.length;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+        _hasMoreSongs = false;
       });
     }
   }
 
   void _saveNewName(BuildContext context) {
-    if (_nameController.text.isNotEmpty && _nameController.text != widget.playlist.name) {
-      final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-      audioPlayerService.renamePlaylist(widget.playlist.id, _nameController.text);
+    if (_nameController.text.isNotEmpty &&
+        _nameController.text != widget.playlist.name) {
+      final audioPlayerService =
+          Provider.of<AudioPlayerService>(context, listen: false);
+      audioPlayerService.renamePlaylist(
+          widget.playlist.id, _nameController.text);
     } else {
       _nameController.text = widget.playlist.name;
     }
@@ -64,10 +101,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   void _playAllSongs(AudioPlayerService audioPlayerService) {
     if (audioPlayerService.playlists.isNotEmpty) {
       audioPlayerService.setPlaylist(
-        widget.playlist.songs, 
+        widget.playlist.songs,
         0,
       );
-      audioPlayerService.play();
     }
   }
 
@@ -81,21 +117,20 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         );
 
         return Scaffold(
-          body: AppBackground(
-            enableAnimation: true,
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                _buildSliverAppBar(updatedPlaylist, context),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                    child: _buildActionPills(context, audioPlayerService),
-                  ),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          body: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              _buildSliverAppBar(updatedPlaylist, context),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                  child: _buildActionPills(context, audioPlayerService),
                 ),
-                _buildSongsList(updatedPlaylist, audioPlayerService),
-              ],
-            ),
+              ),
+              _buildSongsList(updatedPlaylist, audioPlayerService),
+            ],
           ),
         );
       },
@@ -151,7 +186,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.check, color: Colors.white),
+                              icon:
+                                  const Icon(Icons.check, color: Colors.white),
                               onPressed: () => _saveNewName(context),
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
@@ -180,34 +216,53 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     );
   }
 
-  Widget _buildSongsList(Playlist playlist, AudioPlayerService audioPlayerService) {
+  Widget _buildSongsList(
+      Playlist playlist, AudioPlayerService audioPlayerService) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          if (index >= playlist.songs.length) return null;
-          final song = playlist.songs[index];
+          if (index == _displayedSongs.length) {
+            return _hasMoreSongs
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : const SizedBox.shrink();
+          }
+
+          if (index >= _displayedSongs.length) return null;
+
+          final song = _displayedSongs[index];
           return AnimationConfiguration.staggeredList(
             position: index,
-            duration: const Duration(milliseconds: 375),
+            duration: const Duration(milliseconds: 200),
             child: SlideAnimation(
               verticalOffset: 50.0,
               child: FadeInAnimation(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
                   child: glassmorphicContainer(
                     child: ListTile(
-                      leading: QueryArtworkWidget(
-                        id: song.id,
-                        type: ArtworkType.AUDIO,
-                        nullArtworkWidget: const Icon(Icons.music_note, color: Colors.white),
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: _artworkService.buildCachedArtwork(
+                          song.id,
+                          size: 50,
+                        ),
                       ),
-                      title: Text(song.title, style: const TextStyle(color: Colors.white)),
-                      subtitle: Text(song.artist ?? 'Unknown Artist', style: const TextStyle(color: Colors.grey)),
+                      title: Text(song.title,
+                          style: const TextStyle(color: Colors.white)),
+                      subtitle: Text(song.artist ?? 'Unknown Artist',
+                          style: const TextStyle(color: Colors.grey)),
                       onTap: () {
-                        audioPlayerService.setPlaylist(playlist.songs, index);
-                        audioPlayerService.play();
+                        audioPlayerService.setPlaylist(
+                            playlist.songs, playlist.songs.indexOf(song));
                       },
-                      onLongPress: () => _showRemoveSongDialog(context, audioPlayerService, song),
+                      onLongPress: () => _showRemoveSongDialog(
+                          context, audioPlayerService, song),
                     ),
                   ),
                 ),
@@ -215,12 +270,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             ),
           );
         },
-        childCount: _displayedSongsCount > playlist.songs.length ? playlist.songs.length : _displayedSongsCount,
+        childCount: _displayedSongs.length + (_hasMoreSongs ? 1 : 0),
       ),
     );
   }
 
-  Widget _buildActionPills(BuildContext context, AudioPlayerService audioPlayerService) {
+  Widget _buildActionPills(
+      BuildContext context, AudioPlayerService audioPlayerService) {
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 10,
@@ -230,52 +286,83 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
           context,
           Icons.play_arrow,
           AppLocalizations.of(context).translate('play_all'),
-              () => _playAllSongs(audioPlayerService),
+          () => _playAllSongs(audioPlayerService),
         ),
         _buildActionPill(
           context,
           Icons.add,
           AppLocalizations.of(context).translate('add_songs'),
-              () => _showAddSongsDialog(context, audioPlayerService),
+          () => _showAddSongsDialog(context, audioPlayerService),
         ),
         _buildActionPill(
           context,
           Icons.delete,
           AppLocalizations.of(context).translate('delete_playlist'),
-              () => _showDeleteConfirmation(context),
+          () => _showDeleteConfirmation(context),
         ),
       ],
     );
   }
 
-  Widget _buildActionPill(BuildContext context, IconData icon, String label, VoidCallback onTap) {
+  Widget _buildActionPill(
+      BuildContext context, IconData icon, String label, VoidCallback onTap) {
     final isSmallScreen = MediaQuery.of(context).size.width < 360;
 
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 8, horizontal: isSmallScreen ? 8 : 12),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.white, size: 18),
-            if (!isSmallScreen) ...[
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.elasticOut,
+      tween: Tween<double>(begin: 0.8, end: 1.0),
+      builder: (context, scale, child) {
+        return Transform.scale(
+          scale: scale,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(20),
+            splashColor: Colors.white.withOpacity(0.2),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                  vertical: 8, horizontal: isSmallScreen ? 8 : 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.15),
+                    Colors.white.withOpacity(0.05),
+                  ],
                 ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-            ],
-          ],
-        ),
-      ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, color: Colors.white, size: 18),
+                  if (!isSmallScreen) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -284,8 +371,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context).translate('delete_playlist')),
-          content: Text(AppLocalizations.of(context).translate('delete_playlist_confirmation')),
+          title:
+              Text(AppLocalizations.of(context).translate('delete_playlist')),
+          content: Text(AppLocalizations.of(context)
+              .translate('delete_playlist_confirmation')),
           actions: <Widget>[
             TextButton(
               child: Text(AppLocalizations.of(context).translate('cancel')),
@@ -294,7 +383,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             TextButton(
               child: Text(AppLocalizations.of(context).translate('delete')),
               onPressed: () {
-                final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+                final audioPlayerService =
+                    Provider.of<AudioPlayerService>(context, listen: false);
                 audioPlayerService.deletePlaylist(widget.playlist);
                 Navigator.of(context).pop(); // Close confirmation dialog
                 Navigator.of(context).pop(); // Go back to the previous screen
@@ -306,7 +396,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     );
   }
 
-  void _showAddSongsDialog(BuildContext context, AudioPlayerService audioPlayerService) {
+  void _showAddSongsDialog(
+      BuildContext context, AudioPlayerService audioPlayerService) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -320,13 +411,15 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     });
   }
 
-  void _showRemoveSongDialog(BuildContext context, AudioPlayerService audioPlayerService, SongModel song) {
+  void _showRemoveSongDialog(BuildContext context,
+      AudioPlayerService audioPlayerService, SongModel song) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(AppLocalizations.of(context).translate('remove_song')),
-          content: Text(AppLocalizations.of(context).translate('remove_song_confirmation')),
+          content: Text(AppLocalizations.of(context)
+              .translate('remove_song_confirmation')),
           actions: <Widget>[
             TextButton(
               child: Text(AppLocalizations.of(context).translate('cancel')),
@@ -335,10 +428,15 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             TextButton(
               child: Text(AppLocalizations.of(context).translate('remove')),
               onPressed: () {
+                widget.playlist.songs.remove(song);
+                audioPlayerService.savePlaylists();
+                // Reload pagination after removing song
                 setState(() {
-                  widget.playlist.songs.remove(song);
+                  _displayedSongs.clear();
+                  _currentPage = 0;
+                  _hasMoreSongs = true;
                 });
-                audioPlayerService.savePlaylists(); // Save the updated playlist without the song
+                _loadMoreSongs();
                 Navigator.of(context).pop();
               },
             ),

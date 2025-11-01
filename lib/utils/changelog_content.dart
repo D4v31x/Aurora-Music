@@ -8,7 +8,7 @@ class ChangelogContent {
         ],
       },
     ],
-    
+
     // Older versions below
     '0.0.9-alpha': [
       {
@@ -40,7 +40,8 @@ class ChangelogContent {
     ],
   };
 
-  static List<Map<String, List<String>>> getChangelogForVersion(String version) {
+  static List<Map<String, List<String>>> getChangelogForVersion(
+      String version) {
     return versions[version] ?? [];
   }
 
@@ -51,4 +52,4 @@ class ChangelogContent {
   static bool hasVersion(String version) {
     return versions.containsKey(version);
   }
-} 
+}

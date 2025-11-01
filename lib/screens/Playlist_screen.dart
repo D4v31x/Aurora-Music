@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/audio_player_service.dart';
@@ -18,149 +17,156 @@ class PlaylistsScreenList extends StatelessWidget {
       enableAnimation: true,
       child: Scaffold(
         backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0.0,
-            toolbarHeight: 180,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            title: Text(
-              AppLocalizations.of(context).translate('playlists'),
-              style: const TextStyle(
-                fontFamily: 'ProductSans',
-                fontStyle: FontStyle.normal,
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-            centerTitle: true,
-            actions: const [
-              SizedBox(width: 48), // This balances out the leading icon
-            ],
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0.0,
+          toolbarHeight: 180,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
           ),
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      _showCreatePlaylistDialog(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.white.withOpacity(0.1),
-                    ),
-                    child: Text(AppLocalizations.of(context).translate('create_playlist')),
+          title: Text(
+            AppLocalizations.of(context).translate('playlists'),
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              fontStyle: FontStyle.normal,
+              color: Colors.white,
+              fontSize: 32,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+          centerTitle: true,
+          actions: const [
+            SizedBox(width: 48), // This balances out the leading icon
+          ],
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    _showCreatePlaylistDialog(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.white.withOpacity(0.1),
                   ),
-                  const SizedBox(height: 20),
-                  if (audioPlayerService.likedSongsPlaylist != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: glassmorphicContainer(
-                        child: ListTile(
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.asset(
-                              'assets/images/UI/liked_icon.png',
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                            ),
+                  child: Text(AppLocalizations.of(context)
+                      .translate('create_playlist')),
+                ),
+                const SizedBox(height: 20),
+                if (audioPlayerService.likedSongsPlaylist != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: glassmorphicContainer(
+                      child: ListTile(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            'assets/images/UI/liked_icon.png',
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
                           ),
-                          title: Text(
-                            audioPlayerService.likedSongsPlaylist!.name,
-                            style: const TextStyle(color: Colors.white)
-                          ),
-                          subtitle: Text(
+                        ),
+                        title: Text(audioPlayerService.likedSongsPlaylist!.name,
+                            style: const TextStyle(color: Colors.white)),
+                        subtitle: Text(
                             '${audioPlayerService.likedSongsPlaylist!.songs.length} ${AppLocalizations.of(context).translate('tracks')}',
-                            style: const TextStyle(color: Colors.grey)
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.play_arrow, color: Colors.white),
-                            onPressed: () {
-                              audioPlayerService.setPlaylist(
-                                audioPlayerService.likedSongsPlaylist!.songs,
-                                0,
-                              );
-                              audioPlayerService.play();
-                            },
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PlaylistDetailScreen(
-                                  playlist: audioPlayerService.likedSongsPlaylist!,
-                                ),
-                              ),
+                            style: const TextStyle(color: Colors.grey)),
+                        trailing: IconButton(
+                          icon:
+                              const Icon(Icons.play_arrow, color: Colors.white),
+                          onPressed: () {
+                            audioPlayerService.setPlaylist(
+                              audioPlayerService.likedSongsPlaylist!.songs,
+                              0,
                             );
+                            audioPlayerService.play();
                           },
                         ),
-                      ),
-                    ),
-                  if (audioPlayerService.playlists.isEmpty)
-                    glassmorphicContainer(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          AppLocalizations.of(context).translate('no_playlists_created'),
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: audioPlayerService.playlists.length,
-                      itemBuilder: (context, index) {
-                        final playlist = audioPlayerService.playlists[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: glassmorphicContainer(
-                            child: ListTile(
-                              title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
-                              subtitle: Text('${playlist.songs.length} songs', style: const TextStyle(color: Colors.grey)),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.play_arrow, color: Colors.white),
-                                    onPressed: () {
-                                      // Play the playlist
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.white),
-                                    onPressed: () {
-                                      _showDeletePlaylistDialog(context, audioPlayerService, playlist);
-                                    },
-                                  ),
-                                ],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PlaylistDetailScreen(
+                                playlist:
+                                    audioPlayerService.likedSongsPlaylist!,
                               ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PlaylistDetailScreen(playlist: playlist),
-                                  ),
-                                );
-                              },
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                ],
-              ),
+                  ),
+                if (audioPlayerService.playlists.isEmpty)
+                  glassmorphicContainer(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        AppLocalizations.of(context)
+                            .translate('no_playlists_created'),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  )
+                else
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: audioPlayerService.playlists.length,
+                    itemBuilder: (context, index) {
+                      final playlist = audioPlayerService.playlists[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: glassmorphicContainer(
+                          child: ListTile(
+                            title: Text(playlist.name,
+                                style: const TextStyle(color: Colors.white)),
+                            subtitle: Text('${playlist.songs.length} songs',
+                                style: const TextStyle(color: Colors.grey)),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.play_arrow,
+                                      color: Colors.white),
+                                  onPressed: () {
+                                    // Play the playlist
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.white),
+                                  onPressed: () {
+                                    _showDeletePlaylistDialog(
+                                        context, audioPlayerService, playlist);
+                                  },
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      PlaylistDetailScreen(playlist: playlist),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
             ),
           ),
         ),
+      ),
     );
   }
 
@@ -170,10 +176,13 @@ class PlaylistsScreenList extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context).translate('create_playlist')),
+          title:
+              Text(AppLocalizations.of(context).translate('create_playlist')),
           content: TextField(
             controller: nameController,
-            decoration: InputDecoration(hintText: AppLocalizations.of(context).translate('enter_playlist_name')),
+            decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)
+                    .translate('enter_playlist_name')),
           ),
           actions: <Widget>[
             TextButton(
@@ -186,7 +195,8 @@ class PlaylistsScreenList extends StatelessWidget {
               child: Text(AppLocalizations.of(context).translate('create')),
               onPressed: () {
                 if (nameController.text.isNotEmpty) {
-                  final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+                  final audioPlayerService =
+                      Provider.of<AudioPlayerService>(context, listen: false);
                   audioPlayerService.createPlaylist(nameController.text, []);
                   Navigator.of(context).pop();
                 }
@@ -198,13 +208,16 @@ class PlaylistsScreenList extends StatelessWidget {
     );
   }
 
-  void _showDeletePlaylistDialog(BuildContext context, AudioPlayerService audioPlayerService, dynamic playlist) {
+  void _showDeletePlaylistDialog(BuildContext context,
+      AudioPlayerService audioPlayerService, dynamic playlist) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context).translate('delete_playlist')),
-          content: Text(AppLocalizations.of(context).translate('delete_playlist_confirmation')),
+          title:
+              Text(AppLocalizations.of(context).translate('delete_playlist')),
+          content: Text(AppLocalizations.of(context)
+              .translate('delete_playlist_confirmation')),
           actions: <Widget>[
             TextButton(
               child: Text(AppLocalizations.of(context).translate('cancel')),

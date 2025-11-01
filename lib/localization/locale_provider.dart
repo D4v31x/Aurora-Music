@@ -21,4 +21,3 @@ class LocaleProvider extends InheritedWidget {
     return locale != old.locale;
   }
 }
-

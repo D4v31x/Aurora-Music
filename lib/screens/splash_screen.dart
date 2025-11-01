@@ -2,19 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:ui';  // Import this for ImageFilter
+import 'dart:ui'; // Import this for ImageFilter
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/user_preferences.dart';
 import '../services/logging_service.dart';
 import '../constants/animation_constants.dart';
-import '../widgets/app_background.dart';
-import 'welcome_screen.dart';
+import 'onboarding/onboarding_screen.dart';
 import 'home_screen.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -23,7 +20,8 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _transitionController;
   late Animation<double> _scaleAnimation;
@@ -43,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    
+
     _initializeAnimations();
     _loadVersionInfo();
   }
@@ -51,10 +49,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     if (!_didInitialize) {
       _didInitialize = true;
-      
+
       _initializeApp();
     }
   }
@@ -115,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   Future<void> _initializeApp() async {
     try {
       // Skip permission requests during splash - they will be handled in onboarding
-      
+
       final tasks = [
         ('Warming shaders', _warmupShaders()),
         ('Initializing Services', _initializeServices()),
@@ -170,7 +168,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
           _progress = 1.0;
           _isDataLoaded = true;
         });
-        await _checkOnboardingStatus();
+        // Check if animation is also complete, then transition
+        _checkAndTransition();
       }
     } catch (e) {
       LoggingService.error('Initialization error', 'SplashScreen', e);
@@ -179,6 +178,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       }
       await Future.delayed(const Duration(seconds: 2));
       if (mounted) {
+        setState(() {
+          _isDataLoaded = true;
+        });
         _checkAndTransition();
       }
     }
@@ -216,7 +218,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         });
         await Future.delayed(const Duration(milliseconds: 800));
       }
-
     } catch (e) {
       if (!_warnings.contains('Some features may be limited')) {
         // Batch update for error warnings
@@ -229,14 +230,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     }
   }
 
-
-
   Future<void> _loadAppData() async {
     try {
       // Don't try to access media library in splash screen anymore
       // Just show loading animation and move on
       // The actual initialization is now handled in home_screen.dart
-      
+
       // Just a short delay for animation
       await Future.delayed(const Duration(milliseconds: 500));
     } catch (e) {
@@ -273,7 +272,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
           await artworkService.preloadArtwork(song.id);
         }
       }
-      
+
       // Don't query for artists directly - removed artist preloading
       // This prevents permission errors
 
@@ -287,15 +286,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         if (!mounted) return;
         await precacheImage(AssetImage(image), context);
       }
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
 
   Future<void> _finalizeInitialization() async {
     // Pre-warm home screen components for smooth transition
     await _preWarmHomeScreen();
-    
+
     // Reduced delay for faster initialization
     await Future.delayed(AnimationConstants.shortDelay);
   }
@@ -303,17 +300,17 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   /// Pre-warm home screen components to prevent transition lag
   Future<void> _preWarmHomeScreen() async {
     if (!mounted) return;
-    
+
     try {
       // Pre-compile common shaders used in home screen
       await _warmupHomeScreenShaders();
-      
+
       // Pre-cache essential images
       final homeImages = [
         'assets/images/UI/liked_icon.png',
         'assets/images/logo/default_art.png',
       ];
-      
+
       for (final image in homeImages) {
         if (!mounted) return;
         try {
@@ -322,7 +319,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
           // Continue if individual image fails
         }
       }
-      
+
       // Pre-initialize providers that home screen will need
       if (mounted) {
         final audioService = context.read<AudioPlayerService>();
@@ -337,23 +334,24 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   Future<void> _warmupHomeScreenShaders() async {
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
-    
+
     // Warm up glassmorphism effects
     final glassPaint = Paint()
       ..color = Colors.white.withOpacity(0.1)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(const Rect.fromLTWH(0, 0, 100, 100), const Radius.circular(12)),
+      RRect.fromRectAndRadius(
+          const Rect.fromLTWH(0, 0, 100, 100), const Radius.circular(12)),
       glassPaint,
     );
-    
+
     // Warm up gradient effects
     final gradientPaint = Paint()
       ..shader = const LinearGradient(
         colors: [Colors.purple, Colors.blue],
       ).createShader(const Rect.fromLTWH(0, 0, 100, 100));
     canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), gradientPaint);
-    
+
     final picture = recorder.endRecording();
     await picture.toImage(100, 100);
     picture.dispose();
@@ -371,41 +369,48 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   void _initializeAnimations() {
     // Primary fade controller for splash animation
+    // Duration will be set by Lottie onLoaded callback
     _fadeController = AnimationController(
-      duration: AnimationConstants.normal,
-      vsync: this,
-    );
-    
-    // Transition controller for smooth screen transition
-    _transitionController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration:
+          const Duration(milliseconds: 2000), // Default, will be overridden
       vsync: this,
     );
 
-    // Scale animation for logo shrinking effect
+    // Transition controller for smooth screen transition
+    _transitionController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    // Scale animation for logo - subtle breathing effect
     _scaleAnimation = Tween<double>(
-      begin: AnimationConstants.scaleNormal,
-      end: AnimationConstants.scaleDown,
+      begin: 0.85,
+      end: 0.75,
     ).animate(CurvedAnimation(
       parent: _transitionController,
-      curve: AnimationConstants.easeInOutCubic,
+      curve: Curves.easeInCubic,
     ));
 
     // Background fade for smooth transition
     _backgroundFadeAnimation = Tween<double>(
-      begin: AnimationConstants.visibleOpacity,
-      end: AnimationConstants.hiddenOpacity,
+      begin: 1.0,
+      end: 0.0,
     ).animate(CurvedAnimation(
       parent: _transitionController,
-      curve: AnimationConstants.easeInOut,
+      curve: Curves.easeIn,
     ));
 
     _fadeController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        setState(() {
-          _isAnimationComplete = true;
+        // Wait a brief moment after Lottie animation completes
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            setState(() {
+              _isAnimationComplete = true;
+            });
+            _checkAndTransition();
+          }
         });
-        _checkAndTransition();
       }
     });
 
@@ -417,12 +422,19 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 
   void _checkAndTransition() {
+    // Only transition when BOTH conditions are met:
+    // 1. Lottie animation has completed
+    // 2. App data/initialization is finished
     if (_isAnimationComplete && _isDataLoaded && !_isTransitioning) {
       setState(() {
         _isTransitioning = true;
       });
-      // Start the smooth transition animation
-      _transitionController.forward();
+      // Small delay to let user appreciate the completed animation
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (mounted) {
+          _transitionController.forward();
+        }
+      });
     }
   }
 
@@ -431,8 +443,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     if (mounted) {
       if (isFirstTime) {
-        await UserPreferences.setFirstTimeUser(false);
-        _navigateToScreenWithHero(const WelcomeScreen());
+        _navigateToScreenWithHero(const OnboardingScreen());
       } else {
         _navigateToScreenWithHero(const HomeScreen());
       }
@@ -445,47 +456,33 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         opaque: true,
         pageBuilder: (context, animation, secondaryAnimation) => screen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // Create a more sophisticated transition
-          const curve = Curves.easeInOutCubicEmphasized;
-          
-          // Multi-layered animation approach
-          final slideAnimation = Tween<Offset>(
-            begin: const Offset(0.0, 0.15), // Smaller slide for smoother feel
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Interval(0.2, 1.0, curve: curve),
-          ));
-
+          // Smooth crossfade with zoom-in effect
           final fadeAnimation = Tween<double>(
             begin: 0.0,
             end: 1.0,
           ).animate(CurvedAnimation(
             parent: animation,
-            curve: Interval(0.0, 0.8, curve: curve),
+            curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
           ));
 
           final scaleAnimation = Tween<double>(
-            begin: 0.92,
+            begin: 1.15,
             end: 1.0,
           ).animate(CurvedAnimation(
             parent: animation,
-            curve: Interval(0.1, 1.0, curve: curve),
+            curve: const Interval(0.0, 1.0, curve: Curves.easeOutCubic),
           ));
 
           return FadeTransition(
             opacity: fadeAnimation,
-            child: SlideTransition(
-              position: slideAnimation,
-              child: ScaleTransition(
-                scale: scaleAnimation,
-                child: child,
-              ),
+            child: ScaleTransition(
+              scale: scaleAnimation,
+              child: child,
             ),
           );
         },
-        transitionDuration: const Duration(milliseconds: 1000),
-        reverseTransitionDuration: const Duration(milliseconds: 600),
+        transitionDuration: const Duration(milliseconds: 900),
+        reverseTransitionDuration: const Duration(milliseconds: 500),
       ),
     );
   }
@@ -499,43 +496,47 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    return AppBackground(
-      enableAnimation: true,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: AnimatedBuilder(
-          animation: Listenable.merge([_fadeController, _transitionController]),
-          builder: (context, child) {
-            return Stack(
-              children: [
-                // Optional overlay for splash-specific styling
-                Positioned.fill(
-                  child: AnimatedBuilder(
-                    animation: _backgroundFadeAnimation,
-                    builder: (context, _) {
-                      return Container(
-                        decoration: BoxDecoration(
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0E1A),
+      body: AnimatedBuilder(
+        animation: Listenable.merge([_fadeController, _transitionController]),
+        builder: (context, child) {
+          return Stack(
+            children: [
+              // Gradient background with fade
+              Positioned.fill(
+                child: AnimatedBuilder(
+                  animation: _backgroundFadeAnimation,
+                  builder: (context, _) {
+                    return Opacity(
+                      opacity: _backgroundFadeAnimation.value,
+                      child: Container(
+                        decoration: const BoxDecoration(
                           gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                             colors: [
-                              Colors.black.withOpacity(0.1 * _backgroundFadeAnimation.value),
-                              Colors.black.withOpacity(0.3 * _backgroundFadeAnimation.value),
+                              Color(0xFF0A0E1A),
+                              Color(0xFF1A2332),
+                              Color(0xFF0D1B2A),
                             ],
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
-                
-                // Splash animation logo with Hero widget for seamless transition
-                Center(
-                  child: AnimatedBuilder(
-                    animation: _scaleAnimation,
-                    builder: (context, _) {
-                      return Transform.scale(
-                        scale: _scaleAnimation.value,
+              ),
+
+              // Animated logo with modern scaling
+              Center(
+                child: AnimatedBuilder(
+                  animation: _scaleAnimation,
+                  builder: (context, _) {
+                    return Transform.scale(
+                      scale: _scaleAnimation.value,
+                      child: Opacity(
+                        opacity: _backgroundFadeAnimation.value,
                         child: Hero(
                           tag: 'app_logo_hero',
                           child: RepaintBoundary(
@@ -543,9 +544,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                               'assets/animations/Splash.json',
                               controller: _fadeController,
                               fit: BoxFit.contain,
-                              width: 200,
-                              height: 200,
-                              frameRate: FrameRate.composition, // Use original frame rate
+                              width: 220,
+                              height: 220,
+                              frameRate: FrameRate.composition,
                               onLoaded: (composition) {
                                 _fadeController.duration = composition.duration;
                                 _fadeController.forward();
@@ -553,90 +554,85 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
-                
-                // Progress indicator and status (only show during loading)
-                if (!_isAnimationComplete || _progress < 1.0)
-                  Positioned(
-                    bottom: 120,
-                    left: 40,
-                    right: 40,
-                    child: AnimatedOpacity(
-                      opacity: _isTransitioning ? 0.0 : 1.0,
-                      duration: const Duration(milliseconds: 300),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (_currentTask.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: Text(
-                                _currentTask,
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                                textAlign: TextAlign.center,
+              ),
+
+              // Modern progress indicator
+              if (!_isAnimationComplete || _progress < 1.0)
+                Positioned(
+                  bottom: 100,
+                  left: 48,
+                  right: 48,
+                  child: AnimatedOpacity(
+                    opacity: _isTransitioning
+                        ? 0.0
+                        : (_backgroundFadeAnimation.value * 0.8),
+                    duration: const Duration(milliseconds: 200),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_currentTask.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 20),
+                            child: Text(
+                              _currentTask,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.6),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: 0.3,
                               ),
-                            ),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: LinearProgressIndicator(
-                              value: _progress,
-                              backgroundColor: Colors.white24,
-                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                              minHeight: 2,
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                
-                // Version info
-                Positioned(
-                  bottom: 40,
-                  left: 0,
-                  right: 0,
-                  child: AnimatedOpacity(
-                    opacity: _isTransitioning ? 0.0 : 1.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: Text(
-                      '$_versionNumber • $_codeName',
-                      style: const TextStyle(
-                        color: Colors.white60,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w300,
-                      ),
-                      textAlign: TextAlign.center,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: SizedBox(
+                            height: 3,
+                            child: LinearProgressIndicator(
+                              value: _progress,
+                              backgroundColor: Colors.white.withOpacity(0.1),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white.withOpacity(0.7),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            );
-          },
-        ),
+
+              // Minimalist version info
+              Positioned(
+                bottom: 32,
+                left: 0,
+                right: 0,
+                child: AnimatedOpacity(
+                  opacity: _isTransitioning
+                      ? 0.0
+                      : (_backgroundFadeAnimation.value * 0.5),
+                  duration: const Duration(milliseconds: 200),
+                  child: Text(
+                    '$_versionNumber • $_codeName',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.4),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w300,
+                      letterSpacing: 0.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
-  }
-
-  Future<void> _checkOnboardingStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
-    
-    if (!mounted) return;
-
-    if (!onboardingCompleted) {
-      // First time only - show onboarding
-      _navigateToScreenWithHero(const WelcomeScreen());
-    } else {
-      // All subsequent launches - go straight to home
-      _navigateToScreenWithHero(const HomeScreen());
-    }
   }
 
   Future<void> _warmupShaders() async {
@@ -662,4 +658,4 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       // If shader warmup fails, continue silently
     }
   }
-  }
+}

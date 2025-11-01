@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 import 'package:provider/provider.dart';
 
 import '../services/expandable_player_controller.dart';
@@ -20,7 +21,8 @@ class ExpandableBottomSheet extends StatefulWidget {
   State<ExpandableBottomSheet> createState() => ExpandableBottomSheetState();
 }
 
-class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with SingleTickerProviderStateMixin {
+class ExpandableBottomSheetState extends State<ExpandableBottomSheet>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _heightFactor;
 
@@ -29,11 +31,12 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: AnimationConstants.slow, // Use consistent timing
+      duration: AnimationConstants.playerExpand,
     );
     _heightFactor = CurvedAnimation(
       parent: _controller,
-      curve: AnimationConstants.easeInOutCubic, // Use consistent curve
+      curve: AnimationConstants.playerExpandCurve,
+      reverseCurve: AnimationConstants.playerCollapseCurve,
     );
   }
 
@@ -49,8 +52,8 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
     if (!mounted) return;
     await _controller.animateTo(
       0.0,
-      duration: AnimationConstants.slow,
-      curve: AnimationConstants.easeInOutCubic,
+      duration: AnimationConstants.playerCollapse,
+      curve: AnimationConstants.playerCollapseCurve,
     );
   }
 
@@ -58,9 +61,59 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
     if (!mounted) return;
     await _controller.animateTo(
       1.0,
-      duration: AnimationConstants.slow,
-      curve: AnimationConstants.easeInOutCubic,
+      duration: AnimationConstants.playerExpand,
+      curve: AnimationConstants.playerExpandCurve,
     );
+  }
+
+  void _handleDragEnd(
+      DragEndDetails details, double screenHeight, double minHeightWithMargin) {
+    if (!mounted || _controller.isAnimating) return;
+
+    final velocity = details.velocity.pixelsPerSecond.dy /
+        (screenHeight - minHeightWithMargin);
+    final spring = SpringDescription(
+      mass: 1.0,
+      stiffness: 500.0,
+      damping: 30.0,
+    );
+
+    // Use velocity-based spring simulation for natural feel
+    if (velocity.abs() > 0.5) {
+      final simulation = SpringSimulation(
+        spring,
+        _controller.value,
+        velocity > 0 ? 0.0 : 1.0,
+        -velocity,
+      );
+      _controller.animateWith(simulation);
+
+      if (velocity > 0) {
+        Provider.of<ExpandablePlayerController>(context, listen: false)
+            .collapse();
+      } else {
+        Provider.of<ExpandablePlayerController>(context, listen: false)
+            .expand();
+      }
+    } else {
+      // Position-based decision with spring animation
+      final targetValue = _controller.value < 0.5 ? 0.0 : 1.0;
+      final simulation = SpringSimulation(
+        spring,
+        _controller.value,
+        targetValue,
+        0.0,
+      );
+      _controller.animateWith(simulation);
+
+      if (targetValue == 0.0) {
+        Provider.of<ExpandablePlayerController>(context, listen: false)
+            .collapse();
+      } else {
+        Provider.of<ExpandablePlayerController>(context, listen: false)
+            .expand();
+      }
+    }
   }
 
   @override
@@ -69,18 +122,21 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
       builder: (context, expandablePlayerController, child) {
         // Sync controller state
         if (expandablePlayerController.isExpanded && !isExpanded) {
-            expand();
+          expand();
         } else if (!expandablePlayerController.isExpanded && isExpanded) {
-            collapse();
+          collapse();
         }
 
         return AnimatedBuilder(
           animation: _controller,
           builder: (BuildContext context, Widget? child) {
             final bottomPadding = MediaQuery.of(context).padding.bottom;
-            final minHeightWithMargin = widget.minHeight + 32 + bottomPadding; // margin inside MiniPlayer
+            final minHeightWithMargin = widget.minHeight +
+                32 +
+                bottomPadding; // margin inside MiniPlayer
             final screenHeight = MediaQuery.of(context).size.height;
-            final height = minHeightWithMargin + (screenHeight - minHeightWithMargin) * _heightFactor.value;
+            final height = minHeightWithMargin +
+                (screenHeight - minHeightWithMargin) * _heightFactor.value;
 
             return Positioned(
               bottom: 0,
@@ -92,28 +148,13 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
                   behavior: HitTestBehavior.opaque,
                   onVerticalDragUpdate: (details) {
                     if (!mounted) return;
-                    _controller.value -= details.primaryDelta! / (screenHeight - minHeightWithMargin);
+                    final delta = -details.primaryDelta! /
+                        (screenHeight - minHeightWithMargin);
+                    _controller.value =
+                        (_controller.value + delta).clamp(0.0, 1.0);
                   },
                   onVerticalDragEnd: (details) {
-                    if (!mounted || _controller.isAnimating) return;
-                    final velocity = details.velocity.pixelsPerSecond.dy / (screenHeight - minHeightWithMargin);
-                    if (velocity.abs() > 1.0) {
-                      if (velocity > 0) {
-                        collapse();
-                        expandablePlayerController.collapse();
-                      } else {
-                        expand();
-                        expandablePlayerController.expand();
-                      }
-                    } else {
-                      if (_controller.value < 0.5) {
-                        collapse();
-                        expandablePlayerController.collapse();
-                      } else {
-                        expand();
-                        expandablePlayerController.expand();
-                      }
-                    }
+                    _handleDragEnd(details, screenHeight, minHeightWithMargin);
                   },
                   onTap: () {
                     if (!mounted) return;
@@ -125,21 +166,26 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final v = _controller.value;
-                      final bool expandedMode = v > 0.02; // threshold
-                      return AnimatedContainer(
-                        duration: AnimationConstants.normal,
-                        curve: AnimationConstants.easeInOutCubic,
-                        margin: EdgeInsets.zero, // no outer pill duplication
-                        padding: EdgeInsets.only(bottom: bottomPadding * (1 - v)),
+                      // Use a smoother threshold for mode switching
+                      final bool expandedMode = v > 0.01;
+
+                      // Compute background opacity with faster fade-in
+                      final bgOpacity = (v * 1.2).clamp(0.0, 0.95);
+
+                      return Container(
+                        margin: EdgeInsets.zero,
                         decoration: expandedMode
                             ? BoxDecoration(
-                                color: Colors.black.withOpacity(0.9 * v),
-                                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                                color: Colors.black.withOpacity(bgOpacity),
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(28 * v),
+                                ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.4 * v),
+                                    color: Colors.black.withOpacity(0.5 * v),
                                     blurRadius: 30 * v,
-                                    offset: Offset(0, 12 * v),
+                                    spreadRadius: -5,
+                                    offset: Offset(0, -8 * v),
                                   ),
                                 ],
                               )
@@ -147,22 +193,29 @@ class ExpandableBottomSheetState extends State<ExpandableBottomSheet> with Singl
                         clipBehavior: Clip.antiAlias,
                         child: Stack(
                           children: [
-                            // Mini (collapsed) only visible while not expanded
+                            // Mini player - keep at full opacity for Hero animations
                             Positioned.fill(
                               child: IgnorePointer(
-                                ignoring: expandedMode,
-                                child: FadeTransition(
-                                  opacity: ReverseAnimation(_controller),
+                                ignoring: v > 0.05,
+                                child: Opacity(
+                                  // Keep fully visible until 60% to allow Heroes to complete
+                                  opacity: v < 0.6
+                                      ? 1.0
+                                      : (1.0 - ((v - 0.6) / 0.4))
+                                          .clamp(0.0, 1.0),
                                   child: widget.minChild,
                                 ),
                               ),
                             ),
-                            // Expanded content
+                            // Expanded content - fade in after Heroes start
                             Positioned.fill(
                               child: IgnorePointer(
-                                ignoring: !expandedMode,
-                                child: FadeTransition(
-                                  opacity: _controller,
+                                ignoring: v < 0.5,
+                                child: Opacity(
+                                  // Start fading in at 50% to overlap with Heroes
+                                  opacity: v < 0.5
+                                      ? 0.0
+                                      : ((v - 0.5) / 0.5).clamp(0.0, 1.0),
                                   child: widget.maxChild,
                                 ),
                               ),

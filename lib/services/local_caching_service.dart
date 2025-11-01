@@ -64,7 +64,8 @@ class LocalCachingArtistService {
       await initialize();
     }
 
-    final cacheFile = File('${cacheDir.path}/${artistName.replaceAll(' ', '_')}.jpg');
+    final cacheFile =
+        File('${cacheDir.path}/${artistName.replaceAll(' ', '_')}.jpg');
 
     if (await cacheFile.exists()) {
       _imageCache[artistName] = cacheFile.path;
@@ -88,18 +89,19 @@ class LocalCachingArtistService {
   }
 
   Future<String?> _getArtistImageFromSpotify(String artistName) async {
-    
     if (_accessToken == null) {
       await _getSpotifyAccessToken();
     }
 
     String primaryArtist = artistName
-        .split(RegExp(r'[,/]|\s+&\s+|\s+feat\.?\s+|\s+ft\.?\s+|\s+featuring\s+|\s+with\s+|\s+x\s+|\s+X\s+'))
+        .split(RegExp(
+            r'[,/]|\s+&\s+|\s+feat\.?\s+|\s+ft\.?\s+|\s+featuring\s+|\s+with\s+|\s+x\s+|\s+X\s+'))
         .first
         .trim();
 
     final encodedArtist = Uri.encodeComponent(primaryArtist);
-    final url = 'https://api.spotify.com/v1/search?q=$encodedArtist&type=artist&limit=1';
+    final url =
+        'https://api.spotify.com/v1/search?q=$encodedArtist&type=artist&limit=1';
 
     try {
       final response = await _client.get(
@@ -121,22 +123,20 @@ class LocalCachingArtistService {
         await _getSpotifyAccessToken();
         return _getArtistImageFromSpotify(artistName);
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     return null;
   }
 
-  Future<String?> _downloadAndCacheImage(String imageUrl, File cacheFile) async {
-    
+  Future<String?> _downloadAndCacheImage(
+      String imageUrl, File cacheFile) async {
     try {
       final imageResponse = await _client.get(Uri.parse(imageUrl));
-      
+
       if (imageResponse.statusCode == 200) {
         await cacheFile.writeAsBytes(imageResponse.bodyBytes);
         return cacheFile.path;
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     return null;
   }
 }

@@ -1,19 +1,15 @@
 import 'dart:async';
-import 'dart:ui';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../models/playlist_model.dart';
 import '../models/utils.dart';
 import '../services/audio_player_service.dart';
-import '../services/background_manager_service.dart';
-import '../providers/performance_mode_provider.dart';
+import '../services/artwork_cache_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
-import '../widgets/app_background.dart';
+import '../widgets/optimized_tiles.dart'; // Import optimized tile
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-
 
 class TracksScreen extends StatefulWidget {
   final bool isEditingPlaylist;
@@ -29,9 +25,11 @@ class TracksScreen extends StatefulWidget {
   _TracksScreenState createState() => _TracksScreenState();
 }
 
-class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderStateMixin {
+class _TracksScreenState extends State<TracksScreen>
+    with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   final OnAudioQuery _audioQuery = OnAudioQuery();
+  final _artworkService = ArtworkCacheService();
   List<SongModel> _allSongs = [];
   List<SongModel> _displayedSongs = [];
   int _currentPage = 0;
@@ -135,8 +133,8 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
     });
 
     final int startIndex = _currentPage * _songsPerPage;
-    final int endIndex = (startIndex + _songsPerPage).clamp(
-        0, _allSongs.length);
+    final int endIndex =
+        (startIndex + _songsPerPage).clamp(0, _allSongs.length);
 
     if (startIndex < _allSongs.length) {
       final newSongs = _allSongs.sublist(startIndex, endIndex);
@@ -169,10 +167,12 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
   }
 
   void _searchSongs() {
-    final filteredSongs = _allSongs.where((song) =>
-    song.title.toLowerCase().contains(_searchQuery) ||
-        splitArtists(song.artist ?? '').any((artist) => artist.toLowerCase().contains(_searchQuery))
-    ).toList();
+    final filteredSongs = _allSongs
+        .where((song) =>
+            song.title.toLowerCase().contains(_searchQuery) ||
+            splitArtists(song.artist ?? '')
+                .any((artist) => artist.toLowerCase().contains(_searchQuery)))
+        .toList();
 
     final int endIndex = (_songsPerPage).clamp(0, filteredSongs.length);
 
@@ -191,18 +191,14 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
       tag: 'tracks_screen',
       child: FadeTransition(
         opacity: _fadeAnimation,
-        child: AppBackground(
-          child: Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: buildAppBar(),
-            body: buildBody(audioPlayerService),
-          ),
+        child: Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          appBar: buildAppBar(),
+          body: buildBody(audioPlayerService),
         ),
       ),
     );
   }
-
-
 
   AppBar buildAppBar() {
     return AppBar(
@@ -248,8 +244,8 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
                   onChanged: _onSearchChanged,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context).translate(
-                        'search_tracks'),
+                    hintText:
+                        AppLocalizations.of(context).translate('search_tracks'),
                     hintStyle: const TextStyle(color: Colors.white70),
                     prefixIcon: const Icon(Icons.search, color: Colors.white70),
                     border: InputBorder.none,
@@ -266,8 +262,8 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
           IconButton(
             icon: const Icon(Icons.check),
             onPressed: () {
-              final audioPlayerService = Provider.of<AudioPlayerService>(
-                  context, listen: false);
+              final audioPlayerService =
+                  Provider.of<AudioPlayerService>(context, listen: false);
               audioPlayerService.addSongsToPlaylist(
                   widget.playlist!.id, _selectedSongs.toList());
               Navigator.pop(context);
@@ -282,7 +278,8 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
       return const Center(child: CircularProgressIndicator());
     } else if (_errorMessage.isNotEmpty) {
       return Center(
-          child: Text(_errorMessage, style: const TextStyle(color: Colors.white)));
+          child:
+              Text(_errorMessage, style: const TextStyle(color: Colors.white)));
     } else if (_displayedSongs.isEmpty) {
       return const Center(
           child: Text('No songs found', style: TextStyle(color: Colors.white)));
@@ -290,6 +287,8 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
       return AnimationLimiter(
         child: ListView.builder(
           controller: _scrollController,
+          cacheExtent: 100, // Preload items for smoother scrolling
+          addRepaintBoundaries: true,
           itemCount: _displayedSongs.length + (_hasMoreSongs ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == _displayedSongs.length) {
@@ -298,16 +297,21 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
                   : const SizedBox.shrink();
             }
             final song = _displayedSongs[index];
-            return AnimationConfiguration.staggeredList(
-              position: index,
-              duration: const Duration(milliseconds: 375),
-              child: SlideAnimation(
-                verticalOffset: 50.0,
-                child: FadeInAnimation(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 16.0),
-                    child: _buildSongCard(song, audioPlayerService),
+            return RepaintBoundary(
+              key: ValueKey(
+                  song.id), // Use song ID as key for better performance
+              child: AnimationConfiguration.staggeredList(
+                position: index,
+                duration: const Duration(
+                    milliseconds: 200), // Reduced for better performance
+                child: SlideAnimation(
+                  verticalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                      child: _buildSongCard(song, audioPlayerService),
+                    ),
                   ),
                 ),
               ),
@@ -319,71 +323,77 @@ class _TracksScreenState extends State<TracksScreen> with SingleTickerProviderSt
   }
 
   Widget _buildSongCard(SongModel song, AudioPlayerService audioPlayerService) {
-    return glassmorphicContainer(
-      child: ListTile(
-        leading: QueryArtworkWidget(
-          id: song.id,
-          type: ArtworkType.AUDIO,
-          nullArtworkWidget: Container(
-            width: 50,
-            height: 50,
-            color: Colors.grey[800],
-            child: const Icon(Icons.music_note, color: Colors.white),
+    if (widget.isEditingPlaylist) {
+      // Use original ListTile for editing mode with checkboxes
+      return glassmorphicContainer(
+        child: ListTile(
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: _artworkService.buildCachedArtwork(
+              song.id,
+              size: 50,
+            ),
           ),
-        ),
-        title: Text(
-          song.title,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          splitArtists(song.artist ?? 'Unknown Artist').join(', '),
-          style: TextStyle(color: Colors.grey[400]),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: widget.isEditingPlaylist
-            ? Checkbox(
-          value: _selectedSongs.contains(song),
-          onChanged: (bool? value) {
+          title: Text(
+            song.title,
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+            style: TextStyle(color: Colors.grey[400]),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: Checkbox(
+            value: _selectedSongs.contains(song),
+            onChanged: (bool? value) {
+              setState(() {
+                if (value == true) {
+                  _selectedSongs.add(song);
+                } else {
+                  _selectedSongs.remove(song);
+                }
+              });
+            },
+            fillColor: WidgetStateProperty.resolveWith<Color>(
+                (Set<WidgetState> states) {
+              if (states.contains(WidgetState.selected)) {
+                return Colors.blue;
+              }
+              return Colors.grey;
+            }),
+          ),
+          onTap: () {
             setState(() {
-              if (value == true) {
-                _selectedSongs.add(song);
-              } else {
+              if (_selectedSongs.contains(song)) {
                 _selectedSongs.remove(song);
+              } else {
+                _selectedSongs.add(song);
               }
             });
           },
-          fillColor: WidgetStateProperty.resolveWith<Color>((
-              Set<WidgetState> states) {
-            if (states.contains(WidgetState.selected)) {
-              return Colors.blue;
-            }
-            return Colors.grey;
-          }),
-        )
-            : IconButton(
-          icon: const Icon(Icons.more_vert, color: Colors.white),
-          onPressed: () {
-            // Show options for the song (e.g., add to playlist, delete, etc.)
-          },
         ),
-        onTap: widget.isEditingPlaylist
-            ? () {
-          setState(() {
-            if (_selectedSongs.contains(song)) {
-              _selectedSongs.remove(song);
-            } else {
-              _selectedSongs.add(song);
-            }
-          });
-        }
-            : () {
-          audioPlayerService.setPlaylist(
-              _displayedSongs, _displayedSongs.indexOf(song),
-            );
-          audioPlayerService.play();
+      );
+    }
+
+    // Use OptimizedSongTile for better performance
+    return OptimizedSongTile(
+      key: ValueKey(song.id),
+      song: song,
+      selected: audioPlayerService.currentSong?.id == song.id,
+      onTap: () {
+        audioPlayerService.setPlaylist(
+          _displayedSongs,
+          _displayedSongs.indexOf(song),
+        );
+      },
+      trailing: IconButton(
+        icon: const Icon(Icons.more_vert, color: Colors.white),
+        onPressed: () {
+          // Show options for the song
         },
       ),
     );

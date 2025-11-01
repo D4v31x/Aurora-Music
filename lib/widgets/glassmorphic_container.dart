@@ -18,14 +18,14 @@ Widget glassmorphicContainer({
               width: width,
               padding: padding,
               decoration: BoxDecoration(
-                color: isDark 
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.1),
+                color: isDark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(
-                  color: isDark 
-                    ? Colors.white.withOpacity(0.2)
-                    : Colors.black.withOpacity(0.2),
+                  color: isDark
+                      ? Colors.white.withOpacity(0.2)
+                      : Colors.black.withOpacity(0.2),
                   width: 1.5,
                 ),
               ),

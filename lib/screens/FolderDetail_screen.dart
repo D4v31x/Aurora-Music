@@ -1,12 +1,10 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../providers/theme_provider.dart';
 import '../services/audio_player_service.dart';
+import '../services/artwork_cache_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../services/expandable_player_controller.dart';
@@ -22,20 +20,23 @@ class FolderDetailScreen extends StatefulWidget {
 }
 
 class _FolderDetailScreenState extends State<FolderDetailScreen> {
-  final OnAudioQuery _audioQuery = OnAudioQuery();
+  final ArtworkCacheService _artworkService = ArtworkCacheService();
   late ScrollController _scrollController;
-  Color _dominantColor = Colors.deepPurple.shade900;
-  late Future<void> _colorFuture;
-  late Future<List<SongModel>> _songsFuture;
-  int _displayedSongsCount = 8;
-  final int _loadMoreStep = 8;
+  final Color _dominantColor = Colors.deepPurple.shade900;
+
+  // Lazy loading state
+  List<SongModel> _allSongs = [];
+  final List<SongModel> _displayedSongs = [];
+  int _currentPage = 0;
+  final int _songsPerPage = 20;
+  bool _isLoading = false;
+  bool _hasMoreSongs = true;
 
   @override
   void initState() {
     super.initState();
-    _colorFuture = _updateDominantColor();
     _scrollController = ScrollController()..addListener(_scrollListener);
-    _songsFuture = _fetchSongs();
+    _fetchSongs();
   }
 
   @override
@@ -45,59 +46,89 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
     super.dispose();
   }
 
-  Future<List<SongModel>> _fetchSongs() async {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+  Future<void> _fetchSongs() async {
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     final allSongs = audioPlayerService.songs;
 
-    return allSongs.where((song) {
-      final songFile = File(song.data);
-      return songFile.parent.path == widget.folderPath;
-    }).toList();
+    setState(() {
+      _allSongs = allSongs.where((song) {
+        final songFile = File(song.data);
+        return songFile.parent.path == widget.folderPath;
+      }).toList();
+    });
+
+    _loadMoreSongs();
   }
 
   void _scrollListener() {
-    if (_scrollController.position.extentAfter < 200) {
+    if (_scrollController.position.extentAfter < 200 &&
+        !_isLoading &&
+        _hasMoreSongs) {
+      _loadMoreSongs();
+    }
+  }
+
+  void _loadMoreSongs() {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final int startIndex = _currentPage * _songsPerPage;
+    final int endIndex =
+        (startIndex + _songsPerPage).clamp(0, _allSongs.length);
+
+    if (startIndex < _allSongs.length) {
+      final newSongs = _allSongs.sublist(startIndex, endIndex);
+
       setState(() {
-        _displayedSongsCount += _loadMoreStep;
+        _displayedSongs.addAll(newSongs);
+        _currentPage++;
+        _isLoading = false;
+        _hasMoreSongs = endIndex < _allSongs.length;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+        _hasMoreSongs = false;
       });
     }
   }
 
-  Future<void> _updateDominantColor() async {
-    // Since there's no image, use a default or dynamic color
-    // You can customize this to fetch folder-specific colors if desired
-    setState(() {
-      _dominantColor = Colors.deepPurple.shade900;
-    });
-  }
-
-  void _playAllSongs(BuildContext context, List<SongModel> songs) {
-    if (songs.isNotEmpty) {
-      final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-      audioPlayerService.setPlaylist(songs, 0);
+  void _playAllSongs(BuildContext context) {
+    if (_allSongs.isNotEmpty) {
+      final audioPlayerService =
+          Provider.of<AudioPlayerService>(context, listen: false);
+      audioPlayerService.setPlaylist(_allSongs, 0);
       audioPlayerService.play();
     }
   }
 
-  void _shuffleAllSongs(BuildContext context, List<SongModel> songs) {
-    if (songs.isNotEmpty) {
-      final shuffledSongs = List<SongModel>.from(songs)..shuffle();
-      final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+  void _shuffleAllSongs(BuildContext context) {
+    if (_allSongs.isNotEmpty) {
+      final shuffledSongs = List<SongModel>.from(_allSongs)..shuffle();
+      final audioPlayerService =
+          Provider.of<AudioPlayerService>(context, listen: false);
       audioPlayerService.setPlaylist(shuffledSongs, 0);
       audioPlayerService.play();
     }
   }
 
-  void _onSongTap(SongModel song, List<SongModel> songs) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-    final expandableController = Provider.of<ExpandablePlayerController>(context, listen: false);
+  void _onSongTap(SongModel song) {
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+    final expandableController =
+        Provider.of<ExpandablePlayerController>(context, listen: false);
 
-    audioPlayerService.setPlaylist(songs, songs.indexOf(song));
+    audioPlayerService.setPlaylist(_allSongs, _allSongs.indexOf(song));
     audioPlayerService.play();
     expandableController.show();
   }
 
-  Widget _buildSliverAppBar(Color backgroundColor, String folderName, SongModel? currentSong) {
+  Widget _buildSliverAppBar(
+      Color backgroundColor, String folderName, SongModel? currentSong) {
     return SliverAppBar(
       backgroundColor: Colors.transparent,
       expandedHeight: 350,
@@ -140,72 +171,111 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
     );
   }
 
-  Widget _buildActionPill(BuildContext context, IconData icon, String label, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: glassmorphicContainer(
-        width: 150,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: Colors.white),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+  Widget _buildActionPill(
+      BuildContext context, IconData icon, String label, VoidCallback onTap) {
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.elasticOut,
+      tween: Tween<double>(begin: 0.8, end: 1.0),
+      builder: (context, scale, child) {
+        return Transform.scale(
+          scale: scale,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(20),
+            splashColor: Colors.white.withOpacity(0.2),
+            child: glassmorphicContainer(
+              width: 150,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildSongsList(List<SongModel> songs) {
+  Widget _buildSongsList() {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          if (index >= _displayedSongsCount) return null;
-          final song = songs[index];
+          if (index == _displayedSongs.length) {
+            return _hasMoreSongs
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : const SizedBox.shrink();
+          }
+
+          if (index >= _displayedSongs.length) return null;
+
+          final song = _displayedSongs[index];
           return AnimationConfiguration.staggeredList(
             position: index,
-            duration: const Duration(milliseconds: 375),
+            duration: const Duration(milliseconds: 200),
             child: SlideAnimation(
               verticalOffset: 50.0,
               child: FadeInAnimation(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _onSongTap(song, songs),
+                      onTap: () => _onSongTap(song),
                       child: glassmorphicContainer(
                         child: ListTile(
-                          leading: QueryArtworkWidget(
-                            id: song.id,
-                            type: ArtworkType.AUDIO,
-                            nullArtworkWidget: const Icon(Icons.music_note, color: Colors.white, size: 40),
-                            artworkBorder: BorderRadius.circular(8),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: _artworkService.buildCachedArtwork(
+                              song.id,
+                              size: 50,
+                            ),
                           ),
                           title: Text(
                             song.title,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
                           ),
                           subtitle: Text(
-                            song.artist ?? AppLocalizations.of(context).translate('unknown_artist'),
-                            style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                            song.artist ??
+                                AppLocalizations.of(context)
+                                    .translate('unknown_artist'),
+                            style:
+                                TextStyle(color: Colors.white.withOpacity(0.7)),
                           ),
                           trailing: IconButton(
                             icon: Icon(
-                              Provider.of<AudioPlayerService>(context).isLiked(song)
+                              Provider.of<AudioPlayerService>(context)
+                                      .isLiked(song)
                                   ? Icons.favorite
                                   : Icons.favorite_border,
-                              color: Provider.of<AudioPlayerService>(context).isLiked(song)
+                              color: Provider.of<AudioPlayerService>(context)
+                                      .isLiked(song)
                                   ? Colors.pink
                                   : Colors.white,
                             ),
                             onPressed: () {
-                              Provider.of<AudioPlayerService>(context, listen: false).toggleLike(song);
+                              Provider.of<AudioPlayerService>(context,
+                                      listen: false)
+                                  .toggleLike(song);
                             },
                           ),
                         ),
@@ -217,15 +287,13 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
             ),
           );
         },
-        childCount: _displayedSongsCount > songs.length ? songs.length : _displayedSongsCount,
+        childCount: _displayedSongs.length + (_hasMoreSongs ? 1 : 0),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.isDarkMode;
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
     final currentSong = audioPlayerService.currentSong;
     final folderName = widget.folderPath.split(Platform.pathSeparator).last;
@@ -236,23 +304,17 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
         child: Stack(
           children: [
             // Content Layer
-            FutureBuilder<List<SongModel>>(
-            future: _songsFuture,
-            builder: (context, songsSnapshot) {
-              if (songsSnapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (songsSnapshot.hasError) {
-                return Center(child: Text('Error: ${songsSnapshot.error}'));
-              }
-              final songs = songsSnapshot.data!;
-              return CustomScrollView(
+            if (_displayedSongs.isEmpty && _isLoading)
+              const Center(child: CircularProgressIndicator())
+            else
+              CustomScrollView(
                 controller: _scrollController,
                 slivers: [
                   _buildSliverAppBar(_dominantColor, folderName, currentSong),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -260,26 +322,24 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                             context,
                             Icons.play_arrow,
                             AppLocalizations.of(context).translate('play_all'),
-                            () => _playAllSongs(context, songs),
+                            () => _playAllSongs(context),
                           ),
                           _buildActionPill(
                             context,
                             Icons.shuffle,
                             AppLocalizations.of(context).translate('shuffle'),
-                            () => _shuffleAllSongs(context, songs),
+                            () => _shuffleAllSongs(context),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  _buildSongsList(songs),
+                  _buildSongsList(),
                 ],
-              );
-            },
-          ),
-        ],
+              ),
+          ],
         ),
       ),
     );
   }
-} 
+}

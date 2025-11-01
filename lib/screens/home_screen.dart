@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:permission_handler/permission_handler.dart' as permissionhandler;
+import 'package:permission_handler/permission_handler.dart'
+    as permissionhandler;
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../models/utils.dart';
@@ -19,13 +18,15 @@ import '../widgets/home/settings_tab.dart';
 import 'now_playing.dart';
 import '../widgets/outline_indicator.dart';
 import '../widgets/mini_player.dart';
-import '../widgets/app_background.dart';
 import '../widgets/auto_scroll_text.dart';
 import '../services/local_caching_service.dart';
 import '../services/expandable_player_controller.dart';
 import '../services/notification_manager.dart';
+import '../services/download_progress_monitor.dart';
 import '../services/version_service.dart';
+import '../services/bluetooth_service.dart';
 import '../widgets/library_tab.dart';
+import 'package:aurora_music_v01/screens/onboarding/onboarding_screen.dart';
 import 'package:aurora_music_v01/providers/theme_provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -38,8 +39,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late bool isDarkMode;
   late TabController _tabController;
-  late final LocalCachingArtistService _artistService = LocalCachingArtistService();
-  bool _showAppBar = true;
+  late final LocalCachingArtistService _artistService =
+      LocalCachingArtistService();
   List<SongModel> songs = [];
   List<String> randomArtists = [];
   List<SongModel> randomSongs = [];
@@ -47,25 +48,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   final StreamController<bool> _streamController = StreamController<bool>();
   SongModel? currentSong;
-  // These fields are used in _refreshLibrary method
-  bool _isScanning = false;
-  int _scannedSongs = 0;
   int _totalSongs = 0;
   List<ArtistModel> artists = [];
-  final GlobalKey<ExpandableBottomSheetState> _expandableKey = GlobalKey<ExpandableBottomSheetState>();
+  final GlobalKey<ExpandableBottomSheetState> _expandableKey =
+      GlobalKey<ExpandableBottomSheetState>();
   bool _isInitialized = false;
   late final ScrollController _appBarTextController;
   bool _isTabBarScrolled = false;
   bool _hasShownChangelog = false;
-  String _currentVersion = '';
+  final String _currentVersion = '';
   final NotificationManager _notificationManager = NotificationManager();
+  final DownloadProgressMonitor _downloadMonitor = DownloadProgressMonitor();
+  final BluetoothService _bluetoothService = BluetoothService();
+  StreamSubscription<String>? _downloadStatusSubscription;
 
   @override
   void initState() {
     super.initState();
     _initializeControllers();
     _setupListeners();
-    
+
+    // Initialize Bluetooth service
+    _bluetoothService.initialize();
+
+    // Start monitoring downloads
+    _downloadMonitor.startMonitoring();
+    _downloadStatusSubscription =
+        _downloadMonitor.downloadStatusStream.listen((status) {
+      if (status.isNotEmpty) {
+        _notificationManager.showNotification(
+          status,
+          isProgress: true,
+        );
+      }
+    });
+
     // Don't try to access media at startup - delay it
     Future.delayed(const Duration(milliseconds: 1000), () {
       if (mounted) {
@@ -73,24 +90,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _initializeHomeScreen();
       }
     });
-    
+
     _checkAndShowChangelog();
     _showWelcomeMessage();
   }
-  
+
   // Initialize the home screen and check permissions
   void _initializeHomeScreen() async {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-    
     // Set initialized state
     setState(() {
       _isInitialized = true;
     });
-    
+
     // Check if we need to show permission UI
     await _checkPermissions();
   }
-  
+
   void _initializeControllers() {
     _tabController = TabController(length: 4, vsync: this);
     _animationController = AnimationController(
@@ -99,26 +114,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
     _appBarTextController = ScrollController();
   }
-  
+
   void _setupListeners() {
     _scrollController.addListener(_scrollListener);
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
-    _setupScrollListener();
   }
-  
-  void _setupScrollListener() {
-    _scrollController.addListener(() {
-      final isScrolled = _scrollController.offset > 180;
-      if (_isTabBarScrolled != isScrolled) {
-        setState(() {
-          _isTabBarScrolled = isScrolled;
-        });
-      }
-    });
-  }
-  
+
   void _showWelcomeMessage() {
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
@@ -151,15 +154,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Future<List<SongModel>> _processSongsInBackground(List<SongModel> songs) async {
-    return compute(_processMetadata, songs);
-  }
-
-  static List<SongModel> _processMetadata(List<SongModel> songs) {
-    // Perform any heavy processing on the songs here
-    return songs;
-  }
-
   void _randomizeContent() {
     if (songs.isNotEmpty) {
       randomSongs = List.from(songs)..shuffle();
@@ -175,13 +169,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _scrollListener() {
-    if (_scrollController.offset > 180 && _showAppBar) {
+    final offset = _scrollController.offset;
+    final isScrolled = offset > 180;
+
+    // Only update if state actually changed
+    if (isScrolled != _isTabBarScrolled) {
       setState(() {
-        _showAppBar = false;
-      });
-    } else if (_scrollController.offset <= 180 && !_showAppBar) {
-      setState(() {
-        _showAppBar = true;
+        _isTabBarScrolled = isScrolled;
       });
     }
   }
@@ -195,71 +189,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _tabController.dispose();
     _appBarTextController.dispose();
     _notificationManager.dispose();
+    _downloadStatusSubscription?.cancel();
+    _downloadMonitor.stopMonitoring();
     super.dispose();
   }
 
-  Future<void> _loadLibraryData() async {
-    if (Platform.isWindows) {
-      final directory = await getApplicationDocumentsDirectory();
-      final musicDir = Directory('${directory.path}/Music');
-
-      if (!await musicDir.exists()) {
-        await musicDir.create(recursive: true);
-      }
-
-      final files = await musicDir
-          .list(recursive: true, followLinks: false)
-          .where((entity) =>
-      entity is File &&
-          (entity.path.toLowerCase().endsWith('.mp3') ||
-              entity.path.toLowerCase().endsWith('.m4a') ||
-              entity.path.toLowerCase().endsWith('.wav')))
-          .cast<File>()
-          .toList();
-
-      final songs = files.map((file) {
-        final fileName = file.path.split(Platform.pathSeparator).last;
-        final title = fileName.contains('.') ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
-
-        return SongModel({
-          '_id': file.hashCode,
-          'title': title,
-          'artist': 'Unknown Artist',
-          'album': 'Unknown Album',
-          'duration': 0,
-          'uri': file.path,
-          '_data': file.path,
-          'date_added': file.statSync().modified.millisecondsSinceEpoch,
-          'is_music': 1,
-          'size': file.lengthSync(),
-        });
-      }).toList();
-
-      setState(() {
-        this.songs = songs;
-      });
-      return;
-    }
-
-    try {
-      final onAudioQuery = OnAudioQuery();
-      final songs = await onAudioQuery.querySongs();
-      setState(() {
-        this.songs = songs;
-      });
-    } catch (e) {
-      debugPrint('Error loading library data: $e');
-    }
-  }
-
   Future<void> _refreshLibrary() async {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-
-    setState(() {
-      _isScanning = true;
-      _scannedSongs = 0;
-      _totalSongs = 0;
-    });
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
 
     _notificationManager.showNotification(
       AppLocalizations.of(context).translate('scanning_songs'),
@@ -271,20 +208,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final allSongs = await onAudioQuery.querySongs();
       _totalSongs = allSongs.length;
 
+      // Process songs in batches to avoid excessive setState calls
       for (var song in allSongs) {
         await audioPlayerService.addSongToLibrary(song);
-        await Future.delayed(const Duration(milliseconds: 10));
-
-        setState(() {
-          _scannedSongs++;
-        });
       }
 
-      setState(() {
-        songs = allSongs;
-        _randomizeContent();
-        _isScanning = false;
-      });
+      // Single setState after all processing
+      if (mounted) {
+        setState(() {
+          songs = allSongs;
+          _randomizeContent();
+        });
+      }
 
       _notificationManager.showNotification(
         '${AppLocalizations.of(context).translate('library_updated')} ($_totalSongs ${AppLocalizations.of(context).translate('songs_loaded')})',
@@ -293,12 +228,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       );
 
       await audioPlayerService.saveLibrary();
-
     } catch (e) {
-      setState(() {
-        _isScanning = false;
-      });
-
       _notificationManager.showNotification(
         AppLocalizations.of(context).translate('scan_failed'),
         duration: const Duration(seconds: 5),
@@ -308,33 +238,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   // Check for permissions and show appropriate UI
-  Future<void> _checkPermissions() async {
+  Future<void> _checkPermissions({bool force = false}) async {
     if (!mounted) return;
-    
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-    
+
+    // If forcing, go straight to the permission dialog
+    if (force) {
+      _showPermissionDialog();
+      return;
+    }
+
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+
     try {
       if (Platform.isAndroid) {
         // Check status without requesting (don't force request)
-        final hasAudioPermission = await permissionhandler.Permission.audio.status.isGranted;
-        final hasStoragePermission = await permissionhandler.Permission.storage.status.isGranted;
-        
+        final hasAudioPermission =
+            await permissionhandler.Permission.audio.status.isGranted;
+        final hasStoragePermission =
+            await permissionhandler.Permission.storage.status.isGranted;
+
         if (hasAudioPermission || hasStoragePermission) {
           // If we already have permissions, initialize the library
           _notificationManager.showNotification(
             AppLocalizations.of(context).translate('loading_library'),
             isProgress: true,
           );
-          
+
           final success = await audioPlayerService.initializeMusicLibrary();
-          
+
           if (success) {
             _notificationManager.showNotification(
               AppLocalizations.of(context).translate('library_loaded'),
               duration: const Duration(seconds: 2),
               onComplete: () => _notificationManager.showDefaultTitle(),
             );
-            
+
             // Get songs from the audio service
             setState(() {
               songs = audioPlayerService.songs;
@@ -353,9 +292,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           AppLocalizations.of(context).translate('loading_library'),
           isProgress: true,
         );
-        
+
         final success = await audioPlayerService.initializeMusicLibrary();
-        
+
         if (success) {
           _notificationManager.showNotification(
             AppLocalizations.of(context).translate('library_loaded'),
@@ -363,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onComplete: () => _notificationManager.showDefaultTitle(),
           );
         }
-        
+
         setState(() {
           songs = audioPlayerService.songs;
           _randomizeContent();
@@ -376,25 +315,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     }
   }
-  
+
   // Show a dialog to request permissions
   void _showPermissionDialog() {
     if (!mounted) return;
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context).translate('permission_required')),
+          title: Text(
+              AppLocalizations.of(context).translate('permission_required')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(AppLocalizations.of(context).translate('permission_explanation')),
+              Text(AppLocalizations.of(context)
+                  .translate('permission_explanation')),
               const SizedBox(height: 12),
-              Text(AppLocalizations.of(context).translate('no_permission_explanation'), 
-                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              Text(
+                  AppLocalizations.of(context)
+                      .translate('no_permission_explanation'),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ],
           ),
           actions: <Widget>[
@@ -406,11 +349,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 setState(() {
                   songs = [];
                 });
-                
+
                 // Show a snackbar explaining how to enable later
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context).translate('permission_later')),
+                    content: Text(AppLocalizations.of(context)
+                        .translate('permission_later')),
                     duration: const Duration(seconds: 5),
                     action: SnackBarAction(
                       label: AppLocalizations.of(context).translate('settings'),
@@ -423,7 +367,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               },
             ),
             TextButton(
-              child: Text(AppLocalizations.of(context).translate('grant_permission')),
+              child: Text(
+                  AppLocalizations.of(context).translate('grant_permission')),
               onPressed: () async {
                 Navigator.of(context).pop();
                 // Request permissions
@@ -431,28 +376,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   permissionhandler.Permission.audio,
                   permissionhandler.Permission.storage,
                 ].request();
-                
-                final hasAudioPermission = statuses[permissionhandler.Permission.audio]?.isGranted ?? false;
-                final hasStoragePermission = statuses[permissionhandler.Permission.storage]?.isGranted ?? false;
-                
+
+                final hasAudioPermission =
+                    statuses[permissionhandler.Permission.audio]?.isGranted ??
+                        false;
+                final hasStoragePermission =
+                    statuses[permissionhandler.Permission.storage]?.isGranted ??
+                        false;
+
                 if (hasAudioPermission || hasStoragePermission) {
                   // Permissions granted, initialize library
-                  final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-                  
+                  final audioPlayerService =
+                      Provider.of<AudioPlayerService>(context, listen: false);
+
                   _notificationManager.showNotification(
                     AppLocalizations.of(context).translate('loading_library'),
                     isProgress: true,
                   );
-                  
-                  final success = await audioPlayerService.initializeMusicLibrary();
-                  
+
+                  final success =
+                      await audioPlayerService.initializeMusicLibrary();
+
                   if (success) {
                     _notificationManager.showNotification(
                       AppLocalizations.of(context).translate('library_loaded'),
                       duration: const Duration(seconds: 2),
                       onComplete: () => _notificationManager.showDefaultTitle(),
                     );
-                    
+
                     // Get songs from the audio service
                     setState(() {
                       songs = audioPlayerService.songs;
@@ -462,10 +413,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     setState(() {
                       songs = [];
                     });
-                    
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(AppLocalizations.of(context).translate('library_error')),
+                        content: Text(AppLocalizations.of(context)
+                            .translate('library_error')),
                       ),
                     );
                   }
@@ -474,12 +426,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   setState(() {
                     songs = [];
                   });
-                  
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(AppLocalizations.of(context).translate('perm_deny')),
+                      content: Text(
+                          AppLocalizations.of(context).translate('perm_deny')),
                       action: SnackBarAction(
-                        label: AppLocalizations.of(context).translate('settings'),
+                        label:
+                            AppLocalizations.of(context).translate('settings'),
                         onPressed: () async {
                           await permissionhandler.openAppSettings();
                         },
@@ -494,14 +448,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       },
     );
   }
-  
+
   // Note: This Windows code has been moved to AudioPlayerService
   // and is no longer used directly in HomeScreen
 
   // Windows file handling moved to AudioPlayerService
 
   Future<bool> _onWillPop() async {
-    final expandableController = Provider.of<ExpandablePlayerController>(context, listen: false);
+    final expandableController =
+        Provider.of<ExpandablePlayerController>(context, listen: false);
 
     // If the player is expanded, collapse it instead of showing exit dialog
     if (expandableController.isExpanded) {
@@ -511,22 +466,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     // Otherwise show the exit dialog
     return await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context).translate('exit_app')),
-        content: Text(AppLocalizations.of(context).translate('exit_app_confirm')),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context).translate('no')),
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(AppLocalizations.of(context).translate('exit_app')),
+            content: Text(
+                AppLocalizations.of(context).translate('exit_app_confirm')),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(AppLocalizations.of(context).translate('no')),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(AppLocalizations.of(context).translate('yes')),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(AppLocalizations.of(context).translate('yes')),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 
   @override
@@ -536,63 +493,110 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     isDarkMode = themeProvider.isDarkMode;
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // All library initialization is now handled by AudioPlayerService
-
-
-
   Widget buildAppBarTitle() {
-    return StreamBuilder<String>(
-      stream: _notificationManager.notificationStream,
-      initialData: '',
-      builder: (context, snapshot) {
-        final message = snapshot.data ?? '';
-
-        return AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: message.isEmpty
-              ? Text(
-            AppLocalizations.of(context).translate('aurora_music'),
-            key: const ValueKey('default'),
-            style: const TextStyle(
-              fontFamily: 'ProductSans',
-              color: Colors.white,
-              fontSize: 34,
-              fontWeight: FontWeight.bold,
+    return ListenableBuilder(
+      listenable: _bluetoothService,
+      builder: (context, child) {
+        final isConnected = _bluetoothService.isBluetoothConnected;
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSlide(
+              offset: isConnected ? const Offset(0, -0.3) : Offset.zero,
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.ease,
+              child: StreamBuilder<String>(
+                stream: _notificationManager.notificationStream,
+                initialData: '',
+                builder: (context, snapshot) {
+                  final message = snapshot.data ?? '';
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: message.isEmpty
+                        ? Text(
+                            AppLocalizations.of(context)
+                                .translate('aurora_music'),
+                            key: const ValueKey('default'),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontFamily: 'ProductSans',
+                              color: Colors.white,
+                              fontSize: 34,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : AutoScrollText(
+                            key: ValueKey(message),
+                            text: message,
+                            style: const TextStyle(
+                              fontFamily: 'ProductSans',
+                              color: Colors.white,
+                              fontSize: 34,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            onMessageComplete: (message) =>
+                                _notificationManager.showDefaultTitle(),
+                          ),
+                  );
+                },
+              ),
             ),
-          )
-              : AutoScrollText(
-            key: ValueKey(message),
-            text: message,
-            style: const TextStyle(
-              fontFamily: 'ProductSans',
-              color: Colors.white,
-              fontSize: 34,
-              fontWeight: FontWeight.bold,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.ease,
+              height: isConnected ? 30 : 0,
+              child: ClipRect(
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.ease,
+                  opacity: isConnected ? 1.0 : 0.0,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: const Color(0xFF10B981), // Green color
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.bluetooth_connected,
+                          color: Color(0xFF10B981),
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          transitionBuilder:
+                              (Widget child, Animation<double> animation) {
+                            return FadeTransition(
+                                opacity: animation, child: child);
+                          },
+                          child: Text(
+                            _bluetoothService.connectedDeviceName,
+                            key:
+                                ValueKey(_bluetoothService.connectedDeviceName),
+                            style: const TextStyle(
+                              fontFamily: 'ProductSans',
+                              fontSize: 12,
+                              color: Color(0xFF10B981),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
-            onMessageComplete: (message) => _notificationManager.showDefaultTitle(),
-          ),
+          ],
         );
       },
     );
@@ -600,105 +604,111 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Selector2<AudioPlayerService, ExpandablePlayerController, SongModel?>(
-      selector: (context, audioService, expandableController) => audioService.currentSong,
+    return Selector2<AudioPlayerService, ExpandablePlayerController,
+        SongModel?>(
+      selector: (context, audioService, expandableController) =>
+          audioService.currentSong,
       builder: (context, currentSong, child) {
         return WillPopScope(
           onWillPop: _onWillPop,
           child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Stack(
-          children: [
-            // Using the app background widget to provide consistent UI
-            Positioned.fill(child: AppBackground(child: Container())),
-            NestedScrollView(
-              controller: _scrollController,
-              headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                SliverAppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0.0,
-                  toolbarHeight: 70,
-                  automaticallyImplyLeading: false,
-                  floating: true,
-                  pinned: true,
-                  expandedHeight: 220,
-                  flexibleSpace: FlexibleSpaceBar(
-                    expandedTitleScale: 1.0,
-                    centerTitle: true,
-                    titlePadding: const EdgeInsets.only(bottom: 120),
-                    title: !innerBoxIsScrolled ? buildAppBarTitle() : null,
-                  ),
-                  bottom: PreferredSize(
-                    preferredSize: const Size.fromHeight(70.0),
-                    child: ClipRect(
-                      child: BackdropFilter(
-                        filter: _isTabBarScrolled
-                            ? ImageFilter.blur(sigmaX: 10, sigmaY: 10)
-                            : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                        child: TabBar(
-                          controller: _tabController,
-                          dividerColor: Colors.transparent,
-                          isScrollable: true,
-                          labelPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
-                          indicatorPadding: const EdgeInsets.symmetric(vertical: 8.0),
-                          indicator: OutlineIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                            radius: const Radius.circular(20),
-                            text: [
-                              AppLocalizations.of(context).translate('home'),
-                              AppLocalizations.of(context).translate('library'),
-                              AppLocalizations.of(context).translate('search'),
-                              AppLocalizations.of(context).translate('settings'),
-                            ][_tabController.index],
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            body: Stack(
+              children: [
+                NestedScrollView(
+                  controller: _scrollController,
+                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                    SliverAppBar(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0.0,
+                      toolbarHeight: 70,
+                      automaticallyImplyLeading: false,
+                      floating: true,
+                      pinned: true,
+                      expandedHeight: 250,
+                      flexibleSpace: ClipRRect(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                          child: FlexibleSpaceBar(
+                            background: Container(
+                              color: Colors.transparent,
+                              child: Center(
+                                child: buildAppBarTitle(),
+                              ),
+                            ),
+                            centerTitle: true,
+                            title: innerBoxIsScrolled
+                                ? Text(
+                                    AppLocalizations.of(context)
+                                        .translate('aurora_music'),
+                                    style: const TextStyle(
+                                      fontFamily: 'ProductSans',
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : null,
                           ),
-                          tabs: [
-                            _buildTabItem(AppLocalizations.of(context).translate('home')),
-                            _buildTabItem(AppLocalizations.of(context).translate('library')),
-                            _buildTabItem(AppLocalizations.of(context).translate('search')),
-                            _buildTabItem(AppLocalizations.of(context).translate('settings')),
-                          ],
+                        ),
+                      ),
+                      bottom: PreferredSize(
+                        preferredSize: const Size.fromHeight(kToolbarHeight),
+                        child: Container(
+                          color: innerBoxIsScrolled
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .surface
+                                  .withOpacity(0.8)
+                              : Colors.transparent,
+                          child: _buildTabBar(),
                         ),
                       ),
                     ),
+                  ],
+                  body: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      HomeTab(
+                        randomSongs: randomSongs,
+                        randomArtists: randomArtists,
+                        artistService: _artistService,
+                        currentSong: currentSong,
+                        onRefresh: _refreshLibrary,
+                      ),
+                      const LibraryTab(), // Use the separated LibraryTab widget
+                      SearchTab(
+                        songs: songs,
+                        artists: artists,
+                        isInitialized: _isInitialized,
+                      ),
+                      SettingsTab(
+                        notificationManager: _notificationManager,
+                        onUpdateCheck: () async {
+                          await launchUrl(Uri.parse(
+                              'https://github.com/D4v31x/Aurora-Music/releases/latest'));
+                        },
+                        onResetSetup: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const OnboardingScreen()),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
+                if (currentSong != null)
+                  ExpandableBottomSheet(
+                    key: _expandableKey,
+                    minHeight: 60,
+                    minChild: MiniPlayer(currentSong: currentSong),
+                    maxChild: NowPlayingScreen(),
+                  ),
               ],
-              body: TabBarView(
-                controller: _tabController,
-                children: [
-                  HomeTab(
-                    randomSongs: randomSongs,
-                    randomArtists: randomArtists,
-                    artistService: _artistService,
-                    currentSong: currentSong,
-                    onRefresh: _refreshLibrary,
-                  ),
-                  const LibraryTab(), // Use the separated LibraryTab widget
-                  SearchTab(
-                    songs: songs,
-                    artists: artists,
-                    isInitialized: _isInitialized,
-                  ),
-                  SettingsTab(
-                    notificationManager: _notificationManager,
-                    onUpdateCheck: () async {
-                      await launchUrl(Uri.parse('https://github.com/D4v31x/Aurora-Music/releases/latest'));
-                    },
-                  ),
-                ],
-              ),
             ),
-            if (currentSong != null)
-              ExpandableBottomSheet(
-                key: _expandableKey,
-                minHeight: 60,
-                minChild: MiniPlayer(currentSong: currentSong),
-                maxChild: const NowPlayingScreen(),
-              ),
-          ],
-        ),
-      ),
+          ),
         );
       },
     );
@@ -723,6 +733,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return TabBar(
+      controller: _tabController,
+      dividerColor: Colors.transparent,
+      isScrollable: true,
+      labelPadding:
+          const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+      indicatorPadding: const EdgeInsets.symmetric(vertical: 8.0),
+      indicator: OutlineIndicator(
+        color: Colors.white,
+        strokeWidth: 2,
+        radius: const Radius.circular(20),
+        text: [
+          AppLocalizations.of(context).translate('home'),
+          AppLocalizations.of(context).translate('library'),
+          AppLocalizations.of(context).translate('search'),
+          AppLocalizations.of(context).translate('settings'),
+        ][_tabController.index],
+      ),
+      tabs: [
+        _buildTabItem(AppLocalizations.of(context).translate('home')),
+        _buildTabItem(AppLocalizations.of(context).translate('library')),
+        _buildTabItem(AppLocalizations.of(context).translate('search')),
+        _buildTabItem(AppLocalizations.of(context).translate('settings')),
+      ],
     );
   }
 }

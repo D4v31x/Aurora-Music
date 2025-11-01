@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'dart:typed_data';
+import 'artwork_cache_service.dart';
 
 /// Service that manages background colors and gradients
 /// Extracts colors from artwork or provides defaults
 class BackgroundManagerService extends ChangeNotifier {
+  final ArtworkCacheService _artworkCache = ArtworkCacheService();
   List<Color> _currentColors = _getDefaultColors();
   bool _isDarkMode = true;
-  
+
   static const Color _defaultDarkPrimary = Color(0xFF1A237E);
   static const Color _defaultDarkSecondary = Color(0xFF311B92);
   static const Color _defaultDarkTertiary = Color(0xFF512DA8);
   static const Color _defaultDarkQuaternary = Color(0xFF7B1FA2);
-  
+
   static const Color _defaultLightPrimary = Color(0xFFE3F2FD);
   static const Color _defaultLightSecondary = Color(0xFFBBDEFB);
   static const Color _defaultLightTertiary = Color(0xFF90CAF9);
@@ -60,7 +62,7 @@ class BackgroundManagerService extends ChangeNotifier {
     }
   }
 
-  /// Update colors from song model
+  /// Extract and update colors from song artwork
   Future<void> updateColorsFromSong(SongModel? song) async {
     if (song == null) {
       _useDefaultColors();
@@ -68,13 +70,9 @@ class BackgroundManagerService extends ChangeNotifier {
     }
 
     try {
-      final artworkData = await OnAudioQuery().queryArtwork(
-        song.id,
-        ArtworkType.AUDIO,
-        quality: 100,
-        size: 200, // Small size for performance
-      );
-      
+      // Use cached artwork service instead of querying directly
+      final artworkData = await _artworkCache.getArtwork(song.id);
+
       await updateColorsFromArtwork(artworkData);
     } catch (e) {
       _useDefaultColors();
@@ -94,11 +92,11 @@ class BackgroundManagerService extends ChangeNotifier {
     if (palette.vibrantColor?.color != null) {
       colors.add(palette.vibrantColor!.color);
     }
-    
+
     if (palette.lightVibrantColor?.color != null) {
       colors.add(palette.lightVibrantColor!.color);
     }
-    
+
     if (palette.darkVibrantColor?.color != null) {
       colors.add(palette.darkVibrantColor!.color);
     }
@@ -107,7 +105,7 @@ class BackgroundManagerService extends ChangeNotifier {
     if (palette.mutedColor?.color != null && colors.length < 4) {
       colors.add(palette.mutedColor!.color);
     }
-    
+
     if (palette.lightMutedColor?.color != null && colors.length < 4) {
       colors.add(palette.lightMutedColor!.color);
     }
@@ -148,7 +146,7 @@ class BackgroundManagerService extends ChangeNotifier {
   bool _isUsingDefaultColors() {
     final defaultColors = _getDefaultColors();
     if (_currentColors.length != defaultColors.length) return false;
-    
+
     for (int i = 0; i < _currentColors.length; i++) {
       if (_currentColors[i] != defaultColors[i]) return false;
     }
@@ -174,7 +172,7 @@ class BackgroundManagerService extends ChangeNotifier {
       _defaultDarkQuaternary,
     ];
   }
-  
+
   /// Set custom colors directly for the mesh gradient
   /// This method allows setting colors from palette generators or other sources
   void setCustomColors(List<Color> colors) {
@@ -182,7 +180,7 @@ class BackgroundManagerService extends ChangeNotifier {
       _useDefaultColors();
       return;
     }
-    
+
     // Take up to 9 colors for the mesh (3x3 grid)
     _currentColors = colors.take(9).toList();
     notifyListeners();

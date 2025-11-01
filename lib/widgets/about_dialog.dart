@@ -44,7 +44,8 @@ class AuroraAboutDialog extends StatelessWidget {
                       Colors.white.withOpacity(0.05),
                     ],
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(15)),
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 32),
                 child: Column(
@@ -89,14 +90,15 @@ class AuroraAboutDialog extends StatelessWidget {
                         title: 'Copyright',
                         value: '© ${DateTime.now().year} Aurora Software',
                       ),
-                      
+
                       const SizedBox(height: 24),
                       const Divider(color: Colors.white24),
                       const SizedBox(height: 24),
 
                       // Links Section
                       Text(
-                        AppLocalizations.of(context).translate('connect_with_us'),
+                        AppLocalizations.of(context)
+                            .translate('connect_with_us'),
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
                           fontSize: 14,
@@ -109,19 +111,22 @@ class AuroraAboutDialog extends StatelessWidget {
                           _buildSocialButton(
                             icon: Icons.language,
                             label: 'Website',
-                            onTap: () => _launchURL('https://d4v31x.github.io/Aurora_WEB'),
+                            onTap: () => _launchURL(
+                                'https://d4v31x.github.io/Aurora_WEB'),
                           ),
                           const SizedBox(width: 16),
                           _buildSocialButton(
                             icon: Icons.code,
                             label: 'GitHub',
-                            onTap: () => _launchURL('https://github.com/D4v31x/Aurora-Music'),
+                            onTap: () => _launchURL(
+                                'https://github.com/D4v31x/Aurora-Music'),
                           ),
                           const SizedBox(width: 16),
                           _buildSocialButton(
                             icon: Icons.discord,
                             label: 'Instagram',
-                            onTap: () => _launchURL('https://www.instagram.com/aurora.software'),
+                            onTap: () => _launchURL(
+                                'https://www.instagram.com/aurora.software'),
                           ),
                         ],
                       ),
@@ -222,4 +227,4 @@ class AuroraAboutDialog extends StatelessWidget {
       ),
     );
   }
-} 
+}

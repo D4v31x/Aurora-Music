@@ -33,9 +33,9 @@ class _OutlinePainter extends BoxPainter {
     required this.radius,
     VoidCallback? onChange,
   })  : _paint = Paint()
-    ..style = PaintingStyle.stroke
-    ..color = color
-    ..strokeWidth = strokeWidth,
+          ..style = PaintingStyle.stroke
+          ..color = color
+          ..strokeWidth = strokeWidth,
         super(onChange);
 
   final Color color;

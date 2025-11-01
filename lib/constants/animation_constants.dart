@@ -10,7 +10,11 @@ class AnimationConstants {
   static const Duration slow = Duration(milliseconds: 400);
   static const Duration pageTransition = Duration(milliseconds: 600);
   static const Duration splash = Duration(milliseconds: 2000);
-  
+
+  // Player transition durations - optimized for snappy feel
+  static const Duration playerExpand = Duration(milliseconds: 600);
+  static const Duration playerCollapse = Duration(milliseconds: 550);
+
   // Standard animation curves for different use cases
   static const Curve easeInOut = Curves.easeInOut;
   static const Curve easeInOutCurve = easeInOut; // Alias for compatibility
@@ -20,38 +24,42 @@ class AnimationConstants {
   static const Curve linear = Curves.linear;
   static const Curve decelerate = Curves.decelerate;
   static const Curve fastOutSlowIn = Curves.fastOutSlowIn;
-  
+
+  // Player-specific curves for natural transitions
+  static const Curve playerExpandCurve = Curves.easeInOutCubic;
+  static const Curve playerCollapseCurve = Curves.easeInOutCubic;
+
   // Standard animation delays
   static const Duration shortDelay = Duration(milliseconds: 100);
   static const Duration mediumDelay = Duration(milliseconds: 200);
   static const Duration longDelay = Duration(milliseconds: 400);
-  
+
   // Movement distances for slide animations
   static const double slideDistance = 30.0;
   static const double largeSlideDistance = 100.0;
-  
+
   // Opacity values
   static const double hiddenOpacity = 0.0;
   static const double visibleOpacity = 1.0;
   static const double dimOpacity = 0.7;
   static const double subtleOpacity = 0.8;
-  
+
   // Rotation values (in radians)
   static const double subtleRotation = 0.05;
   static const double halfRotation = 0.5;
   static const double fullRotation = 6.28318; // 2π
-  
+
   // Scale values
   static const double scaleDown = 0.95;
   static const double scaleNormal = 1.0;
   static const double scaleUp = 1.05;
-  
+
   // Blur values
   static const double noBlur = 0.0;
   static const double subtleBlur = 2.0;
   static const double normalBlur = 5.0;
   static const double strongBlur = 10.0;
-  
+
   // Stagger timing for lists
   static const Duration staggerDelay = Duration(milliseconds: 50);
   static const Duration staggerDelayLong = Duration(milliseconds: 100);

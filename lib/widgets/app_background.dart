@@ -22,8 +22,9 @@ class AppBackground extends StatelessWidget {
     return Consumer<BackgroundManagerService>(
       builder: (context, backgroundManager, _) {
         // Check if complex backgrounds should be enabled
-        final shouldEnableComplexBackground = DeviceCapabilities.shouldEnableBackgroundEffects;
-        
+        final shouldEnableComplexBackground =
+            DeviceCapabilities.shouldEnableBackgroundEffects;
+
         // Use simple gradient for low-end devices
         if (!shouldEnableComplexBackground) {
           return Stack(
@@ -43,7 +44,7 @@ class AppBackground extends StatelessWidget {
             ],
           );
         }
-        
+
         return Stack(
           children: [
             // Mesh gradient background using the mesh package
@@ -53,13 +54,12 @@ class AppBackground extends StatelessWidget {
                     ? AnimatedMeshBackground(
                         colors: backgroundManager.currentColors,
                         // Use performance-aware settings
-                        animationDuration: DeviceCapabilities.isLowEndDevice 
-                            ? const Duration(seconds: 10) 
+                        animationDuration: DeviceCapabilities.isLowEndDevice
+                            ? const Duration(seconds: 10)
                             : const Duration(seconds: 7),
                         transitionDuration: const Duration(milliseconds: 400),
-                        animationSpeed: DeviceCapabilities.isLowEndDevice 
-                            ? 0.8 
-                            : 1.2,
+                        animationSpeed:
+                            DeviceCapabilities.isLowEndDevice ? 0.8 : 1.2,
                       )
                     : MeshBackground(
                         colors: backgroundManager.currentColors,

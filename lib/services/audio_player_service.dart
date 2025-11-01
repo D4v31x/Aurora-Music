@@ -10,11 +10,13 @@ import '../models/playlist_model.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:audio_session/audio_session.dart';
 import 'background_manager_service.dart';
+import 'artwork_cache_service.dart';
 
 class AudioPlayerService extends ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final OnAudioQuery _audioQuery = OnAudioQuery();
-  
+  final ArtworkCacheService _artworkCache = ArtworkCacheService();
+
   // Background manager for mesh gradient colors
   BackgroundManagerService? _backgroundManager;
 
@@ -24,6 +26,7 @@ class AudioPlayerService extends ChangeNotifier {
   bool _isPlaying = false;
   bool _isShuffle = false;
   bool _isRepeat = false;
+  bool _isLoading = false;
   Set<String> _librarySet = {};
 
   // Play count tracking
@@ -91,14 +94,15 @@ class AudioPlayerService extends ChangeNotifier {
       ValueNotifier<List<Playlist>>([]);
   final ValueNotifier<bool> isShuffleNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isRepeatNotifier = ValueNotifier<bool>(false);
-  
+
   // Sleep timer related properties
-  final ValueNotifier<Duration?> sleepTimerDurationNotifier = ValueNotifier<Duration?>(null);
-  
+  final ValueNotifier<Duration?> sleepTimerDurationNotifier =
+      ValueNotifier<Duration?>(null);
+
   AudioPlayerService() {
     _init();
     _loadSettings();
-    
+
     // Initialize with empty data first - don't try to load music yet
     _songs = [];
     _likedSongsPlaylist = Playlist(
@@ -106,15 +110,15 @@ class AudioPlayerService extends ChangeNotifier {
       name: _likedPlaylistName,
       songs: [],
     );
-    
+
     // Don't do any audio query operations in the constructor
     // All media access will be explicit and user-initiated
-    
+
     audioPlayer.playerStateStream.listen((playerState) {
       notifyListeners();
     });
   }
-  
+
   // Check permissions safely without crashing the app
   Future<bool> _checkPermissionStatus() async {
     try {
@@ -124,37 +128,37 @@ class AudioPlayerService extends ChangeNotifier {
       return false;
     }
   }
-  
+
   // Public method to initialize music library - should be called only from HomeScreen
   Future<bool> initializeMusicLibrary() async {
     try {
       final hasPermissions = await _checkPermissionStatus();
-      
+
       if (!hasPermissions) {
         debugPrint('No permissions yet - library remains empty');
         return false;
       }
-      
+
       // Load library from cache first
       await loadLibrary();
-      
+
       // Try to load songs
       try {
         final songs = await _audioQuery.querySongs();
         _songs = songs;
-        
+
         // Initialize the liked songs playlist
         await loadLikedSongs();
         final likedSongs = songs
             .where((song) => _likedSongs.contains(song.id.toString()))
             .toList();
-            
+
         _likedSongsPlaylist = Playlist(
           id: LIKED_SONGS_PLAYLIST_ID,
           name: _likedPlaylistName,
           songs: likedSongs,
         );
-        
+
         notifyListeners();
         return true;
       } catch (e) {
@@ -166,25 +170,25 @@ class AudioPlayerService extends ChangeNotifier {
       return false;
     }
   }
-  
+
   // Public method to request permissions from UI
   Future<bool> requestPermissions() async {
     try {
       final permissionStatus = await _audioQuery.permissionsStatus();
-      
+
       if (!permissionStatus) {
         // Only request if needed
         final granted = await _audioQuery.permissionsRequest();
-        
+
         // If permissions were just granted, initialize the library
         if (granted) {
           await Future.delayed(const Duration(milliseconds: 500));
           await initializeMusicLibrary();
         }
-        
+
         return granted;
       }
-      
+
       return permissionStatus;
     } catch (e) {
       debugPrint('Permission request error: $e');
@@ -205,41 +209,42 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   Future<void> _init() async {
-  // Configure audio session
-  final session = await AudioSession.instance;
-  await session.configure(const AudioSessionConfiguration(
-    avAudioSessionCategory: AVAudioSessionCategory.playback,
-    androidAudioAttributes: AndroidAudioAttributes(
-      contentType: AndroidAudioContentType.music,
-      usage: AndroidAudioUsage.media,
-    ),
-    androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-    androidWillPauseWhenDucked: true,
-  ));
+    // Configure audio session
+    final session = await AudioSession.instance;
+    await session.configure(const AudioSessionConfiguration(
+      avAudioSessionCategory: AVAudioSessionCategory.playback,
+      androidAudioAttributes: AndroidAudioAttributes(
+        contentType: AndroidAudioContentType.music,
+        usage: AndroidAudioUsage.media,
+      ),
+      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+      androidWillPauseWhenDucked: true,
+    ));
 
-  await _loadPlayCounts();
-  await _loadPlaylists();
+    await _loadPlayCounts();
+    await _loadPlaylists();
 
-  _audioPlayer.playerStateStream.listen((playerState) {
-    _isPlaying = playerState.playing;
-    isPlayingNotifier.value = _isPlaying;
-    notifyListeners();
-  });
+    _audioPlayer.playerStateStream.listen((playerState) {
+      _isPlaying = playerState.playing;
+      isPlayingNotifier.value = _isPlaying;
+      notifyListeners();
+    });
 
-  _audioPlayer.positionStream.listen((position) {
-    final duration = _audioPlayer.duration;
-    if (duration != null && position >= duration) {
-      skip();
-    }
-  });
-  _startCacheCleanup();
-}
+    _audioPlayer.positionStream.listen((position) {
+      final duration = _audioPlayer.duration;
+      if (duration != null && position >= duration) {
+        skip();
+      }
+    });
+    _startCacheCleanup();
+  }
 
-void _startCacheCleanup() {
-  Timer.periodic(const Duration(hours: 24), (timer) async {
-    await _manageCacheSize();
-  });
-}
+  void _startCacheCleanup() {
+    Timer.periodic(const Duration(hours: 24), (timer) async {
+      await _manageCacheSize();
+    });
+  }
+
   // Playlist Management
   Future<void> _loadPlaylists() async {
     final directory = await getApplicationDocumentsDirectory();
@@ -399,8 +404,8 @@ void _startCacheCleanup() {
       }
     }
 
+    // Save async without blocking
     _savePlayCounts();
-    notifyListeners();
   }
 
   // Most Played Queries
@@ -451,97 +456,159 @@ void _startCacheCleanup() {
   }
 
   // Playback Control
-Future<void> setPlaylist(List<SongModel> songs, int startIndex) async {
-  try {
-    if (songs.isEmpty || startIndex < 0 || startIndex >= songs.length) {
-      _errorController.add('Invalid playlist or start index');
+  Future<void> setPlaylist(List<SongModel> songs, int startIndex) async {
+    try {
+      if (songs.isEmpty || startIndex < 0 || startIndex >= songs.length) {
+        debugPrint('Invalid playlist or start index');
+        _errorController.add('Invalid playlist or start index');
+        return;
+      }
+
+      // Reset loading flag when setting a new playlist
+      _isLoading = false;
+
+      _playlist = songs;
+      _currentIndex = startIndex;
+
+      debugPrint(
+          'Setting playlist with ${songs.length} songs, starting at index $startIndex');
+      debugPrint('Gapless playback: $_gaplessPlayback');
+
+      if (_gaplessPlayback) {
+        try {
+          final playlistSource = ConcatenatingAudioSource(
+            children: _playlist.map((song) {
+              final uri = song.uri ?? song.data;
+              debugPrint('Adding song to playlist: ${song.title} - URI: $uri');
+              return AudioSource.uri(
+                Uri.parse(uri),
+                tag: MediaItem(
+                  id: song.id.toString(),
+                  album: song.album ?? 'Unknown Album',
+                  title: song.title,
+                  artist: song.artist ?? 'Unknown Artist',
+                  duration: Duration(milliseconds: song.duration ?? 0),
+                ),
+              );
+            }).toList(),
+          );
+
+          debugPrint('Setting audio source with initial index: $_currentIndex');
+          await _audioPlayer.setAudioSource(
+            playlistSource,
+            initialIndex: _currentIndex,
+            initialPosition: Duration.zero,
+          );
+          debugPrint('Audio source set successfully, now playing...');
+          await _audioPlayer.play();
+
+          // Update state for gapless playback
+          _isPlaying = true;
+          isPlayingNotifier.value = true;
+          _incrementPlayCount(_playlist[_currentIndex]);
+          await updateCurrentArtwork();
+          await _updateBackgroundColors();
+          _currentSongController.add(_playlist[_currentIndex]);
+          currentSongNotifier.value = _playlist[_currentIndex];
+          notifyListeners();
+          debugPrint('Gapless playback started successfully');
+        } catch (e) {
+          debugPrint('Error setting audio source: $e');
+          _isPlaying = false;
+          isPlayingNotifier.value = false;
+          notifyListeners();
+          rethrow;
+        }
+      } else {
+        // For non-gapless playback, just call play() once
+        debugPrint('Non-gapless mode, calling play()...');
+        await play();
+      }
+    } catch (e) {
+      debugPrint('Failed to set playlist: $e');
+      _errorController.add('Failed to set playlist: $e');
+      _isPlaying = false;
+      isPlayingNotifier.value = false;
+      _isLoading = false; // Reset loading flag on error
+      notifyListeners();
+    }
+  }
+
+  Future<void> updatePlaylist(List<SongModel> newSongs) async {
+    try {
+      if (_gaplessPlayback &&
+          _audioPlayer.audioSource is ConcatenatingAudioSource) {
+        final newSource = ConcatenatingAudioSource(
+          children: newSongs
+              .map((song) => AudioSource.uri(
+                    Uri.parse(song.uri ?? song.data),
+                    tag: MediaItem(
+                      id: song.id.toString(),
+                      album: song.album ?? 'Unknown Album',
+                      title: song.title,
+                      artist: song.artist ?? 'Unknown Artist',
+                      duration: Duration(milliseconds: song.duration ?? 0),
+                    ),
+                  ))
+              .toList(),
+        );
+
+        // Preserve current playback position
+        final currentPosition = _audioPlayer.position;
+        final currentIndex = _audioPlayer.currentIndex ?? _currentIndex;
+
+        await _audioPlayer.setAudioSource(
+          newSource,
+          initialIndex: currentIndex,
+          initialPosition: currentPosition,
+        );
+
+        _playlist = newSongs;
+        _currentIndex = currentIndex;
+        notifyListeners();
+      } else {
+        _playlist = newSongs;
+        _currentIndex = 0;
+        await setPlaylist(newSongs, 0);
+      }
+    } catch (e) {
+      _errorController.add('Failed to update playlist: $e');
+      notifyListeners();
+    }
+  }
+
+  Future<void> play({int? index}) async {
+    // Prevent concurrent play calls
+    if (_isLoading) {
+      debugPrint('Already loading, ignoring play request');
       return;
     }
 
-    _playlist = songs;
-    _currentIndex = startIndex;
+    _isLoading = true;
 
-    if (_gaplessPlayback) {
-      final playlistSource = ConcatenatingAudioSource(
-        children: _playlist.map((song) => AudioSource.uri(
-          Uri.parse(song.uri ?? song.data),
-          tag: MediaItem(
-            id: song.id.toString(),
-            album: song.album ?? 'Unknown Album',
-            title: song.title,
-            artist: song.artist ?? 'Unknown Artist',
-            duration: Duration(milliseconds: song.duration ?? 0),
-          ),
-        )).toList(),
-      );
-      await _audioPlayer.setAudioSource(
-        playlistSource,
-        initialIndex: _currentIndex,
-        initialPosition: Duration.zero,
-      );
-    }
-
-    await play();
-  } catch (e) {
-    _errorController.add('Failed to set playlist: $e');
-    notifyListeners();
-  }
-}
-
-Future<void> updatePlaylist(List<SongModel> newSongs) async {
-  try {
-    if (_gaplessPlayback && _audioPlayer.audioSource is ConcatenatingAudioSource) {
-      final newSource = ConcatenatingAudioSource(
-        children: newSongs.map((song) => AudioSource.uri(
-          Uri.parse(song.uri ?? song.data),
-          tag: MediaItem(
-            id: song.id.toString(),
-            album: song.album ?? 'Unknown Album',
-            title: song.title,
-            artist: song.artist ?? 'Unknown Artist',
-            duration: Duration(milliseconds: song.duration ?? 0),
-          ),
-        )).toList(),
-      );
-
-      // Preserve current playback position
-      final currentPosition = _audioPlayer.position;
-      final currentIndex = _audioPlayer.currentIndex ?? _currentIndex;
-
-      await _audioPlayer.setAudioSource(
-        newSource,
-        initialIndex: currentIndex,
-        initialPosition: currentPosition,
-      );
-
-      _playlist = newSongs;
-      _currentIndex = currentIndex;
-      notifyListeners();
-    } else {
-      _playlist = newSongs;
-      _currentIndex = 0;
-      await setPlaylist(newSongs, 0);
-    }
-  } catch (e) {
-    _errorController.add('Failed to update playlist: $e');
-    notifyListeners();
-  }
-}
-
-  Future<void> play({int? index}) async {
     try {
       if (index != null) {
         _currentIndex = index;
       }
 
+      debugPrint(
+          'Play called with index: $index, current index: $_currentIndex, playlist length: ${_playlist.length}');
+
       if (_currentIndex >= 0 && _currentIndex < _playlist.length) {
         final song = _playlist[_currentIndex];
+        debugPrint('Playing song: ${song.title} by ${song.artist}');
 
         if (_gaplessPlayback) {
+          debugPrint(
+              'Using gapless playback, seeking to index: $_currentIndex');
           await _audioPlayer.seek(Duration.zero, index: _currentIndex);
+          debugPrint('Starting playback...');
           await _audioPlayer.play();
+          debugPrint('Playback started');
         } else {
           final url = song.uri ?? song.data;
+          debugPrint('Non-gapless playback, loading URL: $url');
+
           final artworkBytes = await getCurrentSongArtwork();
           Uri? artUri;
           if (artworkBytes != null) {
@@ -566,21 +633,35 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
             preload: true,
           );
           await _audioPlayer.play();
+          debugPrint('Non-gapless playback started');
         }
 
+        // Batch all state updates into one call
         _isPlaying = true;
+        isPlayingNotifier.value = true;
         _incrementPlayCount(song);
-        await updateCurrentArtwork();
-        await _updateBackgroundColors(); // Update mesh gradient colors based on current song
         _currentSongController.add(song);
         currentSongNotifier.value = song;
+
+        // Update artwork and background async without blocking
+        updateCurrentArtwork();
+        _updateBackgroundColors();
+
+        // Single notifyListeners call
         notifyListeners();
+        debugPrint('Play completed successfully, isPlaying: $_isPlaying');
+      } else {
+        debugPrint('Invalid index or empty playlist');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('Failed to play song: $e');
+      debugPrint('Stack trace: $stackTrace');
       _isPlaying = false;
       isPlayingNotifier.value = false;
       _currentSongController.addError('Failed to play song: $e');
       notifyListeners();
+    } finally {
+      _isLoading = false;
     }
   }
 
@@ -626,6 +707,7 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
   }
 
   void skip() async {
+    _isLoading = false; // Reset loading flag to allow new song to play
     int nextIndex = _currentIndex + 1;
     if (_isShuffle) {
       nextIndex = _getRandomIndex();
@@ -636,6 +718,7 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
   }
 
   void back() async {
+    _isLoading = false; // Reset loading flag to allow new song to play
     int prevIndex = _currentIndex - 1;
     if (_isShuffle) {
       prevIndex = _getRandomIndex();
@@ -670,12 +753,8 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
   Future<Uint8List?> getCurrentSongArtwork() async {
     if (currentSong == null) return null;
     try {
-      return await _audioQuery.queryArtwork(
-        currentSong!.id,
-        ArtworkType.AUDIO,
-        format: ArtworkFormat.JPEG,
-        size: 1000,
-      );
+      // Use cached artwork service instead of querying directly
+      return await _artworkCache.getArtwork(currentSong!.id);
     } catch (e) {
       return null;
     }
@@ -687,12 +766,8 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
       return;
     }
     try {
-      final artwork = await _audioQuery.queryArtwork(
-        currentSong!.id,
-        ArtworkType.AUDIO,
-        format: ArtworkFormat.JPEG,
-        size: 1000,
-      );
+      // Use cached artwork service for better performance
+      final artwork = await _artworkCache.getArtwork(currentSong!.id);
       currentArtwork.value = artwork;
     } catch (e) {
       currentArtwork.value = null;
@@ -728,10 +803,6 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
       _librarySet = Set<String>.from(json['songs']);
     }
   }
-
-
-
-
 
   Future<void> initializeLikedSongsPlaylist() async {
     await loadLikedSongs();
@@ -770,7 +841,7 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
       );
       return;
     }
-    
+
     try {
       final likedSongs = _songs
           .where((song) => _likedSongs.contains(song.id.toString()))
@@ -785,13 +856,11 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
       notifyListeners();
     } catch (e) {
       // Handle errors by keeping the current playlist or creating an empty one
-      if (_likedSongsPlaylist == null) {
-        _likedSongsPlaylist = Playlist(
-          id: LIKED_SONGS_PLAYLIST_ID,
-          name: _likedPlaylistName,
-          songs: [],
-        );
-      }
+      _likedSongsPlaylist ??= Playlist(
+        id: LIKED_SONGS_PLAYLIST_ID,
+        name: _likedPlaylistName,
+        songs: [],
+      );
       debugPrint('Error updating liked songs playlist: $e');
     }
   }
@@ -1058,54 +1127,58 @@ Future<void> updatePlaylist(List<SongModel> newSongs) async {
     }
   }
 
-Future<void> _manageCacheSize() async {
-  final directory = await getApplicationDocumentsDirectory();
-  final cacheDir = Directory('${directory.path}/artwork_cache');
-  final spotifyCacheDir = Directory('${directory.path}');
+  Future<void> _manageCacheSize() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final cacheDir = Directory('${directory.path}/artwork_cache');
+    final spotifyCacheDir = Directory(directory.path);
 
-  int totalSize = 0;
+    int totalSize = 0;
 
-  // Clean artwork cache
-  if (await cacheDir.exists()) {
-    final files = await cacheDir.list().toList();
-    totalSize += files.fold<int>(0, (sum, file) =>
-        sum + (file is File ? file.lengthSync() : 0));
+    // Clean artwork cache
+    if (await cacheDir.exists()) {
+      final files = await cacheDir.list().toList();
+      totalSize += files.fold<int>(
+          0, (sum, file) => sum + (file is File ? file.lengthSync() : 0));
 
-    if (totalSize > _cacheSize * 1024 * 1024) {
-      files.sort((a, b) => a.statSync().accessed.compareTo(b.statSync().accessed));
-      var currentSize = totalSize;
-      for (var file in files) {
-        if (currentSize <= _cacheSize * 1024 * 1024) break;
-        if (file is File) {
-          final fileSize = file.lengthSync();
-          await file.delete();
-          currentSize -= fileSize;
+      if (totalSize > _cacheSize * 1024 * 1024) {
+        files.sort(
+            (a, b) => a.statSync().accessed.compareTo(b.statSync().accessed));
+        var currentSize = totalSize;
+        for (var file in files) {
+          if (currentSize <= _cacheSize * 1024 * 1024) break;
+          if (file is File) {
+            final fileSize = file.lengthSync();
+            await file.delete();
+            currentSize -= fileSize;
+          }
+        }
+      }
+    }
+
+    // Clean Spotify song cache
+    if (await spotifyCacheDir.exists()) {
+      final files = await spotifyCacheDir.list().toList();
+      final spotifyFiles = files
+          .where((file) => file is File && file.path.endsWith('.mp3'))
+          .toList();
+      totalSize += spotifyFiles.fold<int>(
+          0, (sum, file) => sum + (file is File ? file.lengthSync() : 0));
+
+      if (totalSize > _cacheSize * 1024 * 1024) {
+        spotifyFiles.sort(
+            (a, b) => a.statSync().accessed.compareTo(b.statSync().accessed));
+        var currentSize = totalSize;
+        for (var file in spotifyFiles) {
+          if (currentSize <= _cacheSize * 1024 * 1024) break;
+          if (file is File) {
+            final fileSize = file.lengthSync();
+            await file.delete();
+            currentSize -= fileSize;
+          }
         }
       }
     }
   }
-
-  // Clean Spotify song cache
-  if (await spotifyCacheDir.exists()) {
-    final files = await spotifyCacheDir.list().toList();
-    final spotifyFiles = files.where((file) => file is File && file.path.endsWith('.mp3')).toList();
-    totalSize += spotifyFiles.fold<int>(0, (sum, file) =>
-        sum + (file is File ? file.lengthSync() : 0));
-
-    if (totalSize > _cacheSize * 1024 * 1024) {
-      spotifyFiles.sort((a, b) => a.statSync().accessed.compareTo(b.statSync().accessed));
-      var currentSize = totalSize;
-      for (var file in spotifyFiles) {
-        if (currentSize <= _cacheSize * 1024 * 1024) break;
-        if (file is File) {
-          final fileSize = file.lengthSync();
-          await file.delete();
-          currentSize -= fileSize;
-        }
-      }
-    }
-  }
-}
 
   void _updateAutoPlaylists() {
     if (!_autoPlaylists) return;
@@ -1187,10 +1260,10 @@ Future<void> _manageCacheSize() async {
   void startSleepTimer(Duration duration) {
     // Cancel any existing timer first
     cancelSleepTimer();
-    
+
     // Set the sleep timer duration for the UI
     sleepTimerDurationNotifier.value = duration;
-    
+
     // Create a new timer
     _sleepTimer = Timer(duration, () {
       // When timer completes, stop playback
@@ -1198,7 +1271,7 @@ Future<void> _manageCacheSize() async {
       // Reset the timer notification
       sleepTimerDurationNotifier.value = null;
     });
-    
+
     notifyListeners();
   }
 

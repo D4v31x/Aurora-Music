@@ -29,10 +29,8 @@ class HomeTab extends StatelessWidget {
       onRefresh: () async => onRefresh(),
       child: SingleChildScrollView(
         padding: EdgeInsets.only(
-          left: 20.0,
-          right: 20.0,
-          top: 20.0,
-          bottom: currentSong != null ? 90.0 : 30.0,
+          top: 24.0,
+          bottom: currentSong != null ? 100.0 : 40.0,
         ),
         child: AnimationLimiter(
           child: Column(
@@ -44,34 +42,61 @@ class HomeTab extends StatelessWidget {
                 child: FadeInAnimation(child: widget),
               ),
               children: [
-                const SizedBox(height: 20.0),
-                Text(
+                _buildSectionTitle(
+                  context,
                   AppLocalizations.of(context).translate('quick_access'),
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
                 ),
-                const SizedBox(height: 10.0),
-                const QuickAccessSection(),
-                const SizedBox(height: 30.0),
-                Text(
+                const SizedBox(height: 12.0),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: RepaintBoundary(
+                    child: QuickAccessSection(),
+                  ),
+                ),
+                const SizedBox(height: 24.0),
+                _buildSectionTitle(
+                  context,
                   AppLocalizations.of(context).translate('suggested_tracks'),
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
                 ),
-                const SizedBox(height: 10.0),
-                SuggestedTracksSection(randomSongs: randomSongs),
-                const SizedBox(height: 30.0),
-                Text(
+                const SizedBox(height: 12.0),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: RepaintBoundary(
+                    child: SuggestedTracksSection(randomSongs: randomSongs),
+                  ),
+                ),
+                const SizedBox(height: 24.0),
+                _buildSectionTitle(
+                  context,
                   AppLocalizations.of(context).translate('suggested_artists'),
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.headlineMedium?.color),
                 ),
-                const SizedBox(height: 10.0),
-                SuggestedArtistsSection(
-                  randomArtists: randomArtists,
-                  artistService: artistService,
+                const SizedBox(height: 12.0),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: RepaintBoundary(
+                    child: SuggestedArtistsSection(
+                      randomArtists: randomArtists,
+                      artistService: artistService,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontFamily: 'ProductSans',
+            ),
       ),
     );
   }

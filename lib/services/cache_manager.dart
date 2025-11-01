@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import '../constants/app_config.dart';
 import '../services/logging_service.dart';
-import '../services/performance/performance_manager.dart';
 
 /// Generic LRU cache implementation
 /// Provides efficient caching with automatic eviction based on usage
@@ -211,8 +210,9 @@ class CacheManager {
 
   /// Memory pressure handling
   void handleMemoryPressure() {
-    LoggingService.warning('Handling memory pressure - reducing cache sizes', 'CacheManager');
-    
+    LoggingService.warning(
+        'Handling memory pressure - reducing cache sizes', 'CacheManager');
+
     // Reduce cache sizes by 50%
     final artworkEntries = _artworkCache._cache.entries.toList();
     _artworkCache.clear();
@@ -240,33 +240,36 @@ class CacheManager {
   }
 
   /// Cleanup old entries based on a predicate
-  void cleanupCache<K, V>(LRUCache<K, V> cache, bool Function(K key, V value) shouldRemove) {
+  void cleanupCache<K, V>(
+      LRUCache<K, V> cache, bool Function(K key, V value) shouldRemove) {
     final keysToRemove = <K>[];
-    
+
     for (final entry in cache._cache.entries) {
       if (shouldRemove(entry.key, entry.value)) {
         keysToRemove.add(entry.key);
       }
     }
-    
+
     for (final key in keysToRemove) {
       cache.remove(key);
     }
-    
-    LoggingService.debug('Cleaned up ${keysToRemove.length} cache entries', 'CacheManager');
+
+    LoggingService.debug(
+        'Cleaned up ${keysToRemove.length} cache entries', 'CacheManager');
   }
 
   /// Periodic maintenance task
   void performMaintenance() {
     LoggingService.debug('Performing cache maintenance', 'CacheManager');
-    
+
     // Log current cache sizes
     final sizes = getCacheSizes();
     LoggingService.debug('Cache sizes: $sizes', 'CacheManager');
-    
+
     // Check if we need to perform cleanup
     if (sizes.values.any((size) => size > AppConfig.maxCacheSize * 0.8)) {
-      LoggingService.info('Cache approaching limits, performing cleanup', 'CacheManager');
+      LoggingService.info(
+          'Cache approaching limits, performing cleanup', 'CacheManager');
       // Could implement more sophisticated cleanup logic here
     }
   }
@@ -274,19 +277,19 @@ class CacheManager {
   /// Gets memory usage estimate (rough calculation)
   int getEstimatedMemoryUsage() {
     int total = 0;
-    
+
     // Estimate artwork cache memory (assuming average 50KB per image)
     total += _artworkCache.length * 50 * 1024;
-    
+
     // Estimate lyrics cache memory (assuming average 5KB per lyrics)
     total += _lyricsCache.length * 5 * 1024;
-    
+
     // Estimate metadata cache memory (assuming average 1KB per metadata)
     total += _metadataCache.length * 1024;
-    
+
     // Estimate query cache memory (assuming average 10KB per query)
     total += _queryCache.length * 10 * 1024;
-    
+
     return total;
   }
 }

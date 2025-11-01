@@ -1,10 +1,9 @@
-import 'dart:ui';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../services/audio_player_service.dart';
+import '../services/artwork_cache_service.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/app_background.dart';
 import 'Artist_screen.dart';
@@ -17,6 +16,7 @@ class AlbumsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final artworkService = ArtworkCacheService();
     final albumsFuture = OnAudioQuery().queryAlbums(
       sortType: AlbumSortType.ALBUM,
       orderType: OrderType.ASC_OR_SMALLER,
@@ -47,7 +47,8 @@ class AlbumsScreen extends StatelessWidget {
                     final albums = snapshot.data!;
                     return AnimationLimiter(
                       child: GridView.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           childAspectRatio: 0.8,
                           crossAxisSpacing: 10,
@@ -77,34 +78,28 @@ class AlbumsScreen extends StatelessWidget {
                                     padding: const EdgeInsets.all(8.0),
                                     child: glassmorphicContainer(
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           SizedBox(
                                             height: 100,
                                             width: 100,
-                                            child: QueryArtworkWidget(
-                                              id: album.id,
-                                              type: ArtworkType.ALBUM,
-                                              artworkQuality: FilterQuality.high,
-                                              artworkBorder: BorderRadius.circular(10),
-                                              nullArtworkWidget: Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white24,
-                                                  borderRadius: BorderRadius.circular(10),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.album,
-                                                  color: Colors.white,
-                                                  size: 50,
-                                                ),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              child: artworkService
+                                                  .buildCachedArtwork(
+                                                album.id,
+                                                size: 100,
                                               ),
-                                              keepOldArtwork: true,
                                             ),
                                           ),
                                           const SizedBox(height: 10),
                                           Flexible(
                                             child: Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8.0),
                                               child: Text(
                                                 album.album,
                                                 style: const TextStyle(
@@ -213,7 +208,8 @@ class ArtistsScreen extends StatelessWidget {
                               verticalOffset: 50.0,
                               child: FadeInAnimation(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8.0, horizontal: 16.0),
                                   child: glassmorphicContainer(
                                     child: ListTile(
                                       leading: SizedBox(
@@ -222,7 +218,9 @@ class ArtistsScreen extends StatelessWidget {
                                         child: CircleAvatar(
                                           backgroundColor: Colors.white24,
                                           child: Text(
-                                            artist.artist.isNotEmpty ? artist.artist[0].toUpperCase() : '?',
+                                            artist.artist.isNotEmpty
+                                                ? artist.artist[0].toUpperCase()
+                                                : '?',
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
@@ -232,17 +230,20 @@ class ArtistsScreen extends StatelessWidget {
                                       ),
                                       title: Text(
                                         artist.artist,
-                                        style: const TextStyle(color: Colors.white),
+                                        style: const TextStyle(
+                                            color: Colors.white),
                                       ),
                                       subtitle: Text(
                                         '${artist.numberOfTracks} tracks',
-                                        style: const TextStyle(color: Colors.grey),
+                                        style:
+                                            const TextStyle(color: Colors.grey),
                                       ),
                                       onTap: () {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => ArtistDetailsScreen(
+                                            builder: (context) =>
+                                                ArtistDetailsScreen(
                                               artistName: artist.artist,
                                             ),
                                           ),
@@ -337,10 +338,12 @@ class FoldersScreen extends StatelessWidget {
                           verticalOffset: 50.0,
                           child: FadeInAnimation(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0, horizontal: 16.0),
                               child: glassmorphicContainer(
                                 child: ListTile(
-                                  leading: const Icon(Icons.folder, color: Colors.white),
+                                  leading: const Icon(Icons.folder,
+                                      color: Colors.white),
                                   title: Text(
                                     folder.split('/').last,
                                     style: const TextStyle(color: Colors.white),
@@ -355,7 +358,8 @@ class FoldersScreen extends StatelessWidget {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => FolderDetailScreen(
+                                        builder: (context) =>
+                                            FolderDetailScreen(
                                           folderPath: folder,
                                         ),
                                       ),
@@ -406,5 +410,3 @@ class FoldersScreen extends StatelessWidget {
     );
   }
 }
-
-

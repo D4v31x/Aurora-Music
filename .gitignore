@@ -11,6 +11,16 @@
 migrate_working_dir/
 .env
 
+# Security - NEVER commit these!
+*.jks
+*.keystore
+**/key.properties
+**/*-keystore.jks
+android/key.properties
+ios/Runner/GoogleService-Info.plist
+firebase.json
+.firebase/
+
 # IntelliJ related
 *.iml
 *.ipr

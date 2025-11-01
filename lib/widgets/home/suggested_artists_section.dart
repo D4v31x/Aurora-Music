@@ -8,7 +8,7 @@ import '../glassmorphic_container.dart';
 class SuggestedArtistsSection extends StatelessWidget {
   final List<String> randomArtists;
   final LocalCachingArtistService artistService;
-  
+
   const SuggestedArtistsSection({
     super.key,
     required this.randomArtists,
@@ -78,7 +78,6 @@ class _ArtistItem extends StatefulWidget {
 
 class _ArtistItemState extends State<_ArtistItem> {
   String? _imagePath;
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -88,19 +87,15 @@ class _ArtistItemState extends State<_ArtistItem> {
 
   Future<void> _loadArtistImage() async {
     try {
-      final imagePath = await widget.artistService.fetchArtistImage(widget.artist);
+      final imagePath =
+          await widget.artistService.fetchArtistImage(widget.artist);
       if (mounted) {
         setState(() {
           _imagePath = imagePath;
-          _isLoading = false;
         });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      // Image loading failed, will show default icon
     }
   }
 
@@ -128,16 +123,20 @@ class _ArtistItemState extends State<_ArtistItem> {
                 RepaintBoundary(
                   child: CircleAvatar(
                     radius: 40,
-                    backgroundImage: _imagePath != null ? FileImage(File(_imagePath!)) : null,
+                    backgroundImage: _imagePath != null
+                        ? FileImage(File(_imagePath!))
+                        : null,
                     child: _imagePath == null
-                        ? const Icon(Icons.person, size: 40, color: Colors.white)
+                        ? const Icon(Icons.person,
+                            size: 40, color: Colors.white)
                         : null,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  widget.artist, 
-                  style: const TextStyle(color: Colors.white),
+                  widget.artist,
+                  style: const TextStyle(
+                      color: Colors.white, fontFamily: 'ProductSans'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

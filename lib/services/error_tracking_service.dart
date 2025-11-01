@@ -7,7 +7,8 @@ import '../constants/app_config.dart';
 /// Implements error recording, storage, and synchronization
 class ErrorTrackingService {
   static const String _storageKey = AppConfig.errorStorageKey;
-  static final ErrorTrackingService _instance = ErrorTrackingService._internal();
+  static final ErrorTrackingService _instance =
+      ErrorTrackingService._internal();
   final List<ErrorRecord> _currentErrors = [];
 
   /// Singleton factory constructor
@@ -33,9 +34,8 @@ class ErrorTrackingService {
   Future<void> _savePendingErrors() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final List<Map<String, dynamic>> errorMaps = _currentErrors
-          .map((error) => error.toJson())
-          .toList();
+      final List<Map<String, dynamic>> errorMaps =
+          _currentErrors.map((error) => error.toJson()).toList();
 
       await prefs.setString(_storageKey, jsonEncode(errorMaps));
     } catch (e) {
@@ -110,15 +110,20 @@ Map<String, dynamic> processErrorsForStorage(List<ErrorRecord> errors) {
 
   final List<String> processedErrors = recentErrors.map((error) {
     final timestamp = error.timestamp.toIso8601String();
-    final shortStack = error.stackTrace?.split('\n').take(3).join(' | ') ?? 'No stack trace';
+    final shortStack =
+        error.stackTrace?.split('\n').take(3).join(' | ') ?? 'No stack trace';
     return '$timestamp: ${error.error.substring(0, math.min(AppConfig.maxErrorMessageLength, error.error.length))} | $shortStack';
   }).toList();
 
-  String errorString = processedErrors.join('\n').substring(0, math.min(AppConfig.maxErrorStringLength, processedErrors.join('\n').length));
+  String errorString = processedErrors.join('\n').substring(
+      0,
+      math.min(
+          AppConfig.maxErrorStringLength, processedErrors.join('\n').length));
 
   return {
     'error_count': errors.length,
     'recent_errors': errorString,
-    'last_error_time': errors.isNotEmpty ? errors.last.timestamp.toIso8601String() : null,
+    'last_error_time':
+        errors.isNotEmpty ? errors.last.timestamp.toIso8601String() : null,
   };
 }
