@@ -43,8 +43,8 @@ void main() async {
     await ShaderWarmupService.warmupShaders();
 
     // Load user preferences
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? languageCode =
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode =
         prefs.getString('languageCode') ?? AppConfig.defaultLanguageCode;
 
     // Initialize audio background service
@@ -62,17 +62,18 @@ void main() async {
     runApp(
       MultiProvider(
         providers: [
-          // Use lazy initialization for the AudioPlayerService to avoid immediate permission issues
+          // Use lazy initialization for better startup performance
           ChangeNotifierProvider.value(
               value: AudioPlayerService()), // Use pre-initialized instance
           ChangeNotifierProvider(
-              create: (context) => ExpandablePlayerController()),
-          ChangeNotifierProvider(create: (context) => ThemeProvider()),
+              create: (_) => ExpandablePlayerController(), lazy: true),
+          ChangeNotifierProvider(create: (_) => ThemeProvider(), lazy: false),
           ChangeNotifierProvider(
-              create: (context) => PerformanceModeProvider()),
+              create: (_) => PerformanceModeProvider(), lazy: false),
           ChangeNotifierProvider(
-              create: (context) => BackgroundManagerService()),
-          ChangeNotifierProvider(create: (context) => SleepTimerController()),
+              create: (_) => BackgroundManagerService(), lazy: true),
+          ChangeNotifierProvider(
+              create: (_) => SleepTimerController(), lazy: true),
           Provider<ErrorTrackingService>.value(value: errorTracker),
         ],
         child: Builder(

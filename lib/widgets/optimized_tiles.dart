@@ -24,7 +24,8 @@ class OptimizedSongTile extends StatefulWidget {
 
 class _OptimizedSongTileState extends State<OptimizedSongTile>
     with AutomaticKeepAliveClientMixin {
-  final _artworkService = ArtworkCacheService();
+  // Make artwork service static to prevent recreation
+  static final _artworkService = ArtworkCacheService();
 
   @override
   bool get wantKeepAlive => true;
@@ -127,7 +128,8 @@ class OptimizedGridTile extends StatefulWidget {
 
 class _OptimizedGridTileState extends State<OptimizedGridTile>
     with AutomaticKeepAliveClientMixin {
-  final _artworkService = ArtworkCacheService();
+  // Make artwork service static to prevent recreation
+  static final _artworkService = ArtworkCacheService();
 
   @override
   bool get wantKeepAlive => true;

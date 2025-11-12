@@ -207,7 +207,7 @@ class _SplashScreenState extends State<SplashScreen>
 
       // Test image service connectivity
       try {
-        final result = await InternetAddress.lookup('api.deezer.com');
+        final result = await InternetAddress.lookup('api.discogs.com');
         if (result.isEmpty || result[0].rawAddress.isEmpty) {
           throw Exception('Image service unavailable');
         }

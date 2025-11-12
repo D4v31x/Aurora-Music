@@ -9,10 +9,11 @@ class LocalCachingArtistService {
   final http.Client _client = http.Client();
   late Directory cacheDir;
   String? _accessToken;
-  final String _clientId = dotenv.env['SPOTIFY_CLIENT_ID']!;
-  final String _clientSecret = dotenv.env['SPOTIFY_CLIENT_SECRET']!;
+  final String? _clientId = dotenv.env['SPOTIFY_CLIENT_ID'];
+  final String? _clientSecret = dotenv.env['SPOTIFY_CLIENT_SECRET'];
   final Map<String, String?> _imageCache = {};
   bool _isInitialized = false;
+  bool _spotifyEnabled = false;
 
   Future<void> initialize() async {
     if (_isInitialized) {
@@ -20,8 +21,15 @@ class LocalCachingArtistService {
     }
 
     try {
+      _spotifyEnabled = _clientId != null && 
+                        _clientSecret != null && 
+                        _clientId.isNotEmpty && 
+                        _clientSecret.isNotEmpty;
+      
       await _createCacheDirectory();
-      await _loadCachedData();
+      if (_spotifyEnabled) {
+        await _loadCachedData();
+      }
       _isInitialized = true;
     } catch (e) {
       rethrow;
@@ -41,6 +49,10 @@ class LocalCachingArtistService {
   }
 
   Future<void> _getSpotifyAccessToken() async {
+    if (!_spotifyEnabled || _clientId == null || _clientSecret == null) {
+      return;
+    }
+    
     final authString = base64.encode(utf8.encode('$_clientId:$_clientSecret'));
     final response = await _client.post(
       Uri.parse('https://accounts.spotify.com/api/token'),
@@ -62,6 +74,11 @@ class LocalCachingArtistService {
   Future<String?> fetchArtistImage(String artistName) async {
     if (!_isInitialized) {
       await initialize();
+    }
+
+    // If Spotify is not enabled, return null early
+    if (!_spotifyEnabled) {
+      return null;
     }
 
     final cacheFile =
@@ -89,6 +106,10 @@ class LocalCachingArtistService {
   }
 
   Future<String?> _getArtistImageFromSpotify(String artistName) async {
+    if (!_spotifyEnabled) {
+      return null;
+    }
+    
     if (_accessToken == null) {
       await _getSpotifyAccessToken();
     }

@@ -21,7 +21,8 @@ class MiniPlayer extends StatefulWidget {
 }
 
 class _MiniPlayerState extends State<MiniPlayer> {
-  final _artworkService = ArtworkCacheService();
+  // Make artwork service static to prevent recreation
+  static final _artworkService = ArtworkCacheService();
   Color? dominantColor;
   final double _minHeight = 60.0;
 

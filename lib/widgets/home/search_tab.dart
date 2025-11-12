@@ -29,7 +29,8 @@ class SearchTab extends StatefulWidget {
 class _SearchTabState extends State<SearchTab> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
-  final _artworkService = ArtworkCacheService();
+  // Make artwork service static to prevent recreation
+  static final _artworkService = ArtworkCacheService();
   List<SongModel> _filteredSongs = [];
   Timer? _debounceTimer;
 

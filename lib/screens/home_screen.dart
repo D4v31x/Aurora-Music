@@ -615,96 +615,106 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             backgroundColor: Theme.of(context).colorScheme.surface,
             body: Stack(
               children: [
-                NestedScrollView(
-                  controller: _scrollController,
-                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                    SliverAppBar(
-                      backgroundColor: Colors.transparent,
-                      elevation: 0.0,
-                      toolbarHeight: 70,
-                      automaticallyImplyLeading: false,
-                      floating: true,
-                      pinned: true,
-                      expandedHeight: 250,
-                      flexibleSpace: ClipRRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                          child: FlexibleSpaceBar(
-                            background: Container(
-                              color: Colors.transparent,
-                              child: Center(
-                                child: buildAppBarTitle(),
+                RepaintBoundary(
+                  child: NestedScrollView(
+                    controller: _scrollController,
+                    headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                      SliverAppBar(
+                        backgroundColor: Colors.transparent,
+                        elevation: 0.0,
+                        toolbarHeight: 70,
+                        automaticallyImplyLeading: false,
+                        floating: true,
+                        pinned: true,
+                        expandedHeight: 250,
+                        flexibleSpace: ClipRRect(
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                            child: FlexibleSpaceBar(
+                              background: Container(
+                                color: Colors.transparent,
+                                child: Center(
+                                  child: buildAppBarTitle(),
+                                ),
                               ),
+                              centerTitle: true,
+                              title: innerBoxIsScrolled
+                                  ? Text(
+                                      AppLocalizations.of(context)
+                                          .translate('aurora_music'),
+                                      style: const TextStyle(
+                                        fontFamily: 'ProductSans',
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
+                                  : null,
                             ),
-                            centerTitle: true,
-                            title: innerBoxIsScrolled
-                                ? Text(
-                                    AppLocalizations.of(context)
-                                        .translate('aurora_music'),
-                                    style: const TextStyle(
-                                      fontFamily: 'ProductSans',
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  )
-                                : null,
+                          ),
+                        ),
+                        bottom: PreferredSize(
+                          preferredSize: const Size.fromHeight(kToolbarHeight),
+                          child: Container(
+                            color: innerBoxIsScrolled
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .surface
+                                    .withOpacity(0.8)
+                                : Colors.transparent,
+                            child: _buildTabBar(),
                           ),
                         ),
                       ),
-                      bottom: PreferredSize(
-                        preferredSize: const Size.fromHeight(kToolbarHeight),
-                        child: Container(
-                          color: innerBoxIsScrolled
-                              ? Theme.of(context)
-                                  .colorScheme
-                                  .surface
-                                  .withOpacity(0.8)
-                              : Colors.transparent,
-                          child: _buildTabBar(),
-                        ),
-                      ),
-                    ),
-                  ],
-                  body: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      HomeTab(
-                        randomSongs: randomSongs,
-                        randomArtists: randomArtists,
-                        artistService: _artistService,
-                        currentSong: currentSong,
-                        onRefresh: _refreshLibrary,
-                      ),
-                      const LibraryTab(), // Use the separated LibraryTab widget
-                      SearchTab(
-                        songs: songs,
-                        artists: artists,
-                        isInitialized: _isInitialized,
-                      ),
-                      SettingsTab(
-                        notificationManager: _notificationManager,
-                        onUpdateCheck: () async {
-                          await launchUrl(Uri.parse(
-                              'https://github.com/D4v31x/Aurora-Music/releases/latest'));
-                        },
-                        onResetSetup: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const OnboardingScreen()),
-                          );
-                        },
-                      ),
                     ],
+                    body: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        RepaintBoundary(
+                          child: HomeTab(
+                            randomSongs: randomSongs,
+                            randomArtists: randomArtists,
+                            artistService: _artistService,
+                            currentSong: currentSong,
+                            onRefresh: _refreshLibrary,
+                          ),
+                        ),
+                        const RepaintBoundary(child: LibraryTab()),
+                        RepaintBoundary(
+                          child: SearchTab(
+                            songs: songs,
+                            artists: artists,
+                            isInitialized: _isInitialized,
+                          ),
+                        ),
+                        RepaintBoundary(
+                          child: SettingsTab(
+                            notificationManager: _notificationManager,
+                            onUpdateCheck: () async {
+                              await launchUrl(Uri.parse(
+                                  'https://github.com/D4v31x/Aurora-Music/releases/latest'));
+                            },
+                            onResetSetup: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const OnboardingScreen()),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 if (currentSong != null)
-                  ExpandableBottomSheet(
-                    key: _expandableKey,
-                    minHeight: 60,
-                    minChild: MiniPlayer(currentSong: currentSong),
-                    maxChild: NowPlayingScreen(),
+                  RepaintBoundary(
+                    child: ExpandableBottomSheet(
+                      key: _expandableKey,
+                      minHeight: 60,
+                      minChild: MiniPlayer(currentSong: currentSong),
+                      maxChild: const NowPlayingScreen(),
+                    ),
                   ),
               ],
             ),

@@ -27,10 +27,42 @@ class NowPlayingScreen extends StatefulWidget {
   _NowPlayingScreenState createState() => _NowPlayingScreenState();
 }
 
+// Extracted constant widgets to avoid rebuilds
+class _PlayPauseButton extends StatelessWidget {
+  final bool isPlaying;
+  final VoidCallback onPressed;
+
+  const _PlayPauseButton({
+    required this.isPlaying,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(0.1),
+      ),
+      child: IconButton(
+        icon: Icon(
+          isPlaying ? Icons.pause : Icons.play_arrow,
+          color: Colors.white,
+          size: 32,
+        ),
+        onPressed: onPressed,
+      ),
+    );
+  }
+}
+
 class _NowPlayingScreenState extends State<NowPlayingScreen>
     with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
-  final _artworkService = ArtworkCacheService(); // Use centralized service
+  // Make artwork service static to prevent recreation on every rebuild
+  static final _artworkService = ArtworkCacheService();
   ImageProvider<Object>? _currentArtwork;
   bool _isLoadingArtwork = true;
   int? _lastSongId;
@@ -889,21 +921,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     final expandablePlayerController =
         Provider.of<ExpandablePlayerController>(context);
 
-    // Aktualizujte artwork pouze když se změní písnička
-    if (audioPlayerService.currentSong != null &&
-        audioPlayerService.currentSong!.id != _lastSongId) {
-      final song = audioPlayerService.currentSong!;
-      _lastSongId = song.id;
-      _pendingSongLoadId = song.id;
-      // Defer heavy work to next frame to avoid doing it during build of possibly deactivating context
+    // Only update artwork when song actually changes, not on every rebuild
+    final currentSongId = audioPlayerService.currentSong?.id;
+    if (currentSongId != null && currentSongId != _lastSongId) {
+      _lastSongId = currentSongId;
+      _pendingSongLoadId = currentSongId;
+      // Schedule artwork update for next frame to avoid calling setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        if (audioPlayerService.currentSong == null ||
-            audioPlayerService.currentSong!.id != song.id) {
-          return;
+        if (mounted && audioPlayerService.currentSong?.id == currentSongId) {
+          _updateArtwork(audioPlayerService.currentSong!);
+          _initializeTimedLyrics(audioPlayerService);
         }
-        _updateArtwork(song);
-        _initializeTimedLyrics(audioPlayerService);
       });
     }
 
@@ -1088,42 +1116,30 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     MusicMetadataWidget(song: audioPlayerService.currentSong!),
 
                   const SizedBox(height: 20),
-                  // Playback Controls
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          audioPlayerService.isShuffle
-                              ? Icons.shuffle
-                              : Icons.shuffle,
-                          color: audioPlayerService.isShuffle
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.7),
-                          size: 24,
-                        ),
-                        onPressed: audioPlayerService.toggleShuffle,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.skip_previous,
-                            color: Colors.white, size: 32),
-                        onPressed: audioPlayerService.back,
-                      ),
-                      Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.1),
-                        ),
-                        child: IconButton(
+                  // Playback Controls - wrapped in RepaintBoundary
+                  RepaintBoundary(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
                           icon: Icon(
-                            audioPlayerService.isPlaying
-                                ? Icons.pause
-                                : Icons.play_arrow,
-                            color: Colors.white,
-                            size: 32,
+                            audioPlayerService.isShuffle
+                                ? Icons.shuffle
+                                : Icons.shuffle,
+                            color: audioPlayerService.isShuffle
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.7),
+                            size: 24,
                           ),
+                          onPressed: audioPlayerService.toggleShuffle,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.skip_previous,
+                              color: Colors.white, size: 32),
+                          onPressed: audioPlayerService.back,
+                        ),
+                        _PlayPauseButton(
+                          isPlaying: audioPlayerService.isPlaying,
                           onPressed: () {
                             if (audioPlayerService.isPlaying) {
                               audioPlayerService.pause();
@@ -1132,25 +1148,25 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                             }
                           },
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.skip_next,
-                            color: Colors.white, size: 32),
-                        onPressed: audioPlayerService.skip,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          audioPlayerService.isRepeat
-                              ? Icons.repeat_one
-                              : Icons.repeat,
-                          color: audioPlayerService.isRepeat
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.7),
-                          size: 24,
+                        IconButton(
+                          icon: const Icon(Icons.skip_next,
+                              color: Colors.white, size: 32),
+                          onPressed: audioPlayerService.skip,
                         ),
-                        onPressed: audioPlayerService.toggleRepeat,
-                      ),
-                    ],
+                        IconButton(
+                          icon: Icon(
+                            audioPlayerService.isRepeat
+                                ? Icons.repeat_one
+                                : Icons.repeat,
+                            color: audioPlayerService.isRepeat
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.7),
+                            size: 24,
+                          ),
+                          onPressed: audioPlayerService.toggleRepeat,
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 20),
                   // Like Button

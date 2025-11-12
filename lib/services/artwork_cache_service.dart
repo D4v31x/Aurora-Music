@@ -136,56 +136,13 @@ class ArtworkCacheService {
   }
 
   Widget buildCachedArtwork(int id, {double size = 50}) {
-    // Check if already in cache for instant display
-    final cachedProvider = getCachedImageProviderSync(id);
-
-    if (cachedProvider != null) {
-      // Display cached artwork immediately with no loading state
-      return RepaintBoundary(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            image: DecorationImage(
-              image: cachedProvider,
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Not in cache, load asynchronously
+    // Use a unique key based on song ID to prevent unnecessary rebuilds
     return RepaintBoundary(
-      child: FutureBuilder<ImageProvider<Object>>(
-        future: getCachedImageProvider(id),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  image: snapshot.data!,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            );
-          }
-          return Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.music_note, color: Colors.white),
-          );
-        },
+      key: ValueKey('artwork_$id'),
+      child: _ArtworkWidget(
+        id: id,
+        size: size,
+        artworkService: this,
       ),
     );
   }
@@ -275,5 +232,91 @@ class ArtworkCacheService {
     _artistImageProviderCache.clear();
     _artworkAccessOrder.clear();
     _artistAccessOrder.clear();
+  }
+}
+
+/// Stateful widget for displaying artwork - prevents rebuilds in parent
+class _ArtworkWidget extends StatefulWidget {
+  final int id;
+  final double size;
+  final ArtworkCacheService artworkService;
+
+  const _ArtworkWidget({
+    required this.id,
+    required this.size,
+    required this.artworkService,
+  });
+
+  @override
+  State<_ArtworkWidget> createState() => _ArtworkWidgetState();
+}
+
+class _ArtworkWidgetState extends State<_ArtworkWidget> {
+  ImageProvider<Object>? _imageProvider;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadArtwork();
+  }
+
+  @override
+  void didUpdateWidget(_ArtworkWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.id != widget.id) {
+      _loadArtwork();
+    }
+  }
+
+  Future<void> _loadArtwork() async {
+    // Check sync cache first
+    final cachedProvider = widget.artworkService.getCachedImageProviderSync(widget.id);
+    
+    if (cachedProvider != null) {
+      if (mounted) {
+        setState(() {
+          _imageProvider = cachedProvider;
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
+    // Load asynchronously
+    final provider = await widget.artworkService.getCachedImageProvider(widget.id);
+    if (mounted) {
+      setState(() {
+        _imageProvider = provider;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_imageProvider != null && !_isLoading) {
+      return Container(
+        width: widget.size,
+        height: widget.size,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          image: DecorationImage(
+            image: _imageProvider!,
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: widget.size,
+      height: widget.size,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Icon(Icons.music_note, color: Colors.white),
+    );
   }
 }

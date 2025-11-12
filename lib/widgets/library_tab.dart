@@ -23,7 +23,8 @@ class LibraryTab extends StatefulWidget {
 }
 
 class _LibraryTabState extends State<LibraryTab> {
-  final _artworkService = ArtworkCacheService();
+  // Make artwork service static to prevent recreation on every build
+  static final _artworkService = ArtworkCacheService();
 
   @override
   Widget build(BuildContext context) {
@@ -229,9 +230,14 @@ class _LibraryTabState extends State<LibraryTab> {
       scrollDirection: Axis.horizontal,
       itemCount: displayItems.length,
       itemExtent: 130, // Fixed width for better performance
+      physics: const BouncingScrollPhysics(), // Better scroll performance
+      cacheExtent: 200, // Pre-cache nearby items
+      addAutomaticKeepAlives: false, // Don't keep offscreen items alive
+      addRepaintBoundaries: true, // Optimize repaints
       itemBuilder: (context, index) {
         final item = displayItems[index];
         return RepaintBoundary(
+          key: ValueKey('${item.hashCode}_$index'), // Stable keys
           child: Padding(
             padding: const EdgeInsets.only(right: 10),
             child: glassmorphicContainer(
