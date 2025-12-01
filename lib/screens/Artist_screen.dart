@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:ui';
-import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../models/utils.dart';
@@ -12,6 +11,8 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
 import '../services/local_caching_service.dart';
 import '../widgets/glassmorphic_container.dart';
+import '../widgets/shimmer_loading.dart';
+import 'AlbumDetailScreen.dart';
 
 class ArtistDetailsScreen extends StatefulWidget {
   final String artistName;
@@ -47,6 +48,10 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
   int _selectedCategory = 0; // 0 = Songs, 1 = Albums
   List<AlbumModel> _albums = [];
   final Map<int, List<SongModel>> _albumSongs = {};
+  
+  // Stats
+  Duration _totalDuration = Duration.zero;
+  String? _artistImagePath;
 
   @override
   void initState() {
@@ -91,14 +96,25 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
       ignoreCase: true,
     );
 
+    final artistSongs = songs
+        .where((song) =>
+            splitArtists(song.artist ?? '').contains(widget.artistName))
+        .toList();
+    
+    final artistAlbums = allAlbums
+        .where((album) => album.artist?.contains(widget.artistName) ?? false)
+        .toList();
+    
+    // Calculate total duration
+    Duration totalDuration = Duration.zero;
+    for (final song in artistSongs) {
+      totalDuration += Duration(milliseconds: song.duration ?? 0);
+    }
+    
     setState(() {
-      _allSongs = songs
-          .where((song) =>
-              splitArtists(song.artist ?? '').contains(widget.artistName))
-          .toList();
-      _albums = allAlbums
-          .where((album) => album.artist?.contains(widget.artistName) ?? false)
-          .toList();
+      _allSongs = artistSongs;
+      _albums = artistAlbums;
+      _totalDuration = totalDuration;
     });
 
     // Group songs by album
@@ -108,6 +124,18 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     }
 
     _loadMoreSongs();
+    
+    // Load artist image if not provided
+    if (widget.artistImagePath == null) {
+      final imagePath = await _artistService.fetchArtistImage(widget.artistName);
+      if (mounted && imagePath != null) {
+        setState(() {
+          _artistImagePath = imagePath;
+        });
+      }
+    } else {
+      _artistImagePath = widget.artistImagePath;
+    }
   }
 
   void _loadMoreSongs() {
@@ -195,6 +223,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
           future: _colorFuture,
           builder: (context, snapshot) {
             return Scaffold(
+                resizeToAvoidBottomInset: false,
                 body: FutureBuilder<String?>(
                     future: widget.artistImagePath != null
                         ? Future.value(widget.artistImagePath)
@@ -207,29 +236,65 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                           child: CustomScrollView(
                             controller: _scrollController,
                             slivers: [
-                              _buildSliverAppBar(imageSnapshot.data),
+                              _buildSliverAppBar(imageSnapshot.data ?? _artistImagePath),
+                              // Stats section
+                              SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  child: glassmorphicContainer(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        children: [
+                                          _buildStatItem(
+                                            Icons.music_note_rounded,
+                                            '${_allSongs.length}',
+                                            AppLocalizations.of(context).translate('songs'),
+                                          ),
+                                          _buildStatDivider(),
+                                          _buildStatItem(
+                                            Icons.album_rounded,
+                                            '${_albums.length}',
+                                            AppLocalizations.of(context).translate('albums'),
+                                          ),
+                                          _buildStatDivider(),
+                                          _buildStatItem(
+                                            Icons.timer_outlined,
+                                            _formatDuration(_totalDuration),
+                                            AppLocalizations.of(context).translate('total'),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                               // Action buttons
                               SliverToBoxAdapter(
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 8, horizontal: 16),
                                   child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      _buildActionPill(
-                                        context,
-                                        Icons.play_arrow,
-                                        AppLocalizations.of(context)
-                                            .translate('play_all'),
-                                        () => _playAllSongs(context),
+                                      Expanded(
+                                        child: _buildActionButton(
+                                          context,
+                                          Icons.play_arrow_rounded,
+                                          AppLocalizations.of(context).translate('play_all'),
+                                          () => _playAllSongs(context),
+                                          isPrimary: true,
+                                        ),
                                       ),
-                                      _buildActionPill(
-                                        context,
-                                        Icons.shuffle,
-                                        AppLocalizations.of(context)
-                                            .translate('shuffle'),
-                                        () => _shuffleAllSongs(context),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildActionButton(
+                                          context,
+                                          Icons.shuffle_rounded,
+                                          AppLocalizations.of(context).translate('shuffle'),
+                                          () => _shuffleAllSongs(context),
+                                          isPrimary: false,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -306,21 +371,24 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 70),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(25),
-                  child: artistImagePath != null
-                      ? Image.file(
-                          File(artistImagePath),
-                          fit: BoxFit.cover,
-                          width: 200,
-                          height: 200,
-                        )
-                      : Image.asset(
-                          'assets/images/logo/default_art.png',
-                          fit: BoxFit.cover,
-                          width: 200,
-                          height: 200,
-                        ),
+                Hero(
+                  tag: 'artist_image_${widget.artistName}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(25),
+                    child: artistImagePath != null
+                        ? Image.file(
+                            File(artistImagePath),
+                            fit: BoxFit.cover,
+                            width: 200,
+                            height: 200,
+                          )
+                        : Image.asset(
+                            'assets/images/logo/default_art.png',
+                            fit: BoxFit.cover,
+                            width: 200,
+                            height: 200,
+                          ),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Padding(
@@ -343,33 +411,6 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildActionPill(
-      BuildContext context, IconData icon, String label, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.white),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -432,11 +473,212 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
 
   Widget _buildAlbumsList(AudioPlayerService audioPlayerService) {
     if (_albums.isEmpty) {
-      return const SliverFillRemaining(
+      return SliverFillRemaining(
         child: Center(
-          child: Text(
-            'No albums found',
-            style: TextStyle(color: Colors.white70),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.album, size: 64, color: Colors.white.withOpacity(0.3)),
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context).translate('no_albums_found'),
+                style: TextStyle(color: Colors.white.withOpacity(0.5)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverGrid(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.85,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            if (index >= _albums.length) return null;
+
+            final album = _albums[index];
+            final albumSongs = _albumSongs[album.id] ?? [];
+
+            return AnimationConfiguration.staggeredGrid(
+              position: index,
+              columnCount: 2,
+              duration: const Duration(milliseconds: 200),
+              child: ScaleAnimation(
+                child: FadeInAnimation(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AlbumDetailScreen(albumName: album.album),
+                        ),
+                      );
+                    },
+                    onLongPress: () => _showAlbumOptions(album, albumSongs, audioPlayerService),
+                    child: glassmorphicContainer(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Center(
+                                child: AspectRatio(
+                                  aspectRatio: 1,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: _artworkService.buildCachedAlbumArtwork(
+                                      album.id,
+                                      size: 120,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              album.album,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${albumSongs.length} ${albumSongs.length == 1 ? 'song' : 'songs'}',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.6),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+          childCount: _albums.length,
+        ),
+      ),
+    );
+  }
+
+  void _showAlbumOptions(AlbumModel album, List<SongModel> albumSongs, AudioPlayerService audioPlayerService) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.grey.shade900,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white30,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: _artworkService.buildCachedAlbumArtwork(album.id, size: 50),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          album.album,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '${albumSongs.length} songs',
+                          style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(color: Colors.white24),
+            ListTile(
+              leading: const Icon(Icons.play_arrow, color: Colors.white),
+              title: const Text('Play', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                if (albumSongs.isNotEmpty) {
+                  audioPlayerService.setPlaylist(albumSongs, 0);
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.shuffle, color: Colors.white),
+              title: const Text('Shuffle', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                if (albumSongs.isNotEmpty) {
+                  final shuffled = List<SongModel>.from(albumSongs)..shuffle();
+                  audioPlayerService.setPlaylist(shuffled, 0);
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.info_outline, color: Colors.white),
+              title: const Text('View Album', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AlbumDetailScreen(albumName: album.album),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSongsList(AudioPlayerService audioPlayerService) {
+    if (_displayedSongs.isEmpty && _isLoading) {
+      return SliverPadding(
+        padding: const EdgeInsets.all(16),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: SongTileSkeleton(),
+            ),
+            childCount: 6,
           ),
         ),
       );
@@ -445,73 +687,11 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          if (index >= _albums.length) return null;
-
-          final album = _albums[index];
-          final albumSongs = _albumSongs[album.id] ?? [];
-
-          return AnimationConfiguration.staggeredList(
-            position: index,
-            duration: const Duration(milliseconds: 200),
-            child: SlideAnimation(
-              verticalOffset: 50.0,
-              child: FadeInAnimation(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-                  child: glassmorphicContainer(
-                    child: ListTile(
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: _artworkService.buildCachedArtwork(
-                          album.id,
-                          size: 50,
-                        ),
-                      ),
-                      title: Text(album.album,
-                          style: const TextStyle(color: Colors.white)),
-                      subtitle: Text(
-                        '${albumSongs.length} ${albumSongs.length == 1 ? 'song' : 'songs'}',
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                      trailing: const Icon(Icons.chevron_right,
-                          color: Colors.white70),
-                      onTap: () {
-                        if (albumSongs.isNotEmpty) {
-                          audioPlayerService.setPlaylist(albumSongs, 0);
-                          final audioHandler =
-                              Provider.of<AudioHandler>(context, listen: false);
-                          audioHandler.play();
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-        childCount: _albums.length,
-      ),
-    );
-  }
-
-  Widget _buildSongsList(AudioPlayerService audioPlayerService) {
-    if (_displayedSongs.isEmpty && _isLoading) {
-      return const SliverFillRemaining(
-          child: Center(child: CircularProgressIndicator()));
-    }
-
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
           if (index == _displayedSongs.length) {
             return _hasMoreSongs
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: CircularProgressIndicator(),
-                    ),
+                ? const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: SongTileSkeleton(),
                   )
                 : const SizedBox.shrink();
           }
@@ -542,11 +722,9 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                       subtitle: Text(song.album ?? 'Unknown Album',
                           style: const TextStyle(color: Colors.grey)),
                       onTap: () {
-                        audioPlayerService.setPlaylist(
-                            _allSongs, _allSongs.indexOf(song));
-                        final audioHandler =
-                            Provider.of<AudioHandler>(context, listen: false);
-                        audioHandler.play();
+                        debugPrint('Tapped song at index: $index, song: ${song.title}');
+                        audioPlayerService.setPlaylist(_allSongs, index);
+                        // Note: setPlaylist already starts playback
                       },
                     ),
                   ),
@@ -575,5 +753,95 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
           Provider.of<AudioPlayerService>(context, listen: false);
       audioPlayerService.setPlaylist(shuffledSongs, 0);
     }
+  }
+
+  Widget _buildStatItem(IconData icon, String value, String label) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: Colors.white70, size: 24),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.6),
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatDivider() {
+    return Container(
+      height: 40,
+      width: 1,
+      color: Colors.white.withOpacity(0.2),
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    if (hours > 0) {
+      return '${hours}h ${minutes}m';
+    }
+    return '${minutes}m';
+  }
+
+  Widget _buildActionButton(
+    BuildContext context,
+    IconData icon,
+    String label,
+    VoidCallback onTap, {
+    bool isPrimary = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+        decoration: BoxDecoration(
+          gradient: isPrimary
+              ? LinearGradient(
+                  colors: [
+                    _dominantColor.withOpacity(0.8),
+                    _dominantColor.withOpacity(0.6),
+                  ],
+                )
+              : null,
+          color: isPrimary ? null : Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isPrimary ? _dominantColor : Colors.white.withOpacity(0.2),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 22),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

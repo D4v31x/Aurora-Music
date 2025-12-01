@@ -160,30 +160,10 @@ class _OptimizedGridTileState extends State<OptimizedGridTile>
                         top: Radius.circular(12),
                       ),
                       child: widget.isArtist
-                          ? FutureBuilder(
-                              future: _artworkService
-                                  .getArtistImageProvider(widget.id),
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData) {
-                                  return Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        image: snapshot.data!,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                return Container(
-                                  color: Colors.white.withOpacity(0.1),
-                                  child: const Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: 48,
-                                  ),
-                                );
-                              },
+                          ? _artworkService.buildArtistImageByName(
+                              widget.title,
+                              size: double.infinity,
+                              circular: false,
                             )
                           : _artworkService.buildCachedArtwork(
                               widget.id,

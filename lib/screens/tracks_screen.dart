@@ -193,6 +193,7 @@ class _TracksScreenState extends State<TracksScreen>
         opacity: _fadeAnimation,
         child: Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
+          resizeToAvoidBottomInset: false,
           appBar: buildAppBar(),
           body: buildBody(audioPlayerService),
         ),
@@ -310,7 +311,7 @@ class _TracksScreenState extends State<TracksScreen>
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                           vertical: 8.0, horizontal: 16.0),
-                      child: _buildSongCard(song, audioPlayerService),
+                      child: _buildSongCard(song, audioPlayerService, index),
                     ),
                   ),
                 ),
@@ -322,7 +323,7 @@ class _TracksScreenState extends State<TracksScreen>
     }
   }
 
-  Widget _buildSongCard(SongModel song, AudioPlayerService audioPlayerService) {
+  Widget _buildSongCard(SongModel song, AudioPlayerService audioPlayerService, int index) {
     if (widget.isEditingPlaylist) {
       // Use original ListTile for editing mode with checkboxes
       return glassmorphicContainer(
@@ -387,7 +388,7 @@ class _TracksScreenState extends State<TracksScreen>
       onTap: () {
         audioPlayerService.setPlaylist(
           _displayedSongs,
-          _displayedSongs.indexOf(song),
+          index,
         );
       },
       trailing: IconButton(

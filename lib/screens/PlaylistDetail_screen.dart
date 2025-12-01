@@ -118,6 +118,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
+          resizeToAvoidBottomInset: false,
           body: CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -259,7 +260,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           style: const TextStyle(color: Colors.grey)),
                       onTap: () {
                         audioPlayerService.setPlaylist(
-                            playlist.songs, playlist.songs.indexOf(song));
+                            playlist.songs, index);
                       },
                       onLongPress: () => _showRemoveSongDialog(
                           context, audioPlayerService, song),

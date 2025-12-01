@@ -321,6 +321,16 @@ class TimedLyricsService {
     }
   }
 
+  /// Public method to parse LRC content
+  List<TimedLyric> parseLrcContent(String lrcContent) {
+    return _parseLrc(lrcContent);
+  }
+
+  /// Public method to save lyrics to cache
+  Future<void> saveLyricsToCache(String artist, String title, String content) async {
+    await _saveLyricsToFile(artist, title, content);
+  }
+
   List<TimedLyric> _parseLrc(String lrcContent) {
     _log('  Parsing LRC content...');
     final List<TimedLyric> timedLyrics = [];

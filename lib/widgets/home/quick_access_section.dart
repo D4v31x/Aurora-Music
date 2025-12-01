@@ -5,16 +5,16 @@ import 'package:provider/provider.dart';
 import '../../screens/PlaylistDetail_screen.dart';
 import '../../services/audio_player_service.dart';
 import '../../localization/app_localizations.dart';
+import '../glassmorphic_container.dart';
 
 class QuickAccessSection extends StatelessWidget {
   const QuickAccessSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AudioPlayerService>(
-      builder: (context, audioPlayerService, child) {
-        final likedSongsPlaylist = audioPlayerService.likedSongsPlaylist;
-
+    return Selector<AudioPlayerService, Playlist?>(
+      selector: (context, audioService) => audioService.likedSongsPlaylist,
+      builder: (context, likedSongsPlaylist, child) {
         if (likedSongsPlaylist == null) {
           return const SizedBox.shrink();
         }
@@ -29,7 +29,7 @@ class QuickAccessSection extends StatelessWidget {
                   child: FadeInAnimation(child: widget),
                 ),
                 children: [
-                  _buildLikedSongsCard(context, likedSongsPlaylist),
+                  _QuickAccessCard(likedSongsPlaylist: likedSongsPlaylist),
                 ],
               ),
             ),
@@ -38,72 +38,80 @@ class QuickAccessSection extends StatelessWidget {
       },
     );
   }
+}
 
-  Widget _buildLikedSongsCard(
-      BuildContext context, Playlist likedSongsPlaylist) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  PlaylistDetailScreen(playlist: likedSongsPlaylist),
-            ),
-          );
-        },
-        child: Row(
-          children: [
-            RepaintBoundary(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.horizontal(
-                  left: Radius.circular(12),
-                ),
-                child: Image.asset(
-                  'assets/images/UI/liked_icon.png',
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
+class _QuickAccessCard extends StatelessWidget {
+  final Playlist likedSongsPlaylist;
+
+  const _QuickAccessCard({required this.likedSongsPlaylist});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                PlaylistDetailScreen(playlist: likedSongsPlaylist),
+          ),
+        );
+      },
+      child: glassmorphicContainer(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              RepaintBoundary(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.asset(
+                    'assets/images/UI/liked_icon.png',
+                    width: 56,
+                    height: 56,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    likedSongsPlaylist.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'ProductSans',
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${likedSongsPlaylist.songs.length} ${AppLocalizations.of(context).translate('tracks')}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.6),
-                          fontFamily: 'ProductSans',
-                        ),
-                  ),
-                ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      likedSongsPlaylist.name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'ProductSans',
+                          ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${likedSongsPlaylist.songs.length} ${AppLocalizations.of(context).translate('tracks')}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6),
+                            fontFamily: 'ProductSans',
+                          ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Icon(Icons.play_arrow_rounded, size: 28),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Icon(
+                  Icons.play_arrow_rounded,
+                  size: 28,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

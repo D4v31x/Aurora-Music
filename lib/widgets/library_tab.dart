@@ -13,6 +13,7 @@ import '../screens/tracks_screen.dart';
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../widgets/glassmorphic_container.dart';
+import '../widgets/shimmer_loading.dart';
 import '../localization/app_localizations.dart';
 
 class LibraryTab extends StatefulWidget {
@@ -28,15 +29,22 @@ class _LibraryTabState extends State<LibraryTab> {
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    // Access service without listening for methods
+    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        left: 20.0,
-        right: 20.0,
-        top: 30.0,
-        bottom: audioPlayerService.currentSong != null ? 90.0 : 30.0,
-      ),
+    return Selector<AudioPlayerService, bool>(
+      selector: (context, service) => service.currentSong != null,
+      builder: (context, hasCurrentSong, child) {
+        return SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: 20.0,
+            right: 20.0,
+            top: 30.0,
+            bottom: hasCurrentSong ? 90.0 : 30.0,
+          ),
+          child: child,
+        );
+      },
       child: AnimationLimiter(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,8 +95,9 @@ class _LibraryTabState extends State<LibraryTab> {
                 },
               ),
               const SizedBox(height: 30.0),
-              Consumer<AudioPlayerService>(
-                builder: (context, audioPlayerService, child) {
+              Selector<AudioPlayerService, List<Playlist>>(
+                selector: (context, service) => service.playlists,
+                builder: (context, playlists, child) {
                   return buildCategorySection(
                     title: AppLocalizations.of(context).translate('playlists'),
                     items: audioPlayerService.getThreePlaylists(),
@@ -204,7 +213,14 @@ class _LibraryTabState extends State<LibraryTab> {
                     future: items as Future<List<dynamic>>,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: 3,
+                          itemBuilder: (context, index) => const Padding(
+                            padding: EdgeInsets.only(right: 10),
+                            child: CardSkeleton(size: 100),
+                          ),
+                        );
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -278,19 +294,29 @@ class _LibraryTabState extends State<LibraryTab> {
         ),
       );
     } else if (item is AlbumModel) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: _artworkService.buildCachedArtwork(
-          item.id,
-          size: 60,
+      return Hero(
+        tag: 'album_image_${item.album}',
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: _artworkService.buildCachedAlbumArtwork(
+            item.id,
+            size: 60,
+          ),
         ),
       );
     } else if (item is Playlist) {
       return const Icon(Icons.playlist_play, color: Colors.white, size: 60);
     } else if (item is ArtistModel) {
-      return const CircleAvatar(
-        radius: 30,
-        backgroundImage: AssetImage('assets/images/logo/default_art.png'),
+      return Hero(
+        tag: 'artist_image_${item.artist}',
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: _artworkService.buildArtistImageByName(
+            item.artist,
+            size: 60,
+            circular: true,
+          ),
+        ),
       );
     } else if (item is String) {
       return const Icon(Icons.folder, color: Colors.white, size: 60);

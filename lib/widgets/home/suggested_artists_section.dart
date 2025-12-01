@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../screens/Artist_screen.dart';
 import '../../services/local_caching_service.dart';
+import '../../services/artwork_cache_service.dart';
 import '../glassmorphic_container.dart';
 
 class SuggestedArtistsSection extends StatelessWidget {
@@ -62,9 +62,10 @@ class SuggestedArtistsSection extends StatelessWidget {
   }
 }
 
-class _ArtistItem extends StatefulWidget {
+class _ArtistItem extends StatelessWidget {
   final String artist;
   final LocalCachingArtistService artistService;
+  static final _artworkService = ArtworkCacheService();
 
   const _ArtistItem({
     super.key,
@@ -73,46 +74,23 @@ class _ArtistItem extends StatefulWidget {
   });
 
   @override
-  State<_ArtistItem> createState() => _ArtistItemState();
-}
-
-class _ArtistItemState extends State<_ArtistItem> {
-  String? _imagePath;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadArtistImage();
-  }
-
-  Future<void> _loadArtistImage() async {
-    try {
-      final imagePath =
-          await widget.artistService.fetchArtistImage(widget.artist);
-      if (mounted) {
-        setState(() {
-          _imagePath = imagePath;
-        });
-      }
-    } catch (e) {
-      // Image loading failed, will show default icon
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ArtistDetailsScreen(
-                artistName: widget.artist,
-                artistImagePath: _imagePath,
+        onTap: () async {
+          // Use cached image path
+          final imagePath = await _artworkService.getArtistImageByName(artist);
+          if (context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ArtistDetailsScreen(
+                  artistName: artist,
+                  artistImagePath: imagePath,
+                ),
               ),
-            ),
-          );
+            );
+          }
         },
         child: glassmorphicContainer(
           child: Padding(
@@ -121,20 +99,18 @@ class _ArtistItemState extends State<_ArtistItem> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 RepaintBoundary(
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundImage: _imagePath != null
-                        ? FileImage(File(_imagePath!))
-                        : null,
-                    child: _imagePath == null
-                        ? const Icon(Icons.person,
-                            size: 40, color: Colors.white)
-                        : null,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(40),
+                    child: _artworkService.buildArtistImageByName(
+                      artist,
+                      size: 80,
+                      circular: true,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  widget.artist,
+                  artist,
                   style: const TextStyle(
                       color: Colors.white, fontFamily: 'ProductSans'),
                   maxLines: 1,

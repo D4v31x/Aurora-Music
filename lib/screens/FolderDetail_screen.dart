@@ -7,7 +7,6 @@ import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
-import '../services/expandable_player_controller.dart';
 import '../widgets/app_background.dart';
 
 class FolderDetailScreen extends StatefulWidget {
@@ -102,7 +101,6 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
       final audioPlayerService =
           Provider.of<AudioPlayerService>(context, listen: false);
       audioPlayerService.setPlaylist(_allSongs, 0);
-      audioPlayerService.play();
     }
   }
 
@@ -112,19 +110,17 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
       final audioPlayerService =
           Provider.of<AudioPlayerService>(context, listen: false);
       audioPlayerService.setPlaylist(shuffledSongs, 0);
-      audioPlayerService.play();
     }
   }
 
   void _onSongTap(SongModel song) {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    final expandableController =
-        Provider.of<ExpandablePlayerController>(context, listen: false);
 
-    audioPlayerService.setPlaylist(_allSongs, _allSongs.indexOf(song));
-    audioPlayerService.play();
-    expandableController.show();
+    final songIndex = _allSongs.indexWhere((s) => s.id == song.id);
+    if (songIndex >= 0) {
+      audioPlayerService.setPlaylist(_allSongs, songIndex);
+    }
   }
 
   Widget _buildSliverAppBar(

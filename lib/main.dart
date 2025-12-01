@@ -9,7 +9,6 @@ import 'dart:ui' as ui;
 
 import 'constants/app_config.dart';
 import 'services/audio_player_service.dart';
-import 'services/expandable_player_controller.dart';
 import 'services/error_tracking_service.dart';
 import 'services/shader_warmup_service.dart';
 import 'services/background_manager_service.dart';
@@ -65,13 +64,11 @@ void main() async {
           // Use lazy initialization for better startup performance
           ChangeNotifierProvider.value(
               value: AudioPlayerService()), // Use pre-initialized instance
-          ChangeNotifierProvider(
-              create: (_) => ExpandablePlayerController(), lazy: true),
           ChangeNotifierProvider(create: (_) => ThemeProvider(), lazy: false),
           ChangeNotifierProvider(
               create: (_) => PerformanceModeProvider(), lazy: false),
           ChangeNotifierProvider(
-              create: (_) => BackgroundManagerService(), lazy: true),
+              create: (_) => BackgroundManagerService(), lazy: false),
           ChangeNotifierProvider(
               create: (_) => SleepTimerController(), lazy: true),
           Provider<ErrorTrackingService>.value(value: errorTracker),
@@ -118,13 +115,40 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late ui.Locale _locale;
 
   @override
   void initState() {
     super.initState();
     _locale = ui.Locale(widget.languageCode);
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    
+    // When app is detached (swiped from recents), stop audio and clean up
+    if (state == AppLifecycleState.detached) {
+      _cleanupAndExit();
+    }
+  }
+
+  Future<void> _cleanupAndExit() async {
+    try {
+      final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+      await audioService.stop();
+      audioService.dispose();
+    } catch (e) {
+      // Ignore errors during cleanup
+    }
   }
 
   /// Updates the application locale and persists the selection

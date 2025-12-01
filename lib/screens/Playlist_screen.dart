@@ -17,6 +17,7 @@ class PlaylistsScreenList extends StatelessWidget {
       enableAnimation: true,
       child: Scaffold(
         backgroundColor: Colors.transparent,
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0.0,

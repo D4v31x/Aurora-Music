@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:permission_handler/permission_handler.dart'
     as permissionhandler;
@@ -11,16 +12,13 @@ import '../models/utils.dart';
 import '../services/audio_player_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/changelog_dialog.dart';
-import '../widgets/expandable_bottom.dart';
 import '../widgets/home/home_tab.dart';
 import '../widgets/home/search_tab.dart';
 import '../widgets/home/settings_tab.dart';
-import 'now_playing.dart';
 import '../widgets/outline_indicator.dart';
-import '../widgets/mini_player.dart';
+import '../widgets/expanding_player.dart';
 import '../widgets/auto_scroll_text.dart';
 import '../services/local_caching_service.dart';
-import '../services/expandable_player_controller.dart';
 import '../services/notification_manager.dart';
 import '../services/download_progress_monitor.dart';
 import '../services/version_service.dart';
@@ -28,6 +26,7 @@ import '../services/bluetooth_service.dart';
 import '../widgets/library_tab.dart';
 import 'package:aurora_music_v01/screens/onboarding/onboarding_screen.dart';
 import 'package:aurora_music_v01/providers/theme_provider.dart';
+import '../widgets/app_background.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -46,15 +45,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   List<SongModel> randomSongs = [];
   AnimationController? _animationController;
   final ScrollController _scrollController = ScrollController();
-  final StreamController<bool> _streamController = StreamController<bool>();
+  final ValueNotifier<bool> _isScrolledNotifier = ValueNotifier<bool>(false);
   SongModel? currentSong;
   int _totalSongs = 0;
   List<ArtistModel> artists = [];
-  final GlobalKey<ExpandableBottomSheetState> _expandableKey =
-      GlobalKey<ExpandableBottomSheetState>();
+  List<AlbumModel> albums = [];
+  // Removed expandable bottom sheet in favor of simple Hero-based navigation
   bool _isInitialized = false;
   late final ScrollController _appBarTextController;
-  bool _isTabBarScrolled = false;
   bool _hasShownChangelog = false;
   final String _currentVersion = '';
   final NotificationManager _notificationManager = NotificationManager();
@@ -168,15 +166,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  Future<void> _loadAlbumsAndArtists() async {
+    try {
+      final onAudioQuery = OnAudioQuery();
+      final loadedAlbums = await onAudioQuery.queryAlbums();
+      final loadedArtists = await onAudioQuery.queryArtists();
+      if (mounted) {
+        setState(() {
+          albums = loadedAlbums;
+          artists = loadedArtists;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading albums and artists: $e');
+    }
+  }
+
   void _scrollListener() {
     final offset = _scrollController.offset;
     final isScrolled = offset > 180;
 
     // Only update if state actually changed
-    if (isScrolled != _isTabBarScrolled) {
-      setState(() {
-        _isTabBarScrolled = isScrolled;
-      });
+    if (isScrolled != _isScrolledNotifier.value) {
+      _isScrolledNotifier.value = isScrolled;
     }
   }
 
@@ -185,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _animationController?.dispose();
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
-    _streamController.close();
+    _isScrolledNotifier.dispose();
     _tabController.dispose();
     _appBarTextController.dispose();
     _notificationManager.dispose();
@@ -219,6 +231,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           songs = allSongs;
           _randomizeContent();
         });
+        _loadAlbumsAndArtists();
       }
 
       _notificationManager.showNotification(
@@ -279,6 +292,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               songs = audioPlayerService.songs;
               _randomizeContent();
             });
+            _loadAlbumsAndArtists();
           } else {
             _showPermissionDialog();
           }
@@ -307,6 +321,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           songs = audioPlayerService.songs;
           _randomizeContent();
         });
+        _loadAlbumsAndArtists();
       }
     } catch (e) {
       debugPrint('Error in _checkPermissions: $e');
@@ -409,6 +424,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       songs = audioPlayerService.songs;
                       _randomizeContent();
                     });
+                    _loadAlbumsAndArtists();
                   } else {
                     setState(() {
                       songs = [];
@@ -455,17 +471,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Windows file handling moved to AudioPlayerService
 
   Future<bool> _onWillPop() async {
-    final expandableController =
-        Provider.of<ExpandablePlayerController>(context, listen: false);
-
-    // If the player is expanded, collapse it instead of showing exit dialog
-    if (expandableController.isExpanded) {
-      expandableController.collapse();
+    // If the player is expanded, minimize it instead of showing exit dialog
+    if (ExpandingPlayer.isExpanded) {
+      ExpandingPlayer.minimize();
       return false;
     }
-
-    // Otherwise show the exit dialog
-    return await showDialog(
+    
+    // Show the exit dialog when user attempts to leave the app
+    final shouldExit = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
             title: Text(AppLocalizations.of(context).translate('exit_app')),
@@ -484,6 +497,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ) ??
         false;
+
+    if (shouldExit) {
+      // Stop audio and exit the app properly
+      final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+      await audioService.stop();
+      audioService.dispose();
+      
+      // Exit the app
+      if (Platform.isAndroid) {
+        SystemNavigator.pop();
+      } else if (Platform.isIOS) {
+        exit(0);
+      }
+    }
+    return false; // Don't pop the route, we handle exit manually
   }
 
   @override
@@ -604,127 +632,128 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Selector2<AudioPlayerService, ExpandablePlayerController,
-        SongModel?>(
-      selector: (context, audioService, expandableController) =>
-          audioService.currentSong,
-      builder: (context, currentSong, child) {
-        return WillPopScope(
-          onWillPop: _onWillPop,
-          child: Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            body: Stack(
-              children: [
-                RepaintBoundary(
-                  child: NestedScrollView(
-                    controller: _scrollController,
-                    headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                      SliverAppBar(
-                        backgroundColor: Colors.transparent,
-                        elevation: 0.0,
-                        toolbarHeight: 70,
-                        automaticallyImplyLeading: false,
-                        floating: true,
-                        pinned: true,
-                        expandedHeight: 250,
-                        flexibleSpace: ClipRRect(
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                            child: FlexibleSpaceBar(
-                              background: Container(
-                                color: Colors.transparent,
-                                child: Center(
-                                  child: buildAppBarTitle(),
-                                ),
-                              ),
-                              centerTitle: true,
-                              title: innerBoxIsScrolled
-                                  ? Text(
-                                      AppLocalizations.of(context)
-                                          .translate('aurora_music'),
-                                      style: const TextStyle(
-                                        fontFamily: 'ProductSans',
-                                        color: Colors.white,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )
-                                  : null,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: AppBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          resizeToAvoidBottomInset: false,
+          body: Stack(
+          children: [
+            RepaintBoundary(
+              child: NestedScrollView(
+                controller: _scrollController,
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                  SliverAppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0.0,
+                    toolbarHeight: 70,
+                    automaticallyImplyLeading: false,
+                    floating: true,
+                    pinned: true,
+                    expandedHeight: 250,
+                    flexibleSpace: ClipRRect(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                        child: FlexibleSpaceBar(
+                          background: Container(
+                            color: Colors.transparent,
+                            child: Center(
+                              child: buildAppBarTitle(),
                             ),
                           ),
+                          centerTitle: true,
+                          title: innerBoxIsScrolled
+                              ? Text(
+                                  AppLocalizations.of(context)
+                                      .translate('aurora_music'),
+                                  style: const TextStyle(
+                                    fontFamily: 'ProductSans',
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : null,
                         ),
-                        bottom: PreferredSize(
-                          preferredSize: const Size.fromHeight(kToolbarHeight),
-                          child: Container(
-                            color: innerBoxIsScrolled
+                      ),
+                    ),
+                    bottom: PreferredSize(
+                      preferredSize: const Size.fromHeight(kToolbarHeight),
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: _isScrolledNotifier,
+                        builder: (context, isScrolled, _) {
+                          return Container(
+                            color: isScrolled
                                 ? Theme.of(context)
                                     .colorScheme
                                     .surface
-                                    .withOpacity(0.8)
+                                    .withValues(alpha: 0.8)
                                 : Colors.transparent,
-                            child: _buildTabBar(),
-                          ),
-                        ),
+                            child: _HomeTabBar(tabController: _tabController),
+                          );
+                        }
                       ),
-                    ],
-                    body: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        RepaintBoundary(
-                          child: HomeTab(
-                            randomSongs: randomSongs,
-                            randomArtists: randomArtists,
-                            artistService: _artistService,
-                            currentSong: currentSong,
-                            onRefresh: _refreshLibrary,
-                          ),
-                        ),
-                        const RepaintBoundary(child: LibraryTab()),
-                        RepaintBoundary(
-                          child: SearchTab(
-                            songs: songs,
-                            artists: artists,
-                            isInitialized: _isInitialized,
-                          ),
-                        ),
-                        RepaintBoundary(
-                          child: SettingsTab(
-                            notificationManager: _notificationManager,
-                            onUpdateCheck: () async {
-                              await launchUrl(Uri.parse(
-                                  'https://github.com/D4v31x/Aurora-Music/releases/latest'));
-                            },
-                            onResetSetup: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const OnboardingScreen()),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
                     ),
                   ),
+                ],
+                body: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    RepaintBoundary(
+                      child: HomeTab(
+                        randomSongs: randomSongs,
+                        randomArtists: randomArtists,
+                        artistService: _artistService,
+                        currentSong: currentSong,
+                        onRefresh: _refreshLibrary,
+                      ),
+                    ),
+                    const RepaintBoundary(child: LibraryTab()),
+                    RepaintBoundary(
+                      child: SearchTab(
+                        songs: songs,
+                        artists: artists,
+                        albums: albums,
+                        isInitialized: _isInitialized,
+                      ),
+                    ),
+                    RepaintBoundary(
+                      child: SettingsTab(
+                        notificationManager: _notificationManager,
+                        onUpdateCheck: () async {
+                          await launchUrl(Uri.parse(
+                              'https://github.com/D4v31x/Aurora-Music/releases/latest'));
+                        },
+                        onResetSetup: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const OnboardingScreen()),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                if (currentSong != null)
-                  RepaintBoundary(
-                    child: ExpandableBottomSheet(
-                      key: _expandableKey,
-                      minHeight: 60,
-                      minChild: MiniPlayer(currentSong: currentSong),
-                      maxChild: const NowPlayingScreen(),
-                    ),
-                  ),
-              ],
+              ),
             ),
-          ),
-        );
-      },
+            // Expanding Mini Player
+            const ExpandingPlayer(),
+          ],
+        ),
+        ),
+      ),
     );
   }
+}
 
-  Widget _buildTabItem(String text) {
+class _HomeTabBar extends StatelessWidget {
+  final TabController tabController;
+
+  const _HomeTabBar({required this.tabController});
+
+  Widget _buildTabItem(BuildContext context, String text) {
     return Container(
       constraints: const BoxConstraints(minWidth: 80),
       height: 30,
@@ -746,31 +775,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTabBar() {
-    return TabBar(
-      controller: _tabController,
-      dividerColor: Colors.transparent,
-      isScrollable: true,
-      labelPadding:
-          const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
-      indicatorPadding: const EdgeInsets.symmetric(vertical: 8.0),
-      indicator: OutlineIndicator(
-        color: Colors.white,
-        strokeWidth: 2,
-        radius: const Radius.circular(20),
-        text: [
-          AppLocalizations.of(context).translate('home'),
-          AppLocalizations.of(context).translate('library'),
-          AppLocalizations.of(context).translate('search'),
-          AppLocalizations.of(context).translate('settings'),
-        ][_tabController.index],
-      ),
-      tabs: [
-        _buildTabItem(AppLocalizations.of(context).translate('home')),
-        _buildTabItem(AppLocalizations.of(context).translate('library')),
-        _buildTabItem(AppLocalizations.of(context).translate('search')),
-        _buildTabItem(AppLocalizations.of(context).translate('settings')),
-      ],
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: tabController,
+      builder: (context, child) {
+        return TabBar(
+          controller: tabController,
+          dividerColor: Colors.transparent,
+          isScrollable: true,
+          labelPadding:
+              const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+          indicatorPadding: const EdgeInsets.symmetric(vertical: 8.0),
+          indicator: OutlineIndicator(
+            color: Colors.white,
+            strokeWidth: 2,
+            radius: const Radius.circular(20),
+            text: [
+              AppLocalizations.of(context).translate('home'),
+              AppLocalizations.of(context).translate('library'),
+              AppLocalizations.of(context).translate('search'),
+              AppLocalizations.of(context).translate('settings'),
+            ][tabController.index],
+          ),
+          tabs: [
+            _buildTabItem(context, AppLocalizations.of(context).translate('home')),
+            _buildTabItem(context, AppLocalizations.of(context).translate('library')),
+            _buildTabItem(context, AppLocalizations.of(context).translate('search')),
+            _buildTabItem(context, AppLocalizations.of(context).translate('settings')),
+          ],
+        );
+      },
     );
   }
 }

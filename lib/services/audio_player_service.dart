@@ -29,6 +29,15 @@ class AudioPlayerService extends ChangeNotifier {
   bool _isLoading = false;
   Set<String> _librarySet = {};
 
+  // Debounce timer for batching notifications
+  Timer? _notifyDebounceTimer;
+  bool _notifyScheduled = false;
+  
+  // Batch save timer to reduce disk I/O
+  Timer? _saveDebounceTimer;
+  bool _playcountsDirty = false;
+  bool _playlistsDirty = false;
+
   // Play count tracking
   Map<String, int> _trackPlayCounts = {};
   Map<String, int> _albumPlayCounts = {};
@@ -99,6 +108,34 @@ class AudioPlayerService extends ChangeNotifier {
   final ValueNotifier<Duration?> sleepTimerDurationNotifier =
       ValueNotifier<Duration?>(null);
 
+  /// Debounced notification to batch multiple state changes
+  /// This prevents excessive rebuilds when multiple changes happen in quick succession
+  void _scheduleNotify() {
+    if (_notifyScheduled) return;
+    _notifyScheduled = true;
+    _notifyDebounceTimer?.cancel();
+    _notifyDebounceTimer = Timer(const Duration(milliseconds: 16), () {
+      _notifyScheduled = false;
+      notifyListeners();
+    });
+  }
+  
+  /// Schedule saving play counts with debouncing to reduce disk I/O
+  void _scheduleSavePlayCounts() {
+    _playcountsDirty = true;
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = Timer(const Duration(seconds: 2), () {
+      if (_playcountsDirty) {
+        _playcountsDirty = false;
+        _savePlayCounts();
+      }
+      if (_playlistsDirty) {
+        _playlistsDirty = false;
+        savePlaylists();
+      }
+    });
+  }
+
   AudioPlayerService() {
     _init();
     _loadSettings();
@@ -113,10 +150,6 @@ class AudioPlayerService extends ChangeNotifier {
 
     // Don't do any audio query operations in the constructor
     // All media access will be explicit and user-initiated
-
-    audioPlayer.playerStateStream.listen((playerState) {
-      notifyListeners();
-    });
   }
 
   // Check permissions safely without crashing the app
@@ -227,7 +260,8 @@ class AudioPlayerService extends ChangeNotifier {
     _audioPlayer.playerStateStream.listen((playerState) {
       _isPlaying = playerState.playing;
       isPlayingNotifier.value = _isPlaying;
-      notifyListeners();
+      // ValueNotifier handles most UI updates, use debounced notify for other listeners
+      _scheduleNotify();
     });
 
     _audioPlayer.positionStream.listen((position) {
@@ -278,22 +312,26 @@ class AudioPlayerService extends ChangeNotifier {
         .toList();
 
     await file.writeAsString(jsonEncode(json));
+    // Update the notifier for reactive widgets
+    playlistsNotifier.value = List.from(_playlists);
   }
 
   void createPlaylist(String name, List<SongModel> songs) {
     final id = DateTime.now().millisecondsSinceEpoch.toString();
     final newPlaylist = Playlist(id: id, name: name, songs: songs);
     _playlists.add(newPlaylist);
-    savePlaylists();
-    notifyListeners();
+    _playlistsDirty = true;
+    _scheduleSavePlayCounts(); // Will also save playlists
+    _scheduleNotify();
   }
 
   void addSongToPlaylist(String playlistId, SongModel song) {
     final playlist = _playlists.firstWhere((p) => p.id == playlistId);
     if (!playlist.songs.contains(song)) {
       playlist.songs.add(song);
-      savePlaylists();
-      notifyListeners();
+      _playlistsDirty = true;
+      _scheduleSavePlayCounts();
+      _scheduleNotify();
     }
   }
 
@@ -305,15 +343,17 @@ class AudioPlayerService extends ChangeNotifier {
     } else {
       final playlist = _playlists.firstWhere((p) => p.id == playlistId);
       playlist.songs.remove(song);
-      savePlaylists();
+      _playlistsDirty = true;
+      _scheduleSavePlayCounts();
     }
-    notifyListeners();
+    _scheduleNotify();
   }
 
   void deletePlaylist(Playlist playlist) {
     _playlists.remove(playlist);
-    savePlaylists();
-    notifyListeners();
+    _playlistsDirty = true;
+    _scheduleSavePlayCounts();
+    _scheduleNotify();
   }
 
   void renamePlaylist(String playlistId, String newName) {
@@ -321,8 +361,9 @@ class AudioPlayerService extends ChangeNotifier {
     if (playlistIndex != -1) {
       _playlists[playlistIndex] =
           _playlists[playlistIndex].copyWith(name: newName);
-      savePlaylists();
-      notifyListeners();
+      _playlistsDirty = true;
+      _scheduleSavePlayCounts();
+      _scheduleNotify();
     }
   }
 
@@ -342,9 +383,10 @@ class AudioPlayerService extends ChangeNotifier {
           playlist.songs.add(song);
         }
       }
-      savePlaylists();
+      _playlistsDirty = true;
+      _scheduleSavePlayCounts();
     }
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> _loadPlayCounts() async {
@@ -404,8 +446,8 @@ class AudioPlayerService extends ChangeNotifier {
       }
     }
 
-    // Save async without blocking
-    _savePlayCounts();
+    // Use debounced save to reduce disk I/O
+    _scheduleSavePlayCounts();
   }
 
   // Most Played Queries
@@ -472,14 +514,12 @@ class AudioPlayerService extends ChangeNotifier {
 
       debugPrint(
           'Setting playlist with ${songs.length} songs, starting at index $startIndex');
-      debugPrint('Gapless playback: $_gaplessPlayback');
 
       if (_gaplessPlayback) {
         try {
           final playlistSource = ConcatenatingAudioSource(
             children: _playlist.map((song) {
               final uri = song.uri ?? song.data;
-              debugPrint('Adding song to playlist: ${song.title} - URI: $uri');
               return AudioSource.uri(
                 Uri.parse(uri),
                 tag: MediaItem(
@@ -493,35 +533,35 @@ class AudioPlayerService extends ChangeNotifier {
             }).toList(),
           );
 
-          debugPrint('Setting audio source with initial index: $_currentIndex');
           await _audioPlayer.setAudioSource(
             playlistSource,
             initialIndex: _currentIndex,
             initialPosition: Duration.zero,
           );
-          debugPrint('Audio source set successfully, now playing...');
           await _audioPlayer.play();
 
-          // Update state for gapless playback
+          // Batch all state updates
           _isPlaying = true;
           isPlayingNotifier.value = true;
           _incrementPlayCount(_playlist[_currentIndex]);
-          await updateCurrentArtwork();
-          await _updateBackgroundColors();
           _currentSongController.add(_playlist[_currentIndex]);
           currentSongNotifier.value = _playlist[_currentIndex];
-          notifyListeners();
-          debugPrint('Gapless playback started successfully');
+          
+          // Fire and forget UI updates
+          unawaited(updateCurrentArtwork());
+          unawaited(_updateBackgroundColors());
+          
+          // Single debounced notification
+          _scheduleNotify();
         } catch (e) {
           debugPrint('Error setting audio source: $e');
           _isPlaying = false;
           isPlayingNotifier.value = false;
-          notifyListeners();
+          _scheduleNotify();
           rethrow;
         }
       } else {
         // For non-gapless playback, just call play() once
-        debugPrint('Non-gapless mode, calling play()...');
         await play();
       }
     } catch (e) {
@@ -529,8 +569,8 @@ class AudioPlayerService extends ChangeNotifier {
       _errorController.add('Failed to set playlist: $e');
       _isPlaying = false;
       isPlayingNotifier.value = false;
-      _isLoading = false; // Reset loading flag on error
-      notifyListeners();
+      _isLoading = false;
+      _scheduleNotify();
     }
   }
 
@@ -565,7 +605,7 @@ class AudioPlayerService extends ChangeNotifier {
 
         _playlist = newSongs;
         _currentIndex = currentIndex;
-        notifyListeners();
+        _scheduleNotify();
       } else {
         _playlist = newSongs;
         _currentIndex = 0;
@@ -573,7 +613,7 @@ class AudioPlayerService extends ChangeNotifier {
       }
     } catch (e) {
       _errorController.add('Failed to update playlist: $e');
-      notifyListeners();
+      _scheduleNotify();
     }
   }
 
@@ -602,29 +642,16 @@ class AudioPlayerService extends ChangeNotifier {
           debugPrint(
               'Using gapless playback, seeking to index: $_currentIndex');
           await _audioPlayer.seek(Duration.zero, index: _currentIndex);
-          debugPrint('Starting playback...');
           await _audioPlayer.play();
-          debugPrint('Playback started');
         } else {
           final url = song.uri ?? song.data;
           debugPrint('Non-gapless playback, loading URL: $url');
-
-          final artworkBytes = await getCurrentSongArtwork();
-          Uri? artUri;
-          if (artworkBytes != null) {
-            final directory = await getApplicationDocumentsDirectory();
-            final filePath = '${directory.path}/${song.id}_artwork.jpg';
-            final file = File(filePath);
-            await file.writeAsBytes(artworkBytes);
-            artUri = Uri.file(filePath);
-          }
 
           final mediaItem = MediaItem(
             id: song.id.toString(),
             album: song.album ?? 'Unknown Album',
             title: song.title,
             artist: song.artist ?? 'Unknown Artist',
-            artUri: artUri,
             duration: Duration(milliseconds: song.duration ?? 0),
           );
 
@@ -633,23 +660,21 @@ class AudioPlayerService extends ChangeNotifier {
             preload: true,
           );
           await _audioPlayer.play();
-          debugPrint('Non-gapless playback started');
         }
 
-        // Batch all state updates into one call
+        // Batch all state updates after playback starts
         _isPlaying = true;
         isPlayingNotifier.value = true;
         _incrementPlayCount(song);
         _currentSongController.add(song);
         currentSongNotifier.value = song;
 
-        // Update artwork and background async without blocking
-        updateCurrentArtwork();
-        _updateBackgroundColors();
+        // Fire and forget - don't await these UI updates
+        unawaited(updateCurrentArtwork());
+        unawaited(_updateBackgroundColors());
 
-        // Single notifyListeners call
-        notifyListeners();
-        debugPrint('Play completed successfully, isPlaying: $_isPlaying');
+        // Single notification at the end
+        _scheduleNotify();
       } else {
         debugPrint('Invalid index or empty playlist');
       }
@@ -659,7 +684,7 @@ class AudioPlayerService extends ChangeNotifier {
       _isPlaying = false;
       isPlayingNotifier.value = false;
       _currentSongController.addError('Failed to play song: $e');
-      notifyListeners();
+      _scheduleNotify();
     } finally {
       _isLoading = false;
     }
@@ -688,7 +713,7 @@ class AudioPlayerService extends ChangeNotifier {
     await _audioPlayer.pause();
     _isPlaying = false;
     isPlayingNotifier.value = false;
-    notifyListeners();
+    // No need for notifyListeners - ValueNotifier handles UI updates
   }
 
   Future<void> resume() async {
@@ -696,14 +721,14 @@ class AudioPlayerService extends ChangeNotifier {
     await _audioPlayer.play();
     _isPlaying = true;
     isPlayingNotifier.value = true;
-    notifyListeners();
+    // No need for notifyListeners - ValueNotifier handles UI updates
   }
 
   Future<void> stop() async {
     await _audioPlayer.stop();
     _isPlaying = false;
     isPlayingNotifier.value = false;
-    notifyListeners();
+    // No need for notifyListeners - ValueNotifier handles UI updates
   }
 
   void skip() async {
@@ -731,13 +756,13 @@ class AudioPlayerService extends ChangeNotifier {
   void toggleShuffle() {
     _isShuffle = !_isShuffle;
     isShuffleNotifier.value = _isShuffle;
-    notifyListeners();
+    // ValueNotifier handles reactive updates - no notifyListeners needed
   }
 
   void toggleRepeat() {
     _isRepeat = !_isRepeat;
     isRepeatNotifier.value = _isRepeat;
-    notifyListeners();
+    // ValueNotifier handles reactive updates - no notifyListeners needed
   }
 
   int _getRandomIndex() {
@@ -853,7 +878,7 @@ class AudioPlayerService extends ChangeNotifier {
         songs: likedSongs,
       );
 
-      notifyListeners();
+      _scheduleNotify();
     } catch (e) {
       // Handle errors by keeping the current playlist or creating an empty one
       _likedSongsPlaylist ??= Playlist(
@@ -878,22 +903,41 @@ class AudioPlayerService extends ChangeNotifier {
 
     await saveLikedSongs();
     _updateLikedSongsPlaylist();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Playlist? get likedSongsPlaylist => _likedSongsPlaylist;
 
   Future<void> initializeWithSongs(List<SongModel> initialSongs) async {
     _songs = initialSongs;
-    notifyListeners();
+    _scheduleNotify();
   }
 
   @override
   void dispose() {
+    // Cancel debounce timers
+    _notifyDebounceTimer?.cancel();
+    _saveDebounceTimer?.cancel();
+    
+    // Dispose notifiers
     currentSongNotifier.dispose();
+    isPlayingNotifier.dispose();
+    isShuffleNotifier.dispose();
+    isRepeatNotifier.dispose();
+    sleepTimerDurationNotifier.dispose();
+    playlistsNotifier.dispose();
+    currentArtwork.dispose();
+    
     _audioPlayer.dispose();
-    _savePlayCounts();
-    savePlaylists();
+    
+    // Save any pending data synchronously before disposing
+    if (_playcountsDirty) {
+      _savePlayCounts();
+    }
+    if (_playlistsDirty) {
+      savePlaylists();
+    }
+    
     _currentSongController.close();
     _errorController.close();
     _sleepTimer?.cancel();
@@ -904,7 +948,7 @@ class AudioPlayerService extends ChangeNotifier {
   void _incrementFolderAccessCount(String folderPath) {
     _folderAccessCounts[folderPath] =
         (_folderAccessCounts[folderPath] ?? 0) + 1;
-    notifyListeners();
+    _scheduleSavePlayCounts();
   }
 
   // Call this method whenever a song from a folder is played
@@ -925,7 +969,7 @@ class AudioPlayerService extends ChangeNotifier {
         name: _likedPlaylistName,
         songs: _likedSongsPlaylist!.songs,
       );
-      notifyListeners();
+      _scheduleNotify();
     }
   }
 
@@ -1012,28 +1056,26 @@ class AudioPlayerService extends ChangeNotifier {
   Future<void> setGaplessPlayback(bool value) async {
     _gaplessPlayback = value;
     await _saveSettings();
-    notifyListeners();
+    // Settings changes are infrequent, direct notify is fine
   }
 
   Future<void> setVolumeNormalization(bool value) async {
     _volumeNormalization = value;
     await _applySettings();
     await _saveSettings();
-    notifyListeners();
   }
 
   Future<void> setPlaybackSpeed(double value) async {
     _playbackSpeed = value;
     await _applySettings();
     await _saveSettings();
-    notifyListeners();
   }
 
   Future<void> setDefaultSortOrder(String value) async {
     _defaultSortOrder = value;
     await _saveSettings();
     _sortPlaylist();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> setAutoPlaylists(bool value) async {
@@ -1045,16 +1087,16 @@ class AudioPlayerService extends ChangeNotifier {
       // Remove auto-generated playlists
       _playlists.removeWhere(
           (p) => p.id == 'most_played' || p.id == 'recently_added');
-      savePlaylists();
+      _playlistsDirty = true;
+      _scheduleSavePlayCounts();
     }
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> setCacheSize(int value) async {
     _cacheSize = value;
     await _saveSettings();
-    await _manageCacheSize();
-    notifyListeners();
+    unawaited(_manageCacheSize()); // Don't block on cache management
   }
 
   Future<void> setMediaControls(bool value) async {
@@ -1106,8 +1148,7 @@ class AudioPlayerService extends ChangeNotifier {
         }
       }
     }
-
-    notifyListeners();
+    // No need for notifyListeners - UI doesn't depend on this setting directly
   }
 
   void _sortPlaylist() {
@@ -1204,8 +1245,9 @@ class AudioPlayerService extends ChangeNotifier {
         ));
       }
 
-      savePlaylists();
-      notifyListeners();
+      _playlistsDirty = true;
+      _scheduleSavePlayCounts();
+      _scheduleNotify();
     });
 
     // Create "Recently Added" playlist
@@ -1234,8 +1276,9 @@ class AudioPlayerService extends ChangeNotifier {
         ));
       }
 
-      savePlaylists();
-      notifyListeners();
+      _playlistsDirty = true;
+      _scheduleSavePlayCounts();
+      _scheduleNotify();
     });
   }
 
@@ -1271,15 +1314,14 @@ class AudioPlayerService extends ChangeNotifier {
       // Reset the timer notification
       sleepTimerDurationNotifier.value = null;
     });
-
-    notifyListeners();
+    // ValueNotifier handles UI updates - no notifyListeners needed
   }
 
   void cancelSleepTimer() {
     _sleepTimer?.cancel();
     _sleepTimer = null;
     sleepTimerDurationNotifier.value = null;
-    notifyListeners();
+    // ValueNotifier handles UI updates - no notifyListeners needed
   }
 }
 
