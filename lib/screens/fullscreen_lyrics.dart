@@ -23,27 +23,27 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   final ArtworkCacheService _artworkService = ArtworkCacheService();
-  
+
   int _currentLyricIndex = 0;
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<SongModel?>? _songChangeSubscription;
-  
+
   late AnimationController _fadeController;
-  
+
   final GlobalKey _scrollKey = GlobalKey();
   Map<int, GlobalKey> _lyricKeys = {};
 
   List<TimedLyric>? _currentLyrics;
   int? _lastSongId;
   bool _isLoadingLyrics = false;
-  
+
   ImageProvider? _artworkProvider;
   bool _hasArtwork = false;
 
   // Settings
   double _fontSize = 1.0; // Multiplier: 0.8, 1.0, 1.2, 1.4
   int _syncOffset = 0; // In milliseconds
-  
+
   static const String _fontSizeKey = 'lyrics_font_size';
   static const String _syncOffsetKey = 'lyrics_sync_offset';
 
@@ -51,18 +51,20 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   void initState() {
     super.initState();
     _loadSettings();
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
     )..forward();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+      final audioService =
+          Provider.of<AudioPlayerService>(context, listen: false);
       _loadLyricsForCurrentSong(audioService);
       _loadArtwork(audioService);
 
-      _positionSubscription = audioService.audioPlayer.positionStream.listen((position) {
+      _positionSubscription =
+          audioService.audioPlayer.positionStream.listen((position) {
         if (mounted) _updateCurrentLyric(position);
       });
 
@@ -98,11 +100,11 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   Future<void> _loadArtwork(AudioPlayerService audioService) async {
     final song = audioService.currentSong;
     if (song == null) return;
-    
+
     try {
       final provider = await _artworkService.getCachedImageProvider(song.id);
       if (!mounted) return;
-      
+
       setState(() {
         _artworkProvider = provider;
         _hasArtwork = provider is! AssetImage;
@@ -114,7 +116,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     }
   }
 
-  Future<void> _loadLyricsForCurrentSong(AudioPlayerService audioService) async {
+  Future<void> _loadLyricsForCurrentSong(
+      AudioPlayerService audioService) async {
     final song = audioService.currentSong;
     if (song == null) return;
 
@@ -236,7 +239,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         children: [
           // Background
           _buildBackground(),
-          
+
           // Content
           SafeArea(
             child: Column(
@@ -299,7 +302,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
+            icon: const Icon(Icons.keyboard_arrow_down,
+                color: Colors.white, size: 32),
             onPressed: () => Navigator.pop(context),
           ),
           Expanded(
@@ -335,13 +339,26 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.white, size: 24),
             color: Colors.grey.shade900,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             onSelected: (value) => _handleMenuAction(value, audioService),
             itemBuilder: (context) => [
-              _buildMenuItem(Icons.refresh, AppLocalizations.of(context).translate('refresh_lyrics'), 'refresh'),
-              _buildMenuItem(Icons.search, AppLocalizations.of(context).translate('search_lyrics'), 'search'),
-              _buildMenuItem(Icons.timer_outlined, AppLocalizations.of(context).translate('adjust_sync'), 'sync'),
-              _buildMenuItem(Icons.text_fields, AppLocalizations.of(context).translate('font_size'), 'font_size'),
+              _buildMenuItem(
+                  Icons.refresh,
+                  AppLocalizations.of(context).translate('refresh_lyrics'),
+                  'refresh'),
+              _buildMenuItem(
+                  Icons.search,
+                  AppLocalizations.of(context).translate('search_lyrics'),
+                  'search'),
+              _buildMenuItem(
+                  Icons.timer_outlined,
+                  AppLocalizations.of(context).translate('adjust_sync'),
+                  'sync'),
+              _buildMenuItem(
+                  Icons.text_fields,
+                  AppLocalizations.of(context).translate('font_size'),
+                  'font_size'),
             ],
           ),
         ],
@@ -349,7 +366,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     );
   }
 
-  PopupMenuItem<String> _buildMenuItem(IconData icon, String text, String value) {
+  PopupMenuItem<String> _buildMenuItem(
+      IconData icon, String text, String value) {
     return PopupMenuItem<String>(
       value: value,
       child: Row(
@@ -393,7 +411,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     final song = audioService.currentSong;
     final artistController = TextEditingController(text: song?.artist ?? '');
     final titleController = TextEditingController(text: song?.title ?? '');
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -412,10 +430,12 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           children: [
             TextField(
               controller: artistController,
-              style: const TextStyle(color: Colors.white, fontFamily: 'ProductSans'),
+              style: const TextStyle(
+                  color: Colors.white, fontFamily: 'ProductSans'),
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context).translate('artists'),
-                labelStyle: const TextStyle(color: Colors.white70, fontFamily: 'ProductSans'),
+                labelStyle: const TextStyle(
+                    color: Colors.white70, fontFamily: 'ProductSans'),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.white24),
@@ -429,10 +449,12 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             const SizedBox(height: 16),
             TextField(
               controller: titleController,
-              style: const TextStyle(color: Colors.white, fontFamily: 'ProductSans'),
+              style: const TextStyle(
+                  color: Colors.white, fontFamily: 'ProductSans'),
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context).translate('title'),
-                labelStyle: const TextStyle(color: Colors.white70, fontFamily: 'ProductSans'),
+                labelStyle: const TextStyle(
+                    color: Colors.white70, fontFamily: 'ProductSans'),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.white24),
@@ -450,7 +472,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             onPressed: () => Navigator.pop(context),
             child: Text(
               AppLocalizations.of(context).translate('cancel'),
-              style: const TextStyle(color: Colors.white70, fontFamily: 'ProductSans'),
+              style: const TextStyle(
+                  color: Colors.white70, fontFamily: 'ProductSans'),
             ),
           ),
           TextButton(
@@ -464,7 +487,10 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             },
             child: Text(
               AppLocalizations.of(context).translate('search'),
-              style: const TextStyle(color: Colors.white, fontFamily: 'ProductSans', fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'ProductSans',
+                  fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -474,14 +500,15 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
   Future<void> _performLyricsSearch(String artist, String title) async {
     setState(() => _isLoadingLyrics = true);
-    
+
     // Fetch search results from the API
     try {
-      final searchUrl = Uri.parse('https://lrclib.net/api/search').replace(queryParameters: {
+      final searchUrl =
+          Uri.parse('https://lrclib.net/api/search').replace(queryParameters: {
         'artist_name': artist,
         'track_name': title,
       });
-      
+
       final response = await http.get(
         searchUrl,
         headers: {
@@ -489,24 +516,26 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           'User-Agent': 'AuroraMusic v0.0.85'
         },
       );
-      
+
       if (response.statusCode == 200) {
         final List results = json.decode(utf8.decode(response.bodyBytes));
-        final syncedResults = results.where((r) => r['syncedLyrics'] != null).toList();
-        
+        final syncedResults =
+            results.where((r) => r['syncedLyrics'] != null).toList();
+
         if (!mounted) return;
-        
+
         if (syncedResults.isEmpty) {
           setState(() => _isLoadingLyrics = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).translate('no_lyrics_found')),
+              content: Text(
+                  AppLocalizations.of(context).translate('no_lyrics_found')),
               backgroundColor: Colors.grey.shade800,
             ),
           );
           return;
         }
-        
+
         // Show results dialog
         setState(() => _isLoadingLyrics = false);
         _showLyricsResultsDialog(syncedResults.cast<Map<String, dynamic>>());
@@ -515,7 +544,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).translate('search_failed')),
+              content:
+                  Text(AppLocalizations.of(context).translate('search_failed')),
               backgroundColor: Colors.grey.shade800,
             ),
           );
@@ -526,7 +556,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).translate('search_failed')),
+            content:
+                Text(AppLocalizations.of(context).translate('search_failed')),
             backgroundColor: Colors.grey.shade800,
           ),
         );
@@ -559,15 +590,18 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               final trackName = result['trackName'] ?? 'Unknown';
               final artistName = result['artistName'] ?? 'Unknown';
               final albumName = result['albumName'] ?? '';
-              final duration = _parseLyricsDuration(result['syncedLyrics'] as String?);
-              
+              final duration =
+                  _parseLyricsDuration(result['syncedLyrics'] as String?);
+
               return Card(
                 color: Colors.white.withOpacity(0.1),
                 margin: const EdgeInsets.only(bottom: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
                   onTap: () => _selectLyricsResult(result),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   title: Text(
                     trackName,
                     style: const TextStyle(
@@ -609,7 +643,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                     ],
                   ),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -633,7 +668,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             onPressed: () => Navigator.pop(context),
             child: Text(
               AppLocalizations.of(context).translate('cancel'),
-              style: const TextStyle(color: Colors.white70, fontFamily: 'ProductSans'),
+              style: const TextStyle(
+                  color: Colors.white70, fontFamily: 'ProductSans'),
             ),
           ),
         ],
@@ -643,10 +679,10 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
   String _parseLyricsDuration(String? syncedLyrics) {
     if (syncedLyrics == null || syncedLyrics.isEmpty) return '--:--';
-    
+
     final lines = syncedLyrics.split('\n');
     Duration lastTime = Duration.zero;
-    
+
     for (final line in lines.reversed) {
       final match = RegExp(r'\[(\d{2}):(\d{2})\.(\d{2,3})\]').firstMatch(line);
       if (match != null) {
@@ -656,7 +692,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         break;
       }
     }
-    
+
     final mins = lastTime.inMinutes;
     final secs = lastTime.inSeconds % 60;
     return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
@@ -664,11 +700,11 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
   void _selectLyricsResult(Map<String, dynamic> result) {
     Navigator.pop(context);
-    
+
     final lrcContent = result['syncedLyrics'] as String;
     final timedLyricsService = TimedLyricsService();
     final lyrics = timedLyricsService.parseLrcContent(lrcContent);
-    
+
     setState(() {
       _currentLyrics = lyrics;
       _currentLyricIndex = 0;
@@ -679,9 +715,10 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         }
       }
     });
-    
+
     // Save to cache for future use
-    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     final song = audioService.currentSong;
     if (song != null) {
       timedLyricsService.saveLyricsToCache(
@@ -694,13 +731,14 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
   void _showSyncAdjustDialog() {
     int tempOffset = _syncOffset;
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           backgroundColor: Colors.grey.shade900,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(
             AppLocalizations.of(context).translate('adjust_sync'),
             style: const TextStyle(
@@ -723,11 +761,13 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                tempOffset > 0 
-                    ? AppLocalizations.of(context).translate('lyrics_ahead') 
-                    : tempOffset < 0 
-                        ? AppLocalizations.of(context).translate('lyrics_behind')
-                        : AppLocalizations.of(context).translate('lyrics_synced'),
+                tempOffset > 0
+                    ? AppLocalizations.of(context).translate('lyrics_ahead')
+                    : tempOffset < 0
+                        ? AppLocalizations.of(context)
+                            .translate('lyrics_behind')
+                        : AppLocalizations.of(context)
+                            .translate('lyrics_synced'),
                 style: const TextStyle(
                   fontFamily: 'ProductSans',
                   color: Colors.white70,
@@ -738,10 +778,14 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildSyncButton('-500', () => setDialogState(() => tempOffset -= 500)),
-                  _buildSyncButton('-100', () => setDialogState(() => tempOffset -= 100)),
-                  _buildSyncButton('+100', () => setDialogState(() => tempOffset += 100)),
-                  _buildSyncButton('+500', () => setDialogState(() => tempOffset += 500)),
+                  _buildSyncButton(
+                      '-500', () => setDialogState(() => tempOffset -= 500)),
+                  _buildSyncButton(
+                      '-100', () => setDialogState(() => tempOffset -= 100)),
+                  _buildSyncButton(
+                      '+100', () => setDialogState(() => tempOffset += 100)),
+                  _buildSyncButton(
+                      '+500', () => setDialogState(() => tempOffset += 500)),
                 ],
               ),
               const SizedBox(height: 16),
@@ -749,7 +793,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 onPressed: () => setDialogState(() => tempOffset = 0),
                 child: Text(
                   AppLocalizations.of(context).translate('reset'),
-                  style: const TextStyle(color: Colors.white70, fontFamily: 'ProductSans'),
+                  style: const TextStyle(
+                      color: Colors.white70, fontFamily: 'ProductSans'),
                 ),
               ),
             ],
@@ -759,7 +804,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               onPressed: () => Navigator.pop(context),
               child: Text(
                 AppLocalizations.of(context).translate('cancel'),
-                style: const TextStyle(color: Colors.white70, fontFamily: 'ProductSans'),
+                style: const TextStyle(
+                    color: Colors.white70, fontFamily: 'ProductSans'),
               ),
             ),
             TextButton(
@@ -769,7 +815,10 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               },
               child: Text(
                 AppLocalizations.of(context).translate('save'),
-                style: const TextStyle(color: Colors.white, fontFamily: 'ProductSans', fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'ProductSans',
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -818,10 +867,14 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildFontSizeOption(AppLocalizations.of(context).translate('small'), 0.8),
-            _buildFontSizeOption(AppLocalizations.of(context).translate('medium'), 1.0),
-            _buildFontSizeOption(AppLocalizations.of(context).translate('large'), 1.2),
-            _buildFontSizeOption(AppLocalizations.of(context).translate('extra_large'), 1.4),
+            _buildFontSizeOption(
+                AppLocalizations.of(context).translate('small'), 0.8),
+            _buildFontSizeOption(
+                AppLocalizations.of(context).translate('medium'), 1.0),
+            _buildFontSizeOption(
+                AppLocalizations.of(context).translate('large'), 1.2),
+            _buildFontSizeOption(
+                AppLocalizations.of(context).translate('extra_large'), 1.4),
           ],
         ),
       ),
@@ -856,7 +909,12 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       shaderCallback: (bounds) => const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Colors.transparent, Colors.white, Colors.white, Colors.transparent],
+        colors: [
+          Colors.transparent,
+          Colors.white,
+          Colors.white,
+          Colors.transparent
+        ],
         stops: [0.0, 0.08, 0.92, 1.0],
       ).createShader(bounds),
       blendMode: BlendMode.dstIn,
@@ -878,11 +936,11 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     final lyric = _currentLyrics![index];
     final isCurrent = index == _currentLyricIndex;
     final isPast = index < _currentLyricIndex;
-    
+
     // Apply font size multiplier
     final baseFontSize = isCurrent ? 24.0 : 18.0;
     final adjustedFontSize = baseFontSize * _fontSize;
-    
+
     return GestureDetector(
       key: _lyricKeys[index],
       onTap: () => _seekToLyric(index),
@@ -896,9 +954,9 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             fontFamily: 'ProductSans',
             fontSize: adjustedFontSize,
             fontWeight: isCurrent ? FontWeight.bold : FontWeight.w400,
-            color: isCurrent 
-                ? Colors.white 
-                : isPast 
+            color: isCurrent
+                ? Colors.white
+                : isPast
                     ? Colors.white.withValues(alpha: 0.4)
                     : Colors.white.withValues(alpha: 0.6),
             height: 1.4,
@@ -971,7 +1029,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 builder: (context, positionSnapshot) {
                   final position = positionSnapshot.data ?? Duration.zero;
                   final progress = duration.inMilliseconds > 0
-                      ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
+                      ? (position.inMilliseconds / duration.inMilliseconds)
+                          .clamp(0.0, 1.0)
                       : 0.0;
 
                   return Column(
@@ -985,7 +1044,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                               behavior: HitTestBehavior.translucent,
                               onTapDown: (details) {
                                 final tapPos = details.localPosition;
-                                final percentage = (tapPos.dx / width).clamp(0.0, 1.0);
+                                final percentage =
+                                    (tapPos.dx / width).clamp(0.0, 1.0);
                                 final newPosition = duration * percentage;
                                 audioService.audioPlayer.seek(newPosition);
                               },
@@ -999,14 +1059,16 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                                         width: width,
                                         decoration: BoxDecoration(
                                           color: Colors.white.withOpacity(0.3),
-                                          borderRadius: BorderRadius.circular(1.5),
+                                          borderRadius:
+                                              BorderRadius.circular(1.5),
                                         ),
                                       ),
                                       Container(
                                         width: width * progress,
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(1.5),
+                                          borderRadius:
+                                              BorderRadius.circular(1.5),
                                         ),
                                       ),
                                     ],
@@ -1060,8 +1122,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               ),
               IconButton(
                 icon: Icon(
-                  audioService.isPlaying 
-                      ? Icons.pause_rounded 
+                  audioService.isPlaying
+                      ? Icons.pause_rounded
                       : Icons.play_arrow_rounded,
                   color: Colors.white,
                   size: 52,
@@ -1091,7 +1153,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
   void _seekToLyric(int index) {
     if (_currentLyrics == null || index >= _currentLyrics!.length) return;
-    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     audioService.audioPlayer.seek(_currentLyrics![index].time);
   }
 

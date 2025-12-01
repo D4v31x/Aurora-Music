@@ -77,7 +77,8 @@ class SharedAxisPageRoute<T> extends PageRouteBuilder<T> {
                 break;
               case SharedAxisTransitionType.scaled:
                 return ScaleTransition(
-                  scale: Tween<double>(begin: 0.85, end: 1.0).animate(curvedAnimation),
+                  scale: Tween<double>(begin: 0.85, end: 1.0)
+                      .animate(curvedAnimation),
                   child: FadeTransition(
                     opacity: curvedAnimation,
                     child: child,
@@ -104,7 +105,7 @@ enum SharedAxisTransitionType { horizontal, vertical, scaled }
 /// Hero dialog route for smooth hero animation to dialogs/modals
 class HeroDialogRoute<T> extends PageRoute<T> {
   final WidgetBuilder builder;
-  
+
   HeroDialogRoute({required this.builder}) : super();
 
   @override
@@ -151,7 +152,8 @@ class HeroDialogRoute<T> extends PageRoute<T> {
 /// Extension for easy navigation with transitions
 extension NavigatorExtension on NavigatorState {
   Future<T?> pushSmooth<T>(Widget page, {bool slideFromBottom = false}) {
-    return push(SmoothPageRoute<T>(page: page, slideFromBottom: slideFromBottom));
+    return push(
+        SmoothPageRoute<T>(page: page, slideFromBottom: slideFromBottom));
   }
 
   Future<T?> pushSharedAxis<T>(
@@ -165,7 +167,8 @@ extension NavigatorExtension on NavigatorState {
 /// Extension for easy navigation from BuildContext
 extension ContextNavigatorExtension on BuildContext {
   Future<T?> pushSmooth<T>(Widget page, {bool slideFromBottom = false}) {
-    return Navigator.of(this).pushSmooth<T>(page, slideFromBottom: slideFromBottom);
+    return Navigator.of(this)
+        .pushSmooth<T>(page, slideFromBottom: slideFromBottom);
   }
 
   Future<T?> pushSharedAxis<T>(

@@ -26,11 +26,11 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   late TextEditingController _trackController;
   late TextEditingController _yearController;
   late TextEditingController _composerController;
-  
+
   bool _isEditing = false;
   bool _hasChanges = false;
   bool _isSaving = false;
-  
+
   // AudioTags instance for reading/writing metadata
   Tag? _currentTag;
 
@@ -40,7 +40,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     _initControllers();
     _loadTags();
   }
-  
+
   Future<void> _loadTags() async {
     try {
       _currentTag = await AudioTags.read(widget.song.data);
@@ -49,7 +49,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
         if (_currentTag?.title != null && _currentTag!.title!.isNotEmpty) {
           _titleController.text = _currentTag!.title!;
         }
-        if (_currentTag?.trackArtist != null && _currentTag!.trackArtist!.isNotEmpty) {
+        if (_currentTag?.trackArtist != null &&
+            _currentTag!.trackArtist!.isNotEmpty) {
           _artistController.text = _currentTag!.trackArtist!;
         }
         if (_currentTag?.album != null && _currentTag!.album!.isNotEmpty) {
@@ -76,10 +77,12 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     _artistController = TextEditingController(text: widget.song.artist ?? '');
     _albumController = TextEditingController(text: widget.song.album ?? '');
     _genreController = TextEditingController(text: widget.song.genre ?? '');
-    _trackController = TextEditingController(text: widget.song.track?.toString() ?? '');
+    _trackController =
+        TextEditingController(text: widget.song.track?.toString() ?? '');
     _yearController = TextEditingController(text: '');
-    _composerController = TextEditingController(text: widget.song.composer ?? '');
-    
+    _composerController =
+        TextEditingController(text: widget.song.composer ?? '');
+
     // Add listeners for change detection
     _titleController.addListener(_onFieldChanged);
     _artistController.addListener(_onFieldChanged);
@@ -141,7 +144,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   String _getQualityLabel(AppLocalizations loc) {
     final format = _getFileFormat();
     final bitrate = _estimateBitrateValue();
-    
+
     if (format == 'FLAC' || format == 'WAV' || format == 'ALAC') {
       return loc.translate('lossless');
     }
@@ -176,7 +179,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   String _getEstimatedSampleRate() {
     final format = _getFileFormat();
     final bitrate = _estimateBitrateValue();
-    
+
     if (format == 'FLAC' || format == 'WAV' || format == 'ALAC') {
       if (bitrate > 1400) return '96 kHz';
       if (bitrate > 1000) return '48 kHz';
@@ -192,7 +195,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     if (label == loc.translate('lossless')) return Icons.diamond_outlined;
     if (label == loc.translate('high_quality')) return Icons.stars_outlined;
     if (label == loc.translate('good_quality')) return Icons.thumb_up_outlined;
-    if (label == loc.translate('standard_quality')) return Icons.check_circle_outline;
+    if (label == loc.translate('standard_quality'))
+      return Icons.check_circle_outline;
     return Icons.warning_amber_outlined;
   }
 
@@ -201,7 +205,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     if (label == loc.translate('lossless')) return const Color(0xFF8B5CF6);
     if (label == loc.translate('high_quality')) return const Color(0xFF10B981);
     if (label == loc.translate('good_quality')) return const Color(0xFF3B82F6);
-    if (label == loc.translate('standard_quality')) return const Color(0xFFF59E0B);
+    if (label == loc.translate('standard_quality'))
+      return const Color(0xFFF59E0B);
     return const Color(0xFFEF4444);
   }
 
@@ -261,9 +266,9 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
 
   Future<void> _saveChanges() async {
     final loc = AppLocalizations.of(context);
-    
+
     setState(() => _isSaving = true);
-    
+
     try {
       // Request storage permission for Android 11+
       if (await Permission.manageExternalStorage.isDenied) {
@@ -276,7 +281,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
           return;
         }
       }
-      
+
       // Parse year and track number
       int? year;
       int? trackNumber;
@@ -286,30 +291,31 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
       if (_trackController.text.isNotEmpty) {
         trackNumber = int.tryParse(_trackController.text);
       }
-      
+
       // Create updated tag with new values
       final updatedTag = Tag(
         title: _titleController.text.isEmpty ? null : _titleController.text,
-        trackArtist: _artistController.text.isEmpty ? null : _artistController.text,
+        trackArtist:
+            _artistController.text.isEmpty ? null : _artistController.text,
         album: _albumController.text.isEmpty ? null : _albumController.text,
         genre: _genreController.text.isEmpty ? null : _genreController.text,
         year: year,
         trackNumber: trackNumber,
         pictures: _currentTag?.pictures ?? [],
       );
-      
+
       // Save the changes to the file
       await AudioTags.write(widget.song.data, updatedTag);
-      
+
       // Reload tags to confirm changes
       _currentTag = await AudioTags.read(widget.song.data);
-      
+
       setState(() {
         _isEditing = false;
         _hasChanges = false;
         _isSaving = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -322,20 +328,21 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             ),
             backgroundColor: Colors.green[700],
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
     } catch (e) {
       setState(() => _isSaving = false);
       debugPrint('Error saving tags: $e');
-      
+
       if (mounted) {
         _showSaveErrorDialog(loc, e.toString());
       }
     }
   }
-  
+
   void _showSaveErrorDialog(AppLocalizations loc, String error) {
     showDialog(
       context: context,
@@ -399,7 +406,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
       ),
     );
   }
-  
+
   Widget _buildReasonItem(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -421,7 +428,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
       ),
     );
   }
-  
+
   void _showPermissionDialog(AppLocalizations loc) {
     showDialog(
       context: context,
@@ -460,7 +467,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
       ),
     );
   }
-  
+
   void _copyToClipboard(String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
     final loc = AppLocalizations.of(context);
@@ -475,7 +482,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    
+
     return AppBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -532,21 +539,23 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               // Quality card
               _buildQualityCard(loc),
               const SizedBox(height: 24),
-              
+
               // Audio info section
               _buildSectionCard(
                 loc.translate('audio_quality'),
                 Icons.graphic_eq,
                 [
                   _buildInfoRow(loc.translate('format'), _getFileFormat()),
-                  _buildInfoRow(loc.translate('bitrate'), '${_estimateBitrateValue()} kbps'),
-                  _buildInfoRow(loc.translate('sample_rate'), _getEstimatedSampleRate()),
+                  _buildInfoRow(loc.translate('bitrate'),
+                      '${_estimateBitrateValue()} kbps'),
+                  _buildInfoRow(
+                      loc.translate('sample_rate'), _getEstimatedSampleRate()),
                   _buildInfoRow(loc.translate('duration'), _formatDuration()),
                 ],
                 description: loc.translate('audio_quality_desc'),
               ),
               const SizedBox(height: 16),
-              
+
               // Track info section (editable)
               _buildSectionCard(
                 loc.translate('track_info'),
@@ -556,30 +565,38 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   _buildEditableRow(loc.translate('artist'), _artistController),
                   _buildEditableRow(loc.translate('album'), _albumController),
                   _buildEditableRow(loc.translate('genre'), _genreController),
-                  _buildEditableRow(loc.translate('year'), _yearController, isNumber: true),
-                  _buildEditableRow(loc.translate('track'), _trackController, isNumber: true),
-                  _buildEditableRow(loc.translate('composer'), _composerController),
+                  _buildEditableRow(loc.translate('year'), _yearController,
+                      isNumber: true),
+                  _buildEditableRow(loc.translate('track'), _trackController,
+                      isNumber: true),
+                  _buildEditableRow(
+                      loc.translate('composer'), _composerController),
                 ],
-                description: _isEditing ? loc.translate('track_info_edit_desc') : loc.translate('track_info_desc'),
+                description: _isEditing
+                    ? loc.translate('track_info_edit_desc')
+                    : loc.translate('track_info_desc'),
               ),
               const SizedBox(height: 16),
-              
+
               // File info section
               _buildSectionCard(
                 loc.translate('file_info'),
                 Icons.folder_outlined,
                 [
-                  _buildInfoRow(loc.translate('file_name'), _getFileName(), canCopy: true),
+                  _buildInfoRow(loc.translate('file_name'), _getFileName(),
+                      canCopy: true),
                   _buildInfoRow(loc.translate('size'), _getFileSizeFormatted()),
                   if (widget.song.dateAdded != null)
-                    _buildInfoRow(loc.translate('date_added'), _formatDate(widget.song.dateAdded)),
+                    _buildInfoRow(loc.translate('date_added'),
+                        _formatDate(widget.song.dateAdded)),
                   if (widget.song.dateModified != null)
-                    _buildInfoRow(loc.translate('date_modified'), _formatDate(widget.song.dateModified)),
+                    _buildInfoRow(loc.translate('date_modified'),
+                        _formatDate(widget.song.dateModified)),
                 ],
                 description: loc.translate('file_info_desc'),
               ),
               const SizedBox(height: 16),
-              
+
               // File path section
               _buildPathCard(loc),
               const SizedBox(height: 32),
@@ -661,7 +678,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     );
   }
 
-  Widget _buildSectionCard(String title, IconData icon, List<Widget> children, {String? description}) {
+  Widget _buildSectionCard(String title, IconData icon, List<Widget> children,
+      {String? description}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -727,7 +745,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
           Expanded(
             flex: 3,
             child: GestureDetector(
-              onLongPress: canCopy ? () => _copyToClipboard(value, label) : null,
+              onLongPress:
+                  canCopy ? () => _copyToClipboard(value, label) : null,
               child: Text(
                 value,
                 style: TextStyle(
@@ -744,7 +763,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     );
   }
 
-  Widget _buildEditableRow(String label, TextEditingController controller, {bool isNumber = false}) {
+  Widget _buildEditableRow(String label, TextEditingController controller,
+      {bool isNumber = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -765,7 +785,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             child: _isEditing
                 ? TextField(
                     controller: controller,
-                    keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+                    keyboardType:
+                        isNumber ? TextInputType.number : TextInputType.text,
                     textAlign: TextAlign.end,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
@@ -774,7 +795,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                     ),
                     decoration: InputDecoration(
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                       filled: true,
                       fillColor: Colors.white.withValues(alpha: 0.1),
                       border: OutlineInputBorder(
@@ -825,7 +847,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.link, color: Colors.white.withValues(alpha: 0.5), size: 18),
+              Icon(Icons.link,
+                  color: Colors.white.withValues(alpha: 0.5), size: 18),
               const SizedBox(width: 10),
               Text(
                 loc.translate('file_path'),
@@ -842,7 +865,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   color: Colors.white.withValues(alpha: 0.5),
                   size: 18,
                 ),
-                onPressed: () => _copyToClipboard(widget.song.data, loc.translate('file_path')),
+                onPressed: () => _copyToClipboard(
+                    widget.song.data, loc.translate('file_path')),
                 tooltip: loc.translate('copy'),
               ),
             ],

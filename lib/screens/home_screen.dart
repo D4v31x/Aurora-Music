@@ -476,7 +476,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ExpandingPlayer.minimize();
       return false;
     }
-    
+
     // Show the exit dialog when user attempts to leave the app
     final shouldExit = await showDialog<bool>(
           context: context,
@@ -500,10 +500,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (shouldExit) {
       // Stop audio and exit the app properly
-      final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+      final audioService =
+          Provider.of<AudioPlayerService>(context, listen: false);
       await audioService.stop();
       audioService.dispose();
-      
+
       // Exit the app
       if (Platform.isAndroid) {
         SystemNavigator.pop();
@@ -639,109 +640,110 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           backgroundColor: Colors.transparent,
           resizeToAvoidBottomInset: false,
           body: Stack(
-          children: [
-            RepaintBoundary(
-              child: NestedScrollView(
-                controller: _scrollController,
-                headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                  SliverAppBar(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0.0,
-                    toolbarHeight: 70,
-                    automaticallyImplyLeading: false,
-                    floating: true,
-                    pinned: true,
-                    expandedHeight: 250,
-                    flexibleSpace: ClipRRect(
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                        child: FlexibleSpaceBar(
-                          background: Container(
-                            color: Colors.transparent,
-                            child: Center(
-                              child: buildAppBarTitle(),
+            children: [
+              RepaintBoundary(
+                child: NestedScrollView(
+                  controller: _scrollController,
+                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                    SliverAppBar(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0.0,
+                      toolbarHeight: 70,
+                      automaticallyImplyLeading: false,
+                      floating: true,
+                      pinned: true,
+                      expandedHeight: 250,
+                      flexibleSpace: ClipRRect(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                          child: FlexibleSpaceBar(
+                            background: Container(
+                              color: Colors.transparent,
+                              child: Center(
+                                child: buildAppBarTitle(),
+                              ),
                             ),
+                            centerTitle: true,
+                            title: innerBoxIsScrolled
+                                ? Text(
+                                    AppLocalizations.of(context)
+                                        .translate('aurora_music'),
+                                    style: const TextStyle(
+                                      fontFamily: 'ProductSans',
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : null,
                           ),
-                          centerTitle: true,
-                          title: innerBoxIsScrolled
-                              ? Text(
-                                  AppLocalizations.of(context)
-                                      .translate('aurora_music'),
-                                  style: const TextStyle(
-                                    fontFamily: 'ProductSans',
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                )
-                              : null,
                         ),
                       ),
-                    ),
-                    bottom: PreferredSize(
-                      preferredSize: const Size.fromHeight(kToolbarHeight),
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: _isScrolledNotifier,
-                        builder: (context, isScrolled, _) {
-                          return Container(
-                            color: isScrolled
-                                ? Theme.of(context)
-                                    .colorScheme
-                                    .surface
-                                    .withValues(alpha: 0.8)
-                                : Colors.transparent,
-                            child: _HomeTabBar(tabController: _tabController),
-                          );
-                        }
-                      ),
-                    ),
-                  ),
-                ],
-                body: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    RepaintBoundary(
-                      child: HomeTab(
-                        randomSongs: randomSongs,
-                        randomArtists: randomArtists,
-                        artistService: _artistService,
-                        currentSong: currentSong,
-                        onRefresh: _refreshLibrary,
-                      ),
-                    ),
-                    const RepaintBoundary(child: LibraryTab()),
-                    RepaintBoundary(
-                      child: SearchTab(
-                        songs: songs,
-                        artists: artists,
-                        albums: albums,
-                        isInitialized: _isInitialized,
-                      ),
-                    ),
-                    RepaintBoundary(
-                      child: SettingsTab(
-                        notificationManager: _notificationManager,
-                        onUpdateCheck: () async {
-                          await launchUrl(Uri.parse(
-                              'https://github.com/D4v31x/Aurora-Music/releases/latest'));
-                        },
-                        onResetSetup: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const OnboardingScreen()),
-                          );
-                        },
+                      bottom: PreferredSize(
+                        preferredSize: const Size.fromHeight(kToolbarHeight),
+                        child: ValueListenableBuilder<bool>(
+                            valueListenable: _isScrolledNotifier,
+                            builder: (context, isScrolled, _) {
+                              return Container(
+                                color: isScrolled
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .surface
+                                        .withValues(alpha: 0.8)
+                                    : Colors.transparent,
+                                child:
+                                    _HomeTabBar(tabController: _tabController),
+                              );
+                            }),
                       ),
                     ),
                   ],
+                  body: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      RepaintBoundary(
+                        child: HomeTab(
+                          randomSongs: randomSongs,
+                          randomArtists: randomArtists,
+                          artistService: _artistService,
+                          currentSong: currentSong,
+                          onRefresh: _refreshLibrary,
+                        ),
+                      ),
+                      const RepaintBoundary(child: LibraryTab()),
+                      RepaintBoundary(
+                        child: SearchTab(
+                          songs: songs,
+                          artists: artists,
+                          albums: albums,
+                          isInitialized: _isInitialized,
+                        ),
+                      ),
+                      RepaintBoundary(
+                        child: SettingsTab(
+                          notificationManager: _notificationManager,
+                          onUpdateCheck: () async {
+                            await launchUrl(Uri.parse(
+                                'https://github.com/D4v31x/Aurora-Music/releases/latest'));
+                          },
+                          onResetSetup: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const OnboardingScreen()),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            // Expanding Mini Player
-            const ExpandingPlayer(),
-          ],
-        ),
+              // Expanding Mini Player
+              const ExpandingPlayer(),
+            ],
+          ),
         ),
       ),
     );
@@ -799,10 +801,14 @@ class _HomeTabBar extends StatelessWidget {
             ][tabController.index],
           ),
           tabs: [
-            _buildTabItem(context, AppLocalizations.of(context).translate('home')),
-            _buildTabItem(context, AppLocalizations.of(context).translate('library')),
-            _buildTabItem(context, AppLocalizations.of(context).translate('search')),
-            _buildTabItem(context, AppLocalizations.of(context).translate('settings')),
+            _buildTabItem(
+                context, AppLocalizations.of(context).translate('home')),
+            _buildTabItem(
+                context, AppLocalizations.of(context).translate('library')),
+            _buildTabItem(
+                context, AppLocalizations.of(context).translate('search')),
+            _buildTabItem(
+                context, AppLocalizations.of(context).translate('settings')),
           ],
         );
       },

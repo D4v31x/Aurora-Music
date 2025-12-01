@@ -26,7 +26,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   final OnAudioQuery _audioQuery = OnAudioQuery();
   final ArtworkCacheService _artworkService = ArtworkCacheService();
   final TextEditingController _searchController = TextEditingController();
-  
+
   List<AlbumModel> _allAlbums = [];
   List<AlbumModel> _filteredAlbums = [];
   AlbumSortOption _sortOption = AlbumSortOption.name;
@@ -70,7 +70,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
       } else {
         _filteredAlbums = _allAlbums.where((album) {
           return album.album.toLowerCase().contains(query.toLowerCase()) ||
-              (album.artist?.toLowerCase().contains(query.toLowerCase()) ?? false);
+              (album.artist?.toLowerCase().contains(query.toLowerCase()) ??
+                  false);
         }).toList();
       }
     });
@@ -84,17 +85,19 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
           _filteredAlbums.sort((a, b) => a.album.compareTo(b.album));
           break;
         case AlbumSortOption.artist:
-          _filteredAlbums.sort((a, b) => 
-              (a.artist ?? '').compareTo(b.artist ?? ''));
+          _filteredAlbums
+              .sort((a, b) => (a.artist ?? '').compareTo(b.artist ?? ''));
           break;
         case AlbumSortOption.numSongs:
-          _filteredAlbums.sort((a, b) => 
-              (a.numOfSongs).compareTo(b.numOfSongs));
+          _filteredAlbums
+              .sort((a, b) => (a.numOfSongs).compareTo(b.numOfSongs));
           break;
         case AlbumSortOption.year:
           _filteredAlbums.sort((a, b) {
-            final yearA = int.tryParse(a.getMap['first_year']?.toString() ?? '0') ?? 0;
-            final yearB = int.tryParse(b.getMap['first_year']?.toString() ?? '0') ?? 0;
+            final yearA =
+                int.tryParse(a.getMap['first_year']?.toString() ?? '0') ?? 0;
+            final yearB =
+                int.tryParse(b.getMap['first_year']?.toString() ?? '0') ?? 0;
             return yearA.compareTo(yearB);
           });
           break;
@@ -138,7 +141,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                         loc.translate('albums'),
                         style: TextStyle(
                           fontFamily: 'ProductSans',
-                          color: Theme.of(context).textTheme.headlineLarge?.color,
+                          color:
+                              Theme.of(context).textTheme.headlineLarge?.color,
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                         ),
@@ -148,7 +152,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                   // Search and filter bar
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       child: Column(
                         children: [
                           // Search bar
@@ -159,11 +164,14 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
                                 hintText: loc.translate('search_albums'),
-                                hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                                prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                                hintStyle: TextStyle(
+                                    color: Colors.white.withOpacity(0.5)),
+                                prefixIcon: const Icon(Icons.search,
+                                    color: Colors.white70),
                                 suffixIcon: _searchQuery.isNotEmpty
                                     ? IconButton(
-                                        icon: const Icon(Icons.clear, color: Colors.white70),
+                                        icon: const Icon(Icons.clear,
+                                            color: Colors.white70),
                                         onPressed: () {
                                           _searchController.clear();
                                           _filterAlbums('');
@@ -171,7 +179,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                                       )
                                     : null,
                                 border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 14),
                               ),
                             ),
                           ),
@@ -191,28 +200,37 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                                     },
                                     color: Colors.grey.shade900,
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 10),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(Icons.sort, color: Colors.white70, size: 20),
+                                          const Icon(Icons.sort,
+                                              color: Colors.white70, size: 20),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
                                               _getSortOptionLabel(_sortOption),
-                                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 13),
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
-                                          const Icon(Icons.arrow_drop_down, color: Colors.white70),
+                                          const Icon(Icons.arrow_drop_down,
+                                              color: Colors.white70),
                                         ],
                                       ),
                                     ),
                                     itemBuilder: (context) => [
-                                      _buildSortMenuItem(AlbumSortOption.name, 'Name'),
-                                      _buildSortMenuItem(AlbumSortOption.artist, 'Artist'),
-                                      _buildSortMenuItem(AlbumSortOption.numSongs, 'Tracks'),
-                                      _buildSortMenuItem(AlbumSortOption.year, 'Year'),
+                                      _buildSortMenuItem(
+                                          AlbumSortOption.name, 'Name'),
+                                      _buildSortMenuItem(
+                                          AlbumSortOption.artist, 'Artist'),
+                                      _buildSortMenuItem(
+                                          AlbumSortOption.numSongs, 'Tracks'),
+                                      _buildSortMenuItem(
+                                          AlbumSortOption.year, 'Year'),
                                     ],
                                   ),
                                 ),
@@ -222,7 +240,9 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                               glassmorphicContainer(
                                 child: IconButton(
                                   icon: Icon(
-                                    _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                                    _isAscending
+                                        ? Icons.arrow_upward
+                                        : Icons.arrow_downward,
                                     color: Colors.white70,
                                   ),
                                   onPressed: () {
@@ -238,7 +258,9 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                               glassmorphicContainer(
                                 child: IconButton(
                                   icon: Icon(
-                                    _isGridView ? Icons.view_list : Icons.grid_view,
+                                    _isGridView
+                                        ? Icons.view_list
+                                        : Icons.grid_view,
                                     color: Colors.white70,
                                   ),
                                   onPressed: () {
@@ -287,20 +309,22 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.album, size: 64, color: Colors.white.withOpacity(0.3)),
+                            Icon(Icons.album,
+                                size: 64, color: Colors.white.withOpacity(0.3)),
                             const SizedBox(height: 16),
                             Text(
-                              _searchQuery.isEmpty 
+                              _searchQuery.isEmpty
                                   ? loc.translate('no_albums_found')
                                   : loc.translate('no_results'),
-                              style: TextStyle(color: Colors.white.withOpacity(0.5)),
+                              style: TextStyle(
+                                  color: Colors.white.withOpacity(0.5)),
                             ),
                           ],
                         ),
                       ),
                     )
                   else
-                    _isGridView 
+                    _isGridView
                         ? _buildAlbumsGrid(audioPlayerService)
                         : _buildAlbumsList(audioPlayerService),
                 ],
@@ -312,7 +336,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     );
   }
 
-  PopupMenuItem<AlbumSortOption> _buildSortMenuItem(AlbumSortOption option, String label) {
+  PopupMenuItem<AlbumSortOption> _buildSortMenuItem(
+      AlbumSortOption option, String label) {
     return PopupMenuItem(
       value: option,
       child: Row(
@@ -520,7 +545,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
               ),
               // Quick play button
               IconButton(
-                icon: const Icon(Icons.play_circle_filled, color: Colors.white70, size: 36),
+                icon: const Icon(Icons.play_circle_filled,
+                    color: Colors.white70, size: 36),
                 onPressed: () => _playAlbum(album),
               ),
             ],
@@ -566,7 +592,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: _artworkService.buildCachedAlbumArtwork(album.id, size: 50),
+                    child: _artworkService.buildCachedAlbumArtwork(album.id,
+                        size: 50),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -575,13 +602,15 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                       children: [
                         Text(
                           album.album,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           album.artist ?? 'Unknown',
-                          style: const TextStyle(color: Colors.white70, fontSize: 13),
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 13),
                         ),
                       ],
                     ),
@@ -600,7 +629,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.shuffle, color: Colors.white),
-              title: const Text('Shuffle', style: TextStyle(color: Colors.white)),
+              title:
+                  const Text('Shuffle', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _shuffleAlbum(album);
@@ -608,7 +638,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.playlist_add, color: Colors.white),
-              title: const Text('Add to Queue', style: TextStyle(color: Colors.white)),
+              title: const Text('Add to Queue',
+                  style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _addAlbumToQueue(album);
@@ -622,7 +653,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   }
 
   Future<void> _playAlbum(AlbumModel album) async {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     final songs = await _audioQuery.querySongs(
       sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
@@ -636,14 +668,16 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   }
 
   Future<void> _shuffleAlbum(AlbumModel album) async {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     final songs = await _audioQuery.querySongs(
       sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
-    final albumSongs = songs.where((s) => s.album == album.album).toList()..shuffle();
+    final albumSongs = songs.where((s) => s.album == album.album).toList()
+      ..shuffle();
     if (albumSongs.isNotEmpty) {
       audioPlayerService.setPlaylist(albumSongs, 0);
     }
@@ -685,7 +719,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
   final OnAudioQuery _audioQuery = OnAudioQuery();
   final ArtworkCacheService _artworkService = ArtworkCacheService();
   final TextEditingController _searchController = TextEditingController();
-  
+
   List<ArtistModel> _allArtists = [];
   List<ArtistModel> _filteredArtists = [];
   Map<String, int> _artistAlbumCounts = {};
@@ -715,7 +749,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
-    
+
     // Get album counts for each artist
     final albums = await _audioQuery.queryAlbums();
     final albumCounts = <String, int>{};
@@ -723,7 +757,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
       final artistName = album.artist ?? '';
       albumCounts[artistName] = (albumCounts[artistName] ?? 0) + 1;
     }
-    
+
     setState(() {
       _allArtists = artists;
       _filteredArtists = artists;
@@ -731,14 +765,15 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
       _isLoading = false;
     });
     _applySorting();
-    
+
     // Load artist images in the background
     _loadArtistImages();
   }
 
   Future<void> _loadArtistImages() async {
     for (final artist in _allArtists) {
-      final imagePath = await _artworkService.getArtistImageByName(artist.artist);
+      final imagePath =
+          await _artworkService.getArtistImageByName(artist.artist);
       if (mounted && imagePath != null) {
         setState(() {
           _artistImages[artist.artist] = imagePath;
@@ -768,12 +803,12 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
           _filteredArtists.sort((a, b) => a.artist.compareTo(b.artist));
           break;
         case ArtistSortOption.tracks:
-          _filteredArtists.sort((a, b) => 
+          _filteredArtists.sort((a, b) =>
               (a.numberOfTracks ?? 0).compareTo(b.numberOfTracks ?? 0));
           break;
         case ArtistSortOption.albums:
-          _filteredArtists.sort((a, b) => 
-              (_artistAlbumCounts[a.artist] ?? 0).compareTo(_artistAlbumCounts[b.artist] ?? 0));
+          _filteredArtists.sort((a, b) => (_artistAlbumCounts[a.artist] ?? 0)
+              .compareTo(_artistAlbumCounts[b.artist] ?? 0));
           break;
       }
       if (!_isAscending) {
@@ -824,7 +859,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                   // Search and filter bar
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       child: Column(
                         children: [
                           // Search bar
@@ -835,11 +871,14 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
                                 hintText: loc.translate('search_artists'),
-                                hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                                prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                                hintStyle: TextStyle(
+                                    color: Colors.white.withOpacity(0.5)),
+                                prefixIcon: const Icon(Icons.search,
+                                    color: Colors.white70),
                                 suffixIcon: _searchQuery.isNotEmpty
                                     ? IconButton(
-                                        icon: const Icon(Icons.clear, color: Colors.white70),
+                                        icon: const Icon(Icons.clear,
+                                            color: Colors.white70),
                                         onPressed: () {
                                           _searchController.clear();
                                           _filterArtists('');
@@ -847,7 +886,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                                       )
                                     : null,
                                 border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 14),
                               ),
                             ),
                           ),
@@ -867,27 +907,35 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                                     },
                                     color: Colors.grey.shade900,
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 10),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(Icons.sort, color: Colors.white70, size: 20),
+                                          const Icon(Icons.sort,
+                                              color: Colors.white70, size: 20),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
                                               _getArtistSortLabel(_sortOption),
-                                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 13),
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
-                                          const Icon(Icons.arrow_drop_down, color: Colors.white70),
+                                          const Icon(Icons.arrow_drop_down,
+                                              color: Colors.white70),
                                         ],
                                       ),
                                     ),
                                     itemBuilder: (context) => [
-                                      _buildArtistSortMenuItem(ArtistSortOption.name, 'Name'),
-                                      _buildArtistSortMenuItem(ArtistSortOption.tracks, 'Tracks'),
-                                      _buildArtistSortMenuItem(ArtistSortOption.albums, 'Albums'),
+                                      _buildArtistSortMenuItem(
+                                          ArtistSortOption.name, 'Name'),
+                                      _buildArtistSortMenuItem(
+                                          ArtistSortOption.tracks, 'Tracks'),
+                                      _buildArtistSortMenuItem(
+                                          ArtistSortOption.albums, 'Albums'),
                                     ],
                                   ),
                                 ),
@@ -897,7 +945,9 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                               glassmorphicContainer(
                                 child: IconButton(
                                   icon: Icon(
-                                    _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                                    _isAscending
+                                        ? Icons.arrow_upward
+                                        : Icons.arrow_downward,
                                     color: Colors.white70,
                                   ),
                                   onPressed: () {
@@ -913,7 +963,9 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                               glassmorphicContainer(
                                 child: IconButton(
                                   icon: Icon(
-                                    _isGridView ? Icons.view_list : Icons.grid_view,
+                                    _isGridView
+                                        ? Icons.view_list
+                                        : Icons.grid_view,
                                     color: Colors.white70,
                                   ),
                                   onPressed: () {
@@ -962,22 +1014,22 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.person, size: 64, color: Colors.white.withOpacity(0.3)),
+                            Icon(Icons.person,
+                                size: 64, color: Colors.white.withOpacity(0.3)),
                             const SizedBox(height: 16),
                             Text(
-                              _searchQuery.isEmpty 
+                              _searchQuery.isEmpty
                                   ? loc.translate('no_artists_found')
                                   : loc.translate('no_results'),
-                              style: TextStyle(color: Colors.white.withOpacity(0.5)),
+                              style: TextStyle(
+                                  color: Colors.white.withOpacity(0.5)),
                             ),
                           ],
                         ),
                       ),
                     )
                   else
-                    _isGridView 
-                        ? _buildArtistsGrid()
-                        : _buildArtistsList(),
+                    _isGridView ? _buildArtistsGrid() : _buildArtistsList(),
                 ],
               ),
             ),
@@ -987,7 +1039,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     );
   }
 
-  PopupMenuItem<ArtistSortOption> _buildArtistSortMenuItem(ArtistSortOption option, String label) {
+  PopupMenuItem<ArtistSortOption> _buildArtistSortMenuItem(
+      ArtistSortOption option, String label) {
     return PopupMenuItem(
       value: option,
       child: Row(
@@ -1046,7 +1099,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
 
   Widget _buildArtistGridTile(ArtistModel artist) {
     final imagePath = _artistImages[artist.artist];
-    
+
     return GestureDetector(
       onTap: () => _navigateToArtistDetail(artist),
       onLongPress: () => _showArtistOptions(artist),
@@ -1080,8 +1133,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                           ),
                           child: Center(
                             child: Text(
-                              artist.artist.isNotEmpty 
-                                  ? artist.artist[0].toUpperCase() 
+                              artist.artist.isNotEmpty
+                                  ? artist.artist[0].toUpperCase()
                                   : '?',
                               style: const TextStyle(
                                 color: Colors.white,
@@ -1150,7 +1203,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
   Widget _buildArtistListTile(ArtistModel artist) {
     final imagePath = _artistImages[artist.artist];
     final albumCount = _artistAlbumCounts[artist.artist] ?? 0;
-    
+
     return GestureDetector(
       onTap: () => _navigateToArtistDetail(artist),
       onLongPress: () => _showArtistOptions(artist),
@@ -1185,8 +1238,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                           ),
                           child: Center(
                             child: Text(
-                              artist.artist.isNotEmpty 
-                                  ? artist.artist[0].toUpperCase() 
+                              artist.artist.isNotEmpty
+                                  ? artist.artist[0].toUpperCase()
                                   : '?',
                               style: const TextStyle(
                                 color: Colors.white,
@@ -1217,7 +1270,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.music_note, size: 14, color: Colors.white.withOpacity(0.6)),
+                        Icon(Icons.music_note,
+                            size: 14, color: Colors.white.withOpacity(0.6)),
                         const SizedBox(width: 4),
                         Text(
                           '${artist.numberOfTracks} songs',
@@ -1227,7 +1281,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Icon(Icons.album, size: 14, color: Colors.white.withOpacity(0.6)),
+                        Icon(Icons.album,
+                            size: 14, color: Colors.white.withOpacity(0.6)),
                         const SizedBox(width: 4),
                         Text(
                           '$albumCount albums',
@@ -1243,7 +1298,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
               ),
               // Quick play button
               IconButton(
-                icon: const Icon(Icons.play_circle_filled, color: Colors.white70, size: 36),
+                icon: const Icon(Icons.play_circle_filled,
+                    color: Colors.white70, size: 36),
                 onPressed: () => _playArtist(artist),
               ),
             ],
@@ -1267,7 +1323,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
 
   void _showArtistOptions(ArtistModel artist) {
     final imagePath = _artistImages[artist.artist];
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1295,7 +1351,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(25),
                     child: imagePath != null
-                        ? Image.file(File(imagePath), width: 50, height: 50, fit: BoxFit.cover)
+                        ? Image.file(File(imagePath),
+                            width: 50, height: 50, fit: BoxFit.cover)
                         : Container(
                             width: 50,
                             height: 50,
@@ -1305,8 +1362,13 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                             ),
                             child: Center(
                               child: Text(
-                                artist.artist.isNotEmpty ? artist.artist[0].toUpperCase() : '?',
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+                                artist.artist.isNotEmpty
+                                    ? artist.artist[0].toUpperCase()
+                                    : '?',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20),
                               ),
                             ),
                           ),
@@ -1318,13 +1380,15 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                       children: [
                         Text(
                           artist.artist,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           '${artist.numberOfTracks} songs',
-                          style: const TextStyle(color: Colors.white70, fontSize: 13),
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 13),
                         ),
                       ],
                     ),
@@ -1335,7 +1399,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             const Divider(color: Colors.white24),
             ListTile(
               leading: const Icon(Icons.play_arrow, color: Colors.white),
-              title: const Text('Play All', style: TextStyle(color: Colors.white)),
+              title:
+                  const Text('Play All', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _playArtist(artist);
@@ -1343,7 +1408,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.shuffle, color: Colors.white),
-              title: const Text('Shuffle All', style: TextStyle(color: Colors.white)),
+              title: const Text('Shuffle All',
+                  style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _shuffleArtist(artist);
@@ -1351,7 +1417,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.info_outline, color: Colors.white),
-              title: const Text('View Details', style: TextStyle(color: Colors.white)),
+              title: const Text('View Details',
+                  style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _navigateToArtistDetail(artist);
@@ -1365,32 +1432,39 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
   }
 
   Future<void> _playArtist(ArtistModel artist) async {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     final songs = await _audioQuery.querySongs(
       sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
-    final artistSongs = songs.where((s) => 
-        s.artist?.toLowerCase().contains(artist.artist.toLowerCase()) ?? false
-    ).toList();
+    final artistSongs = songs
+        .where((s) =>
+            s.artist?.toLowerCase().contains(artist.artist.toLowerCase()) ??
+            false)
+        .toList();
     if (artistSongs.isNotEmpty) {
       audioPlayerService.setPlaylist(artistSongs, 0);
     }
   }
 
   Future<void> _shuffleArtist(ArtistModel artist) async {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     final songs = await _audioQuery.querySongs(
       sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
-    final artistSongs = songs.where((s) => 
-        s.artist?.toLowerCase().contains(artist.artist.toLowerCase()) ?? false
-    ).toList()..shuffle();
+    final artistSongs = songs
+        .where((s) =>
+            s.artist?.toLowerCase().contains(artist.artist.toLowerCase()) ??
+            false)
+        .toList()
+      ..shuffle();
     if (artistSongs.isNotEmpty) {
       audioPlayerService.setPlaylist(artistSongs, 0);
     }

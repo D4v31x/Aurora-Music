@@ -35,17 +35,17 @@ class _SearchTabState extends State<SearchTab> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   static final _artworkService = ArtworkCacheService();
-  
+
   List<SongModel> _filteredSongs = [];
   List<ArtistModel> _filteredArtists = [];
   List<AlbumModel> _filteredAlbums = [];
-  
+
   // Top results
   SongModel? _topSong;
   ArtistModel? _topArtist;
   AlbumModel? _topAlbum;
   String _topResultType = ''; // 'song', 'artist', 'album'
-  
+
   Timer? _debounceTimer;
 
   @override
@@ -92,7 +92,7 @@ class _SearchTabState extends State<SearchTab> {
 
   void _performSearch(String query) {
     final queryLower = query.toLowerCase();
-    
+
     // Search songs with scoring
     _filteredSongs = MusicSearchService.searchSongs(
       widget.songs,
@@ -100,63 +100,71 @@ class _SearchTabState extends State<SearchTab> {
       limit: 50,
       minScore: 10.0,
     );
-    
+
     // Search artists with improved scoring
     _filteredArtists = _searchArtistsWithScore(widget.artists, query);
-    
+
     // Search albums with improved scoring
     _filteredAlbums = _searchAlbumsWithScore(widget.albums ?? [], query);
-    
+
     // Determine top result based on match quality
     _determineTopResult(queryLower);
-    
+
     setState(() {});
   }
 
-  List<ArtistModel> _searchArtistsWithScore(List<ArtistModel> artists, String query) {
+  List<ArtistModel> _searchArtistsWithScore(
+      List<ArtistModel> artists, String query) {
     final queryLower = query.toLowerCase();
-    
-    final scored = artists.map((artist) {
-      final name = artist.artist.toLowerCase();
-      double score = 0;
-      
-      if (name == queryLower) score += 100;
-      if (name.startsWith(queryLower)) score += 50;
-      if (name.contains(queryLower)) score += 30;
-      
-      // Word match
-      final words = name.split(' ');
-      for (final word in words) {
-        if (word == queryLower) score += 40;
-        if (word.startsWith(queryLower)) score += 20;
-      }
-      
-      return MapEntry(artist, score);
-    }).where((e) => e.value > 0).toList();
-    
+
+    final scored = artists
+        .map((artist) {
+          final name = artist.artist.toLowerCase();
+          double score = 0;
+
+          if (name == queryLower) score += 100;
+          if (name.startsWith(queryLower)) score += 50;
+          if (name.contains(queryLower)) score += 30;
+
+          // Word match
+          final words = name.split(' ');
+          for (final word in words) {
+            if (word == queryLower) score += 40;
+            if (word.startsWith(queryLower)) score += 20;
+          }
+
+          return MapEntry(artist, score);
+        })
+        .where((e) => e.value > 0)
+        .toList();
+
     scored.sort((a, b) => b.value.compareTo(a.value));
-    
+
     return scored.take(20).map((e) => e.key).toList();
   }
 
-  List<AlbumModel> _searchAlbumsWithScore(List<AlbumModel> albums, String query) {
+  List<AlbumModel> _searchAlbumsWithScore(
+      List<AlbumModel> albums, String query) {
     final queryLower = query.toLowerCase();
-    
-    final scored = albums.map((album) {
-      final name = album.album.toLowerCase();
-      final artist = (album.artist ?? '').toLowerCase();
-      double score = 0;
-      
-      if (name == queryLower) score += 100;
-      if (name.startsWith(queryLower)) score += 50;
-      if (name.contains(queryLower)) score += 30;
-      if (artist.contains(queryLower)) score += 20;
-      
-      return MapEntry(album, score);
-    }).where((e) => e.value > 0).toList();
-    
+
+    final scored = albums
+        .map((album) {
+          final name = album.album.toLowerCase();
+          final artist = (album.artist ?? '').toLowerCase();
+          double score = 0;
+
+          if (name == queryLower) score += 100;
+          if (name.startsWith(queryLower)) score += 50;
+          if (name.contains(queryLower)) score += 30;
+          if (artist.contains(queryLower)) score += 20;
+
+          return MapEntry(album, score);
+        })
+        .where((e) => e.value > 0)
+        .toList();
+
     scored.sort((a, b) => b.value.compareTo(a.value));
-    
+
     return scored.take(20).map((e) => e.key).toList();
   }
 
@@ -165,54 +173,69 @@ class _SearchTabState extends State<SearchTab> {
     _topArtist = null;
     _topAlbum = null;
     _topResultType = '';
-    
+
     double bestSongScore = 0;
     double bestArtistScore = 0;
     double bestAlbumScore = 0;
-    
+
     // Calculate best song score
     if (_filteredSongs.isNotEmpty) {
       final song = _filteredSongs.first;
       final title = song.title.toLowerCase();
       final artist = (song.artist ?? '').toLowerCase();
-      
-      if (title == query) bestSongScore = 100;
-      else if (title.startsWith(query)) bestSongScore = 70;
-      else if (artist == query) bestSongScore = 60;
-      else if (title.contains(query)) bestSongScore = 40;
-      else bestSongScore = 20;
-      
+
+      if (title == query)
+        bestSongScore = 100;
+      else if (title.startsWith(query))
+        bestSongScore = 70;
+      else if (artist == query)
+        bestSongScore = 60;
+      else if (title.contains(query))
+        bestSongScore = 40;
+      else
+        bestSongScore = 20;
+
       _topSong = song;
     }
-    
+
     // Calculate best artist score
     if (_filteredArtists.isNotEmpty) {
       final artist = _filteredArtists.first;
       final name = artist.artist.toLowerCase();
-      
-      if (name == query) bestArtistScore = 100;
-      else if (name.startsWith(query)) bestArtistScore = 80;
-      else if (name.contains(query)) bestArtistScore = 50;
-      else bestArtistScore = 25;
-      
+
+      if (name == query)
+        bestArtistScore = 100;
+      else if (name.startsWith(query))
+        bestArtistScore = 80;
+      else if (name.contains(query))
+        bestArtistScore = 50;
+      else
+        bestArtistScore = 25;
+
       _topArtist = artist;
     }
-    
+
     // Calculate best album score
     if (_filteredAlbums.isNotEmpty) {
       final album = _filteredAlbums.first;
       final name = album.album.toLowerCase();
-      
-      if (name == query) bestAlbumScore = 100;
-      else if (name.startsWith(query)) bestAlbumScore = 75;
-      else if (name.contains(query)) bestAlbumScore = 45;
-      else bestAlbumScore = 22;
-      
+
+      if (name == query)
+        bestAlbumScore = 100;
+      else if (name.startsWith(query))
+        bestAlbumScore = 75;
+      else if (name.contains(query))
+        bestAlbumScore = 45;
+      else
+        bestAlbumScore = 22;
+
       _topAlbum = album;
     }
-    
+
     // Determine which is the top result
-    if (bestArtistScore >= bestSongScore && bestArtistScore >= bestAlbumScore && bestArtistScore > 0) {
+    if (bestArtistScore >= bestSongScore &&
+        bestArtistScore >= bestAlbumScore &&
+        bestArtistScore > 0) {
       _topResultType = 'artist';
     } else if (bestAlbumScore >= bestSongScore && bestAlbumScore > 0) {
       _topResultType = 'album';
@@ -222,8 +245,9 @@ class _SearchTabState extends State<SearchTab> {
   }
 
   void _onSongTap(SongModel song) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
-    
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+
     List<SongModel> playlist = _filteredSongs;
     int initialIndex = playlist.indexWhere((s) => s.id == song.id);
 
@@ -240,7 +264,8 @@ class _SearchTabState extends State<SearchTab> {
         child: Column(
           children: [
             // Fake search bar
-            const ShimmerLoading(width: double.infinity, height: 56, borderRadius: 28),
+            const ShimmerLoading(
+                width: double.infinity, height: 56, borderRadius: 28),
             const SizedBox(height: 24),
             // Fake results
             const ListSkeleton(itemCount: 5),
@@ -257,10 +282,12 @@ class _SearchTabState extends State<SearchTab> {
           child: TextField(
             controller: _searchController,
             focusNode: _searchFocusNode,
-            style: const TextStyle(color: Colors.white, fontFamily: 'ProductSans'),
+            style:
+                const TextStyle(color: Colors.white, fontFamily: 'ProductSans'),
             decoration: InputDecoration(
               hintText: AppLocalizations.of(context).translate('search'),
-              hintStyle: const TextStyle(color: Colors.white54, fontFamily: 'ProductSans'),
+              hintStyle: const TextStyle(
+                  color: Colors.white54, fontFamily: 'ProductSans'),
               prefixIcon: const Icon(Icons.search, color: Colors.white54),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
@@ -314,16 +341,17 @@ class _SearchTabState extends State<SearchTab> {
       );
     }
 
-    final hasResults = _filteredSongs.isNotEmpty || 
-                       _filteredArtists.isNotEmpty || 
-                       _filteredAlbums.isNotEmpty;
+    final hasResults = _filteredSongs.isNotEmpty ||
+        _filteredArtists.isNotEmpty ||
+        _filteredAlbums.isNotEmpty;
 
     if (!hasResults) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off, size: 64, color: Colors.white.withOpacity(0.3)),
+            Icon(Icons.search_off,
+                size: 64, color: Colors.white.withOpacity(0.3)),
             const SizedBox(height: 16),
             Text(
               'No results found',
@@ -343,27 +371,30 @@ class _SearchTabState extends State<SearchTab> {
       children: [
         // Top Result Card
         if (_topResultType.isNotEmpty) ...[
-          _buildSectionHeader(AppLocalizations.of(context).translate('top_result')),
+          _buildSectionHeader(
+              AppLocalizations.of(context).translate('top_result')),
           const SizedBox(height: 8),
           _buildTopResultCard(),
           const SizedBox(height: 24),
         ],
-        
+
         // Artists section (horizontal scroll)
         if (_filteredArtists.isNotEmpty && _topResultType != 'artist') ...[
-          _buildSectionHeader(AppLocalizations.of(context).translate('artists')),
+          _buildSectionHeader(
+              AppLocalizations.of(context).translate('artists')),
           const SizedBox(height: 8),
           SizedBox(
             height: 140,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: _filteredArtists.length.clamp(0, 10),
-              itemBuilder: (context, index) => _buildArtistChip(_filteredArtists[index]),
+              itemBuilder: (context, index) =>
+                  _buildArtistChip(_filteredArtists[index]),
             ),
           ),
           const SizedBox(height: 24),
         ],
-        
+
         // Albums section (horizontal scroll)
         if (_filteredAlbums.isNotEmpty && _topResultType != 'album') ...[
           _buildSectionHeader(AppLocalizations.of(context).translate('albums')),
@@ -373,23 +404,24 @@ class _SearchTabState extends State<SearchTab> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: _filteredAlbums.length.clamp(0, 10),
-              itemBuilder: (context, index) => _buildAlbumCard(_filteredAlbums[index]),
+              itemBuilder: (context, index) =>
+                  _buildAlbumCard(_filteredAlbums[index]),
             ),
           ),
           const SizedBox(height: 24),
         ],
-        
+
         // Songs section
         if (_filteredSongs.isNotEmpty) ...[
           _buildSectionHeader(AppLocalizations.of(context).translate('songs')),
           const SizedBox(height: 8),
           ..._filteredSongs.take(20).map((song) => _SearchSongTile(
-            song: song,
-            artworkService: _artworkService,
-            onTap: () => _onSongTap(song),
-          )),
+                song: song,
+                artworkService: _artworkService,
+                onTap: () => _onSongTap(song),
+              )),
         ],
-        
+
         // Bottom padding for mini player + keyboard
         SizedBox(height: 100 + MediaQuery.of(context).viewInsets.bottom),
       ],
@@ -436,7 +468,8 @@ class _SearchTabState extends State<SearchTab> {
           ),
         );
       },
-      typeLabel: AppLocalizations.of(context).translate('artists').toUpperCase(),
+      typeLabel:
+          AppLocalizations.of(context).translate('artists').toUpperCase(),
     );
   }
 
@@ -455,7 +488,8 @@ class _SearchTabState extends State<SearchTab> {
       typeLabel: AppLocalizations.of(context).translate('albums').toUpperCase(),
       title: album.album,
       subtitle: album.artist ?? '',
-      trailing: Icon(Icons.chevron_right, color: Colors.white.withOpacity(0.5), size: 32),
+      trailing: Icon(Icons.chevron_right,
+          color: Colors.white.withOpacity(0.5), size: 32),
       heroTag: 'album_image_${album.album}',
     );
   }
@@ -475,7 +509,8 @@ class _SearchTabState extends State<SearchTab> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
         ),
-        child: const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 28),
+        child:
+            const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 28),
       ),
     );
   }
@@ -502,7 +537,8 @@ class _SearchTabState extends State<SearchTab> {
               tag: 'artist_image_${artist.artist}',
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(40),
-                child: _artworkService.buildArtistImageByName(artist.artist, size: 80, circular: true),
+                child: _artworkService.buildArtistImageByName(artist.artist,
+                    size: 80, circular: true),
               ),
             ),
             const SizedBox(height: 8),
@@ -543,7 +579,8 @@ class _SearchTabState extends State<SearchTab> {
               tag: 'album_image_${album.album}',
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: _artworkService.buildCachedAlbumArtwork(album.id, size: 130),
+                child: _artworkService.buildCachedAlbumArtwork(album.id,
+                    size: 130),
               ),
             ),
             const SizedBox(height: 8),
@@ -562,7 +599,11 @@ class _SearchTabState extends State<SearchTab> {
               album.artist ?? '',
               style: TextStyle(
                 fontFamily: 'ProductSans',
-                color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                color: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.color
+                    ?.withOpacity(0.7),
                 fontSize: 12,
               ),
               maxLines: 1,
@@ -608,13 +649,15 @@ class _SearchSongTile extends StatelessWidget {
           song.artist ?? '',
           style: TextStyle(
             fontFamily: 'ProductSans',
-            color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+            color:
+                Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         trailing: IconButton(
-          icon: Icon(Icons.more_vert, color: Theme.of(context).iconTheme.color?.withOpacity(0.5)),
+          icon: Icon(Icons.more_vert,
+              color: Theme.of(context).iconTheme.color?.withOpacity(0.5)),
           onPressed: () {
             // TODO: Show song options
           },
@@ -648,7 +691,8 @@ class _TopResultCardWithArtwork extends StatefulWidget {
   });
 
   @override
-  State<_TopResultCardWithArtwork> createState() => _TopResultCardWithArtworkState();
+  State<_TopResultCardWithArtwork> createState() =>
+      _TopResultCardWithArtworkState();
 }
 
 class _TopResultCardWithArtworkState extends State<_TopResultCardWithArtwork> {
@@ -684,10 +728,11 @@ class _TopResultCardWithArtworkState extends State<_TopResultCardWithArtwork> {
         if (mounted) {
           setState(() {
             _hasArtwork = true;
-            _dominantColor = palette.dominantColor?.color ?? palette.vibrantColor?.color;
-            _accentColor = palette.vibrantColor?.color ?? 
-                          palette.lightVibrantColor?.color ?? 
-                          palette.mutedColor?.color;
+            _dominantColor =
+                palette.dominantColor?.color ?? palette.vibrantColor?.color;
+            _accentColor = palette.vibrantColor?.color ??
+                palette.lightVibrantColor?.color ??
+                palette.mutedColor?.color;
           });
         }
       } else if (mounted) {
@@ -745,12 +790,14 @@ class _TopResultCardWithArtworkState extends State<_TopResultCardWithArtwork> {
                         tag: widget.heroTag!,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: widget.artworkService.buildCachedArtwork(widget.id, size: 100),
+                          child: widget.artworkService
+                              .buildCachedArtwork(widget.id, size: 100),
                         ),
                       )
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: widget.artworkService.buildCachedArtwork(widget.id, size: 100),
+                        child: widget.artworkService
+                            .buildCachedArtwork(widget.id, size: 100),
                       ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -758,7 +805,8 @@ class _TopResultCardWithArtworkState extends State<_TopResultCardWithArtwork> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: _hasArtwork && _accentColor != null
                               ? _accentColor!.withOpacity(0.2)
@@ -853,7 +901,8 @@ class _TopArtistResultCardState extends State<_TopArtistResultCard> {
 
   Future<void> _extractColors() async {
     try {
-      final imagePath = await widget.artworkService.getArtistImageByName(widget.artist.artist);
+      final imagePath = await widget.artworkService
+          .getArtistImageByName(widget.artist.artist);
       if (imagePath != null && mounted) {
         final imageProvider = FileImage(File(imagePath));
         final palette = await PaletteGenerator.fromImageProvider(
@@ -865,10 +914,11 @@ class _TopArtistResultCardState extends State<_TopArtistResultCard> {
         if (mounted) {
           setState(() {
             _hasArtwork = true;
-            _dominantColor = palette.dominantColor?.color ?? palette.vibrantColor?.color;
-            _accentColor = palette.vibrantColor?.color ?? 
-                          palette.lightVibrantColor?.color ?? 
-                          palette.mutedColor?.color;
+            _dominantColor =
+                palette.dominantColor?.color ?? palette.vibrantColor?.color;
+            _accentColor = palette.vibrantColor?.color ??
+                palette.lightVibrantColor?.color ??
+                palette.mutedColor?.color;
           });
         }
       } else if (mounted) {
@@ -926,8 +976,8 @@ class _TopArtistResultCardState extends State<_TopArtistResultCard> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
                     child: widget.artworkService.buildArtistImageByName(
-                      widget.artist.artist, 
-                      size: 100, 
+                      widget.artist.artist,
+                      size: 100,
                       circular: true,
                     ),
                   ),
@@ -938,7 +988,8 @@ class _TopArtistResultCardState extends State<_TopArtistResultCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: _hasArtwork && _accentColor != null
                               ? _accentColor!.withOpacity(0.2)
@@ -982,7 +1033,8 @@ class _TopArtistResultCardState extends State<_TopArtistResultCard> {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: Colors.white.withOpacity(0.5), size: 32),
+                Icon(Icons.chevron_right,
+                    color: Colors.white.withOpacity(0.5), size: 32),
               ],
             ),
           ),

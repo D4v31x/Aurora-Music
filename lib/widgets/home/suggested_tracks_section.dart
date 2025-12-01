@@ -69,7 +69,8 @@ class SuggestedTracksSection extends StatelessWidget {
                     song: song,
                     isLiked: isLiked,
                     artworkService: _artworkService,
-                    onTap: () => _onSuggestedSongTap(context, song, topThreeSongs),
+                    onTap: () =>
+                        _onSuggestedSongTap(context, song, topThreeSongs),
                   ),
                 );
               }).toList(),
@@ -122,10 +123,11 @@ class _SuggestedTrackTile extends StatelessWidget {
                     children: [
                       Text(
                         song.title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'ProductSans',
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'ProductSans',
+                                ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -157,9 +159,10 @@ class _SuggestedTrackTile extends StatelessWidget {
                           : Theme.of(context).iconTheme.color,
                     ),
                     onPressed: () {
-                       final audioPlayerService =
-                          Provider.of<AudioPlayerService>(context, listen: false);
-                       audioPlayerService.toggleLike(song);
+                      final audioPlayerService =
+                          Provider.of<AudioPlayerService>(context,
+                              listen: false);
+                      audioPlayerService.toggleLike(song);
                     },
                   ),
                 ),

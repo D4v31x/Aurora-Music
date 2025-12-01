@@ -327,7 +327,8 @@ class TimedLyricsService {
   }
 
   /// Public method to save lyrics to cache
-  Future<void> saveLyricsToCache(String artist, String title, String content) async {
+  Future<void> saveLyricsToCache(
+      String artist, String title, String content) async {
     await _saveLyricsToFile(artist, title, content);
   }
 

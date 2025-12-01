@@ -35,7 +35,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   final int _songsPerPage = 20;
   bool _isLoading = false;
   bool _hasMoreSongs = true;
-  
+
   // Album metadata
   String? _artistName;
   Duration _totalDuration = Duration.zero;
@@ -73,25 +73,28 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
       ignoreCase: true,
     );
 
-    final albumSongs = songs.where((song) => song.album == widget.albumName).toList()
+    final albumSongs = songs
+        .where((song) => song.album == widget.albumName)
+        .toList()
       ..sort((a, b) => (a.track ?? 0).compareTo(b.track ?? 0));
-    
+
     // Get album metadata
     String? artistName;
     Duration totalDuration = Duration.zero;
-    
+
     if (albumSongs.isNotEmpty) {
       artistName = albumSongs.first.artist;
       for (final song in albumSongs) {
         totalDuration += Duration(milliseconds: song.duration ?? 0);
       }
     }
-    
+
     // Get related albums from same artist
     final allAlbums = await _audioQuery.queryAlbums();
-    final related = allAlbums.where((album) => 
-        album.artist == artistName && album.album != widget.albumName
-    ).toList();
+    final related = allAlbums
+        .where((album) =>
+            album.artist == artistName && album.album != widget.albumName)
+        .toList();
 
     setState(() {
       _allSongs = albumSongs;
@@ -207,7 +210,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                           child: Align(
                             alignment: Alignment.topLeft,
                             child: IconButton(
-                              icon: const Icon(Icons.arrow_back, color: Colors.white),
+                              icon: const Icon(Icons.arrow_back,
+                                  color: Colors.white),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ),
@@ -234,7 +238,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                     // Stats section
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         child: glassmorphicContainer(
                           child: Padding(
                             padding: const EdgeInsets.all(16),
@@ -253,18 +258,21 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                                     ),
                                   ),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
                                   children: [
                                     _buildStatItem(
                                       Icons.music_note_rounded,
                                       '${_allSongs.length}',
-                                      AppLocalizations.of(context).translate('songs'),
+                                      AppLocalizations.of(context)
+                                          .translate('songs'),
                                     ),
                                     _buildStatDivider(),
                                     _buildStatItem(
                                       Icons.timer_outlined,
                                       _formatDuration(_totalDuration),
-                                      AppLocalizations.of(context).translate('total'),
+                                      AppLocalizations.of(context)
+                                          .translate('total'),
                                     ),
                                   ],
                                 ),
@@ -285,7 +293,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                               child: _buildActionButton(
                                 context,
                                 Icons.play_arrow_rounded,
-                                AppLocalizations.of(context).translate('play_all'),
+                                AppLocalizations.of(context)
+                                    .translate('play_all'),
                                 () => _playAllSongs(context),
                                 dominantColor,
                                 isPrimary: true,
@@ -296,7 +305,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                               child: _buildActionButton(
                                 context,
                                 Icons.shuffle_rounded,
-                                AppLocalizations.of(context).translate('shuffle'),
+                                AppLocalizations.of(context)
+                                    .translate('shuffle'),
                                 () => _shuffleAllSongs(context),
                                 dominantColor,
                                 isPrimary: false,
@@ -346,7 +356,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                             itemBuilder: (context, index) {
                               final album = _relatedAlbums[index];
                               return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4),
                                 child: GestureDetector(
                                   onTap: () {
                                     Navigator.pushReplacement(
@@ -364,11 +375,14 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(10),
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             ClipRRect(
-                                              borderRadius: BorderRadius.circular(10),
-                                              child: _artworkService.buildCachedAlbumArtwork(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              child: _artworkService
+                                                  .buildCachedAlbumArtwork(
                                                 album.id,
                                                 size: 100,
                                               ),
@@ -598,8 +612,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
 
           final song = _displayedSongs[index];
           final duration = Duration(milliseconds: song.duration ?? 0);
-          final durationString = '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
-          
+          final durationString =
+              '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+
           return AnimationConfiguration.staggeredList(
             position: index,
             duration: const Duration(milliseconds: 200),
@@ -613,14 +628,17 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                   ),
                   child: GestureDetector(
                     onTap: () {
-                      debugPrint('Tapped song at index: $index, song: ${song.title}');
+                      debugPrint(
+                          'Tapped song at index: $index, song: ${song.title}');
                       audioPlayerService.setPlaylist(_allSongs, index);
                       // Note: setPlaylist already starts playback, no need to call play()
                     },
-                    onLongPress: () => _showSongOptions(song, audioPlayerService),
+                    onLongPress: () =>
+                        _showSongOptions(song, audioPlayerService),
                     child: glassmorphicContainer(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
                         child: Row(
                           children: [
                             // Track number
@@ -715,7 +733,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: _artworkService.buildCachedArtwork(song.id, size: 50),
+                    child:
+                        _artworkService.buildCachedArtwork(song.id, size: 50),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -724,13 +743,15 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                       children: [
                         Text(
                           song.title,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           song.artist ?? 'Unknown',
-                          style: const TextStyle(color: Colors.white70, fontSize: 13),
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 13),
                         ),
                       ],
                     ),
@@ -752,7 +773,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.playlist_play, color: Colors.white),
-              title: const Text('Play Next', style: TextStyle(color: Colors.white)),
+              title: const Text('Play Next',
+                  style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(

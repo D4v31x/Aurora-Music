@@ -21,16 +21,17 @@ class ArtworkCacheService {
 
   final Map<int, Uint8List?> _artistArtworkCache = {};
   final Map<int, ImageProvider<Object>?> _artistImageProviderCache = {};
-  
+
   // Album artwork cache
   final Map<int, Uint8List?> _albumArtworkCache = {};
   final Map<int, ImageProvider<Object>?> _albumImageProviderCache = {};
   final List<int> _albumAccessOrder = [];
-  
+
   // Name-based artist image cache (from Spotify API)
   final Map<String, String?> _artistNameImageCache = {};
   final Map<String, ImageProvider<Object>?> _artistNameProviderCache = {};
-  final LocalCachingArtistService _localCachingService = LocalCachingArtistService();
+  final LocalCachingArtistService _localCachingService =
+      LocalCachingArtistService();
 
   // LRU tracking for cache eviction
   final List<int> _artworkAccessOrder = [];
@@ -147,7 +148,7 @@ class ArtworkCacheService {
         quality: 100,
         size: 500,
       );
-      
+
       // Only cache if we got valid artwork
       if (artwork != null && artwork.isNotEmpty) {
         _artworkCache[id] = artwork;
@@ -171,7 +172,8 @@ class ArtworkCacheService {
     );
   }
 
-  Widget buildCachedArtistArtwork(int id, {double size = 50, bool circular = false}) {
+  Widget buildCachedArtistArtwork(int id,
+      {double size = 50, bool circular = false}) {
     return RepaintBoundary(
       key: ValueKey('artist_artwork_$id'),
       child: _ArtistArtworkWidget(
@@ -197,7 +199,8 @@ class ArtworkCacheService {
 
   /// Get album artwork by album ID
   Future<Uint8List?> getAlbumArtwork(int albumId) async {
-    if (_albumArtworkCache.containsKey(albumId) && _albumArtworkCache[albumId] != null) {
+    if (_albumArtworkCache.containsKey(albumId) &&
+        _albumArtworkCache[albumId] != null) {
       return _albumArtworkCache[albumId];
     }
 
@@ -208,7 +211,7 @@ class ArtworkCacheService {
         quality: 100,
         size: 500,
       );
-      
+
       if (artwork != null && artwork.isNotEmpty) {
         _albumArtworkCache[albumId] = artwork;
         _updateAlbumAccessOrder(albumId);
@@ -258,7 +261,8 @@ class ArtworkCacheService {
   }
 
   void _evictAlbumLRUIfNeeded() {
-    if (_albumArtworkCache.length >= _maxArtworkCacheSize && _albumAccessOrder.isNotEmpty) {
+    if (_albumArtworkCache.length >= _maxArtworkCacheSize &&
+        _albumAccessOrder.isNotEmpty) {
       final lruId = _albumAccessOrder.removeAt(0);
       _albumArtworkCache.remove(lruId);
       _albumImageProviderCache.remove(lruId);
@@ -266,7 +270,8 @@ class ArtworkCacheService {
   }
 
   Future<Uint8List?> getArtistArtwork(int id) async {
-    if (_artistArtworkCache.containsKey(id) && _artistArtworkCache[id] != null) {
+    if (_artistArtworkCache.containsKey(id) &&
+        _artistArtworkCache[id] != null) {
       return _artistArtworkCache[id];
     }
 
@@ -277,7 +282,7 @@ class ArtworkCacheService {
         quality: 100,
         size: 500,
       );
-      
+
       if (artwork != null && artwork.isNotEmpty) {
         _artistArtworkCache[id] = artwork;
         _updateAccessOrder(id, true);
@@ -376,16 +381,17 @@ class ArtworkCacheService {
     // Fetch from local caching service (which handles file cache and API)
     final imagePath = await _localCachingService.fetchArtistImage(artistName);
     _artistNameImageCache[artistName] = imagePath;
-    
+
     if (imagePath != null) {
       _artistNameProviderCache[artistName] = FileImage(File(imagePath));
     }
-    
+
     return imagePath;
   }
 
   /// Get cached artist image provider by name
-  Future<ImageProvider<Object>?> getArtistImageProviderByName(String artistName) async {
+  Future<ImageProvider<Object>?> getArtistImageProviderByName(
+      String artistName) async {
     // Check provider cache first
     if (_artistNameProviderCache.containsKey(artistName)) {
       return _artistNameProviderCache[artistName];
@@ -397,7 +403,7 @@ class ArtworkCacheService {
       _artistNameProviderCache[artistName] = provider;
       return provider;
     }
-    
+
     return null;
   }
 
@@ -407,7 +413,8 @@ class ArtworkCacheService {
   }
 
   /// Build widget for artist image by name (from Spotify API)
-  Widget buildArtistImageByName(String artistName, {double size = 50, bool circular = false}) {
+  Widget buildArtistImageByName(String artistName,
+      {double size = 50, bool circular = false}) {
     return RepaintBoundary(
       key: ValueKey('artist_name_$artistName'),
       child: _ArtistNameImageWidget(
@@ -470,8 +477,9 @@ class _AlbumArtworkWidgetState extends State<_AlbumArtworkWidget> {
 
   Future<void> _loadArtwork() async {
     // Check sync cache first
-    final cachedProvider = widget.artworkService.getCachedAlbumImageProviderSync(widget.albumId);
-    
+    final cachedProvider =
+        widget.artworkService.getCachedAlbumImageProviderSync(widget.albumId);
+
     if (cachedProvider != null) {
       if (mounted) {
         setState(() {
@@ -483,7 +491,8 @@ class _AlbumArtworkWidgetState extends State<_AlbumArtworkWidget> {
     }
 
     // Load asynchronously
-    final provider = await widget.artworkService.getAlbumImageProvider(widget.albumId);
+    final provider =
+        await widget.artworkService.getAlbumImageProvider(widget.albumId);
     if (mounted) {
       setState(() {
         _imageProvider = provider;
@@ -556,8 +565,9 @@ class _ArtworkWidgetState extends State<_ArtworkWidget> {
 
   Future<void> _loadArtwork() async {
     // Check sync cache first
-    final cachedProvider = widget.artworkService.getCachedImageProviderSync(widget.id);
-    
+    final cachedProvider =
+        widget.artworkService.getCachedImageProviderSync(widget.id);
+
     if (cachedProvider != null) {
       if (mounted) {
         setState(() {
@@ -569,7 +579,8 @@ class _ArtworkWidgetState extends State<_ArtworkWidget> {
     }
 
     // Load asynchronously
-    final provider = await widget.artworkService.getCachedImageProvider(widget.id);
+    final provider =
+        await widget.artworkService.getCachedImageProvider(widget.id);
     if (mounted) {
       setState(() {
         _imageProvider = provider;
@@ -645,9 +656,10 @@ class _ArtistArtworkWidgetState extends State<_ArtistArtworkWidget> {
 
   Future<void> _loadArtwork() async {
     try {
-      final provider = await widget.artworkService.getArtistImageProvider(widget.id);
+      final provider =
+          await widget.artworkService.getArtistImageProvider(widget.id);
       final artwork = await widget.artworkService.getArtistArtwork(widget.id);
-      
+
       if (mounted) {
         setState(() {
           _imageProvider = provider;
@@ -667,8 +679,8 @@ class _ArtistArtworkWidgetState extends State<_ArtistArtworkWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = widget.circular 
-        ? BorderRadius.circular(widget.size / 2) 
+    final borderRadius = widget.circular
+        ? BorderRadius.circular(widget.size / 2)
         : BorderRadius.circular(8);
 
     if (_hasArtwork && _imageProvider != null && !_isLoading) {
@@ -746,7 +758,8 @@ class _ArtistNameImageWidgetState extends State<_ArtistNameImageWidget> {
 
     try {
       // Check sync cache first
-      final cachedPath = widget.artworkService.getCachedArtistImageByNameSync(widget.artistName);
+      final cachedPath = widget.artworkService
+          .getCachedArtistImageByNameSync(widget.artistName);
       if (cachedPath != null) {
         if (mounted) {
           setState(() {
@@ -759,7 +772,8 @@ class _ArtistNameImageWidgetState extends State<_ArtistNameImageWidget> {
       }
 
       // Fetch from API/cache
-      final provider = await widget.artworkService.getArtistImageProviderByName(widget.artistName);
+      final provider = await widget.artworkService
+          .getArtistImageProviderByName(widget.artistName);
       if (mounted) {
         setState(() {
           _imageProvider = provider;
@@ -779,8 +793,8 @@ class _ArtistNameImageWidgetState extends State<_ArtistNameImageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = widget.circular 
-        ? BorderRadius.circular(widget.size / 2) 
+    final borderRadius = widget.circular
+        ? BorderRadius.circular(widget.size / 2)
         : BorderRadius.circular(8);
 
     if (_hasImage && _imageProvider != null && !_isLoading) {

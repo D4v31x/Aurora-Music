@@ -323,7 +323,8 @@ class _TracksScreenState extends State<TracksScreen>
     }
   }
 
-  Widget _buildSongCard(SongModel song, AudioPlayerService audioPlayerService, int index) {
+  Widget _buildSongCard(
+      SongModel song, AudioPlayerService audioPlayerService, int index) {
     if (widget.isEditingPlaylist) {
       // Use original ListTile for editing mode with checkboxes
       return glassmorphicContainer(

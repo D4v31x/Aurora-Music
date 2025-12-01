@@ -259,8 +259,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       subtitle: Text(song.artist ?? 'Unknown Artist',
                           style: const TextStyle(color: Colors.grey)),
                       onTap: () {
-                        audioPlayerService.setPlaylist(
-                            playlist.songs, index);
+                        audioPlayerService.setPlaylist(playlist.songs, index);
                       },
                       onLongPress: () => _showRemoveSongDialog(
                           context, audioPlayerService, song),

@@ -48,7 +48,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
   int _selectedCategory = 0; // 0 = Songs, 1 = Albums
   List<AlbumModel> _albums = [];
   final Map<int, List<SongModel>> _albumSongs = {};
-  
+
   // Stats
   Duration _totalDuration = Duration.zero;
   String? _artistImagePath;
@@ -100,17 +100,17 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
         .where((song) =>
             splitArtists(song.artist ?? '').contains(widget.artistName))
         .toList();
-    
+
     final artistAlbums = allAlbums
         .where((album) => album.artist?.contains(widget.artistName) ?? false)
         .toList();
-    
+
     // Calculate total duration
     Duration totalDuration = Duration.zero;
     for (final song in artistSongs) {
       totalDuration += Duration(milliseconds: song.duration ?? 0);
     }
-    
+
     setState(() {
       _allSongs = artistSongs;
       _albums = artistAlbums;
@@ -124,10 +124,11 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     }
 
     _loadMoreSongs();
-    
+
     // Load artist image if not provided
     if (widget.artistImagePath == null) {
-      final imagePath = await _artistService.fetchArtistImage(widget.artistName);
+      final imagePath =
+          await _artistService.fetchArtistImage(widget.artistName);
       if (mounted && imagePath != null) {
         setState(() {
           _artistImagePath = imagePath;
@@ -236,33 +237,39 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                           child: CustomScrollView(
                             controller: _scrollController,
                             slivers: [
-                              _buildSliverAppBar(imageSnapshot.data ?? _artistImagePath),
+                              _buildSliverAppBar(
+                                  imageSnapshot.data ?? _artistImagePath),
                               // Stats section
                               SliverToBoxAdapter(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
                                   child: glassmorphicContainer(
                                     child: Padding(
                                       padding: const EdgeInsets.all(16),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
                                         children: [
                                           _buildStatItem(
                                             Icons.music_note_rounded,
                                             '${_allSongs.length}',
-                                            AppLocalizations.of(context).translate('songs'),
+                                            AppLocalizations.of(context)
+                                                .translate('songs'),
                                           ),
                                           _buildStatDivider(),
                                           _buildStatItem(
                                             Icons.album_rounded,
                                             '${_albums.length}',
-                                            AppLocalizations.of(context).translate('albums'),
+                                            AppLocalizations.of(context)
+                                                .translate('albums'),
                                           ),
                                           _buildStatDivider(),
                                           _buildStatItem(
                                             Icons.timer_outlined,
                                             _formatDuration(_totalDuration),
-                                            AppLocalizations.of(context).translate('total'),
+                                            AppLocalizations.of(context)
+                                                .translate('total'),
                                           ),
                                         ],
                                       ),
@@ -281,7 +288,8 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                                         child: _buildActionButton(
                                           context,
                                           Icons.play_arrow_rounded,
-                                          AppLocalizations.of(context).translate('play_all'),
+                                          AppLocalizations.of(context)
+                                              .translate('play_all'),
                                           () => _playAllSongs(context),
                                           isPrimary: true,
                                         ),
@@ -291,7 +299,8 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                                         child: _buildActionButton(
                                           context,
                                           Icons.shuffle_rounded,
-                                          AppLocalizations.of(context).translate('shuffle'),
+                                          AppLocalizations.of(context)
+                                              .translate('shuffle'),
                                           () => _shuffleAllSongs(context),
                                           isPrimary: false,
                                         ),
@@ -517,11 +526,13 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AlbumDetailScreen(albumName: album.album),
+                          builder: (context) =>
+                              AlbumDetailScreen(albumName: album.album),
                         ),
                       );
                     },
-                    onLongPress: () => _showAlbumOptions(album, albumSongs, audioPlayerService),
+                    onLongPress: () => _showAlbumOptions(
+                        album, albumSongs, audioPlayerService),
                     child: glassmorphicContainer(
                       child: Padding(
                         padding: const EdgeInsets.all(12),
@@ -534,7 +545,8 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                                   aspectRatio: 1,
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
-                                    child: _artworkService.buildCachedAlbumArtwork(
+                                    child:
+                                        _artworkService.buildCachedAlbumArtwork(
                                       album.id,
                                       size: 120,
                                     ),
@@ -576,7 +588,8 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     );
   }
 
-  void _showAlbumOptions(AlbumModel album, List<SongModel> albumSongs, AudioPlayerService audioPlayerService) {
+  void _showAlbumOptions(AlbumModel album, List<SongModel> albumSongs,
+      AudioPlayerService audioPlayerService) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -603,7 +616,8 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: _artworkService.buildCachedAlbumArtwork(album.id, size: 50),
+                    child: _artworkService.buildCachedAlbumArtwork(album.id,
+                        size: 50),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -612,13 +626,15 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                       children: [
                         Text(
                           album.album,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           '${albumSongs.length} songs',
-                          style: const TextStyle(color: Colors.white70, fontSize: 13),
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 13),
                         ),
                       ],
                     ),
@@ -639,7 +655,8 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.shuffle, color: Colors.white),
-              title: const Text('Shuffle', style: TextStyle(color: Colors.white)),
+              title:
+                  const Text('Shuffle', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 if (albumSongs.isNotEmpty) {
@@ -650,13 +667,15 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.info_outline, color: Colors.white),
-              title: const Text('View Album', style: TextStyle(color: Colors.white)),
+              title: const Text('View Album',
+                  style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => AlbumDetailScreen(albumName: album.album),
+                    builder: (context) =>
+                        AlbumDetailScreen(albumName: album.album),
                   ),
                 );
               },
@@ -722,7 +741,8 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                       subtitle: Text(song.album ?? 'Unknown Album',
                           style: const TextStyle(color: Colors.grey)),
                       onTap: () {
-                        debugPrint('Tapped song at index: $index, song: ${song.title}');
+                        debugPrint(
+                            'Tapped song at index: $index, song: ${song.title}');
                         audioPlayerService.setPlaylist(_allSongs, index);
                         // Note: setPlaylist already starts playback
                       },

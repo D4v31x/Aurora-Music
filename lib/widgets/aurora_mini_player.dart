@@ -18,11 +18,12 @@ class AuroraMiniPlayer extends StatefulWidget {
   State<AuroraMiniPlayer> createState() => _AuroraMiniPlayerState();
 }
 
-class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerProviderStateMixin {
+class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
+    with SingleTickerProviderStateMixin {
   static final _artworkService = ArtworkCacheService();
   final MiniplayerController _controller = MiniplayerController();
   late AnimationController _pulseController;
-  
+
   // Height constants
   static const double _minHeight = 76.0;
 
@@ -55,7 +56,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
         if (currentSong == null) {
           return const SizedBox.shrink();
         }
-        
+
         // Get service reference once for callbacks
         final audioPlayerService = context.read<AudioPlayerService>();
 
@@ -66,7 +67,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
           builder: (height, percentage) {
             // Calculate if we're in mini mode or expanded mode
             final isMini = percentage < 0.5;
-            
+
             return Container(
               decoration: const BoxDecoration(
                 color: Colors.transparent,
@@ -104,7 +105,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
     // Fade out mini player as it expands with smoother curve
     final opacity = (1 - (percentage * 2.5)).clamp(0.0, 1.0);
     final scale = 1.0 - (percentage * 0.05); // Subtle scale animation
-    
+
     return Opacity(
       opacity: opacity,
       child: Transform.scale(
@@ -189,7 +190,8 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
           return AnimatedBuilder(
             animation: animation,
             builder: (context, child) {
-              final curvedValue = Curves.easeInOutCubic.transform(animation.value);
+              final curvedValue =
+                  Curves.easeInOutCubic.transform(animation.value);
               // Animate border radius from mini (20) to expanded (8)
               final borderRadius = BorderRadius.circular(
                 20 + (8 - 20) * curvedValue,
@@ -201,7 +203,8 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
                   borderRadius: borderRadius,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3 + (0.2 * curvedValue)),
+                      color:
+                          Colors.black.withOpacity(0.3 + (0.2 * curvedValue)),
                       blurRadius: shadowBlur,
                       offset: Offset(0, 4 + (4 * curvedValue)),
                     ),
@@ -270,7 +273,8 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
                 return AnimatedBuilder(
                   animation: animation,
                   builder: (context, child) {
-                    final curvedValue = Curves.easeInOutCubic.transform(animation.value);
+                    final curvedValue =
+                        Curves.easeInOutCubic.transform(animation.value);
                     final fontSize = 15.0 + (18.0 - 15.0) * curvedValue;
                     return Material(
                       color: Colors.transparent,
@@ -316,7 +320,8 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
                 return AnimatedBuilder(
                   animation: animation,
                   builder: (context, child) {
-                    final curvedValue = Curves.easeInOutCubic.transform(animation.value);
+                    final curvedValue =
+                        Curves.easeInOutCubic.transform(animation.value);
                     final fontSize = 13.0 + (14.0 - 13.0) * curvedValue;
                     final opacity = 0.8 + (0.7 - 0.8) * curvedValue;
                     return Material(
@@ -384,8 +389,10 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Colors.white.withOpacity(audioPlayerService.isPlaying ? 0.3 : 0.25),
-                    Colors.white.withOpacity(audioPlayerService.isPlaying ? 0.15 : 0.1),
+                    Colors.white
+                        .withOpacity(audioPlayerService.isPlaying ? 0.3 : 0.25),
+                    Colors.white
+                        .withOpacity(audioPlayerService.isPlaying ? 0.15 : 0.1),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(24),
@@ -413,7 +420,8 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
                       ),
                     ),
                     child: RotationTransition(
-                      turns: Tween<double>(begin: 0.5, end: 1.0).animate(animation),
+                      turns: Tween<double>(begin: 0.5, end: 1.0)
+                          .animate(animation),
                       child: child,
                     ),
                   );
@@ -444,11 +452,13 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
         stream: audioPlayerService.audioPlayer.positionStream,
         builder: (context, positionSnapshot) {
           final position = positionSnapshot.data ?? Duration.zero;
-          final duration = audioPlayerService.audioPlayer.duration ?? Duration.zero;
+          final duration =
+              audioPlayerService.audioPlayer.duration ?? Duration.zero;
           final progress = duration.inMilliseconds > 0
-              ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
+              ? (position.inMilliseconds / duration.inMilliseconds)
+                  .clamp(0.0, 1.0)
               : 0.0;
-          
+
           return Hero(
             tag: 'progressBar',
             child: Container(
@@ -503,7 +513,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
     // Fade in expanded player as it grows with smoother curve
     final opacity = ((percentage - 0.3) * 1.5).clamp(0.0, 1.0);
     final scale = 0.95 + (percentage * 0.05); // Subtle scale-in effect
-    
+
     return Opacity(
       opacity: opacity,
       child: Transform.scale(
@@ -523,7 +533,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer> with SingleTickerPr
             children: [
               // Main content - Now Playing Screen
               const NowPlayingScreen(),
-              
+
               // Enhanced close button with glassmorphic design
               Positioned(
                 top: topPadding + 8,

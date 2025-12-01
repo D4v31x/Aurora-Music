@@ -32,7 +32,7 @@ class AudioPlayerService extends ChangeNotifier {
   // Debounce timer for batching notifications
   Timer? _notifyDebounceTimer;
   bool _notifyScheduled = false;
-  
+
   // Batch save timer to reduce disk I/O
   Timer? _saveDebounceTimer;
   bool _playcountsDirty = false;
@@ -119,7 +119,7 @@ class AudioPlayerService extends ChangeNotifier {
       notifyListeners();
     });
   }
-  
+
   /// Schedule saving play counts with debouncing to reduce disk I/O
   void _scheduleSavePlayCounts() {
     _playcountsDirty = true;
@@ -546,11 +546,11 @@ class AudioPlayerService extends ChangeNotifier {
           _incrementPlayCount(_playlist[_currentIndex]);
           _currentSongController.add(_playlist[_currentIndex]);
           currentSongNotifier.value = _playlist[_currentIndex];
-          
+
           // Fire and forget UI updates
           unawaited(updateCurrentArtwork());
           unawaited(_updateBackgroundColors());
-          
+
           // Single debounced notification
           _scheduleNotify();
         } catch (e) {
@@ -918,7 +918,7 @@ class AudioPlayerService extends ChangeNotifier {
     // Cancel debounce timers
     _notifyDebounceTimer?.cancel();
     _saveDebounceTimer?.cancel();
-    
+
     // Dispose notifiers
     currentSongNotifier.dispose();
     isPlayingNotifier.dispose();
@@ -927,9 +927,9 @@ class AudioPlayerService extends ChangeNotifier {
     sleepTimerDurationNotifier.dispose();
     playlistsNotifier.dispose();
     currentArtwork.dispose();
-    
+
     _audioPlayer.dispose();
-    
+
     // Save any pending data synchronously before disposing
     if (_playcountsDirty) {
       _savePlayCounts();
@@ -937,7 +937,7 @@ class AudioPlayerService extends ChangeNotifier {
     if (_playlistsDirty) {
       savePlaylists();
     }
-    
+
     _currentSongController.close();
     _errorController.close();
     _sleepTimer?.cancel();

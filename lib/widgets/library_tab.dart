@@ -30,7 +30,8 @@ class _LibraryTabState extends State<LibraryTab> {
   @override
   Widget build(BuildContext context) {
     // Access service without listening for methods
-    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
 
     return Selector<AudioPlayerService, bool>(
       selector: (context, service) => service.currentSong != null,
