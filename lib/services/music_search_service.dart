@@ -41,9 +41,10 @@ class MusicSearchService {
     final rawArtist = (song.artist ?? '').toLowerCase();
     final album = (song.album ?? '').toLowerCase();
     final queryLower = query.toLowerCase();
-    
+
     // Split artists for better matching
-    final artists = splitArtists(song.artist ?? '').map((a) => a.toLowerCase()).toList();
+    final artists =
+        splitArtists(song.artist ?? '').map((a) => a.toLowerCase()).toList();
     final artist = artists.join(' '); // Combined for contains checks
 
     double score = 0.0;
@@ -52,7 +53,7 @@ class MusicSearchService {
     if (title == queryLower) score += 100;
     if (rawArtist == queryLower) score += 80;
     if (album == queryLower) score += 60;
-    
+
     // Check if query matches any individual artist exactly
     for (final a in artists) {
       if (a == queryLower) score += 85;
@@ -62,7 +63,7 @@ class MusicSearchService {
     if (title.startsWith(queryLower)) score += 50;
     if (rawArtist.startsWith(queryLower)) score += 40;
     if (album.startsWith(queryLower)) score += 30;
-    
+
     // Check if any individual artist starts with query
     for (final a in artists) {
       if (a.startsWith(queryLower)) score += 45;

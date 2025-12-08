@@ -676,7 +676,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+                                    splitArtists(
+                                            song.artist ?? 'Unknown Artist')
+                                        .join(', '),
                                     style: TextStyle(
                                       color: Colors.white.withOpacity(0.6),
                                       fontSize: 13,

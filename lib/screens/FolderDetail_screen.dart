@@ -254,8 +254,9 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                           ),
                           subtitle: Text(
                             splitArtists(song.artist ??
-                                AppLocalizations.of(context)
-                                    .translate('unknown_artist')).join(', '),
+                                    AppLocalizations.of(context)
+                                        .translate('unknown_artist'))
+                                .join(', '),
                             style:
                                 TextStyle(color: Colors.white.withOpacity(0.7)),
                           ),

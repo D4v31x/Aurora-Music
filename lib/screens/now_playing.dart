@@ -462,7 +462,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                       color: Colors.transparent,
                       child: Text(
                         splitArtists(audioPlayerService.currentSong?.artist ??
-                            'Unknown artist').join(', '),
+                                'Unknown artist')
+                            .join(', '),
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.7),
@@ -771,7 +772,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       return const SizedBox.shrink();
     }
 
-    final String mainArtist = ArtistSeparatorService().getPrimaryArtist(artistString);
+    final String mainArtist =
+        ArtistSeparatorService().getPrimaryArtist(artistString);
 
     return Column(
       children: [
@@ -1512,7 +1514,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     }
 
     // Use centralized artist separator service
-    final List<String> artists = ArtistSeparatorService().splitArtists(artistString);
+    final List<String> artists =
+        ArtistSeparatorService().splitArtists(artistString);
 
     if (artists.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1720,7 +1723,8 @@ void _shareSong(AudioPlayerService audioPlayerService) {
   if (audioPlayerService.currentSong == null) return;
 
   final song = audioPlayerService.currentSong!;
-  final shareText = '${song.title} - ${splitArtists(song.artist ?? "Unknown Artist").join(", ")}';
+  final shareText =
+      '${song.title} - ${splitArtists(song.artist ?? "Unknown Artist").join(", ")}';
 
   Share.share(
     shareText,
@@ -1801,7 +1805,8 @@ void _showQueueDialog(
                           ),
                         ),
                         subtitle: Text(
-                          splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+                          splitArtists(song.artist ?? 'Unknown Artist')
+                              .join(', '),
                           style: TextStyle(
                             color: isCurrentSong
                                 ? Colors.blue.shade200
@@ -1875,8 +1880,11 @@ void _showSongInfoDialog(
               MusicMetadataWidget(song: audioPlayerService.currentSong!),
               const SizedBox(height: 16),
               _buildInfoRow('Title', audioPlayerService.currentSong!.title),
-              _buildInfoRow('Artist',
-                  splitArtists(audioPlayerService.currentSong!.artist ?? 'Unknown').join(', ')),
+              _buildInfoRow(
+                  'Artist',
+                  splitArtists(
+                          audioPlayerService.currentSong!.artist ?? 'Unknown')
+                      .join(', ')),
               _buildInfoRow(
                   'Album', audioPlayerService.currentSong!.album ?? 'Unknown'),
               _buildInfoRow('Path', audioPlayerService.currentSong!.data),

@@ -276,7 +276,9 @@ class _MiniPlayerContent extends StatelessWidget {
                                       child: Material(
                                         color: Colors.transparent,
                                         child: Text(
-                                          splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+                                          splitArtists(song.artist ??
+                                                  'Unknown Artist')
+                                              .join(', '),
                                           style: TextStyle(
                                             color: Colors.white
                                                 .withValues(alpha: 0.7),

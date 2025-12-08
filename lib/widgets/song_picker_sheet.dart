@@ -101,11 +101,13 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
       } else {
         _filteredSongs = _allSongs.where((song) {
           final title = song.title.toLowerCase();
-          final artistNames = splitArtists(song.artist ?? '').map((a) => a.toLowerCase()).toList();
+          final artistNames = splitArtists(song.artist ?? '')
+              .map((a) => a.toLowerCase())
+              .toList();
           final artistCombined = artistNames.join(' ');
-          return title.contains(_searchQuery) || 
-                 artistCombined.contains(_searchQuery) ||
-                 artistNames.any((a) => a.contains(_searchQuery));
+          return title.contains(_searchQuery) ||
+              artistCombined.contains(_searchQuery) ||
+              artistNames.any((a) => a.contains(_searchQuery));
         }).toList();
       }
     });

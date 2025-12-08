@@ -547,7 +547,8 @@ class AudioPlayerService extends ChangeNotifier {
                   id: song.id.toString(),
                   album: song.album ?? 'Unknown Album',
                   title: song.title,
-                  artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+                  artist:
+                      splitArtists(song.artist ?? 'Unknown Artist').join(', '),
                   duration: Duration(milliseconds: song.duration ?? 0),
                 ),
               );
@@ -607,7 +608,8 @@ class AudioPlayerService extends ChangeNotifier {
                       id: song.id.toString(),
                       album: song.album ?? 'Unknown Album',
                       title: song.title,
-                      artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+                      artist: splitArtists(song.artist ?? 'Unknown Artist')
+                          .join(', '),
                       duration: Duration(milliseconds: song.duration ?? 0),
                     ),
                   ))
@@ -1054,7 +1056,8 @@ class AudioPlayerService extends ChangeNotifier {
                       id: song.id.toString(),
                       album: song.album ?? 'Unknown Album',
                       title: song.title,
-                      artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+                      artist: splitArtists(song.artist ?? 'Unknown Artist')
+                          .join(', '),
                       duration: Duration(milliseconds: song.duration ?? 0),
                     ),
                   ))
@@ -1144,7 +1147,8 @@ class AudioPlayerService extends ChangeNotifier {
                 id: currentSong.id.toString(),
                 album: currentSong.album ?? '',
                 title: currentSong.title,
-                artist: splitArtists(currentSong.artist ?? 'Unknown Artist').join(', '),
+                artist: splitArtists(currentSong.artist ?? 'Unknown Artist')
+                    .join(', '),
                 artUri: Uri.parse('file://${currentSong.data}'),
               ),
             ),

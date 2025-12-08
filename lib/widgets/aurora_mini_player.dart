@@ -343,7 +343,8 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
               child: Material(
                 color: Colors.transparent,
                 child: Text(
-                  splitArtists(currentSong.artist ?? 'Unknown Artist').join(', '),
+                  splitArtists(currentSong.artist ?? 'Unknown Artist')
+                      .join(', '),
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.8),
                     fontSize: 13,
