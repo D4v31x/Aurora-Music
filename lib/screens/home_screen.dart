@@ -16,7 +16,7 @@ import '../widgets/home/home_tab.dart';
 import '../widgets/home/search_tab.dart';
 import '../widgets/home/settings_tab.dart';
 import '../widgets/outline_indicator.dart';
-import '../widgets/expanding_player.dart';
+import '../widgets/expanding_player.dart'; // For back button handling
 import '../widgets/auto_scroll_text.dart';
 import '../services/local_caching_service.dart';
 import '../services/notification_manager.dart';
@@ -152,18 +152,49 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  void _randomizeContent() {
-    if (songs.isNotEmpty) {
-      randomSongs = List.from(songs)..shuffle();
-      randomSongs = randomSongs.take(3).toList();
-      final uniqueArtists = songs
-          .map((song) => splitArtists(song.artist ?? ''))
-          .expand((artist) => artist)
-          .toSet()
-          .toList();
-      randomArtists = List.from(uniqueArtists)..shuffle();
-      randomArtists = randomArtists.take(3).toList();
+  Future<void> _loadSmartSuggestions() async {
+    if (songs.isEmpty) return;
+
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+
+    // Get smart suggestions based on listening patterns
+    final suggestedTracks =
+        await audioPlayerService.getSuggestedTracks(count: 3);
+    final suggestedArtists =
+        await audioPlayerService.getSuggestedArtists(count: 5);
+
+    if (mounted) {
+      setState(() {
+        randomSongs =
+            suggestedTracks.isNotEmpty ? suggestedTracks : _getFallbackSongs();
+        randomArtists = suggestedArtists.isNotEmpty
+            ? suggestedArtists
+            : _getFallbackArtists();
+      });
     }
+  }
+
+  List<SongModel> _getFallbackSongs() {
+    // Fallback to random when no listening history
+    final shuffled = List.from(songs)..shuffle();
+    return shuffled.take(3).toList().cast<SongModel>();
+  }
+
+  List<String> _getFallbackArtists() {
+    // Fallback to random artists
+    final uniqueArtists = songs
+        .map((song) => splitArtists(song.artist ?? ''))
+        .expand((artist) => artist)
+        .toSet()
+        .toList();
+    final shuffled = List.from(uniqueArtists)..shuffle();
+    return shuffled.take(5).toList().cast<String>();
+  }
+
+  // Keep for backwards compatibility but use smart suggestions
+  void _randomizeContent() {
+    _loadSmartSuggestions();
   }
 
   Future<void> _loadAlbumsAndArtists() async {
@@ -740,8 +771,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              // Expanding Mini Player
-              const ExpandingPlayer(),
+              // Remove ExpandingPlayer from here - it's now global in main.dart
             ],
           ),
         ),

@@ -12,6 +12,7 @@ import '../../services/artwork_cache_service.dart';
 import '../../screens/Artist_screen.dart';
 import '../../screens/AlbumDetailScreen.dart';
 import '../../widgets/shimmer_loading.dart';
+import '../../widgets/expanding_player.dart';
 
 class SearchTab extends StatefulWidget {
   final List<SongModel> songs;
@@ -423,7 +424,18 @@ class _SearchTabState extends State<SearchTab> {
         ],
 
         // Bottom padding for mini player + keyboard
-        SizedBox(height: 100 + MediaQuery.of(context).viewInsets.bottom),
+        Selector<AudioPlayerService, bool>(
+          selector: (_, service) => service.currentSong != null,
+          builder: (context, hasCurrentSong, _) {
+            final miniPlayerPadding = hasCurrentSong
+                ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
+                : 16.0;
+            return SizedBox(
+              height:
+                  miniPlayerPadding + MediaQuery.of(context).viewInsets.bottom,
+            );
+          },
+        ),
       ],
     );
   }

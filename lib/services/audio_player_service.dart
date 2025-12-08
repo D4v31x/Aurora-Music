@@ -11,11 +11,13 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:audio_session/audio_session.dart';
 import 'background_manager_service.dart';
 import 'artwork_cache_service.dart';
+import 'smart_suggestions_service.dart';
 
 class AudioPlayerService extends ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final OnAudioQuery _audioQuery = OnAudioQuery();
   final ArtworkCacheService _artworkCache = ArtworkCacheService();
+  final SmartSuggestionsService _smartSuggestions = SmartSuggestionsService();
 
   // Background manager for mesh gradient colors
   BackgroundManagerService? _backgroundManager;
@@ -84,7 +86,6 @@ class AudioPlayerService extends ChangeNotifier {
   bool _volumeNormalization = false;
   double _playbackSpeed = 1.0;
   String _defaultSortOrder = 'title';
-  bool _autoPlaylists = true;
   int _cacheSize = 100; // in MB
   bool _mediaControls = true;
 
@@ -93,7 +94,6 @@ class AudioPlayerService extends ChangeNotifier {
   bool get volumeNormalization => _volumeNormalization;
   double get playbackSpeed => _playbackSpeed;
   String get defaultSortOrder => _defaultSortOrder;
-  bool get autoPlaylists => _autoPlaylists;
   int get cacheSize => _cacheSize;
   bool get mediaControls => _mediaControls;
 
@@ -191,6 +191,9 @@ class AudioPlayerService extends ChangeNotifier {
           name: _likedPlaylistName,
           songs: likedSongs,
         );
+
+        // Update auto playlists (Most Played, Recently Added)
+        _updateAutoPlaylists();
 
         notifyListeners();
         return true;
@@ -446,9 +449,27 @@ class AudioPlayerService extends ChangeNotifier {
       }
     }
 
+    // Record to smart suggestions service for personalized recommendations
+    _smartSuggestions.recordPlay(song);
+
     // Use debounced save to reduce disk I/O
     _scheduleSavePlayCounts();
   }
+
+  /// Get smart suggested tracks based on listening patterns and time of day
+  Future<List<SongModel>> getSuggestedTracks({int count = 3}) async {
+    await _smartSuggestions.initialize();
+    return _smartSuggestions.getSuggestedTracks(count: count);
+  }
+
+  /// Get smart suggested artists based on listening patterns and time of day
+  Future<List<String>> getSuggestedArtists({int count = 3}) async {
+    await _smartSuggestions.initialize();
+    return _smartSuggestions.getSuggestedArtists(count: count);
+  }
+
+  /// Check if user has enough listening history for smart suggestions
+  bool hasListeningHistory() => _smartSuggestions.hasListeningHistory();
 
   // Most Played Queries
   Future<List<SongModel>> getMostPlayedTracks() async {
@@ -526,7 +547,7 @@ class AudioPlayerService extends ChangeNotifier {
                   id: song.id.toString(),
                   album: song.album ?? 'Unknown Album',
                   title: song.title,
-                  artist: song.artist ?? 'Unknown Artist',
+                  artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
                   duration: Duration(milliseconds: song.duration ?? 0),
                 ),
               );
@@ -586,7 +607,7 @@ class AudioPlayerService extends ChangeNotifier {
                       id: song.id.toString(),
                       album: song.album ?? 'Unknown Album',
                       title: song.title,
-                      artist: song.artist ?? 'Unknown Artist',
+                      artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
                       duration: Duration(milliseconds: song.duration ?? 0),
                     ),
                   ))
@@ -651,7 +672,7 @@ class AudioPlayerService extends ChangeNotifier {
             id: song.id.toString(),
             album: song.album ?? 'Unknown Album',
             title: song.title,
-            artist: song.artist ?? 'Unknown Artist',
+            artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
             duration: Duration(milliseconds: song.duration ?? 0),
           );
 
@@ -988,7 +1009,6 @@ class AudioPlayerService extends ChangeNotifier {
       _volumeNormalization = json['volumeNormalization'] ?? false;
       _playbackSpeed = (json['playbackSpeed'] ?? 1.0).toDouble();
       _defaultSortOrder = json['defaultSortOrder'] ?? 'title';
-      _autoPlaylists = json['autoPlaylists'] ?? true;
       _cacheSize = json['cacheSize'] ?? 100;
       _mediaControls = json['mediaControls'] ?? true;
 
@@ -1006,7 +1026,6 @@ class AudioPlayerService extends ChangeNotifier {
       'volumeNormalization': _volumeNormalization,
       'playbackSpeed': _playbackSpeed,
       'defaultSortOrder': _defaultSortOrder,
-      'autoPlaylists': _autoPlaylists,
       'cacheSize': _cacheSize,
       'mediaControls': _mediaControls,
     };
@@ -1035,7 +1054,7 @@ class AudioPlayerService extends ChangeNotifier {
                       id: song.id.toString(),
                       album: song.album ?? 'Unknown Album',
                       title: song.title,
-                      artist: song.artist ?? 'Unknown Artist',
+                      artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
                       duration: Duration(milliseconds: song.duration ?? 0),
                     ),
                   ))
@@ -1075,21 +1094,6 @@ class AudioPlayerService extends ChangeNotifier {
     _defaultSortOrder = value;
     await _saveSettings();
     _sortPlaylist();
-    _scheduleNotify();
-  }
-
-  Future<void> setAutoPlaylists(bool value) async {
-    _autoPlaylists = value;
-    await _saveSettings();
-    if (_autoPlaylists) {
-      _updateAutoPlaylists();
-    } else {
-      // Remove auto-generated playlists
-      _playlists.removeWhere(
-          (p) => p.id == 'most_played' || p.id == 'recently_added');
-      _playlistsDirty = true;
-      _scheduleSavePlayCounts();
-    }
     _scheduleNotify();
   }
 
@@ -1140,7 +1144,7 @@ class AudioPlayerService extends ChangeNotifier {
                 id: currentSong.id.toString(),
                 album: currentSong.album ?? '',
                 title: currentSong.title,
-                artist: currentSong.artist ?? 'Unknown Artist',
+                artist: splitArtists(currentSong.artist ?? 'Unknown Artist').join(', '),
                 artUri: Uri.parse('file://${currentSong.data}'),
               ),
             ),
@@ -1222,7 +1226,7 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   void _updateAutoPlaylists() {
-    if (!_autoPlaylists) return;
+    // Auto playlists are always enabled
 
     // Create "Most Played" playlist
     getMostPlayedTracks().then((tracks) {

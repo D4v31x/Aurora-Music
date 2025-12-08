@@ -7,6 +7,7 @@ import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../screens/now_playing.dart';
 import '../utils/audio_service_selectors.dart';
+import '../models/utils.dart';
 
 /// Aurora Music Mini Player using the miniplayer package
 /// Provides smooth expanding/collapsing animation between mini and full player
@@ -342,7 +343,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
               child: Material(
                 color: Colors.transparent,
                 child: Text(
-                  currentSong.artist ?? 'Unknown Artist',
+                  splitArtists(currentSong.artist ?? 'Unknown Artist').join(', '),
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.8),
                     fontSize: 13,

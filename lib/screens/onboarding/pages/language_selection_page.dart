@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui' as ui;
 import '../../../localization/locale_provider.dart';
+import '../../../localization/app_localizations.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../widgets/pill_button.dart';
 
@@ -164,6 +165,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
         isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+    final localizations = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -189,7 +191,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
                       child: Text(
-                        'Choose Your Language',
+                        localizations.translate('onboarding_choose_language'),
                         style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 32,
@@ -211,7 +213,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                         ? _exitFadeAnimation
                         : _subtitleFadeAnimation,
                     child: Text(
-                      'Select your preferred language',
+                      localizations.translate('onboarding_select_language'),
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 16,
@@ -347,7 +349,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                       children: [
                         Expanded(
                           child: PillButton(
-                            text: 'Back',
+                            text: localizations.translate('onboarding_back'),
                             onPressed: widget.onBack,
                             isPrimary: false,
                           ),
@@ -355,7 +357,8 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                         const SizedBox(width: 16),
                         Expanded(
                           child: PillButton(
-                            text: 'Continue',
+                            text:
+                                localizations.translate('onboarding_continue'),
                             onPressed: () async {
                               await _exitController.forward();
                               widget.onContinue();

@@ -11,6 +11,7 @@ import '../services/audio_player_service.dart';
 import '../services/lyrics_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../localization/app_localizations.dart';
+import '../models/utils.dart';
 
 class FullscreenLyricsScreen extends StatefulWidget {
   const FullscreenLyricsScreen({super.key});
@@ -722,7 +723,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     final song = audioService.currentSong;
     if (song != null) {
       timedLyricsService.saveLyricsToCache(
-        song.artist ?? 'Unknown',
+        splitArtists(song.artist ?? 'Unknown').first,
         song.title,
         lrcContent,
       );

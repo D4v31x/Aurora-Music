@@ -21,11 +21,11 @@ class LocalCachingArtistService {
     }
 
     try {
-      _spotifyEnabled = _clientId != null && 
-                        _clientSecret != null && 
-                        _clientId.isNotEmpty && 
-                        _clientSecret.isNotEmpty;
-      
+      _spotifyEnabled = _clientId != null &&
+          _clientSecret != null &&
+          _clientId.isNotEmpty &&
+          _clientSecret.isNotEmpty;
+
       await _createCacheDirectory();
       if (_spotifyEnabled) {
         await _loadCachedData();
@@ -52,7 +52,7 @@ class LocalCachingArtistService {
     if (!_spotifyEnabled || _clientId == null || _clientSecret == null) {
       return;
     }
-    
+
     final authString = base64.encode(utf8.encode('$_clientId:$_clientSecret'));
     final response = await _client.post(
       Uri.parse('https://accounts.spotify.com/api/token'),
@@ -109,7 +109,7 @@ class LocalCachingArtistService {
     if (!_spotifyEnabled) {
       return null;
     }
-    
+
     if (_accessToken == null) {
       await _getSpotifyAccessToken();
     }

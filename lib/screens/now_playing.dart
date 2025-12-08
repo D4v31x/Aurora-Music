@@ -7,10 +7,12 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 // Load Genius API keys from .env
 import '../localization/app_localizations.dart';
+import '../models/utils.dart';
 import '../services/audio_player_service.dart';
 import '../services/sleep_timer_controller.dart';
 import '../services/lyrics_service.dart'; // Genius lyrics fetching service
 import '../services/artwork_cache_service.dart'; // Centralized artwork caching
+import '../services/artist_separator_service.dart';
 import '../screens/fullscreen_lyrics.dart'; // Fullscreen lyrics viewer
 // Importujte službu pro timed lyrics
 import '../widgets/artist_card.dart';
@@ -24,7 +26,7 @@ class NowPlayingScreen extends StatefulWidget {
   /// Optional callback for when the down arrow is pressed.
   /// If not provided, will try Navigator.pop() (for when screen is pushed as route)
   final VoidCallback? onClose;
-  
+
   const NowPlayingScreen({super.key, this.onClose});
 
   @override
@@ -459,8 +461,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     child: Material(
                       color: Colors.transparent,
                       child: Text(
-                        audioPlayerService.currentSong?.artist ??
-                            'Unknown artist',
+                        splitArtists(audioPlayerService.currentSong?.artist ??
+                            'Unknown artist').join(', '),
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.7),
@@ -588,7 +590,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                               builder: (context, currentIndex, _) {
                                 return Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: _buildAnimatedLyricLines(currentIndex),
+                                  children:
+                                      _buildAnimatedLyricLines(currentIndex),
                                 );
                               },
                             )
@@ -768,7 +771,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       return const SizedBox.shrink();
     }
 
-    final String mainArtist = artistString.split(RegExp(r'[/,&]')).first.trim();
+    final String mainArtist = ArtistSeparatorService().getPrimaryArtist(artistString);
 
     return Column(
       children: [
@@ -824,269 +827,269 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       child: Scaffold(
         backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.keyboard_arrow_down,
-            color: Colors.white,
-            size: 32,
-          ),
-          onPressed: () {
-            if (widget.onClose != null) {
-              widget.onClose!();
-            } else {
-              // Only pop if we can (screen was pushed as route)
-              if (Navigator.of(context).canPop()) {
-                Navigator.of(context).pop();
-              }
-            }
-          },
-        ),
-        actions: [
-          _buildSleepTimerIndicator(audioPlayerService),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            color: Colors.grey[900],
-            onSelected: (value) {
-              switch (value) {
-                case 'sleep_timer':
-                  _showSleepTimerOptions(context);
-                  break;
-                case 'view_artist':
-                  _showArtistOptions(context, audioPlayerService);
-                  break;
-                case 'lyrics':
-                  _openFullscreenLyrics(context, audioPlayerService);
-                  break;
-                case 'add_playlist':
-                  _showAddToPlaylistDialog(context, audioPlayerService);
-                  break;
-                case 'share':
-                  _shareSong(audioPlayerService);
-                  break;
-                case 'queue':
-                  _showQueueDialog(context, audioPlayerService);
-                  break;
-                case 'info':
-                  _showSongInfoDialog(context, audioPlayerService);
-                  break;
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(
+              Icons.keyboard_arrow_down,
+              color: Colors.white,
+              size: 32,
+            ),
+            onPressed: () {
+              if (widget.onClose != null) {
+                widget.onClose!();
+              } else {
+                // Only pop if we can (screen was pushed as route)
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
               }
             },
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem<String>(
-                value: 'sleep_timer',
-                child: Consumer<SleepTimerController>(
-                  builder: (context, sleepTimer, child) {
-                    return Row(
-                      children: [
-                        Icon(
-                          sleepTimer.isActive
-                              ? Icons.timer
-                              : Icons.timer_outlined,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          AppLocalizations.of(context)
-                              .translate('sleep_timer'),
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'view_artist',
-                child: Row(
-                  children: [
-                    const Icon(Icons.person_outline, color: Colors.white),
-                    const SizedBox(width: 12),
-                    Text(
-                      AppLocalizations.of(context).translate('view_artist'),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'lyrics',
-                child: Row(
-                  children: [
-                    const Icon(Icons.lyrics_outlined, color: Colors.white),
-                    const SizedBox(width: 12),
-                    Text(
-                      AppLocalizations.of(context).translate('lyrics'),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'add_playlist',
-                child: Row(
-                  children: [
-                    const Icon(Icons.playlist_add, color: Colors.white),
-                    const SizedBox(width: 12),
-                    Text(
-                      AppLocalizations.of(context)
-                          .translate('add_to_playlist'),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'share',
-                child: Row(
-                  children: [
-                    const Icon(Icons.share_outlined, color: Colors.white),
-                    const SizedBox(width: 12),
-                    Text(
-                      AppLocalizations.of(context).translate('share'),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'queue',
-                child: Row(
-                  children: [
-                    const Icon(Icons.queue_music_outlined,
-                        color: Colors.white),
-                    const SizedBox(width: 12),
-                    Text(
-                      AppLocalizations.of(context).translate('queue'),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'info',
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline, color: Colors.white),
-                    const SizedBox(width: 12),
-                    Text(
-                      AppLocalizations.of(context).translate('song_info'),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20.0,
-                vertical: 40.0,
-              ),
-              children: [
-                const SizedBox(height: 30),
-                _buildArtworkWithInfo(audioPlayerService),
-                const SizedBox(height: 110),
-                _ProgressBar(audioService: audioPlayerService),
-                const SizedBox(height: 20),
-                RepaintBoundary(
+          actions: [
+            _buildSleepTimerIndicator(audioPlayerService),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              color: Colors.grey[900],
+              onSelected: (value) {
+                switch (value) {
+                  case 'sleep_timer':
+                    _showSleepTimerOptions(context);
+                    break;
+                  case 'view_artist':
+                    _showArtistOptions(context, audioPlayerService);
+                    break;
+                  case 'lyrics':
+                    _openFullscreenLyrics(context, audioPlayerService);
+                    break;
+                  case 'add_playlist':
+                    _showAddToPlaylistDialog(context, audioPlayerService);
+                    break;
+                  case 'share':
+                    _shareSong(audioPlayerService);
+                    break;
+                  case 'queue':
+                    _showQueueDialog(context, audioPlayerService);
+                    break;
+                  case 'info':
+                    _showSongInfoDialog(context, audioPlayerService);
+                    break;
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem<String>(
+                  value: 'sleep_timer',
+                  child: Consumer<SleepTimerController>(
+                    builder: (context, sleepTimer, child) {
+                      return Row(
+                        children: [
+                          Icon(
+                            sleepTimer.isActive
+                                ? Icons.timer
+                                : Icons.timer_outlined,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            AppLocalizations.of(context)
+                                .translate('sleep_timer'),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'view_artist',
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      IconButton(
-                        icon: Icon(
-                          audioPlayerService.isShuffle
-                              ? Icons.shuffle
-                              : Icons.shuffle,
-                          color: audioPlayerService.isShuffle
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.7),
-                          size: 24,
-                        ),
-                        onPressed: audioPlayerService.toggleShuffle,
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.skip_previous,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                        onPressed: audioPlayerService.back,
-                      ),
-                      _PlayPauseButton(
-                        isPlaying: audioPlayerService.isPlaying,
-                        onPressed: () {
-                          if (audioPlayerService.isPlaying) {
-                            audioPlayerService.pause();
-                          } else {
-                            audioPlayerService.resume();
-                          }
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.skip_next,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                        onPressed: audioPlayerService.skip,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          audioPlayerService.isRepeat
-                              ? Icons.repeat_one
-                              : Icons.repeat,
-                          color: audioPlayerService.isRepeat
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.7),
-                          size: 24,
-                        ),
-                        onPressed: audioPlayerService.toggleRepeat,
+                      const Icon(Icons.person_outline, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppLocalizations.of(context).translate('view_artist'),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                Center(
-                  child: IconButton(
-                    icon: Icon(
-                      audioPlayerService
-                              .isLiked(audioPlayerService.currentSong!)
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color: audioPlayerService
-                              .isLiked(audioPlayerService.currentSong!)
-                          ? Colors.red
-                          : Colors.white,
-                      size: 30,
-                    ),
-                    onPressed: () {
-                      audioPlayerService
-                          .toggleLike(audioPlayerService.currentSong!);
-                    },
+                PopupMenuItem<String>(
+                  value: 'lyrics',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.lyrics_outlined, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppLocalizations.of(context).translate('lyrics'),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ],
                   ),
                 ),
-                _buildLyricsSection(),
-                const SizedBox(height: 40),
-                if (audioPlayerService.currentSong != null)
-                  MusicMetadataWidget(
-                    song: audioPlayerService.currentSong!,
+                PopupMenuItem<String>(
+                  value: 'add_playlist',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.playlist_add, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppLocalizations.of(context)
+                            .translate('add_to_playlist'),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ],
                   ),
-                const SizedBox(height: 40),
-                _buildArtistSection(audioPlayerService),
-                const SizedBox(height: 30),
+                ),
+                PopupMenuItem<String>(
+                  value: 'share',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.share_outlined, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppLocalizations.of(context).translate('share'),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'queue',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.queue_music_outlined,
+                          color: Colors.white),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppLocalizations.of(context).translate('queue'),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'info',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppLocalizations.of(context).translate('song_info'),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 40.0,
+                ),
+                children: [
+                  const SizedBox(height: 30),
+                  _buildArtworkWithInfo(audioPlayerService),
+                  const SizedBox(height: 110),
+                  _ProgressBar(audioService: audioPlayerService),
+                  const SizedBox(height: 20),
+                  RepaintBoundary(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            audioPlayerService.isShuffle
+                                ? Icons.shuffle
+                                : Icons.shuffle,
+                            color: audioPlayerService.isShuffle
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.7),
+                            size: 24,
+                          ),
+                          onPressed: audioPlayerService.toggleShuffle,
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.skip_previous,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          onPressed: audioPlayerService.back,
+                        ),
+                        _PlayPauseButton(
+                          isPlaying: audioPlayerService.isPlaying,
+                          onPressed: () {
+                            if (audioPlayerService.isPlaying) {
+                              audioPlayerService.pause();
+                            } else {
+                              audioPlayerService.resume();
+                            }
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.skip_next,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          onPressed: audioPlayerService.skip,
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            audioPlayerService.isRepeat
+                                ? Icons.repeat_one
+                                : Icons.repeat,
+                            color: audioPlayerService.isRepeat
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.7),
+                            size: 24,
+                          ),
+                          onPressed: audioPlayerService.toggleRepeat,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: IconButton(
+                      icon: Icon(
+                        audioPlayerService
+                                .isLiked(audioPlayerService.currentSong!)
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: audioPlayerService
+                                .isLiked(audioPlayerService.currentSong!)
+                            ? Colors.red
+                            : Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        audioPlayerService
+                            .toggleLike(audioPlayerService.currentSong!);
+                      },
+                    ),
+                  ),
+                  _buildLyricsSection(),
+                  const SizedBox(height: 40),
+                  if (audioPlayerService.currentSong != null)
+                    MusicMetadataWidget(
+                      song: audioPlayerService.currentSong!,
+                    ),
+                  const SizedBox(height: 40),
+                  _buildArtistSection(audioPlayerService),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1508,12 +1511,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       return;
     }
 
-    // Split by both "/" and "," and handle potential multiple delimiters
-    final List<String> artists = artistString
-        .split(RegExp(r'[/,&]')) // Split by both "/" and ","
-        .map((e) => e.trim()) // Remove whitespace
-        .where((e) => e.isNotEmpty) // Remove empty strings
-        .toList();
+    // Use centralized artist separator service
+    final List<String> artists = ArtistSeparatorService().splitArtists(artistString);
 
     if (artists.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1721,7 +1720,7 @@ void _shareSong(AudioPlayerService audioPlayerService) {
   if (audioPlayerService.currentSong == null) return;
 
   final song = audioPlayerService.currentSong!;
-  final shareText = '${song.title} - ${song.artist ?? "Unknown Artist"}';
+  final shareText = '${song.title} - ${splitArtists(song.artist ?? "Unknown Artist").join(", ")}';
 
   Share.share(
     shareText,
@@ -1802,7 +1801,7 @@ void _showQueueDialog(
                           ),
                         ),
                         subtitle: Text(
-                          song.artist ?? 'Unknown Artist',
+                          splitArtists(song.artist ?? 'Unknown Artist').join(', '),
                           style: TextStyle(
                             color: isCurrentSong
                                 ? Colors.blue.shade200
@@ -1877,7 +1876,7 @@ void _showSongInfoDialog(
               const SizedBox(height: 16),
               _buildInfoRow('Title', audioPlayerService.currentSong!.title),
               _buildInfoRow('Artist',
-                  audioPlayerService.currentSong!.artist ?? 'Unknown'),
+                  splitArtists(audioPlayerService.currentSong!.artist ?? 'Unknown').join(', ')),
               _buildInfoRow(
                   'Album', audioPlayerService.currentSong!.album ?? 'Unknown'),
               _buildInfoRow('Path', audioPlayerService.currentSong!.data),
@@ -2037,19 +2036,22 @@ class _ProgressBarState extends State<_ProgressBar> {
       stream: widget.audioService.audioPlayer.durationStream,
       builder: (context, durationSnapshot) {
         final duration = durationSnapshot.data ?? Duration.zero;
-        
+
         return StreamBuilder<Duration>(
           stream: widget.audioService.audioPlayer.positionStream,
           builder: (context, positionSnapshot) {
             var position = positionSnapshot.data ?? Duration.zero;
             if (position > duration) position = duration;
-            
-            final displayPosition = _isDragging 
-                ? Duration(milliseconds: (_dragValue! * duration.inMilliseconds).round()) 
+
+            final displayPosition = _isDragging
+                ? Duration(
+                    milliseconds:
+                        (_dragValue! * duration.inMilliseconds).round())
                 : position;
 
             final progress = duration.inMilliseconds > 0
-                ? (displayPosition.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
+                ? (displayPosition.inMilliseconds / duration.inMilliseconds)
+                    .clamp(0.0, 1.0)
                 : 0.0;
 
             return Padding(
@@ -2073,7 +2075,8 @@ class _ProgressBarState extends State<_ProgressBar> {
                           onHorizontalDragUpdate: (details) {
                             final delta = details.primaryDelta! / width;
                             setState(() {
-                              _dragValue = (_dragValue! + delta).clamp(0.0, 1.0);
+                              _dragValue =
+                                  (_dragValue! + delta).clamp(0.0, 1.0);
                             });
                           },
                           onHorizontalDragEnd: (details) {
@@ -2088,7 +2091,8 @@ class _ProgressBarState extends State<_ProgressBar> {
                           },
                           onTapDown: (details) {
                             final tapPos = details.localPosition;
-                            final percentage = (tapPos.dx / width).clamp(0.0, 1.0);
+                            final percentage =
+                                (tapPos.dx / width).clamp(0.0, 1.0);
                             final newPosition = duration * percentage;
                             widget.audioService.audioPlayer.seek(newPosition);
                           },
@@ -2103,14 +2107,16 @@ class _ProgressBarState extends State<_ProgressBar> {
                                     width: width,
                                     decoration: BoxDecoration(
                                       color: Colors.white.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(_isDragging ? 3.0 : 1.5),
+                                      borderRadius: BorderRadius.circular(
+                                          _isDragging ? 3.0 : 1.5),
                                     ),
                                   ),
                                   Container(
                                     width: width * progress,
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(_isDragging ? 3.0 : 1.5),
+                                      borderRadius: BorderRadius.circular(
+                                          _isDragging ? 3.0 : 1.5),
                                     ),
                                   ),
                                 ],

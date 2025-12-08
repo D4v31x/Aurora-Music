@@ -15,11 +15,14 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
 
     <application
+        android:enableOnBackInvokedCallback="true"
         android:label="Aurora Music (Beta)"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:hardwareAccelerated="true"
         android:largeHeap="true"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
         android:networkSecurityConfig="@xml/network_security_config">
         <activity
             android:name="com.ryanheise.audioservice.AudioServiceActivity"

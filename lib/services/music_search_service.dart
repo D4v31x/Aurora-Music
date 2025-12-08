@@ -1,4 +1,5 @@
 import 'package:on_audio_query/on_audio_query.dart';
+import '../models/utils.dart';
 
 /// Improved search service with fuzzy matching and scoring
 class MusicSearchService {
@@ -37,21 +38,35 @@ class MusicSearchService {
   /// Calculate search score for a song (higher is better)
   static double _calculateScore(SongModel song, String query) {
     final title = song.title.toLowerCase();
-    final artist = (song.artist ?? '').toLowerCase();
+    final rawArtist = (song.artist ?? '').toLowerCase();
     final album = (song.album ?? '').toLowerCase();
     final queryLower = query.toLowerCase();
+    
+    // Split artists for better matching
+    final artists = splitArtists(song.artist ?? '').map((a) => a.toLowerCase()).toList();
+    final artist = artists.join(' '); // Combined for contains checks
 
     double score = 0.0;
 
     // Exact match bonus
     if (title == queryLower) score += 100;
-    if (artist == queryLower) score += 80;
+    if (rawArtist == queryLower) score += 80;
     if (album == queryLower) score += 60;
+    
+    // Check if query matches any individual artist exactly
+    for (final a in artists) {
+      if (a == queryLower) score += 85;
+    }
 
     // Starts with bonus
     if (title.startsWith(queryLower)) score += 50;
-    if (artist.startsWith(queryLower)) score += 40;
+    if (rawArtist.startsWith(queryLower)) score += 40;
     if (album.startsWith(queryLower)) score += 30;
+    
+    // Check if any individual artist starts with query
+    for (final a in artists) {
+      if (a.startsWith(queryLower)) score += 45;
+    }
 
     // Contains bonus
     if (title.contains(queryLower)) score += 30;

@@ -148,7 +148,7 @@ class _SelectorValueNotifier<T> extends ValueNotifier<T> {
 /// Mixin for widgets that need performance monitoring
 mixin PerformanceMonitoringMixin on State {
   Stopwatch? _buildStopwatch;
-  
+
   @override
   void initState() {
     super.initState();
@@ -160,16 +160,14 @@ mixin PerformanceMonitoringMixin on State {
     _buildStopwatch?.start();
     final widget = buildWidget(context);
     _buildStopwatch?.stop();
-    
+
     // Log slow builds in debug mode
     if (_buildStopwatch!.elapsedMilliseconds > 16) {
-      debugPrint(
-        '⚠️ Slow build detected in ${runtimeType}: '
-        '${_buildStopwatch!.elapsedMilliseconds}ms'
-      );
+      debugPrint('⚠️ Slow build detected in ${runtimeType}: '
+          '${_buildStopwatch!.elapsedMilliseconds}ms');
     }
     _buildStopwatch?.reset();
-    
+
     return widget;
   }
 

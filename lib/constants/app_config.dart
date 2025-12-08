@@ -2,8 +2,10 @@
 /// Centralizes all configuration values for better maintainability
 class AppConfig {
   // Performance Configuration - Optimized for better memory usage
-  static const int imageCacheMaxSize = 150; // Reduced from 1024 for better performance
-  static const int imageCacheMaxSizeBytes = 100 * 1024 * 1024; // 100 MB (reduced from 200 MB)
+  static const int imageCacheMaxSize =
+      150; // Reduced from 1024 for better performance
+  static const int imageCacheMaxSizeBytes =
+      100 * 1024 * 1024; // 100 MB (reduced from 200 MB)
 
   // Cache Configuration
   static const int maxCacheSize = 200;

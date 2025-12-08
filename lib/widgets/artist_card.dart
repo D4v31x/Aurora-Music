@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/local_caching_service.dart';
 import '../services/performance/performance_manager.dart';
+import '../services/artist_separator_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -20,12 +21,7 @@ class ArtistCard extends StatefulWidget {
   static final Set<String> _pendingRequests = {};
 
   static List<String> splitArtistNames(String artistNames) {
-    return artistNames
-        .split(RegExp(
-            r'[,/]|\s+&\s+|\s+feat\.?\s+|\s+ft\.?\s+|\s+featuring\s+|\s+with\s+|\s+x\s+|\s+X\s+'))
-        .map((name) => name.trim())
-        .where((name) => name.isNotEmpty)
-        .toList();
+    return ArtistSeparatorService().splitArtists(artistNames);
   }
 
   @override

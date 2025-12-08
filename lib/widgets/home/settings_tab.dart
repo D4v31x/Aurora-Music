@@ -4,16 +4,20 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'dart:ui';
 import '../../services/audio_player_service.dart';
+import '../../localization/app_localizations.dart';
 import '../../localization/locale_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/version_service.dart';
 import '../../services/notification_manager.dart';
 import '../../services/cache_manager.dart';
 import '../../services/artwork_cache_service.dart';
+import '../../screens/artist_separator_settings.dart';
 import '../about_dialog.dart';
+import '../expanding_player.dart';
 
-/// A simplified settings tab.
+/// A glassmorphic settings tab with translations.
 class SettingsTab extends StatefulWidget {
   final VoidCallback? onUpdateCheck;
   final NotificationManager notificationManager;
@@ -46,115 +50,191 @@ class _SettingsTabState extends State<SettingsTab> {
     }
   }
 
-  // Simplified Section Header
+  // Glassmorphic Section Header
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.2,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.5,
           color: Theme.of(context).colorScheme.primary,
         ),
       ),
     );
   }
 
-  // Simplified Switch Tile
-  Widget _buildSwitchTile({
-    required String title,
-    String? subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return SwitchListTile(
-      title: Text(title),
-      subtitle: subtitle != null ? Text(subtitle) : null,
-      value: value,
-      onChanged: onChanged,
-    );
-  }
-
-  // Simplified Dropdown Tile
-  Widget _buildDropdownTile<T>({
-    required String title,
-    required T value,
-    required List<T> items,
-    required String Function(T) itemLabel,
-    required ValueChanged<T?> onChanged,
-  }) {
-    return ListTile(
-      title: Text(title),
-      trailing: DropdownButton<T>(
-        value: value,
-        underline: const SizedBox(),
-        items: items.map((item) {
-          return DropdownMenuItem<T>(
-            value: item,
-            child: Text(itemLabel(item)),
-          );
-        }).toList(),
-        onChanged: onChanged,
+  // Glassmorphic Card Container
+  Widget _buildGlassmorphicCard({required List<Widget> children}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: RepaintBoundary(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withOpacity(0.08)
+                    : Colors.black.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.15)
+                      : Colors.black.withOpacity(0.08),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                children: children,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  // Simplified Action Tile
-  Widget _buildActionTile({
+  // Glassmorphic Switch Tile
+  Widget _buildSwitchTile({
+    required IconData icon,
     required String title,
     String? subtitle,
-    required VoidCallback onTap,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    bool isFirst = false,
+    bool isLast = false,
   }) {
-    return ListTile(
-      title: Text(title),
-      subtitle: subtitle != null ? Text(subtitle) : null,
-      onTap: onTap,
-      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      children: [
+        if (!isFirst)
+          Divider(
+            height: 1,
+            indent: 56,
+            color: isDark
+                ? Colors.white.withOpacity(0.08)
+                : Colors.black.withOpacity(0.06),
+          ),
+        SwitchListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          secondary: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          ),
+          subtitle: subtitle != null
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withOpacity(0.7),
+                    ),
+                  ),
+                )
+              : null,
+          value: value,
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
+  // Glassmorphic Action Tile
+  Widget _buildActionTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+    required VoidCallback onTap,
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      children: [
+        if (!isFirst)
+          Divider(
+            height: 1,
+            indent: 56,
+            color: isDark
+                ? Colors.white.withOpacity(0.08)
+                : Colors.black.withOpacity(0.06),
+          ),
+        ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          ),
+          subtitle: subtitle != null
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withOpacity(0.7),
+                    ),
+                  ),
+                )
+              : null,
+          trailing: trailing ??
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.color
+                    ?.withOpacity(0.5),
+              ),
+          onTap: onTap,
+        ),
+      ],
     );
   }
 
   // Cache Management
-  Future<void> _clearLyricsCache() async {
-    try {
-      final cacheManager = CacheManager();
-      cacheManager.initialize();
-      cacheManager.clearLyricsCache();
-
-      final directory = await getApplicationDocumentsDirectory();
-      final lyricsDir = Directory('${directory.path}/lyrics');
-
-      if (await lyricsDir.exists()) {
-        await lyricsDir.delete(recursive: true);
-        await lyricsDir.create();
-      }
-    } catch (e) {
-      debugPrint('Error clearing lyrics cache: $e');
-    }
-  }
-
-  Future<void> _clearArtworkCache() async {
-    try {
-      final cacheManager = CacheManager();
-      cacheManager.initialize();
-      cacheManager.clearArtworkCache();
-
-      final artworkCache = ArtworkCacheService();
-      artworkCache.clearCache();
-
-      final directory = await getApplicationDocumentsDirectory();
-      final artworkDir = Directory('${directory.path}/artwork_cache');
-
-      if (await artworkDir.exists()) {
-        await artworkDir.delete(recursive: true);
-        await artworkDir.create();
-      }
-    } catch (e) {
-      debugPrint('Error clearing artwork cache: $e');
-    }
-  }
-
   Future<void> _clearAllCaches() async {
     try {
       final cacheManager = CacheManager();
@@ -183,31 +263,31 @@ class _SettingsTabState extends State<SettingsTab> {
     }
   }
 
-  void _showClearCacheDialog(
-      String cacheName, String message, Future<void> Function() clearFunction) {
+  void _showClearCacheDialog() {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Clear $cacheName?'),
-        content: Text(message),
+        title: Text(l10n.translate('settings_clear_cache_title')),
+        content: Text(l10n.translate('settings_clear_cache_message')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.translate('cancel')),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              await clearFunction();
+              await _clearAllCaches();
               if (mounted) {
                 widget.notificationManager.showNotification(
-                  '$cacheName cleared',
+                  l10n.translate('settings_cache_cleared'),
                   duration: const Duration(seconds: 2),
                 );
               }
             },
             child: Text(
-              'Clear',
+              l10n.translate('delete'),
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
@@ -217,6 +297,7 @@ class _SettingsTabState extends State<SettingsTab> {
   }
 
   void _showCacheInfo() async {
+    final l10n = AppLocalizations.of(context);
     try {
       final directory = await getApplicationDocumentsDirectory();
 
@@ -252,19 +333,21 @@ class _SettingsTabState extends State<SettingsTab> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Cache Information'),
+          title: Text(l10n.translate('settings_cache_info')),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Disk Usage',
+                  l10n.translate('settings_storage'),
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 8),
-                _buildInfoRow('Lyrics', _formatBytes(lyricsSize)),
-                _buildInfoRow('Artwork', _formatBytes(artworkSize)),
+                _buildInfoRow(
+                    l10n.translate('lyrics'), _formatBytes(lyricsSize)),
+                _buildInfoRow(l10n.translate('onboarding_album_artwork'),
+                    _formatBytes(artworkSize)),
                 const Divider(),
                 _buildInfoRow('Total', _formatBytes(totalSize), bold: true),
                 const SizedBox(height: 16),
@@ -273,17 +356,19 @@ class _SettingsTabState extends State<SettingsTab> {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 8),
-                _buildInfoRow('Lyrics', '${cacheSizes['lyrics']} items'),
-                _buildInfoRow('Artwork', '${cacheSizes['artwork']} items'),
-                _buildInfoRow('Metadata', '${cacheSizes['metadata']} items'),
-                _buildInfoRow('Queries', '${cacheSizes['query']} items'),
+                _buildInfoRow(
+                    l10n.translate('lyrics'), '${cacheSizes['lyrics']} items'),
+                _buildInfoRow(l10n.translate('onboarding_album_artwork'),
+                    '${cacheSizes['artwork']} items'),
+                _buildInfoRow(l10n.translate('metadata'),
+                    '${cacheSizes['metadata']} items'),
               ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+              child: Text(l10n.translate('cancel')),
             ),
           ],
         ),
@@ -341,15 +426,16 @@ class _SettingsTabState extends State<SettingsTab> {
   }
 
   void _showUpdateAvailableDialog(dynamic latestVersion) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Update Available'),
-        content: Text('Version $latestVersion is now available.'),
+        title: Text(l10n.translate('update_available')),
+        content: Text('${l10n.translate('update_message')}: $latestVersion'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Later'),
+            child: Text(l10n.translate('later')),
           ),
           TextButton(
             onPressed: () {
@@ -358,239 +444,232 @@ class _SettingsTabState extends State<SettingsTab> {
                 widget.onUpdateCheck!();
               }
             },
-            child: const Text('Update'),
+            child: Text(l10n.translate('update_now')),
           ),
         ],
       ),
     );
   }
 
+  // Language Selection Tile
+  Widget _buildLanguageTile() {
+    final l10n = AppLocalizations.of(context);
+    final currentLocale = LocaleProvider.of(context)!.locale.languageCode;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Column(
+      children: [
+        Divider(
+          height: 1,
+          indent: 56,
+          color: isDark
+              ? Colors.white.withOpacity(0.08)
+              : Colors.black.withOpacity(0.06),
+        ),
+        ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.language_rounded,
+              size: 20,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          title: Text(
+            l10n.translate('settings_language'),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButton<String>(
+              value: currentLocale,
+              underline: const SizedBox(),
+              isDense: true,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w500,
+              ),
+              items: const [
+                DropdownMenuItem(value: 'en', child: Text('English')),
+                DropdownMenuItem(value: 'cs', child: Text('Čeština')),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  LocaleProvider.of(context)!.setLocale(Locale(value));
+                }
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final l10n = AppLocalizations.of(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final currentSong = audioPlayerService.currentSong;
 
-    return ListView(
-      padding: EdgeInsets.only(
-        top: 10.0,
-        bottom: currentSong != null ? 100.0 : 24.0,
-      ),
-      children: [
-        // APPEARANCE
-        _buildSectionHeader('Appearance'),
-        _buildSwitchTile(
-          title: 'Dark Mode',
-          subtitle: themeProvider.isDarkMode ? 'Enabled' : 'Disabled',
-          value: themeProvider.isDarkMode,
-          onChanged: (value) => themeProvider.toggleTheme(),
-        ),
-        _buildSwitchTile(
-          title: 'Material You',
-          subtitle: 'Dynamic colors from wallpaper',
-          value: themeProvider.useDynamicColor,
-          onChanged: (value) => themeProvider.toggleDynamicColor(),
-        ),
-        _buildDropdownTile<String>(
-          title: 'Language',
-          value: LocaleProvider.of(context)!.locale.languageCode,
-          items: const ['en', 'cs'],
-          itemLabel: (code) => code == 'en' ? 'English' : 'Čeština',
-          onChanged: (value) {
-            if (value != null) {
-              LocaleProvider.of(context)!.setLocale(Locale(value));
-            }
-          },
-        ),
-
-        // PLAYBACK
-        _buildSectionHeader('Playback'),
-        _buildSwitchTile(
-          title: 'Gapless Playback',
-          subtitle: 'Seamless track transitions',
-          value: audioPlayerService.gaplessPlayback,
-          onChanged: (value) => audioPlayerService.setGaplessPlayback(value),
-        ),
-        _buildSwitchTile(
-          title: 'Volume Normalization',
-          subtitle: 'Consistent volume levels',
-          value: audioPlayerService.volumeNormalization,
-          onChanged: (value) =>
-              audioPlayerService.setVolumeNormalization(value),
-        ),
-        _buildDropdownTile<double>(
-          title: 'Playback Speed',
-          value: audioPlayerService.playbackSpeed,
-          items: const [0.5, 0.75, 1.0, 1.25, 1.5, 2.0],
-          itemLabel: (speed) => '${speed}x',
-          onChanged: (value) {
-            if (value != null) {
-              audioPlayerService.setPlaybackSpeed(value);
-            }
-          },
-        ),
-
-        // LIBRARY
-        _buildSectionHeader('Library'),
-        _buildDropdownTile<String>(
-          title: 'Default Sort Order',
-          value: audioPlayerService.defaultSortOrder,
-          items: const ['title', 'artist', 'album', 'date_added'],
-          itemLabel: (sort) {
-            switch (sort) {
-              case 'title':
-                return 'Title';
-              case 'artist':
-                return 'Artist';
-              case 'album':
-                return 'Album';
-              case 'date_added':
-                return 'Date Added';
-              default:
-                return sort;
-            }
-          },
-          onChanged: (value) {
-            if (value != null) {
-              audioPlayerService.setDefaultSortOrder(value);
-            }
-          },
-        ),
-        _buildSwitchTile(
-          title: 'Auto Playlists',
-          subtitle: 'Automatic smart playlists',
-          value: audioPlayerService.autoPlaylists,
-          onChanged: (value) => audioPlayerService.setAutoPlaylists(value),
-        ),
-
-        // STORAGE & CACHE
-        _buildSectionHeader('Storage & Cache'),
-        _buildDropdownTile<int>(
-          title: 'Cache Size Limit',
-          value: audioPlayerService.cacheSize,
-          items: const [100, 250, 500, 1000, 2000],
-          itemLabel: (size) => '$size MB',
-          onChanged: (value) {
-            if (value != null) {
-              audioPlayerService.setCacheSize(value);
-            }
-          },
-        ),
-        _buildActionTile(
-          title: 'Cache Information',
-          subtitle: 'View storage usage',
-          onTap: _showCacheInfo,
-        ),
-        _buildActionTile(
-          title: 'Clear Lyrics Cache',
-          subtitle: 'Remove cached lyrics',
-          onTap: () => _showClearCacheDialog(
-            'Lyrics Cache',
-            'Downloaded lyrics will be removed and re-downloaded when needed.',
-            _clearLyricsCache,
+    return Selector<AudioPlayerService, bool>(
+      selector: (_, service) => service.currentSong != null,
+      builder: (context, hasCurrentSong, child) {
+        final audioPlayerService =
+            Provider.of<AudioPlayerService>(context, listen: false);
+        return ListView(
+          padding: EdgeInsets.only(
+            top: 10.0,
+            bottom: hasCurrentSong
+                ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
+                : 24.0,
           ),
-        ),
-        _buildActionTile(
-          title: 'Clear Artwork Cache',
-          subtitle: 'Remove cached album art',
-          onTap: () => _showClearCacheDialog(
-            'Artwork Cache',
-            'Album artwork will be reloaded from your music files.',
-            _clearArtworkCache,
-          ),
-        ),
-        _buildActionTile(
-          title: 'Clear All Caches',
-          subtitle: 'Remove all temporary data',
-          onTap: () => _showClearCacheDialog(
-            'All Caches',
-            'All cached data will be deleted and rebuilt as needed.',
-            _clearAllCaches,
-          ),
-        ),
+          children: [
+            // APPEARANCE
+            _buildSectionHeader(l10n.translate('settings_appearance')),
+            _buildGlassmorphicCard(
+              children: [
+                _buildSwitchTile(
+                  icon: Icons.dark_mode_rounded,
+                  title: l10n.translate('settings_dark_mode'),
+                  subtitle: themeProvider.isDarkMode
+                      ? l10n.translate('settings_enabled')
+                      : l10n.translate('settings_disabled'),
+                  value: themeProvider.isDarkMode,
+                  onChanged: (value) => themeProvider.toggleTheme(),
+                  isFirst: true,
+                ),
+                _buildSwitchTile(
+                  icon: Icons.palette_rounded,
+                  title: l10n.translate('settings_material_you'),
+                  subtitle: l10n.translate('settings_material_you_desc'),
+                  value: themeProvider.useDynamicColor,
+                  onChanged: (value) => themeProvider.toggleDynamicColor(),
+                ),
+                _buildLanguageTile(),
+              ],
+            ),
 
-        // SYSTEM
-        _buildSectionHeader('System'),
-        _buildSwitchTile(
-          title: 'Media Controls',
-          subtitle: 'Notification playback controls',
-          value: audioPlayerService.mediaControls,
-          onChanged: (value) => audioPlayerService.setMediaControls(value),
-        ),
+            // PLAYBACK
+            _buildSectionHeader(l10n.translate('settings_playback')),
+            _buildGlassmorphicCard(
+              children: [
+                _buildSwitchTile(
+                  icon: Icons.swap_horiz_rounded,
+                  title: l10n.translate('settings_gapless'),
+                  subtitle: l10n.translate('settings_gapless_desc'),
+                  value: audioPlayerService.gaplessPlayback,
+                  onChanged: (value) =>
+                      audioPlayerService.setGaplessPlayback(value),
+                  isFirst: true,
+                ),
+                _buildSwitchTile(
+                  icon: Icons.volume_up_rounded,
+                  title: l10n.translate('settings_normalization'),
+                  subtitle: l10n.translate('settings_normalization_desc'),
+                  value: audioPlayerService.volumeNormalization,
+                  onChanged: (value) =>
+                      audioPlayerService.setVolumeNormalization(value),
+                ),
+                _buildActionTile(
+                  icon: Icons.people_outline_rounded,
+                  title: l10n.translate('artist_separation'),
+                  subtitle: l10n.translate('artist_separation_desc'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const ArtistSeparatorSettingsScreen(),
+                      ),
+                    );
+                  },
+                  isLast: true,
+                ),
+              ],
+            ),
 
-        // ADVANCED
-        _buildSectionHeader('Advanced'),
-        _buildActionTile(
-          title: 'Run Setup Wizard',
-          subtitle: 'Re-run the initial permission and library setup',
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Run Setup Wizard?'),
-                content: const Text(
-                    'This will guide you through the initial setup process again. Are you sure?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      widget.onResetSetup?.call();
-                    },
-                    child: Text(
-                      'Run',
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
+            // STORAGE
+            _buildSectionHeader(l10n.translate('settings_storage')),
+            _buildGlassmorphicCard(
+              children: [
+                _buildActionTile(
+                  icon: Icons.storage_rounded,
+                  title: l10n.translate('settings_cache_info'),
+                  subtitle: l10n.translate('settings_cache_info_desc'),
+                  onTap: _showCacheInfo,
+                  isFirst: true,
+                ),
+                _buildActionTile(
+                  icon: Icons.delete_outline_rounded,
+                  title: l10n.translate('settings_clear_cache'),
+                  subtitle: l10n.translate('settings_clear_cache_desc'),
+                  onTap: _showClearCacheDialog,
+                  isLast: true,
+                ),
+              ],
+            ),
 
-        // ABOUT
-        _buildSectionHeader('About'),
-        _buildActionTile(
-          title: 'About Aurora Music',
-          subtitle: 'Version $_currentVersion',
-          onTap: _showAboutDialog,
-        ),
-        _buildActionTile(
-          title: 'Check for Updates',
-          subtitle: 'Get latest version',
-          onTap: () async {
-            widget.notificationManager.showNotification(
-              'Checking for updates...',
-              duration: const Duration(seconds: 2),
-            );
+            // ABOUT
+            _buildSectionHeader(l10n.translate('settings_about')),
+            _buildGlassmorphicCard(
+              children: [
+                _buildActionTile(
+                  icon: Icons.info_outline_rounded,
+                  title: l10n.translate('settings_about_app'),
+                  subtitle:
+                      '${l10n.translate('settings_version')} $_currentVersion',
+                  onTap: _showAboutDialog,
+                  isFirst: true,
+                ),
+                _buildActionTile(
+                  icon: Icons.system_update_rounded,
+                  title: l10n.translate('settings_check_updates'),
+                  subtitle: l10n.translate('settings_check_updates_desc'),
+                  onTap: () async {
+                    widget.notificationManager.showNotification(
+                      l10n.translate('settings_checking_updates'),
+                      duration: const Duration(seconds: 2),
+                    );
 
-            final result = await VersionService.checkForNewVersion();
+                    final result = await VersionService.checkForNewVersion();
 
-            if (result.isUpdateAvailable && result.latestVersion != null) {
-              widget.notificationManager.showNotification(
-                'Update available!',
-                duration: const Duration(seconds: 2),
-                onComplete: () {
-                  _showUpdateAvailableDialog(result.latestVersion!);
-                  widget.notificationManager.showDefaultTitle();
-                },
-              );
-            } else {
-              widget.notificationManager.showNotification(
-                'You\'re up to date',
-                duration: const Duration(seconds: 2),
-                onComplete: () => widget.notificationManager.showDefaultTitle(),
-              );
-            }
-          },
-        ),
+                    if (result.isUpdateAvailable &&
+                        result.latestVersion != null) {
+                      widget.notificationManager.showNotification(
+                        l10n.translate('settings_update_available'),
+                        duration: const Duration(seconds: 2),
+                        onComplete: () {
+                          _showUpdateAvailableDialog(result.latestVersion!);
+                          widget.notificationManager.showDefaultTitle();
+                        },
+                      );
+                    } else {
+                      widget.notificationManager.showNotification(
+                        l10n.translate('settings_up_to_date'),
+                        duration: const Duration(seconds: 2),
+                        onComplete: () =>
+                            widget.notificationManager.showDefaultTitle(),
+                      );
+                    }
+                  },
+                  isLast: true,
+                ),
+              ],
+            ),
 
-        const SizedBox(height: 32),
-      ],
+            const SizedBox(height: 32),
+          ],
+        );
+      },
     );
   }
 }

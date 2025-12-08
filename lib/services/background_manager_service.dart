@@ -10,10 +10,10 @@ import 'mood_detection_service.dart';
 class BackgroundManagerService extends ChangeNotifier {
   final ArtworkCacheService _artworkCache = ArtworkCacheService();
   final MoodDetectionService _moodService = MoodDetectionService();
-  
+
   List<Color> _currentColors = _getDefaultColors();
   bool _isDarkMode = true;
-  
+
   // Artwork data for blurred background
   Uint8List? _currentArtwork;
   Uint8List? _previousArtwork;
@@ -41,7 +41,7 @@ class BackgroundManagerService extends ChangeNotifier {
   MoodDetectionService get moodService => _moodService;
   SongMood get currentMood => _moodService.currentMood;
   MoodTheme get currentMoodTheme => _moodService.currentTheme;
-  
+
   /// Force refresh artwork for current song
   Future<void> refreshArtwork() async {
     if (_currentSong != null) {
@@ -109,7 +109,7 @@ class BackgroundManagerService extends ChangeNotifier {
 
     try {
       _currentSong = song;
-      
+
       // Start transition animation
       _previousArtwork = _currentArtwork;
       _isTransitioning = true;
@@ -117,16 +117,16 @@ class BackgroundManagerService extends ChangeNotifier {
 
       // Analyze mood in parallel with artwork loading
       final moodFuture = _moodService.analyzeSong(song);
-      
+
       // Try to get artwork with multiple retries
       Uint8List? artworkData;
       for (int attempt = 1; attempt <= 3; attempt++) {
         artworkData = await _artworkCache.getArtwork(song.id);
-        
+
         if (artworkData != null && artworkData.isNotEmpty) {
           break;
         }
-        
+
         if (attempt < 3) {
           await Future.delayed(Duration(milliseconds: 150 * attempt));
         }
@@ -138,31 +138,33 @@ class BackgroundManagerService extends ChangeNotifier {
       } else {
         _currentArtwork = null;
       }
-      
+
       // Notify immediately after setting artwork so UI updates
       notifyListeners();
-      
+
       // Force a frame to ensure the UI repaints
       WidgetsBinding.instance.scheduleFrame();
-      
+
       // Wait for mood analysis to complete
       await moodFuture;
 
       await updateColorsFromArtwork(artworkData);
-      
+
       // End transition after a short delay for animation
       Future.delayed(const Duration(milliseconds: 500), () {
         _isTransitioning = false;
         _previousArtwork = null;
         notifyListeners();
       });
-      
+
       // If we still don't have artwork, schedule a delayed retry
       if (artworkData == null && _currentSong?.id == song.id) {
         Future.delayed(const Duration(milliseconds: 800), () async {
           if (_currentSong?.id == song.id && _currentArtwork == null) {
             final retryArtwork = await _artworkCache.getArtwork(song.id);
-            if (retryArtwork != null && retryArtwork.isNotEmpty && _currentSong?.id == song.id) {
+            if (retryArtwork != null &&
+                retryArtwork.isNotEmpty &&
+                _currentSong?.id == song.id) {
               _currentArtwork = retryArtwork;
               notifyListeners();
               await updateColorsFromArtwork(retryArtwork);
@@ -185,7 +187,7 @@ class BackgroundManagerService extends ChangeNotifier {
     _currentSong = null;
     _isTransitioning = true;
     notifyListeners();
-    
+
     Future.delayed(const Duration(milliseconds: 500), () {
       _isTransitioning = false;
       _previousArtwork = null;

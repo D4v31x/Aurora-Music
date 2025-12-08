@@ -10,7 +10,7 @@ class PerformanceConfig {
   // List view optimization
   static const double listItemCacheExtent = 500; // Pixels to cache ahead
   static const int maxVisibleListItems = 20; // Max items to render at once
-  
+
   // Animation durations
   static const Duration shortAnimationDuration = Duration(milliseconds: 200);
   static const Duration mediumAnimationDuration = Duration(milliseconds: 300);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/user_preferences.dart';
 import '../../providers/theme_provider.dart';
+import '../../localization/app_localizations.dart';
 import '../home_screen.dart';
 import 'pages/welcome_page.dart';
 import 'pages/app_info_page.dart';
@@ -224,9 +225,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
                           ),
-                          child: const Text(
-                            'Skip',
-                            style: TextStyle(
+                          child: Text(
+                            AppLocalizations.of(context)
+                                .translate('onboarding_skip'),
+                            style: const TextStyle(
                               fontFamily: 'Outfit',
                               fontSize: 16,
                               fontWeight: FontWeight.w500,

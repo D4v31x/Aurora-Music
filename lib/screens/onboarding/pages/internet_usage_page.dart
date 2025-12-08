@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
+import '../../../localization/app_localizations.dart';
 import '../../../widgets/pill_button.dart';
 
 class InternetUsagePage extends StatefulWidget {
@@ -177,7 +178,8 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
                       child: Text(
-                        'Internet Usage',
+                        AppLocalizations.of(context)
+                            .translate('onboarding_internet_title'),
                         style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 32,
@@ -199,7 +201,8 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                         ? _exitFadeAnimation
                         : _subtitleFadeAnimation,
                     child: Text(
-                      'How Aurora Music uses internet',
+                      AppLocalizations.of(context)
+                          .translate('onboarding_internet_subtitle'),
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 16,
@@ -227,37 +230,45 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                         child: ListView(
                           children: [
                             _buildInfoCard(
+                              context: context,
                               icon: Icons.image_search_rounded,
-                              title: 'Album Artwork',
-                              description:
-                                  'Fetches high-quality album covers to enhance your library',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_album_artwork'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_album_artwork_desc'),
                               isOptional: false,
                               isDark: isDark,
                             ),
                             const SizedBox(height: 16),
                             _buildInfoCard(
+                              context: context,
                               icon: Icons.info_outline_rounded,
-                              title: 'Music Metadata',
-                              description:
-                                  'Gets artist info, album details, and track information',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_music_metadata'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_music_metadata_desc'),
                               isOptional: false,
                               isDark: isDark,
                             ),
                             const SizedBox(height: 16),
                             _buildInfoCard(
+                              context: context,
                               icon: Icons.lyrics_rounded,
-                              title: 'Lyrics',
-                              description:
-                                  'Downloads synchronized lyrics for your songs',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_lyrics'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_lyrics_desc'),
                               isOptional: true,
                               isDark: isDark,
                             ),
                             const SizedBox(height: 16),
                             _buildInfoCard(
+                              context: context,
                               icon: Icons.cloud_sync_rounded,
-                              title: 'Sync & Backup',
-                              description:
-                                  'Optional cloud sync for playlists and preferences',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_sync_backup'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_sync_backup_desc'),
                               isOptional: true,
                               isDark: isDark,
                             ),
@@ -289,7 +300,8 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      'Your privacy is important. All music files stay on your device.',
+                                      AppLocalizations.of(context)
+                                          .translate('onboarding_privacy_note'),
                                       style: TextStyle(
                                         fontFamily: 'Outfit',
                                         fontSize: 13,
@@ -327,6 +339,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
   }
 
   Widget _buildInfoCard({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String description,
@@ -401,7 +414,8 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          'Optional',
+                          AppLocalizations.of(context)
+                              .translate('onboarding_optional'),
                           style: TextStyle(
                             fontFamily: 'Outfit',
                             fontSize: 11,

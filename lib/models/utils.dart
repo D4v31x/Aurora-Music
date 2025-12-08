@@ -1,7 +1,17 @@
+import '../services/artist_separator_service.dart';
+
+/// Split artist string into individual artists using the ArtistSeparatorService.
+/// This function uses user-configurable separators and exclusions.
 List<String> splitArtists(String artists) {
-  // Split the string by '/' and '&' and trim any extra spaces
-  return artists
-      .split(RegExp(r'[/&,]'))
-      .map((artist) => artist.trim())
-      .toList();
+  return ArtistSeparatorService().splitArtists(artists);
+}
+
+/// Get the primary (first) artist from an artist string
+String getPrimaryArtist(String artists) {
+  return ArtistSeparatorService().getPrimaryArtist(artists);
+}
+
+/// Check if an artist string contains multiple artists
+bool hasMultipleArtists(String artists) {
+  return ArtistSeparatorService().hasMultipleArtists(artists);
 }

@@ -24,7 +24,8 @@ class AnimatedArtworkBackground extends StatefulWidget {
   });
 
   @override
-  State<AnimatedArtworkBackground> createState() => _AnimatedArtworkBackgroundState();
+  State<AnimatedArtworkBackground> createState() =>
+      _AnimatedArtworkBackgroundState();
 }
 
 class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
@@ -33,13 +34,13 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
   late AnimationController _moodController;
   late Animation<double> _crossfadeAnimation;
   late Animation<double> _moodAnimation;
-  
+
   MoodTheme? _previousMoodTheme;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Crossfade animation for artwork transitions
     _crossfadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -49,12 +50,12 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
       parent: _crossfadeController,
       curve: Curves.easeInOut,
     );
-    
+
     // If we already have artwork on init, start fully visible
     if (widget.currentArtwork != null) {
       _crossfadeController.value = 1.0;
     }
-    
+
     // Mood transition animation
     _moodController = AnimationController(
       duration: const Duration(milliseconds: 1200),
@@ -64,14 +65,14 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
       parent: _moodController,
       curve: Curves.easeInOut,
     );
-    
+
     _moodController.value = 1.0;
   }
 
   @override
   void didUpdateWidget(AnimatedArtworkBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Trigger crossfade when artwork changes
     if (widget.currentArtwork != oldWidget.currentArtwork) {
       // If going from no artwork to having artwork, show immediately
@@ -84,7 +85,7 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
         _crossfadeController.forward(from: 0.0);
       }
     }
-    
+
     // Trigger mood transition when mood changes
     if (widget.moodTheme != oldWidget.moodTheme) {
       _previousMoodTheme = oldWidget.moodTheme;
@@ -101,8 +102,9 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = widget.fallbackColor ?? Theme.of(context).colorScheme.surface;
-    
+    final backgroundColor =
+        widget.fallbackColor ?? Theme.of(context).colorScheme.surface;
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -110,7 +112,7 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
         Container(
           color: backgroundColor,
         ),
-        
+
         // Previous artwork (fading out)
         if (widget.previousArtwork != null)
           AnimatedBuilder(
@@ -125,35 +127,36 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
               );
             },
           ),
-        
+
         // Current artwork (fading in or fully visible)
         if (widget.currentArtwork != null)
           _crossfadeController.value >= 1.0
-            ? _buildBlurredArtwork(widget.currentArtwork!, widget.moodTheme)
-            : AnimatedBuilder(
-                animation: _crossfadeAnimation,
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: _crossfadeAnimation.value.clamp(0.0, 1.0),
-                    child: _buildBlurredArtwork(
-                      widget.currentArtwork!,
-                      widget.moodTheme,
-                    ),
-                  );
-                },
-              ),
-        
+              ? _buildBlurredArtwork(widget.currentArtwork!, widget.moodTheme)
+              : AnimatedBuilder(
+                  animation: _crossfadeAnimation,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: _crossfadeAnimation.value.clamp(0.0, 1.0),
+                      child: _buildBlurredArtwork(
+                        widget.currentArtwork!,
+                        widget.moodTheme,
+                      ),
+                    );
+                  },
+                ),
+
         // Mood overlay with animation
         AnimatedBuilder(
           animation: _moodAnimation,
           builder: (context, child) {
             final currentOverlay = widget.moodTheme.overlayTint
                 .withValues(alpha: widget.moodTheme.overlayOpacity);
-            final previousOverlay = (_previousMoodTheme?.overlayTint ?? 
-                widget.moodTheme.overlayTint)
-                .withValues(alpha: _previousMoodTheme?.overlayOpacity ?? 
-                    widget.moodTheme.overlayOpacity);
-            
+            final previousOverlay = (_previousMoodTheme?.overlayTint ??
+                    widget.moodTheme.overlayTint)
+                .withValues(
+                    alpha: _previousMoodTheme?.overlayOpacity ??
+                        widget.moodTheme.overlayOpacity);
+
             return Container(
               decoration: BoxDecoration(
                 color: Color.lerp(
@@ -165,7 +168,7 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
             );
           },
         ),
-        
+
         // Vignette effect for depth
         Container(
           decoration: BoxDecoration(
@@ -180,7 +183,7 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
             ),
           ),
         ),
-        
+
         // Child content
         widget.child,
       ],

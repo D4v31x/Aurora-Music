@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 import '../../../providers/theme_provider.dart';
 import '../../../widgets/pill_button.dart';
+import '../../../localization/app_localizations.dart';
 
 class WelcomePage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -20,6 +22,7 @@ class _WelcomePageState extends State<WelcomePage>
   late AnimationController _controller;
   late AnimationController _glowController;
   late AnimationController _exitController;
+  late AnimationController _textCycleController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _slideUpAnimation;
@@ -29,6 +32,34 @@ class _WelcomePageState extends State<WelcomePage>
   late Animation<double> _glowAnimation;
   late Animation<double> _exitFadeAnimation;
   late Animation<Offset> _exitSlideAnimation;
+
+  // Text cycle animations for title
+  late Animation<double> _textFadeOutAnimation;
+  late Animation<double> _textSlideOutAnimation;
+  late Animation<double> _textFadeInAnimation;
+  late Animation<double> _textSlideInAnimation;
+
+  // Text cycle animations for subtitle (staggered)
+  late Animation<double> _subtitleFadeOutAnimation;
+  late Animation<double> _subtitleSlideOutAnimation;
+  late Animation<double> _subtitleFadeInAnimation;
+  late Animation<double> _subtitleSlideInAnimation;
+
+  Timer? _textCycleTimer;
+  int _currentLanguageIndex = 0;
+  bool _isTransitioning = false;
+
+  // Welcome text in different languages (title and subtitle)
+  final List<Map<String, String>> _welcomeTexts = [
+    {
+      'title': 'Welcome to Aurora Music',
+      'subtitle': "Let's set up your experience"
+    },
+    {
+      'title': 'Vítejte v Aurora Music',
+      'subtitle': 'Pojďme nastavit váš zážitek'
+    },
+  ];
 
   @override
   void initState() {
@@ -144,10 +175,133 @@ class _WelcomePageState extends State<WelcomePage>
       ),
     );
 
+    // Text cycle animation controller - smooth ease transition
+    _textCycleController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    // Fade out and slide up for outgoing TITLE text - starts first
+    _textFadeOutAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _textCycleController,
+        curve: const Interval(0.0, 0.35, curve: Curves.ease),
+      ),
+    );
+
+    _textSlideOutAnimation = Tween<double>(
+      begin: 0.0,
+      end: -20.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _textCycleController,
+        curve: const Interval(0.0, 0.35, curve: Curves.ease),
+      ),
+    );
+
+    // Fade in and slide up for incoming TITLE text
+    _textFadeInAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _textCycleController,
+        curve: const Interval(0.5, 0.85, curve: Curves.ease),
+      ),
+    );
+
+    _textSlideInAnimation = Tween<double>(
+      begin: 20.0,
+      end: 0.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _textCycleController,
+        curve: const Interval(0.5, 0.85, curve: Curves.ease),
+      ),
+    );
+
+    // Fade out and slide up for outgoing SUBTITLE text - starts slightly after title
+    _subtitleFadeOutAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _textCycleController,
+        curve: const Interval(0.1, 0.45, curve: Curves.ease),
+      ),
+    );
+
+    _subtitleSlideOutAnimation = Tween<double>(
+      begin: 0.0,
+      end: -20.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _textCycleController,
+        curve: const Interval(0.1, 0.45, curve: Curves.ease),
+      ),
+    );
+
+    // Fade in and slide up for incoming SUBTITLE text - starts slightly after title
+    _subtitleFadeInAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _textCycleController,
+        curve: const Interval(0.6, 1.0, curve: Curves.ease),
+      ),
+    );
+
+    _subtitleSlideInAnimation = Tween<double>(
+      begin: 20.0,
+      end: 0.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _textCycleController,
+        curve: const Interval(0.6, 1.0, curve: Curves.ease),
+      ),
+    );
+
     _controller.forward();
+
+    // Start the text cycling after initial animation completes
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _startTextCycle();
+      }
+    });
+  }
+
+  void _startTextCycle() {
+    _textCycleTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!mounted || _isTransitioning) return;
+      _cycleText();
+    });
+  }
+
+  void _cycleText() async {
+    if (_isTransitioning) return;
+    _isTransitioning = true;
+
+    // Start the animation
+    await _textCycleController.forward();
+
+    // Update the index at the middle of the animation
+    setState(() {
+      _currentLanguageIndex =
+          (_currentLanguageIndex + 1) % _welcomeTexts.length;
+    });
+
+    // Reset the controller for next cycle
+    _textCycleController.reset();
+    _isTransitioning = false;
   }
 
   void _onButtonPressed() async {
+    _textCycleTimer?.cancel();
     _glowController.forward(from: 0.0);
     await _exitController.forward();
     widget.onContinue();
@@ -162,9 +316,11 @@ class _WelcomePageState extends State<WelcomePage>
 
   @override
   void dispose() {
+    _textCycleTimer?.cancel();
     _controller.dispose();
     _glowController.dispose();
     _exitController.dispose();
+    _textCycleController.dispose();
     super.dispose();
   }
 
@@ -183,12 +339,13 @@ class _WelcomePageState extends State<WelcomePage>
             children: [
               Center(
                 child: AnimatedBuilder(
-                  animation: Listenable.merge([_controller, _exitController]),
+                  animation: Listenable.merge(
+                      [_controller, _exitController, _textCycleController]),
                   builder: (context, child) {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // First text - "Welcome to Aurora Music"
+                        // Animated "Welcome to Aurora Music" text that cycles through languages
                         Transform.translate(
                           offset: Offset(0, _slideUpAnimation.value),
                           child: SlideTransition(
@@ -201,17 +358,61 @@ class _WelcomePageState extends State<WelcomePage>
                                       _exitController.isCompleted
                                   ? _exitFadeAnimation
                                   : _fadeAnimation,
-                              child: Text(
-                                'Welcome to Aurora Music',
-                                style: TextStyle(
-                                  fontFamily: 'Outfit',
-                                  fontSize: 34,
-                                  fontWeight: FontWeight.w600,
-                                  color: textColor,
-                                  letterSpacing: -0.8,
-                                  height: 1.2,
+                              child: SizedBox(
+                                height:
+                                    50, // Fixed height to prevent layout jumps
+                                child: ClipRect(
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      // Current title (fades out and slides up)
+                                      Transform.translate(
+                                        offset: Offset(
+                                            0, _textSlideOutAnimation.value),
+                                        child: Opacity(
+                                          opacity: _textFadeOutAnimation.value,
+                                          child: Text(
+                                            _welcomeTexts[_currentLanguageIndex]
+                                                ['title']!,
+                                            style: TextStyle(
+                                              fontFamily: 'Outfit',
+                                              fontSize: 34,
+                                              fontWeight: FontWeight.w600,
+                                              color: textColor,
+                                              letterSpacing: -0.8,
+                                              height: 1.2,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                      // Next title (fades in and slides up from below)
+                                      if (_textCycleController.value > 0.0)
+                                        Transform.translate(
+                                          offset: Offset(
+                                              0, _textSlideInAnimation.value),
+                                          child: Opacity(
+                                            opacity: _textFadeInAnimation.value,
+                                            child: Text(
+                                              _welcomeTexts[
+                                                  (_currentLanguageIndex + 1) %
+                                                      _welcomeTexts
+                                                          .length]['title']!,
+                                              style: TextStyle(
+                                                fontFamily: 'Outfit',
+                                                fontSize: 34,
+                                                fontWeight: FontWeight.w600,
+                                                color: textColor,
+                                                letterSpacing: -0.8,
+                                                height: 1.2,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
                               ),
                             ),
                           ),
@@ -220,7 +421,7 @@ class _WelcomePageState extends State<WelcomePage>
                         // Spacing
                         SizedBox(height: 12 * _fadeAnimation2.value),
 
-                        // Second text - "Let's set up your experience"
+                        // Second text - "Let's set up your experience" - also cycles
                         SlideTransition(
                           position: _exitController.isAnimating ||
                                   _exitController.isCompleted
@@ -231,17 +432,63 @@ class _WelcomePageState extends State<WelcomePage>
                                     _exitController.isCompleted
                                 ? _exitFadeAnimation
                                 : _fadeAnimation2,
-                            child: Text(
-                              "Let's set up your experience",
-                              style: TextStyle(
-                                fontFamily: 'Outfit',
-                                fontSize: 17,
-                                fontWeight: FontWeight.w400,
-                                color: subtitleColor,
-                                letterSpacing: 0.2,
-                                height: 1.4,
+                            child: SizedBox(
+                              height:
+                                  30, // Fixed height to prevent layout jumps
+                              child: ClipRect(
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    // Current subtitle (fades out and slides up - slightly after title)
+                                    Transform.translate(
+                                      offset: Offset(
+                                          0, _subtitleSlideOutAnimation.value),
+                                      child: Opacity(
+                                        opacity:
+                                            _subtitleFadeOutAnimation.value,
+                                        child: Text(
+                                          _welcomeTexts[_currentLanguageIndex]
+                                              ['subtitle']!,
+                                          style: TextStyle(
+                                            fontFamily: 'Outfit',
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w400,
+                                            color: subtitleColor,
+                                            letterSpacing: 0.2,
+                                            height: 1.4,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                    // Next subtitle (fades in and slides up from below - slightly after title)
+                                    if (_textCycleController.value > 0.0)
+                                      Transform.translate(
+                                        offset: Offset(
+                                            0, _subtitleSlideInAnimation.value),
+                                        child: Opacity(
+                                          opacity:
+                                              _subtitleFadeInAnimation.value,
+                                          child: Text(
+                                            _welcomeTexts[
+                                                (_currentLanguageIndex + 1) %
+                                                    _welcomeTexts
+                                                        .length]['subtitle']!,
+                                            style: TextStyle(
+                                              fontFamily: 'Outfit',
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.w400,
+                                              color: subtitleColor,
+                                              letterSpacing: 0.2,
+                                              height: 1.4,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
@@ -289,7 +536,8 @@ class _WelcomePageState extends State<WelcomePage>
                                   : [],
                             ),
                             child: PillButton(
-                              text: 'Get Started',
+                              text: AppLocalizations.of(context)
+                                  .translate('get_started'),
                               onPressed: _onButtonPressed,
                               isPrimary: false,
                               padding: const EdgeInsets.symmetric(

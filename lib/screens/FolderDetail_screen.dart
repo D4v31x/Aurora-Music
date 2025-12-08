@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
+import '../models/utils.dart';
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/app_background.dart';
+import '../widgets/expanding_player.dart';
 
 class FolderDetailScreen extends StatefulWidget {
   final String folderPath;
@@ -251,19 +253,21 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                                 fontWeight: FontWeight.bold),
                           ),
                           subtitle: Text(
-                            song.artist ??
+                            splitArtists(song.artist ??
                                 AppLocalizations.of(context)
-                                    .translate('unknown_artist'),
+                                    .translate('unknown_artist')).join(', '),
                             style:
                                 TextStyle(color: Colors.white.withOpacity(0.7)),
                           ),
                           trailing: IconButton(
                             icon: Icon(
-                              Provider.of<AudioPlayerService>(context)
+                              Provider.of<AudioPlayerService>(context,
+                                          listen: false)
                                       .isLiked(song)
                                   ? Icons.favorite
                                   : Icons.favorite_border,
-                              color: Provider.of<AudioPlayerService>(context)
+                              color: Provider.of<AudioPlayerService>(context,
+                                          listen: false)
                                       .isLiked(song)
                                   ? Colors.pink
                                   : Colors.white,
@@ -290,7 +294,8 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     final currentSong = audioPlayerService.currentSong;
     final folderName = widget.folderPath.split(Platform.pathSeparator).last;
 
@@ -331,6 +336,20 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                     ),
                   ),
                   _buildSongsList(),
+                  // Bottom padding for mini player
+                  SliverToBoxAdapter(
+                    child: Selector<AudioPlayerService, bool>(
+                      selector: (_, service) => service.currentSong != null,
+                      builder: (context, hasCurrentSong, _) {
+                        return SizedBox(
+                          height: hasCurrentSong
+                              ? ExpandingPlayer.getMiniPlayerPaddingHeight(
+                                  context)
+                              : 16,
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
           ],

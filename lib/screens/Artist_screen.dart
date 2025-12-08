@@ -12,6 +12,7 @@ import 'package:palette_generator/palette_generator.dart';
 import '../services/local_caching_service.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/shimmer_loading.dart';
+import '../widgets/expanding_player.dart';
 import 'AlbumDetailScreen.dart';
 
 class ArtistDetailsScreen extends StatefulWidget {
@@ -218,134 +219,145 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AudioPlayerService>(
-      builder: (context, audioPlayerService, child) {
-        return FutureBuilder(
-          future: _colorFuture,
-          builder: (context, snapshot) {
-            return Scaffold(
-                resizeToAvoidBottomInset: false,
-                body: FutureBuilder<String?>(
-                    future: widget.artistImagePath != null
-                        ? Future.value(widget.artistImagePath)
-                        : _artistService.fetchArtistImage(widget.artistName),
-                    builder: (context, imageSnapshot) {
-                      return BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(
-                          color: _dominantColor.withOpacity(0.1),
-                          child: CustomScrollView(
-                            controller: _scrollController,
-                            slivers: [
-                              _buildSliverAppBar(
-                                  imageSnapshot.data ?? _artistImagePath),
-                              // Stats section
-                              SliverToBoxAdapter(
+    return FutureBuilder(
+      future: _colorFuture,
+      builder: (context, snapshot) {
+        return Scaffold(
+            resizeToAvoidBottomInset: false,
+            body: FutureBuilder<String?>(
+                future: widget.artistImagePath != null
+                    ? Future.value(widget.artistImagePath)
+                    : _artistService.fetchArtistImage(widget.artistName),
+                builder: (context, imageSnapshot) {
+                  return BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      color: _dominantColor.withOpacity(0.1),
+                      child: CustomScrollView(
+                        controller: _scrollController,
+                        slivers: [
+                          _buildSliverAppBar(
+                              imageSnapshot.data ?? _artistImagePath),
+                          // Stats section
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              child: glassmorphicContainer(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
-                                  child: glassmorphicContainer(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: [
-                                          _buildStatItem(
-                                            Icons.music_note_rounded,
-                                            '${_allSongs.length}',
-                                            AppLocalizations.of(context)
-                                                .translate('songs'),
-                                          ),
-                                          _buildStatDivider(),
-                                          _buildStatItem(
-                                            Icons.album_rounded,
-                                            '${_albums.length}',
-                                            AppLocalizations.of(context)
-                                                .translate('albums'),
-                                          ),
-                                          _buildStatDivider(),
-                                          _buildStatItem(
-                                            Icons.timer_outlined,
-                                            _formatDuration(_totalDuration),
-                                            AppLocalizations.of(context)
-                                                .translate('total'),
-                                          ),
-                                        ],
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      _buildStatItem(
+                                        Icons.music_note_rounded,
+                                        '${_allSongs.length}',
+                                        AppLocalizations.of(context)
+                                            .translate('songs'),
                                       ),
+                                      _buildStatDivider(),
+                                      _buildStatItem(
+                                        Icons.album_rounded,
+                                        '${_albums.length}',
+                                        AppLocalizations.of(context)
+                                            .translate('albums'),
+                                      ),
+                                      _buildStatDivider(),
+                                      _buildStatItem(
+                                        Icons.timer_outlined,
+                                        _formatDuration(_totalDuration),
+                                        AppLocalizations.of(context)
+                                            .translate('total'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Action buttons
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 16),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildActionButton(
+                                      context,
+                                      Icons.play_arrow_rounded,
+                                      AppLocalizations.of(context)
+                                          .translate('play_all'),
+                                      () => _playAllSongs(context),
+                                      isPrimary: true,
                                     ),
                                   ),
-                                ),
-                              ),
-                              // Action buttons
-                              SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 16),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildActionButton(
-                                          context,
-                                          Icons.play_arrow_rounded,
-                                          AppLocalizations.of(context)
-                                              .translate('play_all'),
-                                          () => _playAllSongs(context),
-                                          isPrimary: true,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: _buildActionButton(
-                                          context,
-                                          Icons.shuffle_rounded,
-                                          AppLocalizations.of(context)
-                                              .translate('shuffle'),
-                                          () => _shuffleAllSongs(context),
-                                          isPrimary: false,
-                                        ),
-                                      ),
-                                    ],
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildActionButton(
+                                      context,
+                                      Icons.shuffle_rounded,
+                                      AppLocalizations.of(context)
+                                          .translate('shuffle'),
+                                      () => _shuffleAllSongs(context),
+                                      isPrimary: false,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
-                              // Category tabs
-                              SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildCategoryTab(
-                                          'Songs (${_allSongs.length})',
-                                          0,
-                                          Icons.music_note_rounded,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: _buildCategoryTab(
-                                          'Albums (${_albums.length})',
-                                          1,
-                                          Icons.album_rounded,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              // Content based on selected category
-                              _selectedCategory == 0
-                                  ? _buildSongsList(audioPlayerService)
-                                  : _buildAlbumsList(audioPlayerService),
-                            ],
+                            ),
                           ),
-                        ),
-                      );
-                    }));
-          },
-        );
+                          // Category tabs
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildCategoryTab(
+                                      'Songs (${_allSongs.length})',
+                                      0,
+                                      Icons.music_note_rounded,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildCategoryTab(
+                                      'Albums (${_albums.length})',
+                                      1,
+                                      Icons.album_rounded,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          // Content based on selected category
+                          _selectedCategory == 0
+                              ? _buildSongsList()
+                              : _buildAlbumsList(),
+                          // Bottom padding for mini player
+                          SliverToBoxAdapter(
+                            child: Selector<AudioPlayerService, bool>(
+                              selector: (_, service) =>
+                                  service.currentSong != null,
+                              builder: (context, hasCurrentSong, _) {
+                                return SizedBox(
+                                  height: hasCurrentSong
+                                      ? ExpandingPlayer
+                                          .getMiniPlayerPaddingHeight(context)
+                                      : 16,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }));
       },
     );
   }
@@ -480,7 +492,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     );
   }
 
-  Widget _buildAlbumsList(AudioPlayerService audioPlayerService) {
+  Widget _buildAlbumsList() {
     if (_albums.isEmpty) {
       return SliverFillRemaining(
         child: Center(
@@ -531,8 +543,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                         ),
                       );
                     },
-                    onLongPress: () => _showAlbumOptions(
-                        album, albumSongs, audioPlayerService),
+                    onLongPress: () => _showAlbumOptions(album, albumSongs),
                     child: glassmorphicContainer(
                       child: Padding(
                         padding: const EdgeInsets.all(12),
@@ -588,8 +599,9 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     );
   }
 
-  void _showAlbumOptions(AlbumModel album, List<SongModel> albumSongs,
-      AudioPlayerService audioPlayerService) {
+  void _showAlbumOptions(AlbumModel album, List<SongModel> albumSongs) {
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -687,7 +699,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     );
   }
 
-  Widget _buildSongsList(AudioPlayerService audioPlayerService) {
+  Widget _buildSongsList() {
     if (_displayedSongs.isEmpty && _isLoading) {
       return SliverPadding(
         padding: const EdgeInsets.all(16),
@@ -743,7 +755,8 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                       onTap: () {
                         debugPrint(
                             'Tapped song at index: $index, song: ${song.title}');
-                        audioPlayerService.setPlaylist(_allSongs, index);
+                        Provider.of<AudioPlayerService>(context, listen: false)
+                            .setPlaylist(_allSongs, index);
                         // Note: setPlaylist already starts playback
                       },
                     ),

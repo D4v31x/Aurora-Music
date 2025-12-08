@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
+import '../../../localization/app_localizations.dart';
 import '../../../widgets/pill_button.dart';
 
 class ThemeSelectionPage extends StatefulWidget {
@@ -156,7 +157,8 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
                       child: Text(
-                        'Choose Your Theme',
+                        AppLocalizations.of(context)
+                            .translate('onboarding_theme_title'),
                         style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 32,
@@ -178,7 +180,8 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                         ? _exitFadeAnimation
                         : _subtitleFadeAnimation,
                     child: Text(
-                      'Customize the appearance to your liking',
+                      AppLocalizations.of(context)
+                          .translate('onboarding_theme_subtitle'),
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 16,
@@ -208,8 +211,10 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                             // Light mode option
                             _buildThemeOption(
                               context: context,
-                              title: 'Light Mode',
-                              description: 'Bright and clean interface',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_light_mode'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_light_mode_desc'),
                               icon: Icons.light_mode_rounded,
                               isSelected: !themeProvider.isDarkMode,
                               isDark: isDark,
@@ -223,8 +228,10 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                             // Dark mode option
                             _buildThemeOption(
                               context: context,
-                              title: 'Dark Mode',
-                              description: 'Easy on the eyes in low light',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_dark_mode'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_dark_mode_desc'),
                               icon: Icons.dark_mode_rounded,
                               isSelected: themeProvider.isDarkMode,
                               isDark: isDark,
@@ -267,7 +274,9 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Dynamic Colors',
+                                              AppLocalizations.of(context)
+                                                  .translate(
+                                                      'onboarding_dynamic_colors'),
                                               style: TextStyle(
                                                 fontFamily: 'Outfit',
                                                 fontSize: 16,
@@ -277,7 +286,9 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              'Match system wallpaper colors',
+                                              AppLocalizations.of(context)
+                                                  .translate(
+                                                      'onboarding_dynamic_colors_desc'),
                                               style: TextStyle(
                                                 fontFamily: 'Outfit',
                                                 fontSize: 14,

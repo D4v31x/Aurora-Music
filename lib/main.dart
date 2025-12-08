@@ -13,12 +13,14 @@ import 'services/error_tracking_service.dart';
 import 'services/shader_warmup_service.dart';
 import 'services/background_manager_service.dart';
 import 'services/sleep_timer_controller.dart';
+import 'services/artist_separator_service.dart';
 import 'localization/app_localizations.dart';
 import 'screens/splash_screen.dart';
 import 'localization/locale_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/performance_mode_provider.dart';
 import 'widgets/performance_debug_overlay.dart';
+import 'widgets/expanding_player.dart';
 
 /// Application entry point
 void main() async {
@@ -37,6 +39,9 @@ void main() async {
 
     // Load environment variables
     await dotenv.load(fileName: ".env");
+
+    // Initialize artist separator service
+    await ArtistSeparatorService().initialize();
 
     // Warmup shaders for better performance
     await ShaderWarmupService.warmupShaders();
@@ -134,7 +139,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    
+
     // When app is detached (swiped from recents), stop audio and clean up
     if (state == AppLifecycleState.detached) {
       _cleanupAndExit();
@@ -143,7 +148,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   Future<void> _cleanupAndExit() async {
     try {
-      final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+      final audioService =
+          Provider.of<AudioPlayerService>(context, listen: false);
       await audioService.stop();
       audioService.dispose();
     } catch (e) {
@@ -202,7 +208,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     return MaterialRectCenterArcTween(begin: begin, end: end);
                   },
                 ),
-                child: child ?? const SizedBox.shrink(),
+                child: Stack(
+                  children: [
+                    // Main app content
+                    child ?? const SizedBox.shrink(),
+                    // Global mini player overlay
+                    const ExpandingPlayer(),
+                  ],
+                ),
               );
             },
             home: Builder(

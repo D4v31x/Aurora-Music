@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
+import '../../../localization/app_localizations.dart';
 import '../../../widgets/pill_button.dart';
 
 class CompletionPage extends StatefulWidget {
@@ -94,7 +95,8 @@ class _CompletionPageState extends State<CompletionPage>
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: Text(
-                    'All Set',
+                    AppLocalizations.of(context)
+                        .translate('onboarding_completion_title'),
                     style: TextStyle(
                       fontFamily: 'Outfit',
                       fontSize: 36,
@@ -113,7 +115,8 @@ class _CompletionPageState extends State<CompletionPage>
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: Text(
-                  'You\'re ready to enjoy your music',
+                  AppLocalizations.of(context)
+                      .translate('onboarding_completion_subtitle'),
                   style: TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 18,
@@ -130,7 +133,8 @@ class _CompletionPageState extends State<CompletionPage>
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: PillButton(
-                  text: 'Start Listening',
+                  text: AppLocalizations.of(context)
+                      .translate('onboarding_start_listening'),
                   onPressed: widget.onComplete,
                   isPrimary: true,
                   width: double.infinity,

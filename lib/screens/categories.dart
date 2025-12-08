@@ -7,7 +7,9 @@ import '../services/artwork_cache_service.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/app_background.dart';
 import '../widgets/shimmer_loading.dart';
+import '../widgets/expanding_player.dart';
 import '../localization/app_localizations.dart';
+import '../models/utils.dart';
 import 'Artist_screen.dart';
 import 'FolderDetail_screen.dart';
 import 'AlbumDetailScreen.dart';
@@ -110,7 +112,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     final loc = AppLocalizations.of(context);
 
     return Hero(
@@ -327,6 +330,14 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                     _isGridView
                         ? _buildAlbumsGrid(audioPlayerService)
                         : _buildAlbumsList(audioPlayerService),
+                  // Bottom padding for mini player
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: audioPlayerService.currentSong != null
+                          ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
+                          : 16,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -441,7 +452,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${album.artist ?? 'Unknown'} • ${album.numOfSongs} tracks',
+                      '${splitArtists(album.artist ?? 'Unknown').join(', ')} • ${album.numOfSongs} tracks',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.6),
                         fontSize: 11,
@@ -524,7 +535,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      album.artist ?? 'Unknown Artist',
+                      splitArtists(album.artist ?? 'Unknown Artist').join(', '),
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.7),
                         fontSize: 13,
@@ -608,7 +619,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          album.artist ?? 'Unknown',
+                          splitArtists(album.artist ?? 'Unknown').join(', '),
                           style: const TextStyle(
                               color: Colors.white70, fontSize: 13),
                         ),
@@ -1030,6 +1041,19 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                     )
                   else
                     _isGridView ? _buildArtistsGrid() : _buildArtistsList(),
+                  // Bottom padding for mini player
+                  Consumer<AudioPlayerService>(
+                    builder: (context, audioPlayerService, _) {
+                      return SliverToBoxAdapter(
+                        child: SizedBox(
+                          height: audioPlayerService.currentSong != null
+                              ? ExpandingPlayer.getMiniPlayerPaddingHeight(
+                                  context)
+                              : 16,
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -1476,7 +1500,6 @@ class FoldersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
     final foldersFuture = OnAudioQuery().queryAllPath();
 
     return Hero(
@@ -1485,7 +1508,11 @@ class FoldersScreen extends StatelessWidget {
         opacity: const AlwaysStoppedAnimation(1.0),
         child: Stack(
           children: [
-            buildBackground(context, audioPlayerService.currentSong),
+            Selector<AudioPlayerService, SongModel?>(
+              selector: (_, service) => service.currentSong,
+              builder: (context, currentSong, _) =>
+                  buildBackground(context, currentSong),
+            ),
             Scaffold(
               backgroundColor: Colors.transparent,
               resizeToAvoidBottomInset: false,
@@ -1502,49 +1529,62 @@ class FoldersScreen extends StatelessWidget {
                   }
 
                   final folders = snapshot.data!;
-                  return ListView.builder(
-                    itemCount: folders.length,
-                    itemBuilder: (context, index) {
-                      final folder = folders[index];
-                      return AnimationConfiguration.staggeredList(
-                        position: index,
-                        duration: const Duration(milliseconds: 375),
-                        child: SlideAnimation(
-                          verticalOffset: 50.0,
-                          child: FadeInAnimation(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8.0, horizontal: 16.0),
-                              child: glassmorphicContainer(
-                                child: ListTile(
-                                  leading: const Icon(Icons.folder,
-                                      color: Colors.white),
-                                  title: Text(
-                                    folder.split('/').last,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  subtitle: Text(
-                                    folder,
-                                    style: const TextStyle(color: Colors.grey),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            FolderDetailScreen(
-                                          folderPath: folder,
-                                        ),
+                  return Selector<AudioPlayerService, bool>(
+                    selector: (_, service) => service.currentSong != null,
+                    builder: (context, hasCurrentSong, _) {
+                      return ListView.builder(
+                        padding: EdgeInsets.only(
+                          bottom: hasCurrentSong
+                              ? ExpandingPlayer.getMiniPlayerPaddingHeight(
+                                  context)
+                              : 16,
+                        ),
+                        itemCount: folders.length,
+                        itemBuilder: (context, index) {
+                          final folder = folders[index];
+                          return AnimationConfiguration.staggeredList(
+                            position: index,
+                            duration: const Duration(milliseconds: 375),
+                            child: SlideAnimation(
+                              verticalOffset: 50.0,
+                              child: FadeInAnimation(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8.0, horizontal: 16.0),
+                                  child: glassmorphicContainer(
+                                    child: ListTile(
+                                      leading: const Icon(Icons.folder,
+                                          color: Colors.white),
+                                      title: Text(
+                                        folder.split('/').last,
+                                        style: const TextStyle(
+                                            color: Colors.white),
                                       ),
-                                    );
-                                  },
+                                      subtitle: Text(
+                                        folder,
+                                        style:
+                                            const TextStyle(color: Colors.grey),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                FolderDetailScreen(
+                                              folderPath: folder,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       );
                     },
                   );

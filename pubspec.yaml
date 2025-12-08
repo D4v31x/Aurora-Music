@@ -136,7 +136,9 @@ flutter:
     - assets/translations/en.json
     - assets/animations/untitled.riv
     - .env
-    - assets/images/UI/liked_icon.png
+    - assets/images/UI/liked.png
+    - assets/images/UI/mostplayed.png
+    - assets/images/UI/recentlyadded.png
     - assets/animations/Splash.json
 
   # To add assets to your application, add an assets section, like this:

@@ -19,7 +19,7 @@ class AppBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaceColor = Theme.of(context).colorScheme.surface;
-    
+
     return Consumer<BackgroundManagerService>(
       builder: (context, backgroundManager, _) {
         // Always use AnimatedArtworkBackground - it handles null artwork internally
@@ -41,7 +41,8 @@ class AppBackground extends StatelessWidget {
             artwork: backgroundManager.currentArtwork,
             blurIntensity: backgroundManager.currentMoodTheme.blurIntensity,
             overlayColor: backgroundManager.currentMoodTheme.overlayTint
-                .withValues(alpha: backgroundManager.currentMoodTheme.overlayOpacity),
+                .withValues(
+                    alpha: backgroundManager.currentMoodTheme.overlayOpacity),
             child: child,
           );
         }

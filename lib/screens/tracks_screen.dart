@@ -9,6 +9,7 @@ import '../services/artwork_cache_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/optimized_tiles.dart'; // Import optimized tile
+import '../widgets/expanding_player.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class TracksScreen extends StatefulWidget {
@@ -185,7 +186,8 @@ class _TracksScreenState extends State<TracksScreen>
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
 
     return Hero(
       tag: 'tracks_screen',
@@ -290,6 +292,11 @@ class _TracksScreenState extends State<TracksScreen>
           controller: _scrollController,
           cacheExtent: 100, // Preload items for smoother scrolling
           addRepaintBoundaries: true,
+          padding: EdgeInsets.only(
+            bottom: audioPlayerService.currentSong != null
+                ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
+                : 16,
+          ),
           itemCount: _displayedSongs.length + (_hasMoreSongs ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == _displayedSongs.length) {

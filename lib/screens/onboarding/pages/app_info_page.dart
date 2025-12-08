@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
+import '../../../localization/app_localizations.dart';
 import '../../../widgets/pill_button.dart';
 
 class AppInfoPage extends StatefulWidget {
@@ -156,6 +157,7 @@ class _AppInfoPageState extends State<AppInfoPage>
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
         isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+    final localizations = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -181,7 +183,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
                       child: Text(
-                        'Welcome to Aurora Music',
+                        localizations.translate('onboarding_app_info_title'),
                         style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 32,
@@ -203,7 +205,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                         ? _exitFadeAnimation
                         : _subtitleFadeAnimation,
                     child: Text(
-                      'Your personal music companion',
+                      localizations.translate('onboarding_app_info_subtitle'),
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 16,
@@ -232,41 +234,47 @@ class _AppInfoPageState extends State<AppInfoPage>
                           children: [
                             _buildFeatureItem(
                               icon: Icons.folder_open_rounded,
-                              title: 'Local Music Library',
-                              description:
-                                  'Play your music files stored on your device',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_local_music'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_local_music_desc'),
                               isDark: isDark,
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
                               icon: Icons.image_rounded,
-                              title: 'Beautiful Album Art',
-                              description:
-                                  'Automatically fetch and display album artwork',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_beautiful_artwork'),
+                              description: AppLocalizations.of(context)
+                                  .translate(
+                                      'onboarding_beautiful_artwork_desc'),
                               isDark: isDark,
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
                               icon: Icons.palette_rounded,
-                              title: 'Material You Design',
-                              description:
-                                  'Dynamic colors that adapt to your preferences',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_material_design'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_material_design_desc'),
                               isDark: isDark,
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
                               icon: Icons.queue_music_rounded,
-                              title: 'Smart Playlists',
-                              description:
-                                  'Create and manage your music collections',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_smart_playlists'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_smart_playlists_desc'),
                               isDark: isDark,
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
                               icon: Icons.lyrics_rounded,
-                              title: 'Lyrics Support',
-                              description:
-                                  'View synchronized lyrics while listening',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_lyrics_support'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_lyrics_support_desc'),
                               isDark: isDark,
                             ),
                           ],

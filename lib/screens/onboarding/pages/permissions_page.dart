@@ -4,6 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../../../providers/theme_provider.dart';
+import '../../../localization/app_localizations.dart';
 import '../../../widgets/pill_button.dart';
 
 class PermissionsPage extends StatefulWidget {
@@ -247,7 +248,8 @@ class _PermissionsPageState extends State<PermissionsPage>
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
                       child: Text(
-                        'Grant Permissions',
+                        AppLocalizations.of(context)
+                            .translate('onboarding_permissions_title'),
                         style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 32,
@@ -269,7 +271,8 @@ class _PermissionsPageState extends State<PermissionsPage>
                         ? _exitFadeAnimation
                         : _subtitleFadeAnimation,
                     child: Text(
-                      'Aurora Music needs these permissions to work properly',
+                      AppLocalizations.of(context)
+                          .translate('onboarding_permissions_subtitle'),
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 16,
@@ -299,9 +302,10 @@ class _PermissionsPageState extends State<PermissionsPage>
                             _buildPermissionItem(
                               context: context,
                               icon: Icons.music_note_rounded,
-                              title: 'Audio Access',
-                              description:
-                                  'Required to play and manage your music library',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_audio_access'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_audio_access_desc'),
                               isGranted: _audioPermissionGranted,
                               isRequired: true,
                               isDark: isDark,
@@ -314,9 +318,11 @@ class _PermissionsPageState extends State<PermissionsPage>
                               _buildPermissionItem(
                                 context: context,
                                 icon: Icons.folder_rounded,
-                                title: 'Storage Access',
-                                description:
-                                    'Required to read music files from your device',
+                                title: AppLocalizations.of(context)
+                                    .translate('onboarding_storage_access'),
+                                description: AppLocalizations.of(context)
+                                    .translate(
+                                        'onboarding_storage_access_desc'),
                                 isGranted: _storagePermissionGranted,
                                 isRequired: true,
                                 isDark: isDark,
@@ -327,9 +333,10 @@ class _PermissionsPageState extends State<PermissionsPage>
                             _buildPermissionItem(
                               context: context,
                               icon: Icons.bluetooth_rounded,
-                              title: 'Bluetooth',
-                              description:
-                                  'Needed to connect to bluetooth devices',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_bluetooth'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_bluetooth_desc'),
                               isGranted: _bluetoothPermissionGranted,
                               isRequired: false,
                               isDark: isDark,
@@ -340,8 +347,10 @@ class _PermissionsPageState extends State<PermissionsPage>
                             _buildPermissionItem(
                               context: context,
                               icon: Icons.notifications_rounded,
-                              title: 'Notifications',
-                              description: 'Show playback controls and updates',
+                              title: AppLocalizations.of(context)
+                                  .translate('onboarding_notifications'),
+                              description: AppLocalizations.of(context)
+                                  .translate('onboarding_notifications_desc'),
                               isGranted: _notificationPermissionGranted,
                               isRequired: false,
                               isDark: isDark,
@@ -353,8 +362,10 @@ class _PermissionsPageState extends State<PermissionsPage>
                             if (!allGranted)
                               PillButton(
                                 text: _isChecking
-                                    ? 'Requesting...'
-                                    : 'Grant Permissions',
+                                    ? AppLocalizations.of(context)
+                                        .translate('onboarding_requesting')
+                                    : AppLocalizations.of(context).translate(
+                                        'onboarding_grant_permissions'),
                                 onPressed:
                                     _isChecking ? null : _requestAllPermissions,
                                 isPrimary: true,
@@ -466,9 +477,10 @@ class _PermissionsPageState extends State<PermissionsPage>
                           color: const Color(0xFFEF4444).withOpacity(0.2),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'Required',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)
+                              .translate('onboarding_required'),
+                          style: const TextStyle(
                             fontFamily: 'Outfit',
                             fontSize: 10,
                             fontWeight: FontWeight.w600,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../services/artwork_cache_service.dart';
+import '../models/utils.dart';
 
 /// Optimized song tile widget that prevents unnecessary rebuilds
 /// Uses RepaintBoundary and AutomaticKeepAliveClientMixin for performance
@@ -82,7 +83,7 @@ class _OptimizedSongTileState extends State<OptimizedSongTile>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.song.artist ?? 'Unknown Artist',
+                        splitArtists(widget.song.artist ?? 'Unknown Artist').join(', '),
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.6),
                           fontSize: 12,
