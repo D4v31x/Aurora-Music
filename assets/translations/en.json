@@ -296,6 +296,10 @@
   "onboarding_lyrics_support": "Lyrics Support",
   "onboarding_lyrics_support_desc": "View synchronized lyrics while listening",
   "onboarding_optional": "Optional",
+  "onboarding_local_music": "Music on your device",
+  "onboarding_local_music_desc": "Have your music files in the palm of your hand",
+  "onboarding_beautiful_artwork": "Beautiful album artwork",
+  "onboarding_beautiful_artwork_desc": "Automatically fetch and display album artwork in the way it was meant to be seen",
   "settings_appearance": "Appearance",
   "settings_dark_mode": "Dark Mode",
   "settings_dark_mode_desc": "Switch to dark theme",
@@ -349,5 +353,7 @@
   "your_library": "Your Library",
   "of_music": "of music",
   "support_aurora": "Support Aurora",
-  "support_aurora_desc": "Help keep the app free"
+  "support_aurora_desc": "Help keep the app free",
+  "connect_with_us": "Connect with us",
+  "now_playing": "Now Playing"
 }

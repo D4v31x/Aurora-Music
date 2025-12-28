@@ -28,6 +28,7 @@
   "favorite_songs": "Oblíbené skladby",
   "auto_playlists": "Automatické playlisty",
   "your_playlists": "Vaše playlisty",
+  "no_playlists": "Žádné playlisty",
   "create_first_playlist": "Klepnutím na tlačítko výše vytvoříte první playlist",
   "recently_played": "Nedávno přehrávané",
   "most_played": "Nejhranější",
@@ -282,6 +283,10 @@
   "onboarding_smart_playlists_desc": "Vytvářejte a spravujte své hudební kolekce",
   "onboarding_lyrics_support": "Podpora textů",
   "onboarding_lyrics_support_desc": "Zobrazuje synchronizované texty během poslechu",
+  "onboarding_local_music": "Hudba na vašem zařízení",
+  "onboarding_local_music_desc": "Mějte své hudební soubory na dosah ruky",
+  "onboarding_beautiful_artwork": "Krásné covery alb",
+  "onboarding_beautiful_artwork_desc": "Automaticky stahuje a zobrazuje obaly alb tak, jak mají být viděny",
   "onboarding_optional": "Volitelné",
   "settings_appearance": "Vzhled",
   "settings_dark_mode": "Tmavý režim",
@@ -336,5 +341,7 @@
   "your_library": "Vaše knihovna",
   "of_music": "hudby",
   "support_aurora": "Podpořit Auroru",
-  "support_aurora_desc": "Pomozte udržet aplikaci zdarma"
+  "support_aurora_desc": "Pomozte udržet aplikaci zdarma",
+  "connect_with_us": "Spojte se s námi",
+  "now_playing": "Právě hraje"
 }
