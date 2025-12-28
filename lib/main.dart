@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
+ import 'package:flutter/material.dart';
+import 'package:clarity_flutter/clarity_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:just_audio_background/just_audio_background.dart';
+import 'package:audio_service/audio_service.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -9,6 +11,7 @@ import 'dart:ui' as ui;
 
 import 'constants/app_config.dart';
 import 'services/audio_player_service.dart';
+import 'services/audio_handler.dart';
 import 'services/error_tracking_service.dart';
 import 'services/shader_warmup_service.dart';
 import 'services/background_manager_service.dart';
@@ -21,6 +24,9 @@ import 'providers/theme_provider.dart';
 import 'providers/performance_mode_provider.dart';
 import 'widgets/performance_debug_overlay.dart';
 import 'widgets/expanding_player.dart';
+
+/// Global audio handler instance
+late AuroraAudioHandler audioHandler;
 
 /// Application entry point
 void main() async {
@@ -51,55 +57,69 @@ void main() async {
     final languageCode =
         prefs.getString('languageCode') ?? AppConfig.defaultLanguageCode;
 
-    // Initialize audio background service
-    await JustAudioBackground.init(
-      androidNotificationChannelId: AppConfig.androidNotificationChannelId,
-      androidNotificationChannelName: AppConfig.androidNotificationChannelName,
-      androidNotificationOngoing: true,
+    // Initialize audio service with custom handler (no stop button in notification)
+    final player = AudioPlayer();
+    audioHandler = await AudioService.init(
+      builder: () => AuroraAudioHandler(player),
+      config: AudioServiceConfig(
+        androidNotificationChannelId: AppConfig.androidNotificationChannelId,
+        androidNotificationChannelName:
+            AppConfig.androidNotificationChannelName,
+        androidNotificationOngoing: true,
+        androidStopForegroundOnPause: true,
+      ),
     );
 
     // Configure memory management
     ImageCache().maximumSize = AppConfig.imageCacheMaxSize;
     ImageCache().maximumSizeBytes = AppConfig.imageCacheMaxSizeBytes;
 
+    // Initialize Clarity
+    final clarityConfig = ClarityConfig(
+      projectId: "us5vyzjpfa",
+      logLevel: LogLevel.None,
+    );
+
     // Launch the application with all required providers
     runApp(
-      MultiProvider(
-        providers: [
-          // Use lazy initialization for better startup performance
-          ChangeNotifierProvider.value(
-              value: AudioPlayerService()), // Use pre-initialized instance
-          ChangeNotifierProvider(create: (_) => ThemeProvider(), lazy: false),
-          ChangeNotifierProvider(
-              create: (_) => PerformanceModeProvider(), lazy: false),
-          ChangeNotifierProvider(
-              create: (_) => BackgroundManagerService(), lazy: false),
-          ChangeNotifierProvider(
-              create: (_) => SleepTimerController(), lazy: true),
-          Provider<ErrorTrackingService>.value(value: errorTracker),
-        ],
-        child: Builder(
-          builder: (context) {
-            // Connect the services after providers are initialized
-            final audioPlayerService =
-                Provider.of<AudioPlayerService>(context, listen: false);
-            final backgroundManager =
-                Provider.of<BackgroundManagerService>(context, listen: false);
-            final performanceProvider =
-                Provider.of<PerformanceModeProvider>(context, listen: false);
+      ClarityWidget(
+        clarityConfig: clarityConfig,
+        app: MultiProvider(
+          providers: [
+            // Use lazy initialization for better startup performance
+            ChangeNotifierProvider(create: (_) => AudioPlayerService()),
+            ChangeNotifierProvider(create: (_) => ThemeProvider(), lazy: false),
+            ChangeNotifierProvider(
+                create: (_) => PerformanceModeProvider(), lazy: false),
+            ChangeNotifierProvider(
+                create: (_) => BackgroundManagerService(), lazy: false),
+            ChangeNotifierProvider(
+                create: (_) => SleepTimerController(), lazy: true),
+            Provider<ErrorTrackingService>.value(value: errorTracker),
+          ],
+          child: Builder(
+            builder: (context) {
+              // Connect the services after providers are initialized
+              final audioPlayerService =
+                  Provider.of<AudioPlayerService>(context, listen: false);
+              final backgroundManager =
+                  Provider.of<BackgroundManagerService>(context, listen: false);
+              final performanceProvider =
+                  Provider.of<PerformanceModeProvider>(context, listen: false);
 
-            // Set the background manager in the audio player service
-            audioPlayerService.setBackgroundManager(backgroundManager);
+              // Set the background manager in the audio player service
+              audioPlayerService.setBackgroundManager(backgroundManager);
 
-            // Initialize performance provider
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              performanceProvider.initialize();
-            });
+              // Initialize performance provider
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                performanceProvider.initialize();
+              });
 
-            return MyApp(
-              languageCode: languageCode,
-            );
-          },
+              return MyApp(
+                languageCode: languageCode,
+              );
+            },
+          ),
         ),
       ),
     );
@@ -128,6 +148,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.initState();
     _locale = ui.Locale(widget.languageCode);
     WidgetsBinding.instance.addObserver(this);
+
+    // Listen for notification clicks to expand the player
+    AudioService.notificationClicked.listen((clicked) {
+      if (clicked) {
+        // Expand the mini player to show Now Playing screen
+        ExpandingPlayer.expand();
+      }
+    });
   }
 
   @override

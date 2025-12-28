@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:palette_generator/palette_generator.dart';
@@ -681,7 +682,7 @@ class _SearchSongTile extends StatelessWidget {
 }
 
 /// Top result card with glassmorphic effect and color accent extraction from artwork
-class _TopResultCardWithArtwork extends StatefulWidget {
+class _TopResultCardWithArtwork extends HookWidget {
   final int id;
   final ArtworkCacheService artworkService;
   final VoidCallback onTap;
@@ -703,72 +704,28 @@ class _TopResultCardWithArtwork extends StatefulWidget {
   });
 
   @override
-  State<_TopResultCardWithArtwork> createState() =>
-      _TopResultCardWithArtworkState();
-}
-
-class _TopResultCardWithArtworkState extends State<_TopResultCardWithArtwork> {
-  Color? _dominantColor;
-  Color? _accentColor;
-  bool _hasArtwork = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _extractColors();
-  }
-
-  @override
-  void didUpdateWidget(_TopResultCardWithArtwork oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.id != widget.id) {
-      _extractColors();
-    }
-  }
-
-  Future<void> _extractColors() async {
-    try {
-      final artwork = await widget.artworkService.getArtwork(widget.id);
-      if (artwork != null && artwork.isNotEmpty && mounted) {
-        final imageProvider = MemoryImage(artwork);
-        final palette = await PaletteGenerator.fromImageProvider(
-          imageProvider,
-          size: const Size(100, 100),
-          maximumColorCount: 8,
-        );
-
-        if (mounted) {
-          setState(() {
-            _hasArtwork = true;
-            _dominantColor =
-                palette.dominantColor?.color ?? palette.vibrantColor?.color;
-            _accentColor = palette.vibrantColor?.color ??
-                palette.lightVibrantColor?.color ??
-                palette.mutedColor?.color;
-          });
-        }
-      } else if (mounted) {
-        setState(() {
-          _hasArtwork = false;
-          _dominantColor = null;
-          _accentColor = null;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _hasArtwork = false;
-          _dominantColor = null;
-          _accentColor = null;
-        });
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final colorState =
+        useState<({Color? dominant, Color? accent, bool hasArtwork})>(
+      (dominant: null, accent: null, hasArtwork: false),
+    );
+
+    // Store previous id for comparison
+    final prevId = usePrevious(id);
+
+    useEffect(() {
+      if (id != prevId || colorState.value.dominant == null) {
+        _extractColors(colorState);
+      }
+      return null;
+    }, [id]);
+
+    final hasArtwork = colorState.value.hasArtwork;
+    final dominantColor = colorState.value.dominant;
+    final accentColor = colorState.value.accent;
+
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: onTap,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: BackdropFilter(
@@ -776,40 +733,39 @@ class _TopResultCardWithArtworkState extends State<_TopResultCardWithArtwork> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: _hasArtwork && _dominantColor != null
+              gradient: hasArtwork && dominantColor != null
                   ? LinearGradient(
                       colors: [
-                        _dominantColor!.withOpacity(0.35),
-                        (_accentColor ?? _dominantColor!).withOpacity(0.15),
+                        dominantColor.withOpacity(0.35),
+                        (accentColor ?? dominantColor).withOpacity(0.15),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     )
                   : null,
-              color: _hasArtwork ? null : Colors.white.withOpacity(0.1),
+              color: hasArtwork ? null : Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: _hasArtwork && _dominantColor != null
-                    ? _dominantColor!.withOpacity(0.3)
+                color: hasArtwork && dominantColor != null
+                    ? dominantColor.withOpacity(0.3)
                     : Colors.white.withOpacity(0.2),
                 width: 1,
               ),
             ),
             child: Row(
               children: [
-                widget.heroTag != null
+                heroTag != null
                     ? Hero(
-                        tag: widget.heroTag!,
+                        tag: heroTag!,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: widget.artworkService
-                              .buildCachedArtwork(widget.id, size: 100),
+                          child:
+                              artworkService.buildCachedArtwork(id, size: 100),
                         ),
                       )
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: widget.artworkService
-                            .buildCachedArtwork(widget.id, size: 100),
+                        child: artworkService.buildCachedArtwork(id, size: 100),
                       ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -820,16 +776,16 @@ class _TopResultCardWithArtworkState extends State<_TopResultCardWithArtwork> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: _hasArtwork && _accentColor != null
-                              ? _accentColor!.withOpacity(0.2)
+                          color: hasArtwork && accentColor != null
+                              ? accentColor.withOpacity(0.2)
                               : Colors.white.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          widget.typeLabel,
+                          typeLabel,
                           style: TextStyle(
                             fontFamily: 'ProductSans',
-                            color: _hasArtwork && _accentColor != null
+                            color: hasArtwork && accentColor != null
                                 ? Colors.white.withOpacity(0.9)
                                 : Colors.white.withOpacity(0.7),
                             fontSize: 10,
@@ -840,7 +796,7 @@ class _TopResultCardWithArtworkState extends State<_TopResultCardWithArtwork> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        widget.title,
+                        title,
                         style: const TextStyle(
                           fontFamily: 'ProductSans',
                           color: Colors.white,
@@ -852,7 +808,7 @@ class _TopResultCardWithArtworkState extends State<_TopResultCardWithArtwork> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.subtitle,
+                        subtitle,
                         style: TextStyle(
                           fontFamily: 'ProductSans',
                           color: Colors.white.withOpacity(0.6),
@@ -864,7 +820,7 @@ class _TopResultCardWithArtworkState extends State<_TopResultCardWithArtwork> {
                     ],
                   ),
                 ),
-                widget.trailing,
+                trailing,
               ],
             ),
           ),
@@ -872,10 +828,39 @@ class _TopResultCardWithArtworkState extends State<_TopResultCardWithArtwork> {
       ),
     );
   }
+
+  Future<void> _extractColors(
+    ValueNotifier<({Color? dominant, Color? accent, bool hasArtwork})>
+        colorState,
+  ) async {
+    try {
+      final artwork = await artworkService.getArtwork(id);
+      if (artwork != null && artwork.isNotEmpty) {
+        final imageProvider = MemoryImage(artwork);
+        final palette = await PaletteGenerator.fromImageProvider(
+          imageProvider,
+          size: const Size(100, 100),
+          maximumColorCount: 8,
+        );
+
+        colorState.value = (
+          dominant: palette.dominantColor?.color ?? palette.vibrantColor?.color,
+          accent: palette.vibrantColor?.color ??
+              palette.lightVibrantColor?.color ??
+              palette.mutedColor?.color,
+          hasArtwork: true,
+        );
+      } else {
+        colorState.value = (dominant: null, accent: null, hasArtwork: false);
+      }
+    } catch (e) {
+      colorState.value = (dominant: null, accent: null, hasArtwork: false);
+    }
+  }
 }
 
 /// Top artist result card with artwork extraction for glassmorphic styling
-class _TopArtistResultCard extends StatefulWidget {
+class _TopArtistResultCard extends HookWidget {
   final ArtistModel artist;
   final ArtworkCacheService artworkService;
   final VoidCallback onTap;
@@ -889,72 +874,29 @@ class _TopArtistResultCard extends StatefulWidget {
   });
 
   @override
-  State<_TopArtistResultCard> createState() => _TopArtistResultCardState();
-}
-
-class _TopArtistResultCardState extends State<_TopArtistResultCard> {
-  Color? _dominantColor;
-  Color? _accentColor;
-  bool _hasArtwork = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _extractColors();
-  }
-
-  @override
-  void didUpdateWidget(_TopArtistResultCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.artist.artist != widget.artist.artist) {
-      _extractColors();
-    }
-  }
-
-  Future<void> _extractColors() async {
-    try {
-      final imagePath = await widget.artworkService
-          .getArtistImageByName(widget.artist.artist);
-      if (imagePath != null && mounted) {
-        final imageProvider = FileImage(File(imagePath));
-        final palette = await PaletteGenerator.fromImageProvider(
-          imageProvider,
-          size: const Size(100, 100),
-          maximumColorCount: 8,
-        );
-
-        if (mounted) {
-          setState(() {
-            _hasArtwork = true;
-            _dominantColor =
-                palette.dominantColor?.color ?? palette.vibrantColor?.color;
-            _accentColor = palette.vibrantColor?.color ??
-                palette.lightVibrantColor?.color ??
-                palette.mutedColor?.color;
-          });
-        }
-      } else if (mounted) {
-        setState(() {
-          _hasArtwork = false;
-          _dominantColor = null;
-          _accentColor = null;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _hasArtwork = false;
-          _dominantColor = null;
-          _accentColor = null;
-        });
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final colorState =
+        useState<({Color? dominant, Color? accent, bool hasArtwork})>(
+      (dominant: null, accent: null, hasArtwork: false),
+    );
+
+    // Store previous artist name for comparison
+    final prevArtistName = usePrevious(artist.artist);
+
+    useEffect(() {
+      if (artist.artist != prevArtistName ||
+          colorState.value.dominant == null) {
+        _extractColors(colorState);
+      }
+      return null;
+    }, [artist.artist]);
+
+    final hasArtwork = colorState.value.hasArtwork;
+    final dominantColor = colorState.value.dominant;
+    final accentColor = colorState.value.accent;
+
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: onTap,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: BackdropFilter(
@@ -962,21 +904,21 @@ class _TopArtistResultCardState extends State<_TopArtistResultCard> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: _hasArtwork && _dominantColor != null
+              gradient: hasArtwork && dominantColor != null
                   ? LinearGradient(
                       colors: [
-                        _dominantColor!.withOpacity(0.35),
-                        (_accentColor ?? _dominantColor!).withOpacity(0.15),
+                        dominantColor.withOpacity(0.35),
+                        (accentColor ?? dominantColor).withOpacity(0.15),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     )
                   : null,
-              color: _hasArtwork ? null : Colors.white.withOpacity(0.1),
+              color: hasArtwork ? null : Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: _hasArtwork && _dominantColor != null
-                    ? _dominantColor!.withOpacity(0.3)
+                color: hasArtwork && dominantColor != null
+                    ? dominantColor.withOpacity(0.3)
                     : Colors.white.withOpacity(0.2),
                 width: 1,
               ),
@@ -984,11 +926,11 @@ class _TopArtistResultCardState extends State<_TopArtistResultCard> {
             child: Row(
               children: [
                 Hero(
-                  tag: 'artist_image_${widget.artist.artist}',
+                  tag: 'artist_image_${artist.artist}',
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
-                    child: widget.artworkService.buildArtistImageByName(
-                      widget.artist.artist,
+                    child: artworkService.buildArtistImageByName(
+                      artist.artist,
                       size: 100,
                       circular: true,
                     ),
@@ -1003,16 +945,16 @@ class _TopArtistResultCardState extends State<_TopArtistResultCard> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: _hasArtwork && _accentColor != null
-                              ? _accentColor!.withOpacity(0.2)
+                          color: hasArtwork && accentColor != null
+                              ? accentColor.withOpacity(0.2)
                               : Colors.white.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          widget.typeLabel,
+                          typeLabel,
                           style: TextStyle(
                             fontFamily: 'ProductSans',
-                            color: _hasArtwork && _accentColor != null
+                            color: hasArtwork && accentColor != null
                                 ? Colors.white.withOpacity(0.9)
                                 : Colors.white.withOpacity(0.7),
                             fontSize: 10,
@@ -1023,7 +965,7 @@ class _TopArtistResultCardState extends State<_TopArtistResultCard> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        widget.artist.artist,
+                        artist.artist,
                         style: const TextStyle(
                           fontFamily: 'ProductSans',
                           color: Colors.white,
@@ -1035,7 +977,7 @@ class _TopArtistResultCardState extends State<_TopArtistResultCard> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${widget.artist.numberOfTracks ?? 0} ${AppLocalizations.of(context).translate('songs').toLowerCase()}',
+                        '${artist.numberOfTracks ?? 0} ${AppLocalizations.of(context).translate('songs').toLowerCase()}',
                         style: TextStyle(
                           fontFamily: 'ProductSans',
                           color: Colors.white.withOpacity(0.6),
@@ -1053,5 +995,35 @@ class _TopArtistResultCardState extends State<_TopArtistResultCard> {
         ),
       ),
     );
+  }
+
+  Future<void> _extractColors(
+    ValueNotifier<({Color? dominant, Color? accent, bool hasArtwork})>
+        colorState,
+  ) async {
+    try {
+      final imagePath =
+          await artworkService.getArtistImageByName(artist.artist);
+      if (imagePath != null) {
+        final imageProvider = FileImage(File(imagePath));
+        final palette = await PaletteGenerator.fromImageProvider(
+          imageProvider,
+          size: const Size(100, 100),
+          maximumColorCount: 8,
+        );
+
+        colorState.value = (
+          dominant: palette.dominantColor?.color ?? palette.vibrantColor?.color,
+          accent: palette.vibrantColor?.color ??
+              palette.lightVibrantColor?.color ??
+              palette.mutedColor?.color,
+          hasArtwork: true,
+        );
+      } else {
+        colorState.value = (dominant: null, accent: null, hasArtwork: false);
+      }
+    } catch (e) {
+      colorState.value = (dominant: null, accent: null, hasArtwork: false);
+    }
   }
 }

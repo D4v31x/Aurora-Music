@@ -88,13 +88,10 @@ class _HomeTabState extends State<HomeTab> {
                   AppLocalizations.of(context).translate('suggested_artists'),
                 ),
                 const SizedBox(height: 12.0),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: RepaintBoundary(
-                    child: SuggestedArtistsSection(
-                      randomArtists: widget.randomArtists,
-                      artistService: widget.artistService,
-                    ),
+                RepaintBoundary(
+                  child: SuggestedArtistsSection(
+                    randomArtists: widget.randomArtists,
+                    artistService: widget.artistService,
                   ),
                 ),
                 const SizedBox(height: 24.0),

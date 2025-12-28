@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../services/artwork_cache_service.dart';
+import '../providers/performance_mode_provider.dart';
 
 /// A unified glassmorphic card widget used across the app for songs, albums, artists, etc.
 /// This provides a consistent UI for all card-based displays.
@@ -203,89 +205,98 @@ class GlassmorphicCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider = context.watch<PerformanceModeProvider>();
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
+    final cardDecoration = BoxDecoration(
+      color: isDark
+          ? Colors.white.withOpacity(shouldBlur ? 0.1 : 0.15)
+          : Colors.black.withOpacity(shouldBlur ? 0.05 : 0.08),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: isDark
+            ? Colors.white.withOpacity(0.15)
+            : Colors.black.withOpacity(0.1),
+      ),
+    );
+
+    final cardContent = Container(
+      width: width,
+      decoration: cardDecoration,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Artwork with optional badge
+          Stack(
+            children: [
+              SizedBox(
+                width: width,
+                height: artworkSize,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                  child: artwork,
+                ),
+              ),
+              if (badge != null)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: badge!,
+                ),
+            ],
+          ),
+          // Title and subtitle
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'ProductSans',
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      fontSize: 11,
+                      fontFamily: 'ProductSans',
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6.0),
       child: GestureDetector(
         onTap: onTap,
         child: RepaintBoundary(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                width: width,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.05),
+          child: shouldBlur
+              ? ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.15)
-                        : Colors.black.withOpacity(0.1),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: cardContent,
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Artwork with optional badge
-                    Stack(
-                      children: [
-                        SizedBox(
-                          width: width,
-                          height: artworkSize,
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                            child: artwork,
-                          ),
-                        ),
-                        if (badge != null)
-                          Positioned(
-                            top: 8,
-                            left: 8,
-                            child: badge!,
-                          ),
-                      ],
-                    ),
-                    // Title and subtitle
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'ProductSans',
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (subtitle != null) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              subtitle!,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface
-                                    .withOpacity(0.6),
-                                fontSize: 11,
-                                fontFamily: 'ProductSans',
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+                )
+              : cardContent,
         ),
       ),
     );

@@ -1,8 +1,10 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audiotags/audiotags.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../services/metadata_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/app_background.dart';
 
@@ -33,6 +35,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
 
   // AudioTags instance for reading/writing metadata
   Tag? _currentTag;
+  Uint8List? _pendingCoverArt;
 
   @override
   void initState() {
@@ -210,6 +213,147 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     return const Color(0xFFEF4444);
   }
 
+  void _showAutoTagDialog() {
+    final loc = AppLocalizations.of(context);
+    final searchController = TextEditingController(
+      text: '${_titleController.text} ${_artistController.text}'.trim(),
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          List<Map<String, dynamic>>? results;
+          bool isLoading = false;
+
+          Future<void> search() async {
+            if (searchController.text.isEmpty) return;
+            setState(() => isLoading = true);
+            final service = MetadataService();
+            final res = await service.searchMetadata(searchController.text);
+            if (mounted) {
+              setState(() {
+                results = res;
+                isLoading = false;
+              });
+            }
+          }
+
+          return AlertDialog(
+            backgroundColor: Colors.grey[900],
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Text(loc.translate('auto_tag'),
+                style: const TextStyle(color: Colors.white)),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: searchController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: loc.translate('search_metadata'),
+                      hintStyle:
+                          TextStyle(color: Colors.white.withOpacity(0.5)),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.search, color: Colors.white),
+                        onPressed: search,
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                    ),
+                    onSubmitted: (_) => search(),
+                  ),
+                  const SizedBox(height: 16),
+                  if (isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else if (results != null)
+                    Flexible(
+                      child: results!.isEmpty
+                          ? Text(
+                              loc.translate('no_results'),
+                              style: TextStyle(
+                                  color: Colors.white.withOpacity(0.7)),
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: results!.length,
+                              itemBuilder: (context, index) {
+                                final item = results![index];
+                                final artist = item['artist']['name'];
+                                final title = item['title'];
+                                final album = item['album']['title'];
+
+                                return ListTile(
+                                  title: Text(title,
+                                      style:
+                                          const TextStyle(color: Colors.white)),
+                                  subtitle: Text('$artist - $album',
+                                      style: TextStyle(
+                                          color:
+                                              Colors.white.withOpacity(0.7))),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    _applyMetadata(item);
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(loc.translate('cancel')),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _applyMetadata(Map<String, dynamic> data) async {
+    setState(() {
+      _titleController.text = data['title'] ?? '';
+      _artistController.text = data['artist']['name'] ?? '';
+      _albumController.text = data['album']['title'] ?? '';
+      _isEditing = true;
+      _hasChanges = true;
+    });
+
+    // Fetch cover art
+    final service = MetadataService();
+    final query = '${data['title']} ${data['artist']['name']}';
+
+    // Show loading indicator for cover art? Or just do it in background
+    final coverUrl = await service.fetchCoverArt(query);
+
+    if (coverUrl != null && mounted) {
+      final bytes = await service.downloadImage(coverUrl);
+      if (bytes != null) {
+        setState(() {
+          _pendingCoverArt = Uint8List.fromList(bytes);
+          _hasChanges = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  AppLocalizations.of(context).translate('cover_art_updated'))),
+        );
+      }
+    }
+  }
+
   void _toggleEditMode() {
     setState(() {
       if (_isEditing && _hasChanges) {
@@ -301,7 +445,15 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
         genre: _genreController.text.isEmpty ? null : _genreController.text,
         year: year,
         trackNumber: trackNumber,
-        pictures: _currentTag?.pictures ?? [],
+        pictures: _pendingCoverArt != null
+            ? [
+                Picture(
+                  bytes: _pendingCoverArt!,
+                  mimeType: MimeType.jpeg,
+                  pictureType: PictureType.coverFront,
+                )
+              ]
+            : _currentTag?.pictures ?? [],
       );
 
       // Save the changes to the file
@@ -509,6 +661,12 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             ),
           ),
           actions: [
+            if (_isEditing)
+              IconButton(
+                icon: const Icon(Icons.auto_fix_high, color: Colors.white),
+                onPressed: _showAutoTagDialog,
+                tooltip: loc.translate('auto_tag'),
+              ),
             if (_isSaving)
               const Padding(
                 padding: EdgeInsets.all(12),
@@ -536,6 +694,42 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Artwork
+              Center(
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: _pendingCoverArt != null
+                        ? Image.memory(_pendingCoverArt!, fit: BoxFit.cover)
+                        : QueryArtworkWidget(
+                            id: widget.song.id,
+                            type: ArtworkType.AUDIO,
+                            artworkHeight: 200,
+                            artworkWidth: 200,
+                            artworkFit: BoxFit.cover,
+                            nullArtworkWidget: Container(
+                              color: Colors.grey[800],
+                              child: const Icon(Icons.music_note,
+                                  size: 80, color: Colors.white54),
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Quality card
               _buildQualityCard(loc),
               const SizedBox(height: 24),

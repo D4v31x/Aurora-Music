@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import '../localization/app_localizations.dart';
 import '../constants/animation_constants.dart';
 
-class AutoScrollText extends StatefulWidget {
+class AutoScrollText extends HookWidget {
   final String text;
   final TextStyle style;
   final Function(String) onMessageComplete;
@@ -16,166 +17,155 @@ class AutoScrollText extends StatefulWidget {
   });
 
   @override
-  State<AutoScrollText> createState() => _AutoScrollTextState();
-}
+  Widget build(BuildContext context) {
+    // Get localization at build time (safe)
+    final localizations = AppLocalizations.of(context);
 
-class _AutoScrollTextState extends State<AutoScrollText>
-    with SingleTickerProviderStateMixin {
-  late ScrollController _scrollController;
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
-  String _displayedText = '';
-  Timer? _messageTimer;
-  Timer? _scrollTimer;
-  bool _isAnimating = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController();
-    _displayedText = widget.text;
-
-    _fadeController = AnimationController(
-      vsync: this,
+    final scrollController = useScrollController();
+    final fadeController = useAnimationController(
       duration: AnimationConstants.normal,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: AnimationConstants.hiddenOpacity,
-      end: AnimationConstants.visibleOpacity,
-    ).animate(
-      CurvedAnimation(
-          parent: _fadeController, curve: AnimationConstants.easeInOut),
+    final fadeAnimation = useMemoized(
+      () => Tween<double>(
+        begin: AnimationConstants.hiddenOpacity,
+        end: AnimationConstants.visibleOpacity,
+      ).animate(
+        CurvedAnimation(
+            parent: fadeController, curve: AnimationConstants.easeInOut),
+      ),
+      [fadeController],
     );
 
-    _fadeController.forward();
+    final displayedText = useState(text);
+    final isAnimating = useState(false);
+    final messageTimer = useRef<Timer?>(null);
+    final scrollTimer = useRef<Timer?>(null);
+    final isInitialized = useRef(false);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startMessageTimer();
-      _startScrollIfNeeded();
-    });
-  }
-
-  void _startScrollIfNeeded() {
-    if (!mounted || !_scrollController.hasClients) return;
-
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    if (maxScroll <= 0) return;
-
-    _scrollTimer?.cancel();
-    _scrollTimer = Timer(const Duration(milliseconds: 800), () {
-      if (mounted) _startScrolling();
-    });
-  }
-
-  void _startScrolling() {
-    if (!mounted || _isAnimating || !_scrollController.hasClients) return;
-    _isAnimating = true;
-
-    const baseDuration = 2500; // Slightly faster for better responsiveness
-    final maxScroll = _scrollController.position.maxScrollExtent;
-
-    _scrollController
-        .animateTo(
-      maxScroll,
-      duration: const Duration(milliseconds: baseDuration),
-      curve: AnimationConstants.linear,
-    )
-        .then((_) {
-      return Future.delayed(AnimationConstants.mediumDelay);
-    }).then((_) {
-      if (mounted && _scrollController.hasClients) {
-        return _scrollController.animateTo(
-          0,
-          duration: AnimationConstants.slow,
-          curve: Curves.easeOut,
-        );
-      }
-    }).then((_) {
-      if (!mounted) return;
-      _isAnimating = false;
-      _scrollTimer?.cancel();
-      _scrollTimer = Timer(const Duration(milliseconds: 1000), () {
-        if (mounted) _startScrolling();
-      });
-    });
-  }
-
-  void _startMessageTimer() {
-    if (!mounted) return;
-
-    final bool isScanningMessage = _isScanningMessage();
-    if (isScanningMessage) return;
-
-    _messageTimer?.cancel();
-    _messageTimer = Timer(const Duration(seconds: 5), () {
-      if (mounted) {
-        _fadeToNextMessage();
-      }
-    });
-  }
-
-  bool _isScanningMessage() {
-    if (!mounted) return false;
-    return widget.text.contains(
-      AppLocalizations.of(context).translate('scanning_songs'),
-    );
-  }
-
-  void _fadeToNextMessage() {
-    if (!mounted) return;
-    _fadeController.reverse().then((_) {
-      if (mounted) {
-        widget.onMessageComplete(
-            AppLocalizations.of(context).translate('aurora_music'));
-      }
-    });
-  }
-
-  @override
-  void didUpdateWidget(AutoScrollText oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.text != widget.text) {
-      setState(() => _displayedText = widget.text);
-
-      if (!_isScanningMessage()) {
-        _fadeController.forward();
-      }
-
-      if (_scrollController.hasClients) {
-        _scrollController.jumpTo(0);
-      }
-      _isAnimating = false;
-      _scrollTimer?.cancel();
-      _startScrollIfNeeded();
-      _startMessageTimer();
+    // Check if scanning message - use captured localizations
+    bool isScanningMessage() {
+      return text.contains(localizations.translate('scanning_songs'));
     }
-  }
 
-  @override
-  void dispose() {
-    _messageTimer?.cancel();
-    _scrollTimer?.cancel();
-    _scrollController.dispose();
-    _fadeController.dispose();
-    super.dispose();
-  }
+    // Fade to next message - use captured localizations
+    void fadeToNextMessage() {
+      fadeController.reverse().then((_) {
+        onMessageComplete(localizations.translate('aurora_music'));
+      });
+    }
 
-  @override
-  Widget build(BuildContext context) {
+    // Start message timer
+    void startMessageTimer() {
+      if (isScanningMessage()) return;
+
+      messageTimer.value?.cancel();
+      messageTimer.value = Timer(const Duration(seconds: 5), () {
+        fadeToNextMessage();
+      });
+    }
+
+    // Start scrolling
+    void startScrolling() {
+      if (isAnimating.value || !scrollController.hasClients) return;
+      isAnimating.value = true;
+
+      const baseDuration = 2500;
+      final maxScroll = scrollController.position.maxScrollExtent;
+
+      scrollController
+          .animateTo(
+        maxScroll,
+        duration: const Duration(milliseconds: baseDuration),
+        curve: AnimationConstants.linear,
+      )
+          .then((_) {
+        return Future.delayed(AnimationConstants.mediumDelay);
+      }).then((_) {
+        if (scrollController.hasClients) {
+          return scrollController.animateTo(
+            0,
+            duration: AnimationConstants.slow,
+            curve: Curves.easeOut,
+          );
+        }
+      }).then((_) {
+        isAnimating.value = false;
+        scrollTimer.value?.cancel();
+        scrollTimer.value = Timer(const Duration(milliseconds: 1000), () {
+          startScrolling();
+        });
+      });
+    }
+
+    // Start scroll if needed
+    void startScrollIfNeeded() {
+      if (!scrollController.hasClients) return;
+
+      final maxScroll = scrollController.position.maxScrollExtent;
+      if (maxScroll <= 0) return;
+
+      scrollTimer.value?.cancel();
+      scrollTimer.value = Timer(const Duration(milliseconds: 800), () {
+        startScrolling();
+      });
+    }
+
+    // Initial setup - only runs once after first build
+    useEffect(() {
+      if (!isInitialized.value) {
+        isInitialized.value = true;
+        fadeController.forward();
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          startMessageTimer();
+          startScrollIfNeeded();
+        });
+      }
+
+      return () {
+        messageTimer.value?.cancel();
+        scrollTimer.value?.cancel();
+      };
+    }, const []);
+
+    // Handle text changes (replaces didUpdateWidget)
+    // Skip the first run by checking isInitialized
+    useEffect(() {
+      if (!isInitialized.value) return null;
+
+      displayedText.value = text;
+
+      if (!isScanningMessage()) {
+        fadeController.forward();
+      }
+
+      if (scrollController.hasClients) {
+        scrollController.jumpTo(0);
+      }
+      isAnimating.value = false;
+      scrollTimer.value?.cancel();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        startScrollIfNeeded();
+        startMessageTimer();
+      });
+
+      return null;
+    }, [text]);
+
     return RepaintBoundary(
       child: FadeTransition(
-        opacity: _fadeAnimation,
+        opacity: fadeAnimation,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          controller: _scrollController,
+          controller: scrollController,
           physics: const NeverScrollableScrollPhysics(),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              _displayedText,
-              style: widget.style,
+              displayedText.value,
+              style: style,
               maxLines: 1,
             ),
           ),

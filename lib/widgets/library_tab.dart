@@ -18,6 +18,8 @@ import '../widgets/glassmorphic_card.dart';
 import '../widgets/shimmer_loading.dart';
 import '../localization/app_localizations.dart';
 
+import '../widgets/expanding_player.dart';
+
 class LibraryTab extends StatefulWidget {
   const LibraryTab({super.key});
 
@@ -43,7 +45,9 @@ class _LibraryTabState extends State<LibraryTab> {
             left: 16.0,
             right: 16.0,
             top: 30.0,
-            bottom: hasCurrentSong ? 90.0 : 30.0,
+            bottom: hasCurrentSong
+                ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
+                : 30.0,
           ),
           child: child,
         );

@@ -7,14 +7,16 @@ import '../models/utils.dart';
 import 'dart:io';
 import 'dart:convert';
 import '../models/playlist_model.dart';
-import 'package:just_audio_background/just_audio_background.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'background_manager_service.dart';
 import 'artwork_cache_service.dart';
 import 'smart_suggestions_service.dart';
+import '../main.dart' show audioHandler;
 
 class AudioPlayerService extends ChangeNotifier {
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  // Use the audio player from the global audio handler
+  AudioPlayer get _audioPlayer => audioHandler.player;
   final OnAudioQuery _audioQuery = OnAudioQuery();
   final ArtworkCacheService _artworkCache = ArtworkCacheService();
   final SmartSuggestionsService _smartSuggestions = SmartSuggestionsService();
@@ -78,6 +80,12 @@ class AudioPlayerService extends ChangeNotifier {
   List<SongModel> _songs = [];
   List<SongModel> get songs => _songs;
 
+  /// Update songs list and notify listeners efficiently
+  void _updateSongs(List<SongModel> newSongs) {
+    _songs = newSongs;
+    songsNotifier.value = newSongs;
+  }
+
   static const String LIKED_SONGS_PLAYLIST_ID = 'liked_songs';
   String _likedPlaylistName = 'Favorite Songs'; // Default English name
 
@@ -103,6 +111,10 @@ class AudioPlayerService extends ChangeNotifier {
       ValueNotifier<List<Playlist>>([]);
   final ValueNotifier<bool> isShuffleNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isRepeatNotifier = ValueNotifier<bool>(false);
+
+  // ValueNotifier for songs list to enable efficient rebuilds
+  final ValueNotifier<List<SongModel>> songsNotifier =
+      ValueNotifier<List<SongModel>>([]);
 
   // Sleep timer related properties
   final ValueNotifier<Duration?> sleepTimerDurationNotifier =
@@ -141,7 +153,7 @@ class AudioPlayerService extends ChangeNotifier {
     _loadSettings();
 
     // Initialize with empty data first - don't try to load music yet
-    _songs = [];
+    _updateSongs([]);
     _likedSongsPlaylist = Playlist(
       id: LIKED_SONGS_PLAYLIST_ID,
       name: _likedPlaylistName,
@@ -178,7 +190,7 @@ class AudioPlayerService extends ChangeNotifier {
       // Try to load songs
       try {
         final songs = await _audioQuery.querySongs();
-        _songs = songs;
+        _updateSongs(songs);
 
         // Initialize the liked songs playlist
         await loadLikedSongs();
@@ -244,6 +256,40 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
+  /// Get artwork URI for media notification
+  /// Saves artwork to a temp file and returns the file URI
+  Future<Uri?> _getArtworkUri(int songId) async {
+    try {
+      final artwork = await _artworkCache.getArtwork(songId);
+      if (artwork == null || artwork.isEmpty) return null;
+
+      final tempDir = await getTemporaryDirectory();
+      final artworkFile = File('${tempDir.path}/notification_art_$songId.jpg');
+
+      // Always write the file to ensure it's available
+      await artworkFile.writeAsBytes(artwork);
+
+      // Return file URI - must use Uri.parse with file:// prefix for Android
+      return Uri.parse('file://${artworkFile.path}');
+    } catch (e) {
+      debugPrint('Error getting artwork URI: $e');
+      return null;
+    }
+  }
+
+  /// Create MediaItem with artwork for a song
+  Future<MediaItem> _createMediaItem(SongModel song) async {
+    final artUri = await _getArtworkUri(song.id);
+    return MediaItem(
+      id: song.id.toString(),
+      album: song.album ?? 'Unknown Album',
+      title: song.title,
+      artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+      duration: Duration(milliseconds: song.duration ?? 0),
+      artUri: artUri,
+    );
+  }
+
   Future<void> _init() async {
     // Configure audio session
     final session = await AudioSession.instance;
@@ -265,6 +311,30 @@ class AudioPlayerService extends ChangeNotifier {
       isPlayingNotifier.value = _isPlaying;
       // ValueNotifier handles most UI updates, use debounced notify for other listeners
       _scheduleNotify();
+    });
+
+    // Listen to track index changes for gapless playback
+    // This fires when just_audio automatically transitions to the next track
+    _audioPlayer.currentIndexStream.listen((index) async {
+      if (index != null && index != _currentIndex && index < _playlist.length) {
+        _currentIndex = index;
+        final song = _playlist[_currentIndex];
+
+        // Update all song-related state
+        _currentSongController.add(song);
+        currentSongNotifier.value = song;
+        _incrementPlayCount(song);
+
+        // Update notification with new media item
+        final mediaItem = await _createMediaItem(song);
+        audioHandler.updateNotificationMediaItem(mediaItem);
+
+        // Update artwork and background
+        unawaited(updateCurrentArtwork());
+        unawaited(_updateBackgroundColors());
+
+        _scheduleNotify();
+      }
     });
 
     _audioPlayer.positionStream.listen((position) {
@@ -538,19 +608,22 @@ class AudioPlayerService extends ChangeNotifier {
 
       if (_gaplessPlayback) {
         try {
+          // Pre-fetch artwork for all songs in parallel for better notification experience
+          final mediaItems = await Future.wait(
+            _playlist.map((song) => _createMediaItem(song)),
+          );
+
+          // Update audio handler queue for notification
+          audioHandler.updateNotificationQueue(mediaItems);
+
           final playlistSource = ConcatenatingAudioSource(
-            children: _playlist.map((song) {
+            children: _playlist.asMap().entries.map((entry) {
+              final song = entry.value;
+              final mediaItem = mediaItems[entry.key];
               final uri = song.uri ?? song.data;
               return AudioSource.uri(
                 Uri.parse(uri),
-                tag: MediaItem(
-                  id: song.id.toString(),
-                  album: song.album ?? 'Unknown Album',
-                  title: song.title,
-                  artist:
-                      splitArtists(song.artist ?? 'Unknown Artist').join(', '),
-                  duration: Duration(milliseconds: song.duration ?? 0),
-                ),
+                tag: mediaItem,
               );
             }).toList(),
           );
@@ -560,6 +633,10 @@ class AudioPlayerService extends ChangeNotifier {
             initialIndex: _currentIndex,
             initialPosition: Duration.zero,
           );
+
+          // Update current media item in notification
+          audioHandler.updateNotificationMediaItem(mediaItems[_currentIndex]);
+
           await _audioPlayer.play();
 
           // Batch all state updates
@@ -576,6 +653,11 @@ class AudioPlayerService extends ChangeNotifier {
           // Single debounced notification
           _scheduleNotify();
         } catch (e) {
+          // "Loading interrupted" is expected when rapidly changing songs - don't treat as error
+          if (e.toString().contains('Loading interrupted')) {
+            debugPrint('Audio load interrupted (new song selected)');
+            return;
+          }
           debugPrint('Error setting audio source: $e');
           _isPlaying = false;
           isPlayingNotifier.value = false;
@@ -587,6 +669,11 @@ class AudioPlayerService extends ChangeNotifier {
         await play();
       }
     } catch (e) {
+      // "Loading interrupted" is expected when rapidly changing songs - don't treat as error
+      if (e.toString().contains('Loading interrupted')) {
+        debugPrint('Audio load interrupted (new song selected)');
+        return;
+      }
       debugPrint('Failed to set playlist: $e');
       _errorController.add('Failed to set playlist: $e');
       _isPlaying = false;
@@ -600,18 +687,18 @@ class AudioPlayerService extends ChangeNotifier {
     try {
       if (_gaplessPlayback &&
           _audioPlayer.audioSource is ConcatenatingAudioSource) {
+        // Pre-fetch artwork for all songs
+        final mediaItems = await Future.wait(
+          newSongs.map((song) => _createMediaItem(song)),
+        );
+
         final newSource = ConcatenatingAudioSource(
           children: newSongs
-              .map((song) => AudioSource.uri(
-                    Uri.parse(song.uri ?? song.data),
-                    tag: MediaItem(
-                      id: song.id.toString(),
-                      album: song.album ?? 'Unknown Album',
-                      title: song.title,
-                      artist: splitArtists(song.artist ?? 'Unknown Artist')
-                          .join(', '),
-                      duration: Duration(milliseconds: song.duration ?? 0),
-                    ),
+              .asMap()
+              .entries
+              .map((entry) => AudioSource.uri(
+                    Uri.parse(entry.value.uri ?? entry.value.data),
+                    tag: mediaItems[entry.key],
                   ))
               .toList(),
         );
@@ -666,17 +753,18 @@ class AudioPlayerService extends ChangeNotifier {
               'Using gapless playback, seeking to index: $_currentIndex');
           await _audioPlayer.seek(Duration.zero, index: _currentIndex);
           await _audioPlayer.play();
+
+          // Update notification with current media item
+          final mediaItem = await _createMediaItem(song);
+          audioHandler.updateNotificationMediaItem(mediaItem);
         } else {
           final url = song.uri ?? song.data;
           debugPrint('Non-gapless playback, loading URL: $url');
 
-          final mediaItem = MediaItem(
-            id: song.id.toString(),
-            album: song.album ?? 'Unknown Album',
-            title: song.title,
-            artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
-            duration: Duration(milliseconds: song.duration ?? 0),
-          );
+          final mediaItem = await _createMediaItem(song);
+
+          // Update notification
+          audioHandler.updateNotificationMediaItem(mediaItem);
 
           await _audioPlayer.setAudioSource(
             AudioSource.uri(Uri.parse(url), tag: mediaItem),
@@ -767,6 +855,16 @@ class AudioPlayerService extends ChangeNotifier {
 
   void back() async {
     _isLoading = false; // Reset loading flag to allow new song to play
+
+    // Check if more than 5 seconds have elapsed
+    final currentPosition = _audioPlayer.position;
+    if (currentPosition.inSeconds >= 5) {
+      // Restart current song
+      await _audioPlayer.seek(Duration.zero);
+      return;
+    }
+
+    // Go to previous song
     int prevIndex = _currentIndex - 1;
     if (_isShuffle) {
       prevIndex = _getRandomIndex();
@@ -932,7 +1030,7 @@ class AudioPlayerService extends ChangeNotifier {
   Playlist? get likedSongsPlaylist => _likedSongsPlaylist;
 
   Future<void> initializeWithSongs(List<SongModel> initialSongs) async {
-    _songs = initialSongs;
+    _updateSongs(initialSongs);
     _scheduleNotify();
   }
 
@@ -949,6 +1047,7 @@ class AudioPlayerService extends ChangeNotifier {
     isRepeatNotifier.dispose();
     sleepTimerDurationNotifier.dispose();
     playlistsNotifier.dispose();
+    songsNotifier.dispose();
     currentArtwork.dispose();
 
     _audioPlayer.dispose();
@@ -1048,18 +1147,18 @@ class AudioPlayerService extends ChangeNotifier {
     if (_gaplessPlayback) {
       // Create a concatenating audio source for gapless playback
       if (_playlist.isNotEmpty) {
+        // Pre-fetch artwork for all songs
+        final mediaItems = await Future.wait(
+          _playlist.map((song) => _createMediaItem(song)),
+        );
+
         final playlist = ConcatenatingAudioSource(
           children: _playlist
-              .map((song) => AudioSource.uri(
-                    Uri.parse(song.uri ?? song.data),
-                    tag: MediaItem(
-                      id: song.id.toString(),
-                      album: song.album ?? 'Unknown Album',
-                      title: song.title,
-                      artist: splitArtists(song.artist ?? 'Unknown Artist')
-                          .join(', '),
-                      duration: Duration(milliseconds: song.duration ?? 0),
-                    ),
+              .asMap()
+              .entries
+              .map((entry) => AudioSource.uri(
+                    Uri.parse(entry.value.uri ?? entry.value.data),
+                    tag: mediaItems[entry.key],
                   ))
               .toList(),
         );
@@ -1140,17 +1239,11 @@ class AudioPlayerService extends ChangeNotifier {
         // Update the current media item to refresh the notification
         final currentSong = this.currentSong;
         if (currentSong != null) {
+          final mediaItem = await _createMediaItem(currentSong);
           await _audioPlayer.setAudioSource(
             AudioSource.uri(
               Uri.parse(currentSong.data),
-              tag: MediaItem(
-                id: currentSong.id.toString(),
-                album: currentSong.album ?? '',
-                title: currentSong.title,
-                artist: splitArtists(currentSong.artist ?? 'Unknown Artist')
-                    .join(', '),
-                artUri: Uri.parse('file://${currentSong.data}'),
-              ),
+              tag: mediaItem,
             ),
           );
         }

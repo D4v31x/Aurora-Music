@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../models/playlist_model.dart';
@@ -9,7 +10,7 @@ import '../models/utils.dart';
 import 'dart:ui';
 
 /// Glassmorphic song picker bottom sheet for adding songs to playlists
-class SongPickerSheet extends StatefulWidget {
+class SongPickerSheet extends HookWidget {
   final Playlist playlist;
 
   const SongPickerSheet({super.key, required this.playlist});
@@ -24,119 +25,106 @@ class SongPickerSheet extends StatefulWidget {
   }
 
   @override
-  State<SongPickerSheet> createState() => _SongPickerSheetState();
-}
+  Widget build(BuildContext context) {
+    final audioQuery = useMemoized(() => OnAudioQuery());
+    final artworkService = useMemoized(() => ArtworkCacheService());
+    final searchController = useTextEditingController();
+    final scrollController = useScrollController();
 
-class _SongPickerSheetState extends State<SongPickerSheet> {
-  final OnAudioQuery _audioQuery = OnAudioQuery();
-  final ArtworkCacheService _artworkService = ArtworkCacheService();
-  final TextEditingController _searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+    final allSongs = useState<List<SongModel>>([]);
+    final filteredSongs = useState<List<SongModel>>([]);
+    final selectedSongIds = useState<Set<int>>({});
+    final isLoading = useState(true);
+    final searchQuery = useState('');
+    final displayedCount = useState(50);
 
-  List<SongModel> _allSongs = [];
-  List<SongModel> _filteredSongs = [];
-  final Set<int> _selectedSongIds = {};
-  bool _isLoading = true;
-  String _searchQuery = '';
+    const pageSize = 50;
 
-  final int _pageSize = 50;
-  int _displayedCount = 50;
+    // Load songs on mount
+    useEffect(() {
+      Future<void> loadSongs() async {
+        try {
+          final songs = await audioQuery.querySongs(
+            sortType: SongSortType.TITLE,
+            orderType: OrderType.ASC_OR_SMALLER,
+            uriType: UriType.EXTERNAL,
+            ignoreCase: true,
+          );
 
-  @override
-  void initState() {
-    super.initState();
-    _loadSongs();
-    _scrollController.addListener(_onScroll);
-  }
+          final playlistSongIds = playlist.songs.map((s) => s.id).toSet();
+          allSongs.value =
+              songs.where((s) => !playlistSongIds.contains(s.id)).toList();
+          filteredSongs.value = List.from(allSongs.value);
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
+          isLoading.value = false;
+        } catch (e) {
+          isLoading.value = false;
+        }
+      }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      _loadMore();
-    }
-  }
+      loadSongs();
+      return null;
+    }, const []);
 
-  void _loadMore() {
-    if (_displayedCount < _filteredSongs.length) {
-      setState(() {
-        _displayedCount =
-            (_displayedCount + _pageSize).clamp(0, _filteredSongs.length);
-      });
-    }
-  }
+    // Scroll listener for pagination
+    useEffect(() {
+      void onScroll() {
+        if (scrollController.position.pixels >=
+            scrollController.position.maxScrollExtent - 200) {
+          if (displayedCount.value < filteredSongs.value.length) {
+            displayedCount.value = (displayedCount.value + pageSize)
+                .clamp(0, filteredSongs.value.length);
+          }
+        }
+      }
 
-  Future<void> _loadSongs() async {
-    try {
-      final songs = await _audioQuery.querySongs(
-        sortType: SongSortType.TITLE,
-        orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.EXTERNAL,
-        ignoreCase: true,
-      );
+      scrollController.addListener(onScroll);
+      return () => scrollController.removeListener(onScroll);
+    }, [scrollController]);
 
-      final playlistSongIds = widget.playlist.songs.map((s) => s.id).toSet();
-      _allSongs = songs.where((s) => !playlistSongIds.contains(s.id)).toList();
-      _filteredSongs = List.from(_allSongs);
+    void onSearchChanged(String query) {
+      searchQuery.value = query.toLowerCase();
+      displayedCount.value = pageSize;
 
-      setState(() => _isLoading = false);
-    } catch (e) {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  void _onSearchChanged(String query) {
-    setState(() {
-      _searchQuery = query.toLowerCase();
-      _displayedCount = _pageSize;
-
-      if (_searchQuery.isEmpty) {
-        _filteredSongs = List.from(_allSongs);
+      if (searchQuery.value.isEmpty) {
+        filteredSongs.value = List.from(allSongs.value);
       } else {
-        _filteredSongs = _allSongs.where((song) {
+        filteredSongs.value = allSongs.value.where((song) {
           final title = song.title.toLowerCase();
           final artistNames = splitArtists(song.artist ?? '')
               .map((a) => a.toLowerCase())
               .toList();
           final artistCombined = artistNames.join(' ');
-          return title.contains(_searchQuery) ||
-              artistCombined.contains(_searchQuery) ||
-              artistNames.any((a) => a.contains(_searchQuery));
+          return title.contains(searchQuery.value) ||
+              artistCombined.contains(searchQuery.value) ||
+              artistNames.any((a) => a.contains(searchQuery.value));
         }).toList();
       }
-    });
-  }
+    }
 
-  void _toggleSelection(SongModel song) {
-    setState(() {
-      if (_selectedSongIds.contains(song.id)) {
-        _selectedSongIds.remove(song.id);
+    void toggleSelection(SongModel song) {
+      final newSet = Set<int>.from(selectedSongIds.value);
+      if (newSet.contains(song.id)) {
+        newSet.remove(song.id);
       } else {
-        _selectedSongIds.add(song.id);
+        newSet.add(song.id);
       }
-    });
-  }
+      selectedSongIds.value = newSet;
+    }
 
-  void _addSelectedSongs() {
-    if (_selectedSongIds.isEmpty) return;
+    void addSelectedSongs() {
+      if (selectedSongIds.value.isEmpty) return;
 
-    final audioService =
-        Provider.of<AudioPlayerService>(context, listen: false);
-    final songsToAdd =
-        _allSongs.where((s) => _selectedSongIds.contains(s.id)).toList();
+      final audioService =
+          Provider.of<AudioPlayerService>(context, listen: false);
+      final songsToAdd = allSongs.value
+          .where((s) => selectedSongIds.value.contains(s.id))
+          .toList();
 
-    audioService.addSongsToPlaylist(widget.playlist.id, songsToAdd);
-    Navigator.pop(context);
-  }
+      audioService.addSongsToPlaylist(playlist.id, songsToAdd);
+      Navigator.pop(context);
+    }
 
-  @override
-  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final localizations = AppLocalizations.of(context);
@@ -190,9 +178,9 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          if (_selectedSongIds.isNotEmpty)
+                          if (selectedSongIds.value.isNotEmpty)
                             Text(
-                              '${_selectedSongIds.length} ${localizations.translate('selected')}',
+                              '${selectedSongIds.value.length} ${localizations.translate('selected')}',
                               style: TextStyle(
                                 fontFamily: 'ProductSans',
                                 color: theme.colorScheme.primary,
@@ -202,9 +190,9 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
                         ],
                       ),
                     ),
-                    if (_selectedSongIds.isNotEmpty)
+                    if (selectedSongIds.value.isNotEmpty)
                       GestureDetector(
-                        onTap: _addSelectedSongs,
+                        onTap: addSelectedSongs,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 10),
@@ -267,8 +255,8 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
                         ),
                       ),
                       child: TextField(
-                        controller: _searchController,
-                        onChanged: _onSearchChanged,
+                        controller: searchController,
+                        onChanged: onSearchChanged,
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black87,
                           fontFamily: 'ProductSans',
@@ -284,11 +272,11 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
                             color: isDark ? Colors.white38 : Colors.black38,
                             size: 22,
                           ),
-                          suffixIcon: _searchQuery.isNotEmpty
+                          suffixIcon: searchQuery.value.isNotEmpty
                               ? GestureDetector(
                                   onTap: () {
-                                    _searchController.clear();
-                                    _onSearchChanged('');
+                                    searchController.clear();
+                                    onSearchChanged('');
                                   },
                                   child: Icon(
                                     Icons.clear_rounded,
@@ -310,7 +298,7 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
               ),
 
               // Quick Actions
-              if (!_isLoading && _filteredSongs.isNotEmpty)
+              if (!isLoading.value && filteredSongs.value.isNotEmpty)
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -318,15 +306,13 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          setState(() {
-                            if (_selectedSongIds.length ==
-                                _filteredSongs.length) {
-                              _selectedSongIds.clear();
-                            } else {
-                              _selectedSongIds
-                                  .addAll(_filteredSongs.map((s) => s.id));
-                            }
-                          });
+                          if (selectedSongIds.value.length ==
+                              filteredSongs.value.length) {
+                            selectedSongIds.value = {};
+                          } else {
+                            selectedSongIds.value =
+                                filteredSongs.value.map((s) => s.id).toSet();
+                          }
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -341,7 +327,8 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                _selectedSongIds.length == _filteredSongs.length
+                                selectedSongIds.value.length ==
+                                        filteredSongs.value.length
                                     ? Icons.deselect
                                     : Icons.select_all_rounded,
                                 size: 16,
@@ -349,7 +336,8 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                _selectedSongIds.length == _filteredSongs.length
+                                selectedSongIds.value.length ==
+                                        filteredSongs.value.length
                                     ? localizations.translate('deselect_all')
                                     : localizations.translate('select_all'),
                                 style: TextStyle(
@@ -365,7 +353,7 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
                       ),
                       const Spacer(),
                       Text(
-                        '${_filteredSongs.length} ${localizations.translate('tracks')}',
+                        '${filteredSongs.value.length} ${localizations.translate('tracks')}',
                         style: TextStyle(
                           fontFamily: 'ProductSans',
                           color: isDark ? Colors.white38 : Colors.black38,
@@ -380,25 +368,28 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
 
               // Song List
               Expanded(
-                child: _isLoading
+                child: isLoading.value
                     ? const Center(child: CircularProgressIndicator())
-                    : _filteredSongs.isEmpty
-                        ? _buildEmptyState(isDark, localizations)
+                    : filteredSongs.value.isEmpty
+                        ? _buildEmptyState(
+                            isDark, localizations, searchQuery.value)
                         : ListView.builder(
-                            controller: _scrollController,
+                            controller: scrollController,
                             padding: const EdgeInsets.only(bottom: 20),
-                            itemCount:
-                                _displayedCount.clamp(0, _filteredSongs.length),
+                            itemCount: displayedCount.value
+                                .clamp(0, filteredSongs.value.length),
                             itemBuilder: (context, index) {
-                              final song = _filteredSongs[index];
+                              final song = filteredSongs.value[index];
                               final isSelected =
-                                  _selectedSongIds.contains(song.id);
+                                  selectedSongIds.value.contains(song.id);
 
                               return _buildSongTile(
                                 song,
                                 isSelected,
                                 isDark,
                                 theme.colorScheme.primary,
+                                artworkService,
+                                toggleSelection,
                               );
                             },
                           ),
@@ -410,14 +401,16 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
     );
   }
 
-  Widget _buildSongTile(
+  static Widget _buildSongTile(
     SongModel song,
     bool isSelected,
     bool isDark,
     Color primaryColor,
+    ArtworkCacheService artworkService,
+    void Function(SongModel) onTap,
   ) {
     return GestureDetector(
-      onTap: () => _toggleSelection(song),
+      onTap: () => onTap(song),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -456,7 +449,7 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
               child: SizedBox(
                 width: 44,
                 height: 44,
-                child: _artworkService.buildCachedArtwork(song.id, size: 44),
+                child: artworkService.buildCachedArtwork(song.id, size: 44),
               ),
             ),
             const SizedBox(width: 12),
@@ -498,13 +491,14 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
     );
   }
 
-  Widget _buildEmptyState(bool isDark, AppLocalizations localizations) {
+  static Widget _buildEmptyState(
+      bool isDark, AppLocalizations localizations, String searchQuery) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            _searchQuery.isNotEmpty
+            searchQuery.isNotEmpty
                 ? Icons.search_off_rounded
                 : Icons.library_music_outlined,
             size: 56,
@@ -512,7 +506,7 @@ class _SongPickerSheetState extends State<SongPickerSheet> {
           ),
           const SizedBox(height: 16),
           Text(
-            _searchQuery.isNotEmpty
+            searchQuery.isNotEmpty
                 ? localizations.translate('no_results')
                 : localizations.translate('no_songs_available'),
             style: TextStyle(

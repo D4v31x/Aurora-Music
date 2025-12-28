@@ -1,15 +1,14 @@
 import 'dart:ui';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import '../services/mood_detection_service.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 /// A beautiful animated background that displays heavily blurred artwork
-/// with mood-based overlays and smooth transitions
-class AnimatedArtworkBackground extends StatefulWidget {
+/// with smooth transitions
+class AnimatedArtworkBackground extends HookWidget {
   final Uint8List? currentArtwork;
   final Uint8List? previousArtwork;
   final bool isTransitioning;
-  final MoodTheme moodTheme;
   final Widget child;
   final Color? fallbackColor;
 
@@ -18,92 +17,41 @@ class AnimatedArtworkBackground extends StatefulWidget {
     this.currentArtwork,
     this.previousArtwork,
     this.isTransitioning = false,
-    required this.moodTheme,
     required this.child,
     this.fallbackColor,
   });
 
   @override
-  State<AnimatedArtworkBackground> createState() =>
-      _AnimatedArtworkBackgroundState();
-}
-
-class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
-    with TickerProviderStateMixin {
-  late AnimationController _crossfadeController;
-  late AnimationController _moodController;
-  late Animation<double> _crossfadeAnimation;
-  late Animation<double> _moodAnimation;
-
-  MoodTheme? _previousMoodTheme;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Crossfade animation for artwork transitions
-    _crossfadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _crossfadeAnimation = CurvedAnimation(
-      parent: _crossfadeController,
-      curve: Curves.easeInOut,
-    );
-
-    // If we already have artwork on init, start fully visible
-    if (widget.currentArtwork != null) {
-      _crossfadeController.value = 1.0;
-    }
-
-    // Mood transition animation
-    _moodController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
-    _moodAnimation = CurvedAnimation(
-      parent: _moodController,
-      curve: Curves.easeInOut,
-    );
-
-    _moodController.value = 1.0;
-  }
-
-  @override
-  void didUpdateWidget(AnimatedArtworkBackground oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // Trigger crossfade when artwork changes
-    if (widget.currentArtwork != oldWidget.currentArtwork) {
-      // If going from no artwork to having artwork, show immediately
-      if (oldWidget.currentArtwork == null && widget.currentArtwork != null) {
-        _crossfadeController.value = 1.0;
-        // Force rebuild to show artwork immediately
-        if (mounted) setState(() {});
-      } else if (widget.currentArtwork != null) {
-        // Otherwise animate the transition
-        _crossfadeController.forward(from: 0.0);
-      }
-    }
-
-    // Trigger mood transition when mood changes
-    if (widget.moodTheme != oldWidget.moodTheme) {
-      _previousMoodTheme = oldWidget.moodTheme;
-      _moodController.forward(from: 0.0);
-    }
-  }
-
-  @override
-  void dispose() {
-    _crossfadeController.dispose();
-    _moodController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final crossfadeController = useAnimationController(
+      duration: const Duration(milliseconds: 800),
+      initialValue: currentArtwork != null ? 1.0 : 0.0,
+    );
+
+    final crossfadeAnimation = useAnimation(
+      CurvedAnimation(
+        parent: crossfadeController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Store previous artwork for comparison
+    final prevArtworkRef = usePrevious(currentArtwork);
+
+    // Handle artwork changes
+    useEffect(() {
+      if (currentArtwork != prevArtworkRef) {
+        if (prevArtworkRef == null && currentArtwork != null) {
+          crossfadeController.value = 1.0;
+        } else if (currentArtwork != null) {
+          crossfadeController.forward(from: 0.0);
+        }
+      }
+      return null;
+    }, [currentArtwork]);
+
     final backgroundColor =
-        widget.fallbackColor ?? Theme.of(context).colorScheme.surface;
+        fallbackColor ?? Theme.of(context).colorScheme.surface;
 
     return Stack(
       fit: StackFit.expand,
@@ -114,59 +62,24 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
         ),
 
         // Previous artwork (fading out)
-        if (widget.previousArtwork != null)
-          AnimatedBuilder(
-            animation: _crossfadeAnimation,
-            builder: (context, child) {
-              return Opacity(
-                opacity: (1.0 - _crossfadeAnimation.value).clamp(0.0, 1.0),
-                child: _buildBlurredArtwork(
-                  widget.previousArtwork!,
-                  _previousMoodTheme ?? widget.moodTheme,
-                ),
-              );
-            },
+        if (previousArtwork != null)
+          Opacity(
+            opacity: (1.0 - crossfadeAnimation).clamp(0.0, 1.0),
+            child: _buildBlurredArtwork(previousArtwork!),
           ),
 
         // Current artwork (fading in or fully visible)
-        if (widget.currentArtwork != null)
-          _crossfadeController.value >= 1.0
-              ? _buildBlurredArtwork(widget.currentArtwork!, widget.moodTheme)
-              : AnimatedBuilder(
-                  animation: _crossfadeAnimation,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _crossfadeAnimation.value.clamp(0.0, 1.0),
-                      child: _buildBlurredArtwork(
-                        widget.currentArtwork!,
-                        widget.moodTheme,
-                      ),
-                    );
-                  },
+        if (currentArtwork != null)
+          crossfadeController.value >= 1.0
+              ? _buildBlurredArtwork(currentArtwork!)
+              : Opacity(
+                  opacity: crossfadeAnimation.clamp(0.0, 1.0),
+                  child: _buildBlurredArtwork(currentArtwork!),
                 ),
 
-        // Mood overlay with animation
-        AnimatedBuilder(
-          animation: _moodAnimation,
-          builder: (context, child) {
-            final currentOverlay = widget.moodTheme.overlayTint
-                .withValues(alpha: widget.moodTheme.overlayOpacity);
-            final previousOverlay = (_previousMoodTheme?.overlayTint ??
-                    widget.moodTheme.overlayTint)
-                .withValues(
-                    alpha: _previousMoodTheme?.overlayOpacity ??
-                        widget.moodTheme.overlayOpacity);
-
-            return Container(
-              decoration: BoxDecoration(
-                color: Color.lerp(
-                  previousOverlay,
-                  currentOverlay,
-                  _moodAnimation.value,
-                ),
-              ),
-            );
-          },
+        // Overlay for better text readability
+        Container(
+          color: Colors.black.withValues(alpha: 0.3),
         ),
 
         // Vignette effect for depth
@@ -185,12 +98,12 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
         ),
 
         // Child content
-        widget.child,
+        child,
       ],
     );
   }
 
-  Widget _buildBlurredArtwork(Uint8List artworkData, MoodTheme moodTheme) {
+  Widget _buildBlurredArtwork(Uint8List artworkData) {
     return RepaintBoundary(
       child: Stack(
         fit: StackFit.expand,
@@ -206,8 +119,8 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
           // The blur layer on top
           BackdropFilter(
             filter: ImageFilter.blur(
-              sigmaX: moodTheme.blurIntensity,
-              sigmaY: moodTheme.blurIntensity,
+              sigmaX: 50.0,
+              sigmaY: 50.0,
             ),
             child: Container(
               color: Colors.black.withValues(alpha: 0.2),

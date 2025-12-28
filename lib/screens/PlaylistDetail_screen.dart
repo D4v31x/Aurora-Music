@@ -8,6 +8,7 @@ import '../services/artwork_cache_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/expanding_player.dart';
 import '../widgets/song_picker_sheet.dart';
+import '../widgets/app_background.dart';
 import '../models/utils.dart';
 import 'dart:ui';
 
@@ -31,6 +32,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   final int _songsPerPage = 30;
   bool _isLoading = false;
   bool _hasMoreSongs = true;
+  bool _isScrolled = false;
 
   @override
   void initState() {
@@ -50,6 +52,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   }
 
   void _scrollListener() {
+    if (_scrollController.hasClients) {
+      final isScrolled = _scrollController.offset > 180;
+      if (isScrolled != _isScrolled) {
+        setState(() => _isScrolled = isScrolled);
+      }
+    }
+
     if (_scrollController.position.extentAfter < 300 &&
         !_isLoading &&
         _hasMoreSongs) {
@@ -110,57 +119,60 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         final audioService =
             Provider.of<AudioPlayerService>(context, listen: false);
 
-        return Scaffold(
-          backgroundColor: theme.colorScheme.surface,
-          body: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              // Header
-              _buildHeader(updatedPlaylist, context, isDark, localizations),
+        return AppBackground(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                // Header
+                _buildHeader(updatedPlaylist, context, isDark, localizations),
 
-              // Action Buttons
-              SliverToBoxAdapter(
-                child: _buildActionRow(
-                  context,
-                  audioService,
-                  updatedPlaylist,
-                  isDark,
-                  localizations,
+                // Action Buttons
+                SliverToBoxAdapter(
+                  child: _buildActionRow(
+                    context,
+                    audioService,
+                    updatedPlaylist,
+                    isDark,
+                    localizations,
+                  ),
                 ),
-              ),
 
-              // Song Count
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                  child: Text(
-                    '${updatedPlaylist.songs.length} ${localizations.translate('tracks')}',
-                    style: TextStyle(
-                      fontFamily: 'ProductSans',
-                      color: isDark ? Colors.white54 : Colors.black45,
-                      fontSize: 13,
+                // Song Count
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    child: Text(
+                      '${updatedPlaylist.songs.length} ${localizations.translate('tracks')}',
+                      style: TextStyle(
+                        fontFamily: 'ProductSans',
+                        color: isDark ? Colors.white54 : Colors.black45,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              // Songs List
-              _buildSongsList(updatedPlaylist, audioService, isDark),
+                // Songs List
+                _buildSongsList(updatedPlaylist, audioService, isDark),
 
-              // Bottom Padding
-              SliverToBoxAdapter(
-                child: Selector<AudioPlayerService, bool>(
-                  selector: (_, service) => service.currentSong != null,
-                  builder: (context, hasCurrentSong, _) {
-                    return SizedBox(
-                      height: hasCurrentSong
-                          ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
-                          : 24,
-                    );
-                  },
+                // Bottom Padding
+                SliverToBoxAdapter(
+                  child: Selector<AudioPlayerService, bool>(
+                    selector: (_, service) => service.currentSong != null,
+                    builder: (context, hasCurrentSong, _) {
+                      return SizedBox(
+                        height: hasCurrentSong
+                            ? ExpandingPlayer.getMiniPlayerPaddingHeight(
+                                context)
+                            : 24,
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -174,10 +186,21 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     AppLocalizations localizations,
   ) {
     return SliverAppBar(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.transparent,
       expandedHeight: 260,
       floating: false,
       pinned: true,
+      centerTitle: true,
+      title: _isScrolled
+          ? Text(
+              playlist.name,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+                fontFamily: 'ProductSans',
+                fontWeight: FontWeight.bold,
+              ),
+            )
+          : null,
       leading: _buildGlassButton(
         context,
         Icons.arrow_back,
@@ -194,81 +217,94 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
           ),
         const SizedBox(width: 8),
       ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Gradient Background
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    _getPlaylistColor(playlist.id).withOpacity(0.4),
-                    Theme.of(context).colorScheme.surface,
-                  ],
+      flexibleSpace: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: _isScrolled ? 20 : 0,
+            sigmaY: _isScrolled ? 20 : 0,
+          ),
+          child: FlexibleSpaceBar(
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Gradient Background
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        _getPlaylistColor(playlist.id),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            // Content
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Artwork
-                    Hero(
-                      tag: 'playlist_${playlist.id}',
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: Container(
-                          width: 130,
-                          height: 130,
-                          decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.25),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
+                // Content
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Artwork
+                          Hero(
+                            tag: 'playlist_${playlist.id}',
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(18),
+                              child: Container(
+                                width: 130,
+                                height: 130,
+                                decoration: BoxDecoration(
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.25),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: _buildPlaylistArtwork(playlist),
                               ),
-                            ],
+                            ),
                           ),
-                          child: _buildPlaylistArtwork(playlist),
-                        ),
+                          const SizedBox(height: 14),
+                          // Name
+                          ValueListenableBuilder<bool>(
+                            valueListenable: _isEditingNotifier,
+                            builder: (context, isEditing, _) {
+                              if (isEditing && !_isAutoPlaylist) {
+                                return _buildNameEditor(context, isDark);
+                              }
+                              return GestureDetector(
+                                onTap: _isAutoPlaylist
+                                    ? null
+                                    : () => _isEditingNotifier.value = true,
+                                child: Text(
+                                  playlist.name,
+                                  style: TextStyle(
+                                    fontFamily: 'ProductSans',
+                                    color:
+                                        isDark ? Colors.white : Colors.black87,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    // Name
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _isEditingNotifier,
-                      builder: (context, isEditing, _) {
-                        if (isEditing && !_isAutoPlaylist) {
-                          return _buildNameEditor(context, isDark);
-                        }
-                        return GestureDetector(
-                          onTap: _isAutoPlaylist
-                              ? null
-                              : () => _isEditingNotifier.value = true,
-                          child: Text(
-                            playlist.name,
-                            style: TextStyle(
-                              fontFamily: 'ProductSans',
-                              color: isDark ? Colors.white : Colors.black87,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

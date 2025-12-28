@@ -9,7 +9,7 @@ import '../services/artwork_cache_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/optimized_tiles.dart'; // Import optimized tile
-import '../widgets/expanding_player.dart';
+import '../widgets/common_screen_scaffold.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class TracksScreen extends StatefulWidget {
@@ -189,142 +189,99 @@ class _TracksScreenState extends State<TracksScreen>
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
 
-    return Hero(
-      tag: 'tracks_screen',
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          resizeToAvoidBottomInset: false,
-          appBar: buildAppBar(),
-          body: buildBody(audioPlayerService),
-        ),
-      ),
-    );
-  }
-
-  AppBar buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0.0,
-      toolbarHeight: 180,
-      automaticallyImplyLeading: false,
-      title: Stack(
-        children: [
-          Center(
-            child: AnimatedOpacity(
-              opacity: 1.0,
-              duration: const Duration(seconds: 1),
-              child: Text(
-                AppLocalizations.of(context).translate('tracks'),
-                style: const TextStyle(
-                  fontFamily: 'ProductSans',
-                  fontStyle: FontStyle.normal,
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: CommonScreenScaffold(
+        title: AppLocalizations.of(context).translate('tracks'),
+        searchBar: Container(
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: _onSearchChanged,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).translate('search_tracks'),
+              hintStyle: const TextStyle(color: Colors.white70),
+              prefixIcon: const Icon(Icons.search, color: Colors.white70),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 15),
             ),
           ),
+        ),
+        actions: [
+          if (widget.isEditingPlaylist)
+            IconButton(
+              icon: const Icon(Icons.check),
+              onPressed: () {
+                final audioPlayerService =
+                    Provider.of<AudioPlayerService>(context, listen: false);
+                audioPlayerService.addSongsToPlaylist(
+                    widget.playlist!.id, _selectedSongs.toList());
+                Navigator.pop(context);
+              },
+            ),
+        ],
+        slivers: [
+          buildBody(audioPlayerService),
         ],
       ),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(60.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText:
-                        AppLocalizations.of(context).translate('search_tracks'),
-                    hintStyle: const TextStyle(color: Colors.white70),
-                    prefixIcon: const Icon(Icons.search, color: Colors.white70),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 15),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        if (widget.isEditingPlaylist)
-          IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: () {
-              final audioPlayerService =
-                  Provider.of<AudioPlayerService>(context, listen: false);
-              audioPlayerService.addSongsToPlaylist(
-                  widget.playlist!.id, _selectedSongs.toList());
-              Navigator.pop(context);
-            },
-          ),
-      ],
     );
   }
 
   Widget buildBody(AudioPlayerService audioPlayerService) {
     if (_isLoading && _displayedSongs.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const SliverFillRemaining(
+        child: Center(child: CircularProgressIndicator()),
+      );
     } else if (_errorMessage.isNotEmpty) {
-      return Center(
-          child:
-              Text(_errorMessage, style: const TextStyle(color: Colors.white)));
+      return SliverFillRemaining(
+        child: Center(
+            child: Text(_errorMessage,
+                style: const TextStyle(color: Colors.white))),
+      );
     } else if (_displayedSongs.isEmpty) {
-      return const Center(
-          child: Text('No songs found', style: TextStyle(color: Colors.white)));
+      return const SliverFillRemaining(
+        child: Center(
+            child:
+                Text('No songs found', style: TextStyle(color: Colors.white))),
+      );
     } else {
       return AnimationLimiter(
-        child: ListView.builder(
-          controller: _scrollController,
-          cacheExtent: 100, // Preload items for smoother scrolling
-          addRepaintBoundaries: true,
-          padding: EdgeInsets.only(
-            bottom: audioPlayerService.currentSong != null
-                ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
-                : 16,
-          ),
-          itemCount: _displayedSongs.length + (_hasMoreSongs ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index == _displayedSongs.length) {
-              return _hasMoreSongs
-                  ? const Center(child: CircularProgressIndicator())
-                  : const SizedBox.shrink();
-            }
-            final song = _displayedSongs[index];
-            return RepaintBoundary(
-              key: ValueKey(
-                  song.id), // Use song ID as key for better performance
-              child: AnimationConfiguration.staggeredList(
-                position: index,
-                duration: const Duration(
-                    milliseconds: 200), // Reduced for better performance
-                child: SlideAnimation(
-                  verticalOffset: 50.0,
-                  child: FadeInAnimation(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 16.0),
-                      child: _buildSongCard(song, audioPlayerService, index),
+        child: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              if (index == _displayedSongs.length) {
+                return _hasMoreSongs
+                    ? const Center(child: CircularProgressIndicator())
+                    : const SizedBox.shrink();
+              }
+              final song = _displayedSongs[index];
+              return RepaintBoundary(
+                key: ValueKey(
+                    song.id), // Use song ID as key for better performance
+                child: AnimationConfiguration.staggeredList(
+                  position: index,
+                  duration: const Duration(
+                      milliseconds: 200), // Reduced for better performance
+                  child: SlideAnimation(
+                    verticalOffset: 50.0,
+                    child: FadeInAnimation(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 16.0),
+                        child: _buildSongCard(song, audioPlayerService, index),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+            childCount: _displayedSongs.length + (_hasMoreSongs ? 1 : 0),
+          ),
         ),
       );
     }

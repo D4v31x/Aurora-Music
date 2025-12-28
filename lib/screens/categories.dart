@@ -5,9 +5,8 @@ import 'package:provider/provider.dart';
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../widgets/glassmorphic_container.dart';
-import '../widgets/app_background.dart';
 import '../widgets/shimmer_loading.dart';
-import '../widgets/expanding_player.dart';
+import '../widgets/common_screen_scaffold.dart';
 import '../localization/app_localizations.dart';
 import '../models/utils.dart';
 import 'Artist_screen.dart';
@@ -116,234 +115,155 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
         Provider.of<AudioPlayerService>(context, listen: false);
     final loc = AppLocalizations.of(context);
 
-    return Hero(
-      tag: 'albums_screen',
-      child: FadeTransition(
-        opacity: const AlwaysStoppedAnimation(1.0),
-        child: Stack(
-          children: [
-            AppBackground(
-              enableAnimation: true,
-              child: Container(),
+    return CommonScreenScaffold(
+      title: loc.translate('albums'),
+      searchBar: Column(
+        children: [
+          // Search bar
+          glassmorphicContainer(
+            child: TextField(
+              controller: _searchController,
+              onChanged: _filterAlbums,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: loc.translate('search_albums'),
+                hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.white70),
+                        onPressed: () {
+                          _searchController.clear();
+                          _filterAlbums('');
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
             ),
-            Scaffold(
-              backgroundColor: Colors.transparent,
-              resizeToAvoidBottomInset: false,
-              body: CustomScrollView(
-                slivers: [
-                  // Header with title
-                  SliverAppBar(
-                    backgroundColor: Colors.transparent,
-                    expandedHeight: 120,
-                    floating: true,
-                    pinned: false,
-                    automaticallyImplyLeading: false,
-                    flexibleSpace: FlexibleSpaceBar(
-                      centerTitle: true,
-                      title: Text(
-                        loc.translate('albums'),
-                        style: TextStyle(
-                          fontFamily: 'ProductSans',
-                          color:
-                              Theme.of(context).textTheme.headlineLarge?.color,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Search and filter bar
-                  SliverToBoxAdapter(
+          ),
+          const SizedBox(height: 12),
+          // Filter and view options
+          Row(
+            children: [
+              // Sort dropdown
+              Expanded(
+                child: glassmorphicContainer(
+                  child: PopupMenuButton<AlbumSortOption>(
+                    onSelected: (option) {
+                      setState(() {
+                        _sortOption = option;
+                      });
+                      _applySorting();
+                    },
+                    color: Colors.grey.shade900,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      child: Column(
+                          horizontal: 12, vertical: 10),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Search bar
-                          glassmorphicContainer(
-                            child: TextField(
-                              controller: _searchController,
-                              onChanged: _filterAlbums,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                hintText: loc.translate('search_albums'),
-                                hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(0.5)),
-                                prefixIcon: const Icon(Icons.search,
-                                    color: Colors.white70),
-                                suffixIcon: _searchQuery.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.clear,
-                                            color: Colors.white70),
-                                        onPressed: () {
-                                          _searchController.clear();
-                                          _filterAlbums('');
-                                        },
-                                      )
-                                    : null,
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 14),
-                              ),
+                          const Icon(Icons.sort,
+                              color: Colors.white70, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _getSortOptionLabel(_sortOption),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          // Filter and view options
-                          Row(
-                            children: [
-                              // Sort dropdown
-                              Expanded(
-                                child: glassmorphicContainer(
-                                  child: PopupMenuButton<AlbumSortOption>(
-                                    onSelected: (option) {
-                                      setState(() {
-                                        _sortOption = option;
-                                      });
-                                      _applySorting();
-                                    },
-                                    color: Colors.grey.shade900,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 10),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.sort,
-                                              color: Colors.white70, size: 20),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              _getSortOptionLabel(_sortOption),
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 13),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          const Icon(Icons.arrow_drop_down,
-                                              color: Colors.white70),
-                                        ],
-                                      ),
-                                    ),
-                                    itemBuilder: (context) => [
-                                      _buildSortMenuItem(
-                                          AlbumSortOption.name, 'Name'),
-                                      _buildSortMenuItem(
-                                          AlbumSortOption.artist, 'Artist'),
-                                      _buildSortMenuItem(
-                                          AlbumSortOption.numSongs, 'Tracks'),
-                                      _buildSortMenuItem(
-                                          AlbumSortOption.year, 'Year'),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Ascending/Descending toggle
-                              glassmorphicContainer(
-                                child: IconButton(
-                                  icon: Icon(
-                                    _isAscending
-                                        ? Icons.arrow_upward
-                                        : Icons.arrow_downward,
-                                    color: Colors.white70,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _isAscending = !_isAscending;
-                                    });
-                                    _applySorting();
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Grid/List toggle
-                              glassmorphicContainer(
-                                child: IconButton(
-                                  icon: Icon(
-                                    _isGridView
-                                        ? Icons.view_list
-                                        : Icons.grid_view,
-                                    color: Colors.white70,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _isGridView = !_isGridView;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          // Album count
-                          Row(
-                            children: [
-                              Text(
-                                '${_filteredAlbums.length} ${loc.translate('albums').toLowerCase()}',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.6),
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
+                          const Icon(Icons.arrow_drop_down,
+                              color: Colors.white70),
                         ],
                       ),
                     ),
+                    itemBuilder: (context) => [
+                      _buildSortMenuItem(AlbumSortOption.name, 'Name'),
+                      _buildSortMenuItem(AlbumSortOption.artist, 'Artist'),
+                      _buildSortMenuItem(AlbumSortOption.numSongs, 'Tracks'),
+                      _buildSortMenuItem(AlbumSortOption.year, 'Year'),
+                    ],
                   ),
-                  // Albums content
-                  if (_isLoading)
-                    SliverPadding(
-                      padding: const EdgeInsets.all(16),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => const Padding(
-                            padding: EdgeInsets.only(bottom: 12),
-                            child: SongTileSkeleton(),
-                          ),
-                          childCount: 8,
-                        ),
-                      ),
-                    )
-                  else if (_filteredAlbums.isEmpty)
-                    SliverFillRemaining(
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.album,
-                                size: 64, color: Colors.white.withOpacity(0.3)),
-                            const SizedBox(height: 16),
-                            Text(
-                              _searchQuery.isEmpty
-                                  ? loc.translate('no_albums_found')
-                                  : loc.translate('no_results'),
-                              style: TextStyle(
-                                  color: Colors.white.withOpacity(0.5)),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    _isGridView
-                        ? _buildAlbumsGrid(audioPlayerService)
-                        : _buildAlbumsList(audioPlayerService),
-                  // Bottom padding for mini player
-                  SliverToBoxAdapter(
-                    child: SizedBox(
-                      height: audioPlayerService.currentSong != null
-                          ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
-                          : 16,
-                    ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Ascending/Descending toggle
+              glassmorphicContainer(
+                child: IconButton(
+                  icon: Icon(
+                    _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                    color: Colors.white70,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isAscending = !_isAscending;
+                    });
+                    _applySorting();
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Grid/List toggle
+              glassmorphicContainer(
+                child: IconButton(
+                  icon: Icon(
+                    _isGridView ? Icons.view_list : Icons.grid_view,
+                    color: Colors.white70,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isGridView = !_isGridView;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      slivers: [
+        // Albums content
+        if (_isLoading)
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: SongTileSkeleton(),
+                ),
+                childCount: 8,
+              ),
+            ),
+          )
+        else if (_filteredAlbums.isEmpty)
+          SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.album,
+                      size: 64, color: Colors.white.withOpacity(0.3)),
+                  const SizedBox(height: 16),
+                  Text(
+                    _searchQuery.isEmpty
+                        ? loc.translate('no_albums_found')
+                        : loc.translate('no_results'),
+                    style: TextStyle(color: Colors.white.withOpacity(0.5)),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
+          )
+        else
+          _isGridView
+              ? _buildAlbumsGrid(audioPlayerService)
+              : _buildAlbumsList(audioPlayerService),
+      ],
     );
   }
 
@@ -832,234 +752,155 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
 
-    return Hero(
-      tag: 'artists_screen',
-      child: FadeTransition(
-        opacity: const AlwaysStoppedAnimation(1.0),
-        child: Stack(
-          children: [
-            AppBackground(
-              enableAnimation: true,
-              child: Container(),
+    return CommonScreenScaffold(
+      title: loc.translate('artists'),
+      showBackButton: false,
+      searchBar: Column(
+        children: [
+          // Search bar
+          glassmorphicContainer(
+            child: TextField(
+              controller: _searchController,
+              onChanged: _filterArtists,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: loc.translate('search_artists'),
+                hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.white70),
+                        onPressed: () {
+                          _searchController.clear();
+                          _filterArtists('');
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
             ),
-            Scaffold(
-              backgroundColor: Colors.transparent,
-              resizeToAvoidBottomInset: false,
-              body: CustomScrollView(
-                slivers: [
-                  // Header with title
-                  SliverAppBar(
-                    backgroundColor: Colors.transparent,
-                    expandedHeight: 120,
-                    floating: true,
-                    pinned: false,
-                    automaticallyImplyLeading: false,
-                    flexibleSpace: FlexibleSpaceBar(
-                      centerTitle: true,
-                      title: Text(
-                        loc.translate('artists'),
-                        style: const TextStyle(
-                          fontFamily: 'ProductSans',
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Search and filter bar
-                  SliverToBoxAdapter(
+          ),
+          const SizedBox(height: 12),
+          // Filter and view options
+          Row(
+            children: [
+              // Sort dropdown
+              Expanded(
+                child: glassmorphicContainer(
+                  child: PopupMenuButton<ArtistSortOption>(
+                    onSelected: (option) {
+                      setState(() {
+                        _sortOption = option;
+                      });
+                      _applySorting();
+                    },
+                    color: Colors.grey.shade900,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      child: Column(
+                          horizontal: 12, vertical: 10),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Search bar
-                          glassmorphicContainer(
-                            child: TextField(
-                              controller: _searchController,
-                              onChanged: _filterArtists,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                hintText: loc.translate('search_artists'),
-                                hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(0.5)),
-                                prefixIcon: const Icon(Icons.search,
-                                    color: Colors.white70),
-                                suffixIcon: _searchQuery.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.clear,
-                                            color: Colors.white70),
-                                        onPressed: () {
-                                          _searchController.clear();
-                                          _filterArtists('');
-                                        },
-                                      )
-                                    : null,
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 14),
-                              ),
+                          const Icon(Icons.sort,
+                              color: Colors.white70, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _getArtistSortLabel(_sortOption),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          // Filter and view options
-                          Row(
-                            children: [
-                              // Sort dropdown
-                              Expanded(
-                                child: glassmorphicContainer(
-                                  child: PopupMenuButton<ArtistSortOption>(
-                                    onSelected: (option) {
-                                      setState(() {
-                                        _sortOption = option;
-                                      });
-                                      _applySorting();
-                                    },
-                                    color: Colors.grey.shade900,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 10),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.sort,
-                                              color: Colors.white70, size: 20),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              _getArtistSortLabel(_sortOption),
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 13),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          const Icon(Icons.arrow_drop_down,
-                                              color: Colors.white70),
-                                        ],
-                                      ),
-                                    ),
-                                    itemBuilder: (context) => [
-                                      _buildArtistSortMenuItem(
-                                          ArtistSortOption.name, 'Name'),
-                                      _buildArtistSortMenuItem(
-                                          ArtistSortOption.tracks, 'Tracks'),
-                                      _buildArtistSortMenuItem(
-                                          ArtistSortOption.albums, 'Albums'),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Ascending/Descending toggle
-                              glassmorphicContainer(
-                                child: IconButton(
-                                  icon: Icon(
-                                    _isAscending
-                                        ? Icons.arrow_upward
-                                        : Icons.arrow_downward,
-                                    color: Colors.white70,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _isAscending = !_isAscending;
-                                    });
-                                    _applySorting();
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Grid/List toggle
-                              glassmorphicContainer(
-                                child: IconButton(
-                                  icon: Icon(
-                                    _isGridView
-                                        ? Icons.view_list
-                                        : Icons.grid_view,
-                                    color: Colors.white70,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _isGridView = !_isGridView;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          // Artist count
-                          Row(
-                            children: [
-                              Text(
-                                '${_filteredArtists.length} ${loc.translate('artists').toLowerCase()}',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.6),
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
+                          const Icon(Icons.arrow_drop_down,
+                              color: Colors.white70),
                         ],
                       ),
                     ),
+                    itemBuilder: (context) => [
+                      _buildArtistSortMenuItem(ArtistSortOption.name, 'Name'),
+                      _buildArtistSortMenuItem(
+                          ArtistSortOption.tracks, 'Tracks'),
+                      _buildArtistSortMenuItem(
+                          ArtistSortOption.albums, 'Albums'),
+                    ],
                   ),
-                  // Artists content
-                  if (_isLoading)
-                    SliverPadding(
-                      padding: const EdgeInsets.all(16),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => const Padding(
-                            padding: EdgeInsets.only(bottom: 12),
-                            child: SongTileSkeleton(),
-                          ),
-                          childCount: 8,
-                        ),
-                      ),
-                    )
-                  else if (_filteredArtists.isEmpty)
-                    SliverFillRemaining(
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.person,
-                                size: 64, color: Colors.white.withOpacity(0.3)),
-                            const SizedBox(height: 16),
-                            Text(
-                              _searchQuery.isEmpty
-                                  ? loc.translate('no_artists_found')
-                                  : loc.translate('no_results'),
-                              style: TextStyle(
-                                  color: Colors.white.withOpacity(0.5)),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    _isGridView ? _buildArtistsGrid() : _buildArtistsList(),
-                  // Bottom padding for mini player
-                  Consumer<AudioPlayerService>(
-                    builder: (context, audioPlayerService, _) {
-                      return SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: audioPlayerService.currentSong != null
-                              ? ExpandingPlayer.getMiniPlayerPaddingHeight(
-                                  context)
-                              : 16,
-                        ),
-                      );
-                    },
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Ascending/Descending toggle
+              glassmorphicContainer(
+                child: IconButton(
+                  icon: Icon(
+                    _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                    color: Colors.white70,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isAscending = !_isAscending;
+                    });
+                    _applySorting();
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Grid/List toggle
+              glassmorphicContainer(
+                child: IconButton(
+                  icon: Icon(
+                    _isGridView ? Icons.view_list : Icons.grid_view,
+                    color: Colors.white70,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isGridView = !_isGridView;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      slivers: [
+        // Artists content
+        if (_isLoading)
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: SongTileSkeleton(),
+                ),
+                childCount: 8,
+              ),
+            ),
+          )
+        else if (_filteredArtists.isEmpty)
+          SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person,
+                      size: 64, color: Colors.white.withOpacity(0.3)),
+                  const SizedBox(height: 16),
+                  Text(
+                    _searchQuery.isEmpty
+                        ? loc.translate('no_artists_found')
+                        : loc.translate('no_results'),
+                    style: TextStyle(color: Colors.white.withOpacity(0.5)),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
+          )
+        else
+          _isGridView ? _buildArtistsGrid() : _buildArtistsList(),
+      ],
     );
   }
 
@@ -1502,126 +1343,82 @@ class FoldersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final foldersFuture = OnAudioQuery().queryAllPath();
 
-    return Hero(
-      tag: 'folders_screen',
-      child: FadeTransition(
-        opacity: const AlwaysStoppedAnimation(1.0),
-        child: Stack(
-          children: [
-            Selector<AudioPlayerService, SongModel?>(
-              selector: (_, service) => service.currentSong,
-              builder: (context, currentSong, _) =>
-                  buildBackground(context, currentSong),
-            ),
-            Scaffold(
-              backgroundColor: Colors.transparent,
-              resizeToAvoidBottomInset: false,
-              appBar: buildAppBar(context, 'Folders'),
-              body: FutureBuilder<List<String>>(
-                future: foldersFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No folders found'));
-                  }
+    return CommonScreenScaffold(
+      title: 'Folders',
+      showBackButton: false,
+      slivers: [
+        FutureBuilder<List<String>>(
+          future: foldersFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              );
+            } else if (snapshot.hasError) {
+              return SliverFillRemaining(
+                child: Center(
+                    child: Text('Error: ${snapshot.error}',
+                        style: const TextStyle(color: Colors.white))),
+              );
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const SliverFillRemaining(
+                child: Center(
+                    child: Text('No folders found',
+                        style: TextStyle(color: Colors.white))),
+              );
+            }
 
-                  final folders = snapshot.data!;
-                  return Selector<AudioPlayerService, bool>(
-                    selector: (_, service) => service.currentSong != null,
-                    builder: (context, hasCurrentSong, _) {
-                      return ListView.builder(
-                        padding: EdgeInsets.only(
-                          bottom: hasCurrentSong
-                              ? ExpandingPlayer.getMiniPlayerPaddingHeight(
-                                  context)
-                              : 16,
-                        ),
-                        itemCount: folders.length,
-                        itemBuilder: (context, index) {
-                          final folder = folders[index];
-                          return AnimationConfiguration.staggeredList(
-                            position: index,
-                            duration: const Duration(milliseconds: 375),
-                            child: SlideAnimation(
-                              verticalOffset: 50.0,
-                              child: FadeInAnimation(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 8.0, horizontal: 16.0),
-                                  child: glassmorphicContainer(
-                                    child: ListTile(
-                                      leading: const Icon(Icons.folder,
-                                          color: Colors.white),
-                                      title: Text(
-                                        folder.split('/').last,
-                                        style: const TextStyle(
-                                            color: Colors.white),
-                                      ),
-                                      subtitle: Text(
-                                        folder,
-                                        style:
-                                            const TextStyle(color: Colors.grey),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                FolderDetailScreen(
-                                              folderPath: folder,
-                                            ),
-                                          ),
-                                        );
-                                      },
+            final folders = snapshot.data!;
+            return SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final folder = folders[index];
+                  return AnimationConfiguration.staggeredList(
+                    position: index,
+                    duration: const Duration(milliseconds: 375),
+                    child: SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 16.0),
+                          child: glassmorphicContainer(
+                            child: ListTile(
+                              leading:
+                                  const Icon(Icons.folder, color: Colors.white),
+                              title: Text(
+                                folder.split('/').last,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              subtitle: Text(
+                                folder,
+                                style: const TextStyle(color: Colors.grey),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FolderDetailScreen(
+                                      folderPath: folder,
                                     ),
                                   ),
-                                ),
-                              ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      );
-                    },
+                          ),
+                        ),
+                      ),
+                    ),
                   );
                 },
+                childCount: folders.length,
               ),
-            ),
-          ],
+            );
+          },
         ),
-      ),
-    );
-  }
-
-  AppBar buildAppBar(BuildContext context, String title) {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0.0,
-      toolbarHeight: 180,
-      automaticallyImplyLeading: false,
-      title: Center(
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'ProductSans',
-            fontStyle: FontStyle.normal,
-            color: Colors.white,
-            fontSize: 32,
-            fontWeight: FontWeight.normal,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildBackground(BuildContext context, SongModel? currentSong) {
-    return AppBackground(
-      enableAnimation: true,
-      child: Container(), // Empty container since this is just a background
+      ],
     );
   }
 }

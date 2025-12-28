@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../services/audio_player_service.dart';
+import '../models/playlist_model.dart';
 
 /// Extension methods for efficient AudioPlayerService access
 /// Use these to avoid unnecessary rebuilds by selecting specific properties
@@ -169,6 +170,39 @@ class PlaybackControlsBuilder extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+/// Efficient builder for songs list using ValueNotifier
+/// Only rebuilds when the songs list actually changes
+class SongsListListenable extends StatelessWidget {
+  final Widget Function(BuildContext context, List<SongModel> songs) builder;
+
+  const SongsListListenable({super.key, required this.builder});
+
+  @override
+  Widget build(BuildContext context) {
+    final service = context.read<AudioPlayerService>();
+    return ValueListenableBuilder<List<SongModel>>(
+      valueListenable: service.songsNotifier,
+      builder: (context, songs, _) => builder(context, songs),
+    );
+  }
+}
+
+/// Efficient builder for playlists using ValueNotifier
+class PlaylistsListenable extends StatelessWidget {
+  final Widget Function(BuildContext context, List<Playlist> playlists) builder;
+
+  const PlaylistsListenable({super.key, required this.builder});
+
+  @override
+  Widget build(BuildContext context) {
+    final service = context.read<AudioPlayerService>();
+    return ValueListenableBuilder<List<Playlist>>(
+      valueListenable: service.playlistsNotifier,
+      builder: (context, playlists, _) => builder(context, playlists),
     );
   }
 }

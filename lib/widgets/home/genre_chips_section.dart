@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../../services/audio_player_service.dart';
@@ -7,38 +8,43 @@ import '../../services/audio_player_service.dart';
 class GenreChipsSection extends StatelessWidget {
   const GenreChipsSection({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<AudioPlayerService>(
-      builder: (context, audioPlayerService, child) {
-        // Extract unique genres from songs
-        final genreSet = <String>{};
-        for (final song in audioPlayerService.songs) {
-          if (song.genre != null && song.genre!.isNotEmpty) {
-            // Split by common separators and clean up
-            final genres = song.genre!.split(RegExp(r'[,;/]'));
-            for (var genre in genres) {
-              genre = genre.trim();
-              if (genre.isNotEmpty && genre.toLowerCase() != 'unknown') {
-                genreSet.add(genre);
-              }
-            }
+  /// Extract genres from songs list - memoized to avoid recalculation
+  static List<String> _extractGenres(List<SongModel> songs) {
+    final genreSet = <String>{};
+    for (final song in songs) {
+      if (song.genre != null && song.genre!.isNotEmpty) {
+        final genres = song.genre!.split(RegExp(r'[,;/]'));
+        for (var genre in genres) {
+          genre = genre.trim();
+          if (genre.isNotEmpty && genre.toLowerCase() != 'unknown') {
+            genreSet.add(genre);
           }
         }
+      }
+    }
+    return genreSet.take(10).toList();
+  }
 
-        // Convert to list and take top genres
-        final genres = genreSet.take(10).toList();
+  @override
+  Widget build(BuildContext context) {
+    // Use Selector to only rebuild when songs list length changes
+    // This prevents unnecessary rebuilds during playback state changes
+    return Selector<AudioPlayerService, int>(
+      selector: (_, service) => service.songs.length,
+      builder: (context, songsCount, _) {
+        if (songsCount == 0) {
+          return const SizedBox.shrink();
+        }
 
-        // Add some mood-based categories
-        final moods = [
+        final audioPlayerService = context.read<AudioPlayerService>();
+        final genres = _extractGenres(audioPlayerService.songs);
+
+        // Static mood categories
+        const moods = [
           _GenreItem('🎵', 'All Songs', null),
           _GenreItem('❤️', 'Favorites', 'favorites'),
           _GenreItem('🔀', 'Shuffle', 'shuffle'),
         ];
-
-        if (genres.isEmpty && moods.isEmpty) {
-          return const SizedBox.shrink();
-        }
 
         return SizedBox(
           height: 44,
@@ -48,6 +54,7 @@ class GenreChipsSection extends StatelessWidget {
             children: [
               // Mood chips first
               ...moods.map((mood) => _GenreChip(
+                    key: ValueKey('mood_${mood.action ?? 'all'}'),
                     emoji: mood.emoji,
                     label: mood.label,
                     onTap: () => _handleMoodTap(
@@ -55,6 +62,7 @@ class GenreChipsSection extends StatelessWidget {
                   )),
               // Genre chips
               ...genres.map((genre) => _GenreChip(
+                    key: ValueKey('genre_$genre'),
                     label: genre,
                     onTap: () => _playGenre(context, genre, audioPlayerService),
                   )),
@@ -104,7 +112,7 @@ class _GenreItem {
   final String label;
   final String? action;
 
-  _GenreItem(this.emoji, this.label, this.action);
+  const _GenreItem(this.emoji, this.label, this.action);
 }
 
 class _GenreChip extends StatelessWidget {
@@ -113,6 +121,7 @@ class _GenreChip extends StatelessWidget {
   final VoidCallback onTap;
 
   const _GenreChip({
+    super.key,
     this.emoji,
     required this.label,
     required this.onTap,

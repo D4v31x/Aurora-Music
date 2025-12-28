@@ -23,10 +23,12 @@ import '../services/notification_manager.dart';
 import '../services/download_progress_monitor.dart';
 import '../services/version_service.dart';
 import '../services/bluetooth_service.dart';
+import '../services/donation_service.dart';
 import '../widgets/library_tab.dart';
 import 'package:aurora_music_v01/screens/onboarding/onboarding_screen.dart';
 import 'package:aurora_music_v01/providers/theme_provider.dart';
 import '../widgets/app_background.dart';
+import '../widgets/glassmorphic_container.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -46,7 +48,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   AnimationController? _animationController;
   final ScrollController _scrollController = ScrollController();
   final ValueNotifier<bool> _isScrolledNotifier = ValueNotifier<bool>(false);
-  SongModel? currentSong;
   int _totalSongs = 0;
   List<ArtistModel> artists = [];
   List<AlbumModel> albums = [];
@@ -81,12 +82,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     });
 
-    // Don't try to access media at startup - delay it
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      if (mounted) {
-        // Only initialize after UI is loaded
-        _initializeHomeScreen();
-      }
+    // Initialize immediately after frame callback to ensure context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeHomeScreen();
     });
 
     _checkAndShowChangelog();
@@ -94,14 +92,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   // Initialize the home screen and check permissions
-  void _initializeHomeScreen() async {
-    // Set initialized state
-    setState(() {
-      _isInitialized = true;
-    });
+  Future<void> _initializeHomeScreen() async {
+    try {
+      // Set initialized state
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
 
-    // Check if we need to show permission UI
-    await _checkPermissions();
+      // Check if we need to show permission UI
+      await _checkPermissions();
+    } catch (e) {
+      debugPrint('Error initializing home screen: $e');
+      // Fallback initialization if something goes wrong
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    }
   }
 
   void _initializeControllers() {
@@ -128,6 +138,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           duration: const Duration(seconds: 3),
           onComplete: () => _notificationManager.showDefaultTitle(),
         );
+      }
+    });
+
+    // Check and show donation reminder after a delay
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        DonationService.showReminderIfNeeded(context);
       }
     });
   }
@@ -664,6 +681,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    final currentSong = audioPlayerService.currentSong;
+
     return WillPopScope(
       onWillPop: _onWillPop,
       child: AppBackground(
@@ -711,19 +731,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                       bottom: PreferredSize(
-                        preferredSize: const Size.fromHeight(kToolbarHeight),
+                        preferredSize: const Size.fromHeight(55),
                         child: ValueListenableBuilder<bool>(
                             valueListenable: _isScrolledNotifier,
                             builder: (context, isScrolled, _) {
-                              return Container(
-                                color: isScrolled
-                                    ? Theme.of(context)
-                                        .colorScheme
-                                        .surface
-                                        .withValues(alpha: 0.8)
-                                    : Colors.transparent,
-                                child:
-                                    _HomeTabBar(tabController: _tabController),
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 0, 20, 6),
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  child: isScrolled
+                                      ? GlassmorphicContainer(
+                                          key: const ValueKey('scrolled'),
+                                          borderRadius:
+                                              BorderRadius.circular(30),
+                                          blur: 20,
+                                          child: _HomeTabBar(
+                                              tabController: _tabController),
+                                        )
+                                      : Container(
+                                          key: const ValueKey('normal'),
+                                          child: _HomeTabBar(
+                                              tabController: _tabController),
+                                        ),
+                                ),
                               );
                             }),
                       ),
@@ -788,7 +819,7 @@ class _HomeTabBar extends StatelessWidget {
   Widget _buildTabItem(BuildContext context, String text) {
     return Container(
       constraints: const BoxConstraints(minWidth: 80),
-      height: 30,
+      height: 28,
       child: Tab(
         child: FittedBox(
           fit: BoxFit.scaleDown,
@@ -815,10 +846,10 @@ class _HomeTabBar extends StatelessWidget {
         return TabBar(
           controller: tabController,
           dividerColor: Colors.transparent,
-          isScrollable: true,
+          isScrollable: false,
           labelPadding:
-              const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
-          indicatorPadding: const EdgeInsets.symmetric(vertical: 8.0),
+              const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+          indicatorPadding: const EdgeInsets.symmetric(vertical: 4.0),
           indicator: OutlineIndicator(
             color: Colors.white,
             strokeWidth: 2,

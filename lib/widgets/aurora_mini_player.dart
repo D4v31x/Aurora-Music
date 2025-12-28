@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:miniplayer/miniplayer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -12,39 +13,21 @@ import '../models/utils.dart';
 /// Aurora Music Mini Player using the miniplayer package
 /// Provides smooth expanding/collapsing animation between mini and full player
 /// with advanced hero animations
-class AuroraMiniPlayer extends StatefulWidget {
+class AuroraMiniPlayer extends HookWidget {
   const AuroraMiniPlayer({super.key});
 
-  @override
-  State<AuroraMiniPlayer> createState() => _AuroraMiniPlayerState();
-}
-
-class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
-    with SingleTickerProviderStateMixin {
   static final _artworkService = ArtworkCacheService();
-  final MiniplayerController _controller = MiniplayerController();
-  late AnimationController _pulseController;
 
   // Height constants
   static const double _minHeight = 76.0;
 
   @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
+  Widget build(BuildContext context) {
+    final controller = useMemoized(() => MiniplayerController());
+    final pulseController = useAnimationController(
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
-  }
 
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final topPadding = MediaQuery.of(context).padding.top;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -62,7 +45,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
         final audioPlayerService = context.read<AudioPlayerService>();
 
         return Miniplayer(
-          controller: _controller,
+          controller: controller,
           minHeight: _minHeight,
           maxHeight: maxHeight,
           builder: (height, percentage) {
@@ -80,6 +63,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
                       height,
                       percentage,
                       bottomPadding,
+                      pulseController,
                     )
                   : _buildExpandedPlayer(
                       currentSong,
@@ -87,6 +71,8 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
                       height,
                       percentage,
                       topPadding,
+                      pulseController,
+                      controller,
                     ),
             );
           },
@@ -102,6 +88,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
     double height,
     double percentage,
     double bottomPadding,
+    AnimationController pulseController,
   ) {
     // Fade out mini player as it expands with smoother curve
     final opacity = (1 - (percentage * 2.5)).clamp(0.0, 1.0);
@@ -152,7 +139,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
                     child: Row(
                       children: [
                         // Artwork with advanced hero animation
-                        _buildArtwork(currentSong),
+                        _buildArtwork(currentSong, pulseController),
                         // Song information
                         _buildSongInfo(currentSong),
                         // Play/pause button
@@ -172,7 +159,8 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
   }
 
   /// Build artwork with hero animation and pulse effect
-  Widget _buildArtwork(SongModel currentSong) {
+  Widget _buildArtwork(
+      SongModel currentSong, AnimationController pulseController) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Hero(
@@ -222,7 +210,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
         child: Material(
           color: Colors.transparent,
           child: AnimatedBuilder(
-            animation: _pulseController,
+            animation: pulseController,
             builder: (context, child) {
               return Container(
                 width: 56,
@@ -232,8 +220,8 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.5),
-                      blurRadius: 16.0 + (_pulseController.value * 4),
-                      spreadRadius: _pulseController.value * 2,
+                      blurRadius: 16.0 + (pulseController.value * 4),
+                      spreadRadius: pulseController.value * 2,
                       offset: const Offset(0, 4),
                     ),
                   ],
@@ -511,6 +499,8 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
     double height,
     double percentage,
     double topPadding,
+    AnimationController pulseController,
+    MiniplayerController controller,
   ) {
     // Fade in expanded player as it grows with smoother curve
     final opacity = ((percentage - 0.3) * 1.5).clamp(0.0, 1.0);
@@ -576,7 +566,7 @@ class _AuroraMiniPlayerState extends State<AuroraMiniPlayer>
                             size: 28,
                           ),
                           onPressed: () {
-                            _controller.animateToHeight(state: PanelState.MIN);
+                            controller.animateToHeight(state: PanelState.MIN);
                           },
                           padding: EdgeInsets.zero,
                         ),

@@ -40,7 +40,7 @@ class SuggestedArtistsSection extends StatelessWidget {
         child: AnimationLimiter(
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: randomArtists.length,
             itemBuilder: (context, index) {
               final artist = randomArtists[index];

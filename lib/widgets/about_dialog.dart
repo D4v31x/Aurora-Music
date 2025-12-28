@@ -28,7 +28,7 @@ class AuroraAboutDialog extends StatelessWidget {
           maxWidth: 400,
           maxHeight: MediaQuery.of(context).size.height * 0.8,
         ),
-        child: glassmorphicContainer(
+        child: GlassmorphicContainer(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

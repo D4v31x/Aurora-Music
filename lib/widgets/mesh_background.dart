@@ -1,11 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:mesh/mesh.dart';
 
 /// Mesh gradient background that uses the mesh package
 /// Colors are derived from artwork or use default colors when no artwork is available
-class MeshBackground extends StatefulWidget {
+class MeshBackground extends HookWidget {
   final List<Color> colors;
   final bool animated;
   final Duration animationDuration;
@@ -20,17 +21,8 @@ class MeshBackground extends StatefulWidget {
     this.animationSpeed = 2.5, // Much faster speed (was 1.2)
   });
 
-  @override
-  State<MeshBackground> createState() => _MeshBackgroundState();
-}
-
-class _MeshBackgroundState extends State<MeshBackground>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _animation;
-
   // Initial vertex positions for animation reference - flowing organic pattern
-  final List<OVertex> _baseVertices = [
+  static final List<OVertex> _baseVertices = [
     // Top row with slight curve
     (-0.15, -0.2).v, (0.25, -0.15).v, (0.75, -0.18).v, (1.15, -0.12).v,
     // Upper middle row with wave pattern
@@ -42,62 +34,62 @@ class _MeshBackgroundState extends State<MeshBackground>
   ];
 
   @override
-  void initState() {
-    super.initState();
-
-    // Create an animation controller for continuous movement
-    _animationController = AnimationController(
-      vsync: this,
-      duration: widget.animationDuration,
+  Widget build(BuildContext context) {
+    final animationController = useAnimationController(
+      duration: animationDuration,
     );
 
-    // Create a looping animation
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 2 * pi, // Full rotation in radians
-    ).animate(_animationController);
-
-    // Start the animation in a loop if animated
-    if (widget.animated) {
-      _animationController.repeat();
-    }
-  }
-
-  @override
-  void didUpdateWidget(MeshBackground oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // Handle animation state changes
-    if (oldWidget.animated != widget.animated) {
-      if (widget.animated) {
-        _animationController.repeat();
+    // Handle animation state
+    useEffect(() {
+      if (animated) {
+        animationController.repeat();
       } else {
-        _animationController.stop();
+        animationController.stop();
       }
+      return null;
+    }, [animated]);
+
+    final animationValue = useAnimation(
+      Tween<double>(begin: 0.0, end: 2 * pi).animate(animationController),
+    );
+
+    // Ensure we have at least 3 colors for a rich mesh gradient
+    final gradientColors = _ensureColors(colors);
+
+    if (!animated) {
+      return RepaintBoundary(
+        child: OMeshGradient(
+          mesh: OMeshRect(
+            width: 4,
+            height: 4,
+            fallbackColor: gradientColors.first,
+            colorSpace: OMeshColorSpace.lab,
+            vertices: _baseVertices,
+            colors: _getColorsList(gradientColors),
+          ),
+        ),
+      );
     }
 
-    // Update animation duration if it changed
-    if (oldWidget.animationDuration != widget.animationDuration) {
-      _animationController.duration = widget.animationDuration;
-      if (widget.animated) {
-        _animationController.reset();
-        _animationController.repeat();
-      }
-    }
-  }
+    final animatedVertices = _animateVertices(animationValue, animationSpeed);
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+    return RepaintBoundary(
+      child: OMeshGradient(
+        mesh: OMeshRect(
+          width: 4,
+          height: 4,
+          fallbackColor: gradientColors.first,
+          colorSpace: OMeshColorSpace.lab,
+          vertices: animatedVertices,
+          colors: _getColorsList(gradientColors),
+        ),
+      ),
+    );
   }
 
   // Generate animated vertices based on the animation value with flowing motion
-  List<OVertex> _animateVertices(double animationValue) {
-    if (!widget.animated) {
-      return _baseVertices;
-    }
-
+  static List<OVertex> _animateVertices(
+      double animationValue, double animationSpeed) {
     final List<OVertex> animatedVertices = [];
     final random = Random(42); // Fixed seed for deterministic movement
 
@@ -122,9 +114,8 @@ class _MeshBackgroundState extends State<MeshBackground>
           0.12 + (cos(rowIndex - colIndex) * 0.06); // Doubled from 0.06 + 0.02
 
       // Apply flowing wave motion with increased speed
-      final flowTime = animationValue *
-          widget.animationSpeed *
-          2.0; // Double the speed multiplier
+      final flowTime =
+          animationValue * animationSpeed * 2.0; // Double the speed multiplier
       final xOffset = sin(flowTime * baseFreqX + phaseX) * amplitudeX;
       final yOffset = cos(flowTime * baseFreqY + phaseY) * amplitudeY;
 
@@ -205,49 +196,8 @@ class _MeshBackgroundState extends State<MeshBackground>
     return animatedVertices;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Ensure we have at least 3 colors for a rich mesh gradient
-    final gradientColors = _ensureColors(widget.colors);
-
-    if (!widget.animated) {
-      return RepaintBoundary(
-        child: OMeshGradient(
-          mesh: OMeshRect(
-            width: 4,
-            height: 4,
-            fallbackColor: gradientColors.first,
-            colorSpace: OMeshColorSpace.lab,
-            vertices: _baseVertices,
-            colors: _getColorsList(gradientColors),
-          ),
-        ),
-      );
-    }
-
-    return RepaintBoundary(
-      child: AnimatedBuilder(
-        animation: _animation,
-        builder: (context, child) {
-          final animatedVertices = _animateVertices(_animation.value);
-
-          return OMeshGradient(
-            mesh: OMeshRect(
-              width: 4,
-              height: 4,
-              fallbackColor: gradientColors.first,
-              colorSpace: OMeshColorSpace.lab,
-              vertices: animatedVertices,
-              colors: _getColorsList(gradientColors),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   // Helper method to create the colors list for 4x4 grid (16 colors)
-  List<Color?> _getColorsList(List<Color> gradientColors) {
+  static List<Color?> _getColorsList(List<Color> gradientColors) {
     List<Color?> colors = [];
 
     // Generate 16 colors for 4x4 grid with flowing variations
@@ -294,7 +244,7 @@ class _MeshBackgroundState extends State<MeshBackground>
   }
 
   /// Ensure we have at least 3 colors for a rich gradient
-  List<Color> _ensureColors(List<Color> inputColors) {
+  static List<Color> _ensureColors(List<Color> inputColors) {
     if (inputColors.isEmpty) {
       // Default colors - dark mode
       return [

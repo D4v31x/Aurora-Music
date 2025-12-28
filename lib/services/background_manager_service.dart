@@ -3,13 +3,11 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'dart:typed_data';
 import 'artwork_cache_service.dart';
-import 'mood_detection_service.dart';
 
-/// Service that manages background colors, artwork, and mood
+/// Service that manages background colors and artwork
 /// Provides artwork data for blurred backgrounds across the app
 class BackgroundManagerService extends ChangeNotifier {
   final ArtworkCacheService _artworkCache = ArtworkCacheService();
-  final MoodDetectionService _moodService = MoodDetectionService();
 
   List<Color> _currentColors = _getDefaultColors();
   bool _isDarkMode = true;
@@ -38,9 +36,6 @@ class BackgroundManagerService extends ChangeNotifier {
   bool get isTransitioning => _isTransitioning;
   bool get hasArtwork => _currentArtwork != null && _currentArtwork!.isNotEmpty;
   SongModel? get currentSong => _currentSong;
-  MoodDetectionService get moodService => _moodService;
-  SongMood get currentMood => _moodService.currentMood;
-  MoodTheme get currentMoodTheme => _moodService.currentTheme;
 
   /// Force refresh artwork for current song
   Future<void> refreshArtwork() async {
@@ -93,16 +88,15 @@ class BackgroundManagerService extends ChangeNotifier {
   }
 
   /// Extract and update colors from song artwork
-  /// Also updates the artwork for blurred background and analyzes mood
+  /// Also updates the artwork for blurred background
   Future<void> updateColorsFromSong(SongModel? song) async {
     if (song == null) {
       _clearArtwork();
-      _moodService.reset();
       _useDefaultColors();
       return;
     }
 
-    // Skip if same song (but not if we don't have artwork yet)
+    // Skip if same song AND we already have artwork
     if (_currentSong?.id == song.id && _currentArtwork != null) {
       return;
     }
@@ -115,20 +109,19 @@ class BackgroundManagerService extends ChangeNotifier {
       _isTransitioning = true;
       notifyListeners();
 
-      // Analyze mood in parallel with artwork loading
-      final moodFuture = _moodService.analyzeSong(song);
-
-      // Try to get artwork with multiple retries
+      // Try to get artwork with multiple retries and increasing delays
       Uint8List? artworkData;
-      for (int attempt = 1; attempt <= 3; attempt++) {
+      for (int attempt = 1; attempt <= 5; attempt++) {
         artworkData = await _artworkCache.getArtwork(song.id);
 
         if (artworkData != null && artworkData.isNotEmpty) {
           break;
         }
 
-        if (attempt < 3) {
-          await Future.delayed(Duration(milliseconds: 150 * attempt));
+        if (attempt < 5) {
+          // Increasing delays: 100ms, 200ms, 400ms, 800ms
+          await Future.delayed(
+              Duration(milliseconds: 100 * (1 << (attempt - 1))));
         }
       }
 
@@ -145,9 +138,6 @@ class BackgroundManagerService extends ChangeNotifier {
       // Force a frame to ensure the UI repaints
       WidgetsBinding.instance.scheduleFrame();
 
-      // Wait for mood analysis to complete
-      await moodFuture;
-
       await updateColorsFromArtwork(artworkData);
 
       // End transition after a short delay for animation
@@ -159,7 +149,7 @@ class BackgroundManagerService extends ChangeNotifier {
 
       // If we still don't have artwork, schedule a delayed retry
       if (artworkData == null && _currentSong?.id == song.id) {
-        Future.delayed(const Duration(milliseconds: 800), () async {
+        Future.delayed(const Duration(milliseconds: 1500), () async {
           if (_currentSong?.id == song.id && _currentArtwork == null) {
             final retryArtwork = await _artworkCache.getArtwork(song.id);
             if (retryArtwork != null &&
@@ -175,7 +165,6 @@ class BackgroundManagerService extends ChangeNotifier {
     } catch (e) {
       debugPrint('BackgroundManager error: $e');
       _clearArtwork();
-      _moodService.reset();
       _useDefaultColors();
     }
   }

@@ -1,3 +1,4 @@
+import 'package:aurora_music_v01/widgets/about_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -13,8 +14,9 @@ import '../../services/version_service.dart';
 import '../../services/notification_manager.dart';
 import '../../services/cache_manager.dart';
 import '../../services/artwork_cache_service.dart';
+import '../../services/donation_service.dart';
 import '../../screens/artist_separator_settings.dart';
-import '../about_dialog.dart';
+import '../glassmorphic_container.dart';
 import '../expanding_player.dart';
 
 /// A glassmorphic settings tab with translations.
@@ -68,32 +70,13 @@ class _SettingsTabState extends State<SettingsTab> {
 
   // Glassmorphic Card Container
   Widget _buildGlassmorphicCard({required List<Widget> children}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: RepaintBoundary(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withOpacity(0.08)
-                    : Colors.black.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white.withOpacity(0.15)
-                      : Colors.black.withOpacity(0.08),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                children: children,
-              ),
-            ),
-          ),
+      child: GlassmorphicContainer(
+        borderRadius: BorderRadius.circular(20),
+        blur: 15,
+        child: Column(
+          children: children,
         ),
       ),
     );
@@ -171,8 +154,11 @@ class _SettingsTabState extends State<SettingsTab> {
     required VoidCallback onTap,
     bool isFirst = false,
     bool isLast = false,
+    Color? iconColor,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final effectiveIconColor =
+        iconColor ?? Theme.of(context).colorScheme.primary;
     return Column(
       children: [
         if (!isFirst)
@@ -189,13 +175,13 @@ class _SettingsTabState extends State<SettingsTab> {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: effectiveIconColor.withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               icon,
               size: 20,
-              color: Theme.of(context).colorScheme.primary,
+              color: effectiveIconColor,
             ),
           ),
           title: Text(
@@ -629,6 +615,13 @@ class _SettingsTabState extends State<SettingsTab> {
                       '${l10n.translate('settings_version')} $_currentVersion',
                   onTap: _showAboutDialog,
                   isFirst: true,
+                ),
+                _buildActionTile(
+                  icon: Icons.favorite_rounded,
+                  title: l10n.translate('support_aurora'),
+                  subtitle: l10n.translate('support_aurora_desc'),
+                  onTap: () => DonationService.showDonationDialog(context),
+                  iconColor: Colors.pink,
                 ),
                 _buildActionTile(
                   icon: Icons.system_update_rounded,

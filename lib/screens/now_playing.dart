@@ -13,6 +13,7 @@ import '../services/sleep_timer_controller.dart';
 import '../services/lyrics_service.dart'; // Genius lyrics fetching service
 import '../services/artwork_cache_service.dart'; // Centralized artwork caching
 import '../services/artist_separator_service.dart';
+import '../services/background_manager_service.dart'; // Background artwork management
 import '../screens/fullscreen_lyrics.dart'; // Fullscreen lyrics viewer
 // Importujte službu pro timed lyrics
 import '../widgets/artist_card.dart';
@@ -95,6 +96,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         Provider.of<AudioPlayerService>(context, listen: false);
     _initializeTimedLyrics(audioPlayerService);
 
+    // Ensure background artwork is loaded when screen is shown
+    _ensureBackgroundArtwork();
+
     // Listen to song changes
     _songChangeSubscription =
         audioPlayerService.currentSongStream.listen((song) {
@@ -104,6 +108,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         if (mounted) {
           _updateArtwork(song);
           _initializeTimedLyrics(audioPlayerService);
+          _ensureBackgroundArtwork();
         }
       }
     });
@@ -112,6 +117,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       duration: const Duration(milliseconds: 300), // Rychlejší animace
       vsync: this,
     );
+  }
+
+  /// Ensure background artwork is loaded and visible
+  Future<void> _ensureBackgroundArtwork() async {
+    final backgroundManager =
+        Provider.of<BackgroundManagerService>(context, listen: false);
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+
+    // If we have a current song but no background artwork, trigger a refresh
+    if (audioPlayerService.currentSong != null &&
+        !backgroundManager.hasArtwork) {
+      await backgroundManager
+          .updateColorsFromSong(audioPlayerService.currentSong);
+    }
   }
 
   Future<void> _initializeTimedLyrics(
@@ -809,7 +829,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
+    // Use read instead of watch/listen to avoid rebuilding entire screen
+    // Individual components use ValueListenableBuilder or Selector for targeted updates
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
 
     // Only update artwork when song actually changes, not on every rebuild
     final currentSongId = audioPlayerService.currentSong?.id;
@@ -825,272 +848,290 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       });
     }
 
-    return AppBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        // Instead of popping/exiting, minimize the player
+        if (widget.onClose != null) {
+          widget.onClose!();
+        } else if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: AppBackground(
+        child: Scaffold(
           backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(
-              Icons.keyboard_arrow_down,
-              color: Colors.white,
-              size: 32,
-            ),
-            onPressed: () {
-              if (widget.onClose != null) {
-                widget.onClose!();
-              } else {
-                // Only pop if we can (screen was pushed as route)
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
-              }
-            },
-          ),
-          actions: [
-            _buildSleepTimerIndicator(audioPlayerService),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              color: Colors.grey[900],
-              onSelected: (value) {
-                switch (value) {
-                  case 'sleep_timer':
-                    _showSleepTimerOptions(context);
-                    break;
-                  case 'view_artist':
-                    _showArtistOptions(context, audioPlayerService);
-                    break;
-                  case 'lyrics':
-                    _openFullscreenLyrics(context, audioPlayerService);
-                    break;
-                  case 'add_playlist':
-                    _showAddToPlaylistDialog(context, audioPlayerService);
-                    break;
-                  case 'share':
-                    _shareSong(audioPlayerService);
-                    break;
-                  case 'queue':
-                    _showQueueDialog(context, audioPlayerService);
-                    break;
-                  case 'info':
-                    _showSongInfoDialog(context, audioPlayerService);
-                    break;
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(
+                Icons.keyboard_arrow_down,
+                color: Colors.white,
+                size: 32,
+              ),
+              onPressed: () {
+                if (widget.onClose != null) {
+                  widget.onClose!();
+                } else {
+                  // Only pop if we can (screen was pushed as route)
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  }
                 }
               },
-              itemBuilder: (BuildContext context) => [
-                PopupMenuItem<String>(
-                  value: 'sleep_timer',
-                  child: Consumer<SleepTimerController>(
-                    builder: (context, sleepTimer, child) {
-                      return Row(
-                        children: [
-                          Icon(
-                            sleepTimer.isActive
-                                ? Icons.timer
-                                : Icons.timer_outlined,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            AppLocalizations.of(context)
-                                .translate('sleep_timer'),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'view_artist',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.person_outline, color: Colors.white),
-                      const SizedBox(width: 12),
-                      Text(
-                        AppLocalizations.of(context).translate('view_artist'),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'lyrics',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.lyrics_outlined, color: Colors.white),
-                      const SizedBox(width: 12),
-                      Text(
-                        AppLocalizations.of(context).translate('lyrics'),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'add_playlist',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.playlist_add, color: Colors.white),
-                      const SizedBox(width: 12),
-                      Text(
-                        AppLocalizations.of(context)
-                            .translate('add_to_playlist'),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'share',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.share_outlined, color: Colors.white),
-                      const SizedBox(width: 12),
-                      Text(
-                        AppLocalizations.of(context).translate('share'),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'queue',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.queue_music_outlined,
-                          color: Colors.white),
-                      const SizedBox(width: 12),
-                      Text(
-                        AppLocalizations.of(context).translate('queue'),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'info',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: Colors.white),
-                      const SizedBox(width: 12),
-                      Text(
-                        AppLocalizations.of(context).translate('song_info'),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            SafeArea(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 40.0,
-                ),
-                children: [
-                  const SizedBox(height: 30),
-                  _buildArtworkWithInfo(audioPlayerService),
-                  const SizedBox(height: 110),
-                  _ProgressBar(audioService: audioPlayerService),
-                  const SizedBox(height: 20),
-                  RepaintBoundary(
+            actions: [
+              _buildSleepTimerIndicator(audioPlayerService),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                color: Colors.grey[900],
+                onSelected: (value) {
+                  switch (value) {
+                    case 'sleep_timer':
+                      _showSleepTimerOptions(context);
+                      break;
+                    case 'view_artist':
+                      _showArtistOptions(context, audioPlayerService);
+                      break;
+                    case 'lyrics':
+                      _openFullscreenLyrics(context, audioPlayerService);
+                      break;
+                    case 'add_playlist':
+                      _showAddToPlaylistDialog(context, audioPlayerService);
+                      break;
+                    case 'share':
+                      _shareSong(audioPlayerService);
+                      break;
+                    case 'queue':
+                      _showQueueDialog(context, audioPlayerService);
+                      break;
+                    case 'info':
+                      _showSongInfoDialog(context, audioPlayerService);
+                      break;
+                  }
+                },
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem<String>(
+                    value: 'sleep_timer',
+                    child: Consumer<SleepTimerController>(
+                      builder: (context, sleepTimer, child) {
+                        return Row(
+                          children: [
+                            Icon(
+                              sleepTimer.isActive
+                                  ? Icons.timer
+                                  : Icons.timer_outlined,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              AppLocalizations.of(context)
+                                  .translate('sleep_timer'),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'view_artist',
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        IconButton(
-                          icon: Icon(
-                            audioPlayerService.isShuffle
-                                ? Icons.shuffle
-                                : Icons.shuffle,
-                            color: audioPlayerService.isShuffle
-                                ? Colors.white
-                                : Colors.white.withOpacity(0.7),
-                            size: 24,
-                          ),
-                          onPressed: audioPlayerService.toggleShuffle,
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.skip_previous,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                          onPressed: audioPlayerService.back,
-                        ),
-                        _PlayPauseButton(
-                          isPlaying: audioPlayerService.isPlaying,
-                          onPressed: () {
-                            if (audioPlayerService.isPlaying) {
-                              audioPlayerService.pause();
-                            } else {
-                              audioPlayerService.resume();
-                            }
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.skip_next,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                          onPressed: audioPlayerService.skip,
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            audioPlayerService.isRepeat
-                                ? Icons.repeat_one
-                                : Icons.repeat,
-                            color: audioPlayerService.isRepeat
-                                ? Colors.white
-                                : Colors.white.withOpacity(0.7),
-                            size: 24,
-                          ),
-                          onPressed: audioPlayerService.toggleRepeat,
+                        const Icon(Icons.person_outline, color: Colors.white),
+                        const SizedBox(width: 12),
+                        Text(
+                          AppLocalizations.of(context).translate('view_artist'),
+                          style: const TextStyle(color: Colors.white),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: IconButton(
-                      icon: Icon(
-                        audioPlayerService
-                                .isLiked(audioPlayerService.currentSong!)
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: audioPlayerService
-                                .isLiked(audioPlayerService.currentSong!)
-                            ? Colors.red
-                            : Colors.white,
-                        size: 30,
-                      ),
-                      onPressed: () {
-                        audioPlayerService
-                            .toggleLike(audioPlayerService.currentSong!);
-                      },
+                  PopupMenuItem<String>(
+                    value: 'lyrics',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.lyrics_outlined, color: Colors.white),
+                        const SizedBox(width: 12),
+                        Text(
+                          AppLocalizations.of(context).translate('lyrics'),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
                     ),
                   ),
-                  _buildLyricsSection(),
-                  const SizedBox(height: 40),
-                  if (audioPlayerService.currentSong != null)
-                    MusicMetadataWidget(
-                      song: audioPlayerService.currentSong!,
+                  PopupMenuItem<String>(
+                    value: 'add_playlist',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.playlist_add, color: Colors.white),
+                        const SizedBox(width: 12),
+                        Text(
+                          AppLocalizations.of(context)
+                              .translate('add_to_playlist'),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
                     ),
-                  const SizedBox(height: 40),
-                  _buildArtistSection(audioPlayerService),
-                  const SizedBox(height: 30),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'share',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.share_outlined, color: Colors.white),
+                        const SizedBox(width: 12),
+                        Text(
+                          AppLocalizations.of(context).translate('share'),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'queue',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.queue_music_outlined,
+                            color: Colors.white),
+                        const SizedBox(width: 12),
+                        Text(
+                          AppLocalizations.of(context).translate('queue'),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'info',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline, color: Colors.white),
+                        const SizedBox(width: 12),
+                        Text(
+                          AppLocalizations.of(context).translate('song_info'),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
+          body: Stack(
+            children: [
+              SafeArea(
+                child: ListView(
+                  // Use AlwaysScrollableScrollPhysics with BouncingScrollPhysics
+                  // to ensure the list always consumes the scroll gestures,
+                  // preventing the miniplayer from collapsing.
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20.0,
+                    vertical: 40.0,
+                  ),
+                  children: [
+                    const SizedBox(height: 30),
+                    _buildArtworkWithInfo(audioPlayerService),
+                    const SizedBox(height: 110),
+                    _ProgressBar(audioService: audioPlayerService),
+                    const SizedBox(height: 20),
+                    RepaintBoundary(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              audioPlayerService.isShuffle
+                                  ? Icons.shuffle
+                                  : Icons.shuffle,
+                              color: audioPlayerService.isShuffle
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.7),
+                              size: 24,
+                            ),
+                            onPressed: audioPlayerService.toggleShuffle,
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.skip_previous,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                            onPressed: audioPlayerService.back,
+                          ),
+                          _PlayPauseButton(
+                            isPlaying: audioPlayerService.isPlaying,
+                            onPressed: () {
+                              if (audioPlayerService.isPlaying) {
+                                audioPlayerService.pause();
+                              } else {
+                                audioPlayerService.resume();
+                              }
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.skip_next,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                            onPressed: audioPlayerService.skip,
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              audioPlayerService.isRepeat
+                                  ? Icons.repeat_one
+                                  : Icons.repeat,
+                              color: audioPlayerService.isRepeat
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.7),
+                              size: 24,
+                            ),
+                            onPressed: audioPlayerService.toggleRepeat,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: IconButton(
+                        icon: Icon(
+                          audioPlayerService
+                                  .isLiked(audioPlayerService.currentSong!)
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: audioPlayerService
+                                  .isLiked(audioPlayerService.currentSong!)
+                              ? Colors.red
+                              : Colors.white,
+                          size: 30,
+                        ),
+                        onPressed: () {
+                          audioPlayerService
+                              .toggleLike(audioPlayerService.currentSong!);
+                        },
+                      ),
+                    ),
+                    _buildLyricsSection(),
+                    const SizedBox(height: 40),
+                    if (audioPlayerService.currentSong != null)
+                      MusicMetadataWidget(
+                        song: audioPlayerService.currentSong!,
+                      ),
+                    const SizedBox(height: 40),
+                    _buildArtistSection(audioPlayerService),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

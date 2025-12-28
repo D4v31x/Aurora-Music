@@ -29,7 +29,6 @@ class AppBackground extends StatelessWidget {
             currentArtwork: backgroundManager.currentArtwork,
             previousArtwork: backgroundManager.previousArtwork,
             isTransitioning: backgroundManager.isTransitioning,
-            moodTheme: backgroundManager.currentMoodTheme,
             fallbackColor: surfaceColor,
             child: child,
           );
@@ -39,10 +38,8 @@ class AppBackground extends StatelessWidget {
         if (backgroundManager.hasArtwork) {
           return SimpleBlurredBackground(
             artwork: backgroundManager.currentArtwork,
-            blurIntensity: backgroundManager.currentMoodTheme.blurIntensity,
-            overlayColor: backgroundManager.currentMoodTheme.overlayTint
-                .withValues(
-                    alpha: backgroundManager.currentMoodTheme.overlayOpacity),
+            blurIntensity: 50.0,
+            overlayColor: Colors.black.withValues(alpha: 0.3),
             child: child,
           );
         }

@@ -1,59 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../../services/audio_player_service.dart';
 import '../../localization/app_localizations.dart';
 import '../../models/utils.dart';
 
-/// A visually appealing glassmorphic card showing music library statistics
-class MusicStatsCard extends StatefulWidget {
-  const MusicStatsCard({super.key});
+/// Holds computed library statistics
+class _LibraryStats {
+  final int totalSongs;
+  final int totalArtists;
+  final int totalAlbums;
+  final int totalPlaylists;
+  final int totalHours;
+  final int totalMinutes;
 
-  @override
-  State<MusicStatsCard> createState() => _MusicStatsCardState();
-}
+  const _LibraryStats({
+    required this.totalSongs,
+    required this.totalArtists,
+    required this.totalAlbums,
+    required this.totalPlaylists,
+    required this.totalHours,
+    required this.totalMinutes,
+  });
 
-class _MusicStatsCardState extends State<MusicStatsCard> {
-  int _totalSongs = 0;
-  int _totalArtists = 0;
-  int _totalAlbums = 0;
-  int _totalPlaylists = 0;
-  int _totalHours = 0;
-  int _totalMinutes = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadStats();
-  }
-
-  void _loadStats() {
-    final audioPlayerService =
-        Provider.of<AudioPlayerService>(context, listen: false);
-    _totalSongs = audioPlayerService.songs.length;
-
-    // Derive unique artists and albums from songs
+  /// Compute stats from songs and playlists - expensive, should be cached
+  static _LibraryStats compute(List<SongModel> songs, int playlistCount) {
     final uniqueArtists = <String>{};
     final uniqueAlbums = <String>{};
-    for (final song in audioPlayerService.songs) {
+    int totalDurationMs = 0;
+
+    for (final song in songs) {
       if (song.artist != null && song.artist!.isNotEmpty) {
         uniqueArtists.addAll(splitArtists(song.artist!));
       }
       if (song.album != null && song.album!.isNotEmpty) {
         uniqueAlbums.add(song.album!);
       }
-    }
-    _totalArtists = uniqueArtists.length;
-    _totalAlbums = uniqueAlbums.length;
-    _totalPlaylists = audioPlayerService.playlists.length;
-
-    // Calculate total duration
-    int totalDurationMs = 0;
-    for (final song in audioPlayerService.songs) {
       totalDurationMs += song.duration ?? 0;
     }
-    _totalHours = (totalDurationMs / 1000 / 60 / 60).floor();
-    _totalMinutes = ((totalDurationMs / 1000 / 60) % 60).floor();
+
+    return _LibraryStats(
+      totalSongs: songs.length,
+      totalArtists: uniqueArtists.length,
+      totalAlbums: uniqueAlbums.length,
+      totalPlaylists: playlistCount,
+      totalHours: (totalDurationMs / 1000 / 60 / 60).floor(),
+      totalMinutes: ((totalDurationMs / 1000 / 60) % 60).floor(),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _LibraryStats &&
+          totalSongs == other.totalSongs &&
+          totalPlaylists == other.totalPlaylists;
+
+  @override
+  int get hashCode => totalSongs.hashCode ^ totalPlaylists.hashCode;
+}
+
+/// A minimalistic glassmorphic card showing music library statistics
+class MusicStatsCard extends StatelessWidget {
+  const MusicStatsCard({super.key});
+
+  String _formatNumber(int number) {
+    if (number >= 1000) {
+      return '${(number / 1000).toStringAsFixed(1)}k';
+    }
+    return number.toString();
   }
 
   @override
@@ -61,158 +77,143 @@ class _MusicStatsCardState extends State<MusicStatsCard> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.15)
-                    : Colors.black.withValues(alpha: 0.1),
+    // Use Selector to only rebuild when songs or playlists count changes
+    return Selector<AudioPlayerService, _LibraryStats>(
+      selector: (_, service) => _LibraryStats.compute(
+        service.songs,
+        service.playlists.length,
+      ),
+      shouldRebuild: (prev, next) => prev != next,
+      builder: (context, stats, _) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.08)
+                      : Colors.black.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.black.withOpacity(0.05),
+                    width: 0.5,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Minimal header
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.library_music_outlined,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          AppLocalizations.of(context)
+                              .translate('your_library'),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'ProductSans',
+                            color: isDark ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${stats.totalHours}h ${stats.totalMinutes}m',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontFamily: 'ProductSans',
+                            color: isDark ? Colors.white38 : Colors.black38,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // Stats row - minimalistic
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _MinimalStat(
+                          value: _formatNumber(stats.totalSongs),
+                          label:
+                              AppLocalizations.of(context).translate('songs'),
+                          isDark: isDark,
+                        ),
+                        _MinimalStat(
+                          value: _formatNumber(stats.totalArtists),
+                          label:
+                              AppLocalizations.of(context).translate('artists'),
+                          isDark: isDark,
+                        ),
+                        _MinimalStat(
+                          value: _formatNumber(stats.totalAlbums),
+                          label:
+                              AppLocalizations.of(context).translate('albums'),
+                          isDark: isDark,
+                        ),
+                        _MinimalStat(
+                          value: _formatNumber(stats.totalPlaylists),
+                          label: AppLocalizations.of(context)
+                              .translate('playlists'),
+                          isDark: isDark,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.library_music_rounded,
-                        color: theme.colorScheme.primary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context).translate('library'),
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'ProductSans',
-                            ),
-                          ),
-                          Text(
-                            '${_totalHours}h ${_totalMinutes}m of music',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.6),
-                              fontFamily: 'ProductSans',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    _StatItem(
-                      icon: Icons.music_note_rounded,
-                      value: _totalSongs.toString(),
-                      label: AppLocalizations.of(context).translate('songs'),
-                      color: theme.colorScheme.primary,
-                    ),
-                    _StatItem(
-                      icon: Icons.person_rounded,
-                      value: _totalArtists.toString(),
-                      label: AppLocalizations.of(context).translate('artists'),
-                      color: theme.colorScheme.primary,
-                    ),
-                    _StatItem(
-                      icon: Icons.album_rounded,
-                      value: _totalAlbums.toString(),
-                      label: AppLocalizations.of(context).translate('albums'),
-                      color: theme.colorScheme.primary,
-                    ),
-                    _StatItem(
-                      icon: Icons.queue_music_rounded,
-                      value: _totalPlaylists.toString(),
-                      label:
-                          AppLocalizations.of(context).translate('playlists'),
-                      color: theme.colorScheme.primary,
-                    ),
-                  ],
-                ),
-              ],
-            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
-class _StatItem extends StatelessWidget {
-  final IconData icon;
+class _MinimalStat extends StatelessWidget {
   final String value;
   final String label;
-  final Color color;
+  final bool isDark;
 
-  const _StatItem({
-    required this.icon,
+  const _MinimalStat({
     required this.value,
     required this.label,
-    required this.color,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Expanded(
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: isDark ? 0.2 : 0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 20,
-            ),
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'ProductSans',
+            color: isDark ? Colors.white : Colors.black87,
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              fontFamily: 'ProductSans',
-            ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontFamily: 'ProductSans',
+            color: isDark ? Colors.white38 : Colors.black38,
           ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              fontFamily: 'ProductSans',
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
