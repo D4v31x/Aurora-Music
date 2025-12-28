@@ -7,16 +7,14 @@ class MetadataService {
 
   Future<List<Map<String, dynamic>>> searchMetadata(String query) async {
     if (query.trim().isEmpty) return [];
-    
+
     try {
       // Properly encode the query parameter using Uri class
       final uri = Uri.parse('$_deezerBaseUrl/search').replace(
         queryParameters: {'q': query},
       );
-      
-      final response = await http
-          .get(uri)
-          .timeout(const Duration(seconds: 10));
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -33,7 +31,7 @@ class MetadataService {
 
   Future<String?> fetchCoverArt(String query) async {
     if (query.trim().isEmpty) return null;
-    
+
     try {
       // Properly encode the query parameters using Uri class
       final uri = Uri.parse('$_itunesBaseUrl/search').replace(
@@ -43,10 +41,8 @@ class MetadataService {
           'limit': '1',
         },
       );
-      
-      final response = await http
-          .get(uri)
-          .timeout(const Duration(seconds: 10));
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
