@@ -5,7 +5,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'dart:ui';
 import '../../services/audio_player_service.dart';
 import '../../localization/app_localizations.dart';
 import '../../localization/locale_provider.dart';
@@ -90,7 +89,6 @@ class _SettingsTabState extends State<SettingsTab> {
     required bool value,
     required ValueChanged<bool> onChanged,
     bool isFirst = false,
-    bool isLast = false,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(

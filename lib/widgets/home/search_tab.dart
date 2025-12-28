@@ -186,9 +186,9 @@ class _SearchTabState extends State<SearchTab> {
       final title = song.title.toLowerCase();
       final artist = (song.artist ?? '').toLowerCase();
 
-      if (title == query)
+      if (title == query) {
         bestSongScore = 100;
-      else if (title.startsWith(query))
+      } else if (title.startsWith(query))
         bestSongScore = 70;
       else if (artist == query)
         bestSongScore = 60;
@@ -205,9 +205,9 @@ class _SearchTabState extends State<SearchTab> {
       final artist = _filteredArtists.first;
       final name = artist.artist.toLowerCase();
 
-      if (name == query)
+      if (name == query) {
         bestArtistScore = 100;
-      else if (name.startsWith(query))
+      } else if (name.startsWith(query))
         bestArtistScore = 80;
       else if (name.contains(query))
         bestArtistScore = 50;
@@ -222,9 +222,9 @@ class _SearchTabState extends State<SearchTab> {
       final album = _filteredAlbums.first;
       final name = album.album.toLowerCase();
 
-      if (name == query)
+      if (name == query) {
         bestAlbumScore = 100;
-      else if (name.startsWith(query))
+      } else if (name.startsWith(query))
         bestAlbumScore = 75;
       else if (name.contains(query))
         bestAlbumScore = 45;

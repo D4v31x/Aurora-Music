@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audiotags/audiotags.dart';
@@ -198,8 +197,9 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     if (label == loc.translate('lossless')) return Icons.diamond_outlined;
     if (label == loc.translate('high_quality')) return Icons.stars_outlined;
     if (label == loc.translate('good_quality')) return Icons.thumb_up_outlined;
-    if (label == loc.translate('standard_quality'))
+    if (label == loc.translate('standard_quality')) {
       return Icons.check_circle_outline;
+    }
     return Icons.warning_amber_outlined;
   }
 
@@ -208,8 +208,9 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     if (label == loc.translate('lossless')) return const Color(0xFF8B5CF6);
     if (label == loc.translate('high_quality')) return const Color(0xFF10B981);
     if (label == loc.translate('good_quality')) return const Color(0xFF3B82F6);
-    if (label == loc.translate('standard_quality'))
+    if (label == loc.translate('standard_quality')) {
       return const Color(0xFFF59E0B);
+    }
     return const Color(0xFFEF4444);
   }
 

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:miniplayer/miniplayer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -94,7 +93,6 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
             scaffoldBackgroundColor: Colors.transparent,
             cardColor: Colors.transparent,
             shadowColor: Colors.transparent,
-            dialogBackgroundColor: Colors.transparent,
             colorScheme: theme.colorScheme.copyWith(
               surface: Colors.transparent,
               surfaceContainer: Colors.transparent,
@@ -104,9 +102,8 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
               surfaceDim: Colors.transparent,
               surfaceBright: Colors.transparent,
               surfaceTint: Colors.transparent,
-              background: Colors.transparent,
               onSurface: theme.colorScheme.onSurface,
-            ),
+            ), dialogTheme: DialogThemeData(backgroundColor: Colors.transparent),
           ),
           child: Miniplayer(
             controller: _controller,

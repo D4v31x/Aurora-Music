@@ -27,7 +27,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   late TextEditingController _nameController;
   final ValueNotifier<bool> _isEditingNotifier = ValueNotifier<bool>(false);
 
-  List<SongModel> _displayedSongs = [];
+  final List<SongModel> _displayedSongs = [];
   int _currentPage = 0;
   final int _songsPerPage = 30;
   bool _isLoading = false;

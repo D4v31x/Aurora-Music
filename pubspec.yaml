@@ -44,6 +44,7 @@ dependencies:
   blur: ^4.0.0
   flutter_localizations:
     sdk: flutter
+  intl: any
   palette_generator: ^0.3.3+4
   audio_service: ^0.18.15
   spotify: ^0.13.7
@@ -134,8 +135,7 @@ flutter:
     - assets/images/logo/App_logo.png
     - assets/images/logo/Music_full_logo.png
     - assets/images/logo/default_art.png
-    - assets/translations/cs.json
-    - assets/translations/en.json
+
     - assets/animations/untitled.riv
     - .env
     - assets/images/UI/liked.png

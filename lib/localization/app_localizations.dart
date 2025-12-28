@@ -1,23 +1,760 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-class AppLocalizations {
-  final Locale locale;
+// Re-export the generated localizations
+export 'generated/app_localizations.dart';
 
-  AppLocalizations(this.locale);
+// Import the generated localizations for use in this file
+import 'generated/app_localizations.dart' as generated;
 
-  static AppLocalizations of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+/// Extension to provide backward compatibility with old translate() method
+extension AppLocalizationsExtension on generated.AppLocalizations {
+  /// Provides backward compatibility for code using translate(key)
+  /// Maps old snake_case keys to new camelCase property names
+  String translate(String key) {
+    switch (key) {
+      case 'welcome_back':
+        return welcomeBack;
+      case 'aurora_music':
+        return auroraMusic;
+      case 'songs':
+        return songs;
+      case 'playlists':
+        return playlists;
+      case 'settings':
+        return settings;
+      case 'user_settings':
+        return userSettings;
+      case 'next':
+        return next;
+      case 'quick_access':
+        return quickAccess;
+      case 'for_you':
+        return forYou;
+      case 'suggested_tracks':
+        return suggestedTracks;
+      case 'suggested_artists':
+        return suggestedArtists;
+      case 'home':
+        return home;
+      case 'all_songs':
+        return allSongs;
+      case 'app_up_to_date':
+        return appUpToDate;
+      case 'version_check_error':
+        return versionCheckError;
+      case 'retry':
+        return retry;
+      case 'update_available':
+        return updateAvailable;
+      case 'update_message':
+        return updateMessage;
+      case 'later':
+        return later;
+      case 'update_now':
+        return updateNow;
+      case 'language':
+        return language;
+      case 'library':
+        return library;
+      case 'favorite_songs':
+        return favoriteSongs;
+      case 'auto_playlists':
+        return autoPlaylists;
+      case 'your_playlists':
+        return yourPlaylists;
+      case 'create_first_playlist':
+        return createFirstPlaylist;
+      case 'recently_played':
+        return recentlyPlayed;
+      case 'most_played':
+        return mostPlayed;
+      case 'recently_added':
+        return recentlyAdded;
+      case 'recently_played_artists':
+        return recentlyPlayedArtists;
+      case 'recently_played_albums':
+        return recentlyPlayedAlbums;
+      case 'recently_played_songs':
+        return recentlyPlayedSongs;
+      case 'no_playlists_created':
+        return noPlaylistsCreated;
+      case 'check_for_updates':
+        return checkForUpdates;
+      case 'checking_for_updates':
+        return checkingForUpdates;
+      case 'details':
+        return details;
+      case 'create_playlist':
+        return createPlaylist;
+      case 'edit_playlist':
+        return editPlaylist;
+      case 'delete_playlist':
+        return deletePlaylist;
+      case 'rename_playlist':
+        return renamePlaylist;
+      case 'add_songs_to_playlist':
+        return addSongsToPlaylist;
+      case 'add_songs':
+        return addSongs;
+      case 'add':
+        return add;
+      case 'remove_songs':
+        return removeSongs;
+      case 'shuffle':
+        return shuffle;
+      case 'enjoying_aurora':
+        return enjoyingAurora;
+      case 'enjoying_aurora_desc':
+        return enjoyingAuroraDesc;
+      case 'support_aurora_btn':
+        return supportAuroraBtn;
+      case 'maybe_later':
+        return maybeLater;
+      case 'dont_show_again':
+        return dontShowAgain;
+      case 'support_aurora_title':
+        return supportAuroraTitle;
+      case 'support_aurora_message':
+        return supportAuroraMessage;
+      case 'buy_me_coffee':
+        return buyMeCoffee;
+      case 'one_time_support':
+        return oneTimeSupport;
+      case 'kofi':
+        return kofi;
+      case 'coffee_support':
+        return coffeeSupport;
+      case 'paypal':
+        return paypal;
+      case 'direct_donation':
+        return directDonation;
+      case 'thank_you_support':
+        return thankYouSupport;
+      case 'repeat':
+        return repeat;
+      case 'enter_playlist_name':
+        return enterPlaylistName;
+      case 'cancel':
+        return cancel;
+      case 'create':
+        return create;
+      case 'tracks':
+        return tracks;
+      case 'artists':
+        return artists;
+      case 'albums':
+        return albums;
+      case 'folders':
+        return folders;
+      case 'delete_playlist_confirmation':
+        return deletePlaylistConfirmation;
+      case 'delete':
+        return delete;
+      case 'selected':
+        return selected;
+      case 'select_all':
+        return selectAll;
+      case 'deselect_all':
+        return deselectAll;
+      case 'no_results':
+        return noResults;
+      case 'no_songs_available':
+        return noSongsAvailable;
+      case 'no_songs_in_playlist':
+        return noSongsInPlaylist;
+      case 'tap_add_to_add_songs':
+        return tapAddToAddSongs;
+      case 'remove_song':
+        return removeSong;
+      case 'remove_song_confirmation':
+        return removeSongConfirmation;
+      case 'remove':
+        return remove;
+      case 'exit_app':
+        return exitApp;
+      case 'exit_app_confirm':
+        return exitAppConfirm;
+      case 'yes':
+        return yes;
+      case 'no':
+        return no;
+      case 'search_tracks':
+        return searchTracks;
+      case 'play_all':
+        return playAll;
+      case 'welcome_title':
+        return welcomeTitle;
+      case 'welcome_description':
+        return welcomeDescription;
+      case 'alpha_title':
+        return alphaTitle;
+      case 'alpha_description':
+        return alphaDescription;
+      case 'permissions_title':
+        return permissionsTitle;
+      case 'permissions_description':
+        return permissionsDescription;
+      case 'privacy_title':
+        return privacyTitle;
+      case 'privacy_description':
+        return privacyDescription;
+      case 'language_title':
+        return languageTitle;
+      case 'community_title':
+        return communityTitle;
+      case 'community_description':
+        return communityDescription;
+      case 'follow_instagram':
+        return followInstagram;
+      case 'finish_title':
+        return finishTitle;
+      case 'finish_description':
+        return finishDescription;
+      case 'get_started':
+        return getStarted;
+      case 'permission_required':
+        return permissionRequired;
+      case 'permission_explanation':
+        return permissionExplanation;
+      case 'open_settings':
+        return openSettings;
+      case 'preparing_to_scan':
+        return preparingToScan;
+      case 'songs_loaded':
+        return songsLoaded;
+      case 'scanning_songs':
+        return scanningSongs;
+      case 'library_updated':
+        return libraryUpdated;
+      case 'update_failed':
+        return updateFailed;
+      case 'app_name':
+        return appName;
+      case 'loading':
+        return loading;
+      case 'loading_library':
+        return loadingLibrary;
+      case 'loading_images':
+        return loadingImages;
+      case 'finalizing':
+        return finalizing;
+      case 'exit':
+        return exit;
+      case 'error':
+        return error;
+      case 'try_again':
+        return tryAgain;
+      case 'perm_deny':
+        return permDeny;
+      case 'app_exit':
+        return appExit;
+      case 'exit_desc':
+        return exitDesc;
+      case 'Yes':
+        return yesUpper;
+      case 'No':
+        return noUpper;
+      case 'Start_type':
+        return startType;
+      case 'No_data':
+        return noData;
+      case 'no_lyrics':
+        return noLyrics;
+      case 'no_lyrics_desc':
+        return noLyricsDesc;
+      case 'expand_lyrics':
+        return expandLyrics;
+      case 'about_artist':
+        return aboutArtist;
+      case 'sleep_timer':
+        return sleepTimer;
+      case 'view_artist':
+        return viewArtist;
+      case 'lyrics':
+        return lyrics;
+      case 'add_to_playlist':
+        return addToPlaylist;
+      case 'share':
+        return share;
+      case 'queue':
+        return queue;
+      case 'song_info':
+        return songInfo;
+      case 'no_song_playing':
+        return noSongPlaying;
+      case 'select_playlist':
+        return selectPlaylist;
+      case 'no_playlists':
+        return noPlaylists;
+      case 'added_to_playlist':
+        return addedToPlaylist;
+      case 'queue_empty':
+        return queueEmpty;
+      case 'own_timer':
+        return ownTimer;
+      case 'set_minutes':
+        return setMinutes;
+      case 'select_artist':
+        return selectArtist;
+      case 'no_artist_info':
+        return noArtistInfo;
+      case 'no_update_found':
+        return noUpdateFound;
+      case 'privacy_notice':
+        return privacyNotice;
+      case 'privacy_policy_link':
+        return privacyPolicyLink;
+      case 'whats_new':
+        return whatsNew;
+      case 'got_it':
+        return gotIt;
+      case 'show_changelog':
+        return showChangelog;
+      case 'general':
+        return general;
+      case 'set':
+        return set;
+      case 'theme':
+        return theme;
+      case 'light_mode':
+        return lightMode;
+      case 'dark_mode':
+        return darkMode;
+      case 'grant_permission':
+        return grantPermission;
+      case 'no_permission_explanation':
+        return noPermissionExplanation;
+      case 'permission_later':
+        return permissionLater;
+      case 'library_loaded':
+        return libraryLoaded;
+      case 'library_error':
+        return libraryError;
+      case 'metadata':
+        return metadata;
+      case 'format':
+        return format;
+      case 'bitrate':
+        return bitrate;
+      case 'size':
+        return size;
+      case 'duration':
+        return duration;
+      case 'quality':
+        return quality;
+      case 'file_path':
+        return filePath;
+      case 'year':
+        return year;
+      case 'track':
+        return track;
+      case 'genre':
+        return genre;
+      case 'unknown':
+        return unknown;
+      case 'audio_quality':
+        return audioQuality;
+      case 'sample_rate':
+        return sampleRate;
+      case 'track_info':
+        return trackInfo;
+      case 'file_info':
+        return fileInfo;
+      case 'file_name':
+        return fileName;
+      case 'folder':
+        return folder;
+      case 'date_added':
+        return dateAdded;
+      case 'date_modified':
+        return dateModified;
+      case 'lossless':
+        return lossless;
+      case 'high_quality':
+        return highQuality;
+      case 'good_quality':
+        return goodQuality;
+      case 'standard_quality':
+        return standardQuality;
+      case 'low_quality':
+        return lowQuality;
+      case 'composer':
+        return composer;
+      case 'view_details':
+        return viewDetails;
+      case 'save_changes':
+        return saveChanges;
+      case 'save_changes_desc':
+        return saveChangesDesc;
+      case 'discard':
+        return discard;
+      case 'save':
+        return save;
+      case 'metadata_edit_info':
+        return metadataEditInfo;
+      case 'copied':
+        return copied;
+      case 'copy':
+        return copy;
+      case 'open_folder':
+        return openFolder;
+      case 'open_folder_info':
+        return openFolderInfo;
+      case 'quality_desc':
+        return qualityDesc;
+      case 'audio_quality_desc':
+        return audioQualityDesc;
+      case 'track_info_desc':
+        return trackInfoDesc;
+      case 'track_info_edit_desc':
+        return trackInfoEditDesc;
+      case 'file_info_desc':
+        return fileInfoDesc;
+      case 'saving_metadata':
+        return savingMetadata;
+      case 'metadata_saved':
+        return metadataSaved;
+      case 'save_failed':
+        return saveFailed;
+      case 'save_failed_desc':
+        return saveFailedDesc;
+      case 'possible_reasons':
+        return possibleReasons;
+      case 'reason_permissions':
+        return reasonPermissions;
+      case 'reason_readonly':
+        return reasonReadonly;
+      case 'reason_format':
+        return reasonFormat;
+      case 'metadata_info_title':
+        return metadataInfoTitle;
+      case 'recommended_apps':
+        return recommendedApps;
+      case 'storage_permission_needed':
+        return storagePermissionNeeded;
+      case 'pull_to_refresh':
+        return pullToRefresh;
+      case 'release_to_refresh':
+        return releaseToRefresh;
+      case 'refreshing':
+        return refreshing;
+      case 'refresh_lyrics':
+        return refreshLyrics;
+      case 'search_lyrics':
+        return searchLyrics;
+      case 'adjust_sync':
+        return adjustSync;
+      case 'font_size':
+        return fontSize;
+      case 'coming_soon':
+        return comingSoon;
+      case 'title':
+        return title;
+      case 'search':
+        return search;
+      case 'reset':
+        return reset;
+      case 'lyrics_ahead':
+        return lyricsAhead;
+      case 'lyrics_behind':
+        return lyricsBehind;
+      case 'lyrics_synced':
+        return lyricsSynced;
+      case 'small':
+        return small;
+      case 'medium':
+        return medium;
+      case 'large':
+        return large;
+      case 'extra_large':
+        return extraLarge;
+      case 'no_lyrics_found':
+        return noLyricsFound;
+      case 'search_failed':
+        return searchFailed;
+      case 'results':
+        return results;
+      case 'top_result':
+        return topResult;
+      case 'more_results':
+        return moreResults;
+      case 'onboarding_welcome':
+        return onboardingWelcome;
+      case 'onboarding_setup_experience':
+        return onboardingSetupExperience;
+      case 'onboarding_choose_language':
+        return onboardingChooseLanguage;
+      case 'onboarding_select_language':
+        return onboardingSelectLanguage;
+      case 'onboarding_app_info_title':
+        return onboardingAppInfoTitle;
+      case 'onboarding_app_info_subtitle':
+        return onboardingAppInfoSubtitle;
+      case 'onboarding_theme_title':
+        return onboardingThemeTitle;
+      case 'onboarding_theme_subtitle':
+        return onboardingThemeSubtitle;
+      case 'onboarding_permissions_title':
+        return onboardingPermissionsTitle;
+      case 'onboarding_permissions_subtitle':
+        return onboardingPermissionsSubtitle;
+      case 'onboarding_internet_title':
+        return onboardingInternetTitle;
+      case 'onboarding_internet_subtitle':
+        return onboardingInternetSubtitle;
+      case 'onboarding_downloads_title':
+        return onboardingDownloadsTitle;
+      case 'onboarding_downloads_subtitle':
+        return onboardingDownloadsSubtitle;
+      case 'onboarding_completion_title':
+        return onboardingCompletionTitle;
+      case 'onboarding_completion_subtitle':
+        return onboardingCompletionSubtitle;
+      case 'onboarding_back':
+        return onboardingBack;
+      case 'onboarding_continue':
+        return onboardingContinue;
+      case 'onboarding_skip':
+        return onboardingSkip;
+      case 'onboarding_start_listening':
+        return onboardingStartListening;
+      case 'onboarding_grant_permissions':
+        return onboardingGrantPermissions;
+      case 'onboarding_requesting':
+        return onboardingRequesting;
+      case 'onboarding_audio_access':
+        return onboardingAudioAccess;
+      case 'onboarding_audio_access_desc':
+        return onboardingAudioAccessDesc;
+      case 'onboarding_storage_access':
+        return onboardingStorageAccess;
+      case 'onboarding_storage_access_desc':
+        return onboardingStorageAccessDesc;
+      case 'onboarding_bluetooth':
+        return onboardingBluetooth;
+      case 'onboarding_bluetooth_desc':
+        return onboardingBluetoothDesc;
+      case 'onboarding_notifications':
+        return onboardingNotifications;
+      case 'onboarding_notifications_desc':
+        return onboardingNotificationsDesc;
+      case 'onboarding_required':
+        return onboardingRequired;
+      case 'onboarding_light_mode':
+        return onboardingLightMode;
+      case 'onboarding_light_mode_desc':
+        return onboardingLightModeDesc;
+      case 'onboarding_dark_mode':
+        return onboardingDarkMode;
+      case 'onboarding_dark_mode_desc':
+        return onboardingDarkModeDesc;
+      case 'onboarding_dynamic_colors':
+        return onboardingDynamicColors;
+      case 'onboarding_dynamic_colors_desc':
+        return onboardingDynamicColorsDesc;
+      case 'onboarding_album_artwork':
+        return onboardingAlbumArtwork;
+      case 'onboarding_album_artwork_desc':
+        return onboardingAlbumArtworkDesc;
+      case 'onboarding_music_metadata':
+        return onboardingMusicMetadata;
+      case 'onboarding_music_metadata_desc':
+        return onboardingMusicMetadataDesc;
+      case 'onboarding_lyrics':
+        return onboardingLyrics;
+      case 'onboarding_lyrics_desc':
+        return onboardingLyricsDesc;
+      case 'onboarding_sync_backup':
+        return onboardingSyncBackup;
+      case 'onboarding_sync_backup_desc':
+        return onboardingSyncBackupDesc;
+      case 'onboarding_privacy_note':
+        return onboardingPrivacyNote;
+      case 'onboarding_local_library':
+        return onboardingLocalLibrary;
+      case 'onboarding_local_library_desc':
+        return onboardingLocalLibraryDesc;
+      case 'onboarding_album_art':
+        return onboardingAlbumArt;
+      case 'onboarding_album_art_desc':
+        return onboardingAlbumArtDesc;
+      case 'onboarding_material_design':
+        return onboardingMaterialDesign;
+      case 'onboarding_material_design_desc':
+        return onboardingMaterialDesignDesc;
+      case 'onboarding_smart_playlists':
+        return onboardingSmartPlaylists;
+      case 'onboarding_smart_playlists_desc':
+        return onboardingSmartPlaylistsDesc;
+      case 'onboarding_lyrics_support':
+        return onboardingLyricsSupport;
+      case 'onboarding_lyrics_support_desc':
+        return onboardingLyricsSupportDesc;
+      case 'onboarding_optional':
+        return onboardingOptional;
+      case 'onboarding_local_music':
+        return onboardingLocalMusic;
+      case 'onboarding_local_music_desc':
+        return onboardingLocalMusicDesc;
+      case 'onboarding_beautiful_artwork':
+        return onboardingBeautifulArtwork;
+      case 'onboarding_beautiful_artwork_desc':
+        return onboardingBeautifulArtworkDesc;
+      case 'settings_appearance':
+        return settingsAppearance;
+      case 'settings_dark_mode':
+        return settingsDarkMode;
+      case 'settings_dark_mode_desc':
+        return settingsDarkModeDesc;
+      case 'settings_material_you':
+        return settingsMaterialYou;
+      case 'settings_material_you_desc':
+        return settingsMaterialYouDesc;
+      case 'settings_language':
+        return settingsLanguage;
+      case 'settings_playback':
+        return settingsPlayback;
+      case 'settings_gapless':
+        return settingsGapless;
+      case 'settings_gapless_desc':
+        return settingsGaplessDesc;
+      case 'settings_normalization':
+        return settingsNormalization;
+      case 'settings_normalization_desc':
+        return settingsNormalizationDesc;
+      case 'settings_storage':
+        return settingsStorage;
+      case 'settings_cache_info':
+        return settingsCacheInfo;
+      case 'settings_cache_info_desc':
+        return settingsCacheInfoDesc;
+      case 'settings_clear_cache':
+        return settingsClearCache;
+      case 'settings_clear_cache_desc':
+        return settingsClearCacheDesc;
+      case 'settings_about':
+        return settingsAbout;
+      case 'settings_about_app':
+        return settingsAboutApp;
+      case 'settings_version':
+        return settingsVersion;
+      case 'settings_check_updates':
+        return settingsCheckUpdates;
+      case 'settings_check_updates_desc':
+        return settingsCheckUpdatesDesc;
+      case 'settings_clear_cache_title':
+        return settingsClearCacheTitle;
+      case 'settings_clear_cache_message':
+        return settingsClearCacheMessage;
+      case 'settings_cache_cleared':
+        return settingsCacheCleared;
+      case 'settings_checking_updates':
+        return settingsCheckingUpdates;
+      case 'settings_update_available':
+        return settingsUpdateAvailable;
+      case 'settings_up_to_date':
+        return settingsUpToDate;
+      case 'settings_enabled':
+        return settingsEnabled;
+      case 'settings_disabled':
+        return settingsDisabled;
+      case 'artist_separation':
+        return artistSeparation;
+      case 'artist_separation_desc':
+        return artistSeparationDesc;
+      case 'enable_artist_separation':
+        return enableArtistSeparation;
+      case 'enable_artist_separation_desc':
+        return enableArtistSeparationDesc;
+      case 'test_separation':
+        return testSeparation;
+      case 'test_artist_string':
+        return testArtistString;
+      case 'result':
+        return result;
+      case 'separators':
+        return separators;
+      case 'separators_desc':
+        return separatorsDesc;
+      case 'no_separators':
+        return noSeparators;
+      case 'add_separator':
+        return addSeparator;
+      case 'separator':
+        return separator;
+      case 'separator_hint':
+        return separatorHint;
+      case 'exclusions':
+        return exclusions;
+      case 'exclusions_desc':
+        return exclusionsDesc;
+      case 'no_exclusions':
+        return noExclusions;
+      case 'add_exclusion':
+        return addExclusion;
+      case 'artist_name':
+        return artistName;
+      case 'exclusion_hint':
+        return exclusionHint;
+      case 'reset_to_defaults':
+        return resetToDefaults;
+      case 'reset_artist_separation_desc':
+        return resetArtistSeparationDesc;
+      case 'your_library':
+        return yourLibrary;
+      case 'of_music':
+        return ofMusic;
+      case 'support_aurora':
+        return supportAurora;
+      case 'support_aurora_desc':
+        return supportAuroraDescShort;
+      case 'connect_with_us':
+        return connectWithUs;
+      case 'now_playing':
+        return nowPlaying;
+      case 'new_playlist':
+        return newPlaylist;
+      case 'playlist_name':
+        return playlistName;
+      case 'rename':
+        return rename;
+      case 'delete_playlist_confirm':
+        return deletePlaylistConfirm;
+      case 'search_albums':
+        return searchAlbums;
+      case 'no_albums_found':
+        return noAlbumsFound;
+      case 'search_artists':
+        return searchArtists;
+      case 'no_artists_found':
+        return noArtistsFound;
+      case 'unknown_artist':
+        return unknownArtist;
+      case 'total':
+        return total;
+      case 'artist':
+        return artist;
+      case 'album':
+        return album;
+      case 'auto_tag':
+        return autoTag;
+      case 'search_metadata':
+        return searchMetadata;
+      case 'cover_art_updated':
+        return coverArtUpdated;
+      case 'scan_failed':
+        return scanFailed;
+      default:
+        return key; // Return the key itself if not found
+    }
   }
+}
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
-
-  static final List<Locale> supportedLocales = [
-    const Locale('en'), // English
-    const Locale('cs'), // Czech
-    // Add more locales as needed
+/// Helper class for localization utilities
+class AppLocalizationsHelper {
+  static const List<Locale> supportedLocales = [
+    Locale('en'),
+    Locale('cs'),
   ];
 
   static String getLanguageName(String languageCode) {
@@ -26,51 +763,8 @@ class AppLocalizations {
         return 'English';
       case 'cs':
         return 'Čeština';
-      // Add more languages as needed
       default:
         return languageCode.toUpperCase();
     }
-  }
-
-  late Map<String, String> _localizedStrings;
-
-  Future<bool> load() async {
-    String jsonString = await rootBundle
-        .loadString('assets/translations/${locale.languageCode}.json');
-    Map<String, dynamic> jsonMap = json.decode(jsonString);
-
-    _localizedStrings = jsonMap.map((key, value) {
-      return MapEntry(key, value.toString());
-    });
-
-    return true;
-  }
-
-  String translate(String key) {
-    return _localizedStrings[key] ?? key;
-  }
-}
-
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
-  const _AppLocalizationsDelegate();
-
-  @override
-  bool isSupported(Locale locale) {
-    return AppLocalizations.supportedLocales
-        .map((e) => e.languageCode)
-        .contains(locale.languageCode);
-  }
-
-  @override
-  Future<AppLocalizations> load(Locale locale) async {
-    AppLocalizations localizations = AppLocalizations(locale);
-    await localizations.load();
-    return localizations;
-  }
-
-  @override
-  bool shouldReload(covariant LocalizationsDelegate<AppLocalizations> old) {
-    return false;
   }
 }

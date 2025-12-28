@@ -1,11 +1,10 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:clarity_flutter/clarity_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'dart:ui' as ui;
 
@@ -18,6 +17,7 @@ import 'services/background_manager_service.dart';
 import 'services/sleep_timer_controller.dart';
 import 'services/artist_separator_service.dart';
 import 'localization/app_localizations.dart';
+import 'localization/generated/app_localizations.dart';
 import 'screens/splash_screen.dart';
 import 'localization/locale_provider.dart';
 import 'providers/theme_provider.dart';
@@ -218,16 +218,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             themeMode: themeProvider.themeMode,
             theme: themeProvider.lightTheme,
             darkTheme: themeProvider.darkTheme,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              ui.Locale('en', ''),
-              ui.Locale('cs', ''),
-            ],
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             // Custom hero controller for faster, smoother transitions
             builder: (context, child) {
               return HeroControllerScope(

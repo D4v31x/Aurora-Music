@@ -654,7 +654,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
   List<ArtistModel> _allArtists = [];
   List<ArtistModel> _filteredArtists = [];
   Map<String, int> _artistAlbumCounts = {};
-  Map<String, String?> _artistImages = {};
+  final Map<String, String?> _artistImages = {};
   ArtistSortOption _sortOption = ArtistSortOption.name;
   bool _isAscending = true;
   bool _isGridView = false;

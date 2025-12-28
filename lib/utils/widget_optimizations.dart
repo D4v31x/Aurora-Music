@@ -163,7 +163,7 @@ mixin PerformanceMonitoringMixin on State {
 
     // Log slow builds in debug mode
     if (_buildStopwatch!.elapsedMilliseconds > 16) {
-      debugPrint('⚠️ Slow build detected in ${runtimeType}: '
+      debugPrint('⚠️ Slow build detected in $runtimeType: '
           '${_buildStopwatch!.elapsedMilliseconds}ms');
     }
     _buildStopwatch?.reset();
