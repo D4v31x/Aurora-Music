@@ -127,7 +127,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
             if (autoPlaylists.isNotEmpty)
               SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 180,
+                  height: 190,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 12),

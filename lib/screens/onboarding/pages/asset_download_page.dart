@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../widgets/pill_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../localization/app_localizations.dart';
 
 class AssetDownloadPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -96,7 +97,6 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
       _downloadAlbumArt = prefs.getBool('download_album_art') ?? true;
       _downloadLyrics = prefs.getBool('download_lyrics') ?? true;
       _downloadOnWifiOnly = prefs.getBool('download_wifi_only') ?? true;
-      _autoDownloadNewSongs = prefs.getBool('auto_download_new') ?? false;
     });
   }
 
@@ -105,7 +105,6 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
     await prefs.setBool('download_album_art', _downloadAlbumArt);
     await prefs.setBool('download_lyrics', _downloadLyrics);
     await prefs.setBool('download_wifi_only', _downloadOnWifiOnly);
-    await prefs.setBool('auto_download_new', _autoDownloadNewSongs);
   }
 
   @override
@@ -122,6 +121,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
         isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+    final localizations = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -150,7 +150,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                     child: FadeTransition(
                       opacity: fadeOp,
                       child: Text(
-                        'Download Preferences',
+                        localizations.translate('downloadPreferences'),
                         style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 32,
@@ -169,7 +169,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                   FadeTransition(
                     opacity: fadeOp,
                     child: Text(
-                      'Choose what to download for your music',
+                      localizations.translate('downloadContentSubtitle'),
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 16,
@@ -192,9 +192,10 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                           children: [
                             _buildOptionItem(
                               icon: Icons.image_rounded,
-                              title: 'Download Album Art',
-                              description:
-                                  'Automatically fetch album covers for all songs',
+                              title:
+                                  localizations.translate('downloadAlbumArt'),
+                              description: localizations
+                                  .translate('downloadAlbumArtDesc'),
                               value: _downloadAlbumArt,
                               onChanged: (value) {
                                 setState(() {
@@ -207,9 +208,10 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                             const SizedBox(height: 12),
                             _buildOptionItem(
                               icon: Icons.lyrics_rounded,
-                              title: 'Download Lyrics',
+                              title: localizations
+                                  .translate('downloadLyricsTitle'),
                               description:
-                                  'Fetch synchronized lyrics when available',
+                                  localizations.translate('downloadLyricsDesc'),
                               value: _downloadLyrics,
                               onChanged: (value) {
                                 setState(() {
@@ -222,28 +224,13 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                             const SizedBox(height: 12),
                             _buildOptionItem(
                               icon: Icons.wifi_rounded,
-                              title: 'Wi-Fi Only',
+                              title: localizations.translate('wifiOnly'),
                               description:
-                                  'Download assets only when connected to Wi-Fi',
+                                  localizations.translate('wifiOnlyDesc'),
                               value: _downloadOnWifiOnly,
                               onChanged: (value) {
                                 setState(() {
                                   _downloadOnWifiOnly = value;
-                                });
-                                _savePreferences();
-                              },
-                              isDark: isDark,
-                            ),
-                            const SizedBox(height: 12),
-                            _buildOptionItem(
-                              icon: Icons.auto_awesome_rounded,
-                              title: 'Auto-Download for New Songs',
-                              description:
-                                  'Automatically download assets when adding new songs',
-                              value: _autoDownloadNewSongs,
-                              onChanged: (value) {
-                                setState(() {
-                                  _autoDownloadNewSongs = value;
                                 });
                                 _savePreferences();
                               },
@@ -273,7 +260,8 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      'You can change these settings later in the app preferences.',
+                                      localizations
+                                          .translate('downloadSettingsNote'),
                                       style: TextStyle(
                                         fontFamily: 'Outfit',
                                         fontSize: 13,
@@ -294,6 +282,8 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
                     child: PillNavigationButtons(
+                      backText: localizations.translate('back'),
+                      continueText: localizations.translate('continueButton'),
                       onBack: widget.onBack,
                       onContinue: () async {
                         await _exitController.forward();

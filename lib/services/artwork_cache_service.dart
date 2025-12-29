@@ -371,8 +371,23 @@ class ArtworkCacheService {
     }
   }
 
+  /// Check if artist name is unknown/empty
+  bool _isUnknownArtist(String artistName) {
+    final lowerName = artistName.toLowerCase().trim();
+    return lowerName.isEmpty ||
+        lowerName == 'unknown' ||
+        lowerName == 'unknown artist' ||
+        lowerName == '<unknown>' ||
+        lowerName == 'unknown_artist';
+  }
+
   /// Get artist image by name from Spotify API cache
   Future<String?> getArtistImageByName(String artistName) async {
+    // Return null for unknown artists - they will use the asset fallback
+    if (_isUnknownArtist(artistName)) {
+      return null;
+    }
+
     // Check memory cache first
     if (_artistNameImageCache.containsKey(artistName)) {
       return _artistNameImageCache[artistName];
@@ -736,10 +751,22 @@ class _ArtistNameImageWidgetState extends State<_ArtistNameImageWidget> {
   ImageProvider<Object>? _imageProvider;
   bool _isLoading = true;
   bool _hasImage = false;
+  bool _isUnknownArtist = false;
+
+  /// Check if artist name is unknown/empty
+  bool _checkIsUnknownArtist(String artistName) {
+    final lowerName = artistName.toLowerCase().trim();
+    return lowerName.isEmpty ||
+        lowerName == 'unknown' ||
+        lowerName == 'unknown artist' ||
+        lowerName == '<unknown>' ||
+        lowerName == 'unknown_artist';
+  }
 
   @override
   void initState() {
     super.initState();
+    _isUnknownArtist = _checkIsUnknownArtist(widget.artistName);
     _loadImage();
   }
 
@@ -747,6 +774,7 @@ class _ArtistNameImageWidgetState extends State<_ArtistNameImageWidget> {
   void didUpdateWidget(_ArtistNameImageWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.artistName != widget.artistName) {
+      _isUnknownArtist = _checkIsUnknownArtist(widget.artistName);
       _loadImage();
     }
   }
@@ -796,6 +824,21 @@ class _ArtistNameImageWidgetState extends State<_ArtistNameImageWidget> {
     final borderRadius = widget.circular
         ? BorderRadius.circular(widget.size / 2)
         : BorderRadius.circular(8);
+
+    // Show unknown.png for unknown artists
+    if (_isUnknownArtist) {
+      return Container(
+        width: widget.size,
+        height: widget.size,
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          image: const DecorationImage(
+            image: AssetImage('assets/images/UI/unknown.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
 
     if (_hasImage && _imageProvider != null && !_isLoading) {
       return Container(

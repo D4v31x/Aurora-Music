@@ -4,6 +4,8 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
+import '../services/artist_aggregator_service.dart';
+import '../models/separated_artist.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/shimmer_loading.dart';
 import '../widgets/common_screen_scaffold.dart';
@@ -647,13 +649,12 @@ class ArtistsScreen extends StatefulWidget {
 }
 
 class _ArtistsScreenState extends State<ArtistsScreen> {
-  final OnAudioQuery _audioQuery = OnAudioQuery();
   final ArtworkCacheService _artworkService = ArtworkCacheService();
+  final ArtistAggregatorService _artistAggregator = ArtistAggregatorService();
   final TextEditingController _searchController = TextEditingController();
 
-  List<ArtistModel> _allArtists = [];
-  List<ArtistModel> _filteredArtists = [];
-  Map<String, int> _artistAlbumCounts = {};
+  List<SeparatedArtist> _allArtists = [];
+  List<SeparatedArtist> _filteredArtists = [];
   final Map<String, String?> _artistImages = {};
   ArtistSortOption _sortOption = ArtistSortOption.name;
   bool _isAscending = true;
@@ -674,25 +675,12 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
   }
 
   Future<void> _loadArtists() async {
-    final artists = await _audioQuery.queryArtists(
-      sortType: ArtistSortType.ARTIST,
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
-
-    // Get album counts for each artist
-    final albums = await _audioQuery.queryAlbums();
-    final albumCounts = <String, int>{};
-    for (final album in albums) {
-      final artistName = album.artist ?? '';
-      albumCounts[artistName] = (albumCounts[artistName] ?? 0) + 1;
-    }
+    // Use the aggregator service to get properly separated artists
+    final artists = await _artistAggregator.getAllArtists();
 
     setState(() {
       _allArtists = artists;
       _filteredArtists = artists;
-      _artistAlbumCounts = albumCounts;
       _isLoading = false;
     });
     _applySorting();
@@ -703,11 +691,10 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
 
   Future<void> _loadArtistImages() async {
     for (final artist in _allArtists) {
-      final imagePath =
-          await _artworkService.getArtistImageByName(artist.artist);
+      final imagePath = await _artworkService.getArtistImageByName(artist.name);
       if (mounted && imagePath != null) {
         setState(() {
-          _artistImages[artist.artist] = imagePath;
+          _artistImages[artist.name] = imagePath;
         });
       }
     }
@@ -720,7 +707,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
         _filteredArtists = List.from(_allArtists);
       } else {
         _filteredArtists = _allArtists.where((artist) {
-          return artist.artist.toLowerCase().contains(query.toLowerCase());
+          return artist.name.toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
     });
@@ -731,15 +718,15 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     setState(() {
       switch (_sortOption) {
         case ArtistSortOption.name:
-          _filteredArtists.sort((a, b) => a.artist.compareTo(b.artist));
+          _filteredArtists.sort((a, b) => a.name.compareTo(b.name));
           break;
         case ArtistSortOption.tracks:
-          _filteredArtists.sort((a, b) =>
-              (a.numberOfTracks ?? 0).compareTo(b.numberOfTracks ?? 0));
+          _filteredArtists
+              .sort((a, b) => a.numberOfTracks.compareTo(b.numberOfTracks));
           break;
         case ArtistSortOption.albums:
-          _filteredArtists.sort((a, b) => (_artistAlbumCounts[a.artist] ?? 0)
-              .compareTo(_artistAlbumCounts[b.artist] ?? 0));
+          _filteredArtists
+              .sort((a, b) => a.numberOfAlbums.compareTo(b.numberOfAlbums));
           break;
       }
       if (!_isAscending) {
@@ -962,8 +949,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     );
   }
 
-  Widget _buildArtistGridTile(ArtistModel artist) {
-    final imagePath = _artistImages[artist.artist];
+  Widget _buildArtistGridTile(SeparatedArtist artist) {
+    final imagePath = _artistImages[artist.name];
 
     return GestureDetector(
       onTap: () => _navigateToArtistDetail(artist),
@@ -984,37 +971,18 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                           width: 80,
                           height: 80,
                         )
-                      : Container(
+                      : Image.asset(
+                          'assets/images/UI/unknown.png',
+                          fit: BoxFit.cover,
                           width: 80,
                           height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.purple.shade400,
-                                Colors.blue.shade400,
-                              ],
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              artist.artist.isNotEmpty
-                                  ? artist.artist[0].toUpperCase()
-                                  : '?',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
                         ),
                 ),
               ),
               const SizedBox(height: 8),
               // Artist name
               Text(
-                artist.artist,
+                artist.name,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -1065,9 +1033,9 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     );
   }
 
-  Widget _buildArtistListTile(ArtistModel artist) {
-    final imagePath = _artistImages[artist.artist];
-    final albumCount = _artistAlbumCounts[artist.artist] ?? 0;
+  Widget _buildArtistListTile(SeparatedArtist artist) {
+    final imagePath = _artistImages[artist.name];
+    final albumCount = artist.numberOfAlbums;
 
     return GestureDetector(
       onTap: () => _navigateToArtistDetail(artist),
@@ -1079,7 +1047,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             children: [
               // Artist image with hero animation
               Hero(
-                tag: 'artist_image_${artist.artist}',
+                tag: 'artist_image_${artist.name}',
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(30),
                   child: imagePath != null
@@ -1089,30 +1057,11 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                           width: 60,
                           height: 60,
                         )
-                      : Container(
+                      : Image.asset(
+                          'assets/images/UI/unknown.png',
+                          fit: BoxFit.cover,
                           width: 60,
                           height: 60,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.purple.shade400,
-                                Colors.blue.shade400,
-                              ],
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              artist.artist.isNotEmpty
-                                  ? artist.artist[0].toUpperCase()
-                                  : '?',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
                         ),
                 ),
               ),
@@ -1123,7 +1072,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      artist.artist,
+                      artist.name,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -1174,20 +1123,20 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     );
   }
 
-  void _navigateToArtistDetail(ArtistModel artist) {
+  void _navigateToArtistDetail(SeparatedArtist artist) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ArtistDetailsScreen(
-          artistName: artist.artist,
-          artistImagePath: _artistImages[artist.artist],
+          artistName: artist.name,
+          artistImagePath: _artistImages[artist.name],
         ),
       ),
     );
   }
 
-  void _showArtistOptions(ArtistModel artist) {
-    final imagePath = _artistImages[artist.artist];
+  void _showArtistOptions(SeparatedArtist artist) {
+    final imagePath = _artistImages[artist.name];
 
     showModalBottomSheet(
       context: context,
@@ -1218,24 +1167,11 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                     child: imagePath != null
                         ? Image.file(File(imagePath),
                             width: 50, height: 50, fit: BoxFit.cover)
-                        : Container(
+                        : Image.asset(
+                            'assets/images/UI/unknown.png',
                             width: 50,
                             height: 50,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.purple.shade400,
-                            ),
-                            child: Center(
-                              child: Text(
-                                artist.artist.isNotEmpty
-                                    ? artist.artist[0].toUpperCase()
-                                    : '?',
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20),
-                              ),
-                            ),
+                            fit: BoxFit.cover,
                           ),
                   ),
                   const SizedBox(width: 12),
@@ -1244,7 +1180,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          artist.artist,
+                          artist.name,
                           style: const TextStyle(
                               color: Colors.white, fontWeight: FontWeight.bold),
                           maxLines: 1,
@@ -1296,42 +1232,22 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     );
   }
 
-  Future<void> _playArtist(ArtistModel artist) async {
+  Future<void> _playArtist(SeparatedArtist artist) async {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    final songs = await _audioQuery.querySongs(
-      sortType: null,
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
-    final artistSongs = songs
-        .where((s) =>
-            s.artist?.toLowerCase().contains(artist.artist.toLowerCase()) ??
-            false)
-        .toList();
+    final artistSongs = await _artistAggregator.getSongsByArtist(artist.name);
     if (artistSongs.isNotEmpty) {
       audioPlayerService.setPlaylist(artistSongs, 0);
     }
   }
 
-  Future<void> _shuffleArtist(ArtistModel artist) async {
+  Future<void> _shuffleArtist(SeparatedArtist artist) async {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    final songs = await _audioQuery.querySongs(
-      sortType: null,
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
-    final artistSongs = songs
-        .where((s) =>
-            s.artist?.toLowerCase().contains(artist.artist.toLowerCase()) ??
-            false)
-        .toList()
-      ..shuffle();
+    final artistSongs = await _artistAggregator.getSongsByArtist(artist.name);
     if (artistSongs.isNotEmpty) {
-      audioPlayerService.setPlaylist(artistSongs, 0);
+      final shuffled = List<SongModel>.from(artistSongs)..shuffle();
+      audioPlayerService.setPlaylist(shuffled, 0);
     }
   }
 }

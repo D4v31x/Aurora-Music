@@ -16,7 +16,7 @@ class ArtistCard extends StatefulWidget {
     required this.onTap,
   });
 
-  // Static cache to prevent duplicate API calls
+  // Static cache to prevent duplicate API calls for artist info
   static final Map<String, String> _artistInfoCache = {};
   static final Set<String> _pendingRequests = {};
 
@@ -152,13 +152,17 @@ class _ArtistCardState extends State<ArtistCard>
     if (!_isInitialized) return;
 
     try {
+      // The singleton service handles all caching and pending request management
       final imagePath =
           await _artistService.fetchArtistImage(widget.artistName);
+
       if (!mounted) return;
       setState(() {
         _artistImagePath = imagePath;
       });
-    } catch (e) {}
+    } catch (e) {
+      // Silently handle errors
+    }
   }
 
   @override
@@ -220,7 +224,7 @@ class _ArtistCardState extends State<ArtistCard>
                               height: 80,
                             )
                           : Image.asset(
-                              'assets/images/logo/default_art.png',
+                              'assets/images/UI/unknown.png',
                               fit: BoxFit.cover,
                               width: 80,
                               height: 80,

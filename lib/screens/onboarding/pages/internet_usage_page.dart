@@ -258,18 +258,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                                   .translate('onboarding_lyrics'),
                               description: AppLocalizations.of(context)
                                   .translate('onboarding_lyrics_desc'),
-                              isOptional: true,
-                              isDark: isDark,
-                            ),
-                            const SizedBox(height: 16),
-                            _buildInfoCard(
-                              context: context,
-                              icon: Icons.cloud_sync_rounded,
-                              title: AppLocalizations.of(context)
-                                  .translate('onboarding_sync_backup'),
-                              description: AppLocalizations.of(context)
-                                  .translate('onboarding_sync_backup_desc'),
-                              isOptional: true,
+                              isOptional: false,
                               isDark: isDark,
                             ),
                             const SizedBox(height: 24),
@@ -322,7 +311,13 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
                     child: PillNavigationButtons(
-                      onBack: widget.onBack,
+                      backText: AppLocalizations.of(context).translate('back'),
+                      continueText: AppLocalizations.of(context)
+                          .translate('continueButton'),
+                      onBack: () async {
+                        await _exitController.forward();
+                        widget.onBack();
+                      },
                       onContinue: () async {
                         await _exitController.forward();
                         widget.onContinue();

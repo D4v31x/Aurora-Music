@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
-import '../../../services/donation_service.dart';
 import '../../../localization/app_localizations.dart';
 import '../../../widgets/pill_button.dart';
 
-class DonationPage extends StatefulWidget {
+class BetaWelcomePage extends StatefulWidget {
   final VoidCallback onContinue;
   final VoidCallback onBack;
 
-  const DonationPage({
+  const BetaWelcomePage({
     super.key,
     required this.onContinue,
     required this.onBack,
   });
 
   @override
-  State<DonationPage> createState() => _DonationPageState();
+  State<BetaWelcomePage> createState() => _BetaWelcomePageState();
 }
 
-class _DonationPageState extends State<DonationPage>
+class _BetaWelcomePageState extends State<BetaWelcomePage>
     with TickerProviderStateMixin {
   late AnimationController _controller;
   late AnimationController _exitController;
@@ -128,7 +127,7 @@ class _DonationPageState extends State<DonationPage>
                       opacity: fadeOp,
                       child: Text(
                         AppLocalizations.of(context)
-                            .translate('support_aurora'),
+                            .translate('beta_welcome_title'),
                         style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 32,
@@ -148,7 +147,7 @@ class _DonationPageState extends State<DonationPage>
                     opacity: fadeOp,
                     child: Text(
                       AppLocalizations.of(context)
-                          .translate('support_aurora_desc'),
+                          .translate('beta_welcome_thanks'),
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 16,
@@ -161,7 +160,7 @@ class _DonationPageState extends State<DonationPage>
 
                   const SizedBox(height: 48),
 
-                  // Donation options
+                  // Info cards
                   Expanded(
                     child: SlideTransition(
                       position: slidePos,
@@ -169,70 +168,31 @@ class _DonationPageState extends State<DonationPage>
                         opacity: fadeOp,
                         child: ListView(
                           children: [
-                            _buildDonationOption(
-                              context: context,
-                              icon: Icons.coffee_rounded,
-                              title: AppLocalizations.of(context)
-                                  .translate('buy_me_a_coffee'),
-                              color: const Color(0xFFFFDD00),
+                            _buildInfoCard(
+                              context,
+                              icon: Icons.bug_report_outlined,
+                              titleKey: 'beta_expect_bugs_title',
+                              descriptionKey: 'beta_expect_bugs_desc',
+                              color: Colors.orange,
                               isDark: isDark,
-                              onTap: () => DonationService.openBuyMeACoffee(),
                             ),
                             const SizedBox(height: 12),
-                            _buildDonationOption(
-                              context: context,
-                              icon: Icons.favorite_rounded,
-                              title: AppLocalizations.of(context)
-                                  .translate('kofi'),
-                              color: const Color(0xFFFF5E5B),
+                            _buildInfoCard(
+                              context,
+                              icon: Icons.feedback_outlined,
+                              titleKey: 'beta_feedback_title',
+                              descriptionKey: 'beta_feedback_desc',
+                              color: Colors.green,
                               isDark: isDark,
-                              onTap: () => DonationService.openKofi(),
                             ),
                             const SizedBox(height: 12),
-                            _buildDonationOption(
-                              context: context,
-                              icon: Icons.payment_rounded,
-                              title: 'PayPal',
-                              color: const Color(0xFF0070BA),
+                            _buildInfoCard(
+                              context,
+                              icon: Icons.update_outlined,
+                              titleKey: 'beta_updates_title',
+                              descriptionKey: 'beta_updates_desc',
+                              color: Colors.purple,
                               isDark: isDark,
-                              onTap: () => DonationService.openPayPal(),
-                            ),
-                            const SizedBox(height: 24),
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: (isDark ? Colors.white : Colors.black)
-                                    .withOpacity(0.05),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: (isDark ? Colors.white : Colors.black)
-                                      .withOpacity(0.1),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.info_outline_rounded,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      AppLocalizations.of(context)
-                                          .translate('donation_note'),
-                                      style: TextStyle(
-                                        fontFamily: 'Outfit',
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w400,
-                                        color: subtitleColor,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ),
                           ],
                         ),
@@ -266,17 +226,20 @@ class _DonationPageState extends State<DonationPage>
     );
   }
 
-  Widget _buildDonationOption({
-    required BuildContext context,
+  Widget _buildInfoCard(
+    BuildContext context, {
     required IconData icon,
-    required String title,
+    required String titleKey,
+    required String descriptionKey,
     required Color color,
     required bool isDark,
-    required VoidCallback onTap,
   }) {
     final titleColor = isDark ? Colors.white : Colors.black;
+    final descriptionColor =
+        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
 
     return Container(
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: (isDark ? Colors.white : Colors.black).withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
@@ -285,50 +248,49 @@ class _DonationPageState extends State<DonationPage>
           width: 1.5,
         ),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              size: 24,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: 24,
+                Text(
+                  AppLocalizations.of(context).translate(titleKey),
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: titleColor,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontFamily: 'Outfit',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: titleColor,
-                    ),
+                const SizedBox(height: 4),
+                Text(
+                  AppLocalizations.of(context).translate(descriptionKey),
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 13,
+                    color: descriptionColor,
                   ),
-                ),
-                Icon(
-                  Icons.open_in_new_rounded,
-                  size: 20,
-                  color:
-                      (isDark ? Colors.white : Colors.black).withOpacity(0.3),
                 ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

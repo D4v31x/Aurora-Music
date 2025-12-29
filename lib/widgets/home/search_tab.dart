@@ -10,6 +10,7 @@ import '../../localization/app_localizations.dart';
 import '../../services/audio_player_service.dart';
 import '../../services/music_search_service.dart';
 import '../../services/artwork_cache_service.dart';
+import '../../models/separated_artist.dart';
 import '../../screens/Artist_screen.dart';
 import '../../screens/AlbumDetailScreen.dart';
 import '../../widgets/shimmer_loading.dart';
@@ -17,7 +18,7 @@ import '../../widgets/expanding_player.dart';
 
 class SearchTab extends StatefulWidget {
   final List<SongModel> songs;
-  final List<ArtistModel> artists;
+  final List<SeparatedArtist> artists;
   final List<AlbumModel>? albums;
   final bool isInitialized;
 
@@ -39,12 +40,12 @@ class _SearchTabState extends State<SearchTab> {
   static final _artworkService = ArtworkCacheService();
 
   List<SongModel> _filteredSongs = [];
-  List<ArtistModel> _filteredArtists = [];
+  List<SeparatedArtist> _filteredArtists = [];
   List<AlbumModel> _filteredAlbums = [];
 
   // Top results
   SongModel? _topSong;
-  ArtistModel? _topArtist;
+  SeparatedArtist? _topArtist;
   AlbumModel? _topAlbum;
   String _topResultType = ''; // 'song', 'artist', 'album'
 
@@ -104,6 +105,7 @@ class _SearchTabState extends State<SearchTab> {
     );
 
     // Search artists with improved scoring
+    // Search artists with improved scoring (now using SeparatedArtist)
     _filteredArtists = _searchArtistsWithScore(widget.artists, query);
 
     // Search albums with improved scoring
@@ -115,13 +117,13 @@ class _SearchTabState extends State<SearchTab> {
     setState(() {});
   }
 
-  List<ArtistModel> _searchArtistsWithScore(
-      List<ArtistModel> artists, String query) {
+  List<SeparatedArtist> _searchArtistsWithScore(
+      List<SeparatedArtist> artists, String query) {
     final queryLower = query.toLowerCase();
 
     final scored = artists
         .map((artist) {
-          final name = artist.artist.toLowerCase();
+          final name = artist.name.toLowerCase();
           double score = 0;
 
           if (name == queryLower) score += 100;
@@ -133,6 +135,11 @@ class _SearchTabState extends State<SearchTab> {
           for (final word in words) {
             if (word == queryLower) score += 40;
             if (word.startsWith(queryLower)) score += 20;
+          }
+
+          // Bonus for artists with more tracks
+          if (score > 0) {
+            score += artist.numberOfTracks * 0.1;
           }
 
           return MapEntry(artist, score);
@@ -203,7 +210,7 @@ class _SearchTabState extends State<SearchTab> {
     // Calculate best artist score
     if (_filteredArtists.isNotEmpty) {
       final artist = _filteredArtists.first;
-      final name = artist.artist.toLowerCase();
+      final name = artist.name.toLowerCase();
 
       if (name == query) {
         bestArtistScore = 100;
@@ -402,7 +409,7 @@ class _SearchTabState extends State<SearchTab> {
           _buildSectionHeader(AppLocalizations.of(context).translate('albums')),
           const SizedBox(height: 8),
           SizedBox(
-            height: 180,
+            height: 190,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: _filteredAlbums.length.clamp(0, 10),
@@ -466,7 +473,7 @@ class _SearchTabState extends State<SearchTab> {
     }
   }
 
-  Widget _buildTopArtistCard(ArtistModel artist) {
+  Widget _buildTopArtistCard(SeparatedArtist artist) {
     return _TopArtistResultCard(
       artist: artist,
       artworkService: _artworkService,
@@ -475,7 +482,7 @@ class _SearchTabState extends State<SearchTab> {
           context,
           MaterialPageRoute(
             builder: (context) => ArtistDetailsScreen(
-              artistName: artist.artist,
+              artistName: artist.name,
               artistImagePath: null,
             ),
           ),
@@ -490,6 +497,7 @@ class _SearchTabState extends State<SearchTab> {
     return _TopResultCardWithArtwork(
       id: album.id,
       artworkService: _artworkService,
+      isAlbum: true,
       onTap: () {
         Navigator.push(
           context,
@@ -528,14 +536,14 @@ class _SearchTabState extends State<SearchTab> {
     );
   }
 
-  Widget _buildArtistChip(ArtistModel artist) {
+  Widget _buildArtistChip(SeparatedArtist artist) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ArtistDetailsScreen(
-              artistName: artist.artist,
+              artistName: artist.name,
               artistImagePath: null,
             ),
           ),
@@ -547,16 +555,16 @@ class _SearchTabState extends State<SearchTab> {
         child: Column(
           children: [
             Hero(
-              tag: 'artist_image_${artist.artist}',
+              tag: 'artist_image_${artist.name}',
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(40),
-                child: _artworkService.buildArtistImageByName(artist.artist,
+                child: _artworkService.buildArtistImageByName(artist.name,
                     size: 80, circular: true),
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              artist.artist,
+              artist.name,
               style: TextStyle(
                 fontFamily: 'ProductSans',
                 color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -586,6 +594,7 @@ class _SearchTabState extends State<SearchTab> {
         width: 130,
         margin: const EdgeInsets.only(right: 12),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Hero(
@@ -691,6 +700,7 @@ class _TopResultCardWithArtwork extends HookWidget {
   final String subtitle;
   final Widget trailing;
   final String? heroTag;
+  final bool isAlbum;
 
   const _TopResultCardWithArtwork({
     required this.id,
@@ -701,6 +711,7 @@ class _TopResultCardWithArtwork extends HookWidget {
     required this.subtitle,
     required this.trailing,
     this.heroTag,
+    this.isAlbum = false,
   });
 
   @override
@@ -759,13 +770,19 @@ class _TopResultCardWithArtwork extends HookWidget {
                         tag: heroTag!,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child:
-                              artworkService.buildCachedArtwork(id, size: 100),
+                          child: isAlbum
+                              ? artworkService.buildCachedAlbumArtwork(id,
+                                  size: 100)
+                              : artworkService.buildCachedArtwork(id,
+                                  size: 100),
                         ),
                       )
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: artworkService.buildCachedArtwork(id, size: 100),
+                        child: isAlbum
+                            ? artworkService.buildCachedAlbumArtwork(id,
+                                size: 100)
+                            : artworkService.buildCachedArtwork(id, size: 100),
                       ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -834,7 +851,9 @@ class _TopResultCardWithArtwork extends HookWidget {
         colorState,
   ) async {
     try {
-      final artwork = await artworkService.getArtwork(id);
+      final artwork = isAlbum
+          ? await artworkService.getAlbumArtwork(id)
+          : await artworkService.getArtwork(id);
       if (artwork != null && artwork.isNotEmpty) {
         final imageProvider = MemoryImage(artwork);
         final palette = await PaletteGenerator.fromImageProvider(
@@ -861,7 +880,7 @@ class _TopResultCardWithArtwork extends HookWidget {
 
 /// Top artist result card with artwork extraction for glassmorphic styling
 class _TopArtistResultCard extends HookWidget {
-  final ArtistModel artist;
+  final SeparatedArtist artist;
   final ArtworkCacheService artworkService;
   final VoidCallback onTap;
   final String typeLabel;
@@ -881,15 +900,14 @@ class _TopArtistResultCard extends HookWidget {
     );
 
     // Store previous artist name for comparison
-    final prevArtistName = usePrevious(artist.artist);
+    final prevArtistName = usePrevious(artist.name);
 
     useEffect(() {
-      if (artist.artist != prevArtistName ||
-          colorState.value.dominant == null) {
+      if (artist.name != prevArtistName || colorState.value.dominant == null) {
         _extractColors(colorState);
       }
       return null;
-    }, [artist.artist]);
+    }, [artist.name]);
 
     final hasArtwork = colorState.value.hasArtwork;
     final dominantColor = colorState.value.dominant;
@@ -926,11 +944,11 @@ class _TopArtistResultCard extends HookWidget {
             child: Row(
               children: [
                 Hero(
-                  tag: 'artist_image_${artist.artist}',
+                  tag: 'artist_image_${artist.name}',
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
                     child: artworkService.buildArtistImageByName(
-                      artist.artist,
+                      artist.name,
                       size: 100,
                       circular: true,
                     ),
@@ -965,7 +983,7 @@ class _TopArtistResultCard extends HookWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        artist.artist,
+                        artist.name,
                         style: const TextStyle(
                           fontFamily: 'ProductSans',
                           color: Colors.white,
@@ -977,7 +995,7 @@ class _TopArtistResultCard extends HookWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${artist.numberOfTracks ?? 0} ${AppLocalizations.of(context).translate('songs').toLowerCase()}',
+                        '${artist.numberOfTracks} ${AppLocalizations.of(context).translate('songs').toLowerCase()}',
                         style: TextStyle(
                           fontFamily: 'ProductSans',
                           color: Colors.white.withOpacity(0.6),
@@ -1002,8 +1020,7 @@ class _TopArtistResultCard extends HookWidget {
         colorState,
   ) async {
     try {
-      final imagePath =
-          await artworkService.getArtistImageByName(artist.artist);
+      final imagePath = await artworkService.getArtistImageByName(artist.name);
       if (imagePath != null) {
         final imageProvider = FileImage(File(imagePath));
         final palette = await PaletteGenerator.fromImageProvider(

@@ -206,7 +206,9 @@ class GlassmorphicCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     // Check if blur should be enabled based on performance mode
-    final performanceProvider = context.watch<PerformanceModeProvider>();
+    // Use listen: false to prevent rebuilding all cards
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
 
     final cardDecoration = BoxDecoration(
@@ -225,6 +227,7 @@ class GlassmorphicCard extends StatelessWidget {
       width: width,
       decoration: cardDecoration,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Artwork with optional badge
@@ -250,8 +253,10 @@ class GlassmorphicCard extends StatelessWidget {
           ),
           // Title and subtitle
           Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(

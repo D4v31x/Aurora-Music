@@ -42,6 +42,15 @@ class AutoScrollText extends HookWidget {
     final messageTimer = useRef<Timer?>(null);
     final scrollTimer = useRef<Timer?>(null);
     final isInitialized = useRef(false);
+    final isMounted = useRef(true);
+
+    // Set isMounted to false when widget is disposed
+    useEffect(() {
+      isMounted.value = true;
+      return () {
+        isMounted.value = false;
+      };
+    }, const []);
 
     // Check if scanning message - use captured localizations
     bool isScanningMessage() {
@@ -50,8 +59,11 @@ class AutoScrollText extends HookWidget {
 
     // Fade to next message - use captured localizations
     void fadeToNextMessage() {
+      if (!isMounted.value) return;
       fadeController.reverse().then((_) {
-        onMessageComplete(localizations.translate('aurora_music'));
+        if (isMounted.value) {
+          onMessageComplete(localizations.translate('aurora_music'));
+        }
       });
     }
 
@@ -61,13 +73,16 @@ class AutoScrollText extends HookWidget {
 
       messageTimer.value?.cancel();
       messageTimer.value = Timer(const Duration(seconds: 5), () {
-        fadeToNextMessage();
+        if (isMounted.value) {
+          fadeToNextMessage();
+        }
       });
     }
 
     // Start scrolling
     void startScrolling() {
-      if (isAnimating.value || !scrollController.hasClients) return;
+      if (!isMounted.value || isAnimating.value || !scrollController.hasClients)
+        return;
       isAnimating.value = true;
 
       const baseDuration = 2500;
@@ -80,8 +95,10 @@ class AutoScrollText extends HookWidget {
         curve: AnimationConstants.linear,
       )
           .then((_) {
+        if (!isMounted.value) return Future<void>.value();
         return Future.delayed(AnimationConstants.mediumDelay);
       }).then((_) {
+        if (!isMounted.value) return Future<void>.value();
         if (scrollController.hasClients) {
           return scrollController.animateTo(
             0,
@@ -89,25 +106,31 @@ class AutoScrollText extends HookWidget {
             curve: Curves.easeOut,
           );
         }
+        return Future<void>.value();
       }).then((_) {
+        if (!isMounted.value) return;
         isAnimating.value = false;
         scrollTimer.value?.cancel();
         scrollTimer.value = Timer(const Duration(milliseconds: 1000), () {
-          startScrolling();
+          if (isMounted.value) {
+            startScrolling();
+          }
         });
       });
     }
 
     // Start scroll if needed
     void startScrollIfNeeded() {
-      if (!scrollController.hasClients) return;
+      if (!isMounted.value || !scrollController.hasClients) return;
 
       final maxScroll = scrollController.position.maxScrollExtent;
       if (maxScroll <= 0) return;
 
       scrollTimer.value?.cancel();
       scrollTimer.value = Timer(const Duration(milliseconds: 800), () {
-        startScrolling();
+        if (isMounted.value) {
+          startScrolling();
+        }
       });
     }
 

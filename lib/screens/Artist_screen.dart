@@ -222,142 +222,136 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     return FutureBuilder(
       future: _colorFuture,
       builder: (context, snapshot) {
+        // Use already loaded _artistImagePath instead of fetching on every rebuild
+        final effectiveImagePath = widget.artistImagePath ?? _artistImagePath;
+
         return Scaffold(
             resizeToAvoidBottomInset: false,
-            body: FutureBuilder<String?>(
-                future: widget.artistImagePath != null
-                    ? Future.value(widget.artistImagePath)
-                    : _artistService.fetchArtistImage(widget.artistName),
-                builder: (context, imageSnapshot) {
-                  return BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      color: _dominantColor.withOpacity(0.1),
-                      child: CustomScrollView(
-                        controller: _scrollController,
-                        slivers: [
-                          _buildSliverAppBar(
-                              imageSnapshot.data ?? _artistImagePath),
-                          // Stats section
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              child: glassmorphicContainer(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      _buildStatItem(
-                                        Icons.music_note_rounded,
-                                        '${_allSongs.length}',
-                                        AppLocalizations.of(context)
-                                            .translate('songs'),
-                                      ),
-                                      _buildStatDivider(),
-                                      _buildStatItem(
-                                        Icons.album_rounded,
-                                        '${_albums.length}',
-                                        AppLocalizations.of(context)
-                                            .translate('albums'),
-                                      ),
-                                      _buildStatDivider(),
-                                      _buildStatItem(
-                                        Icons.timer_outlined,
-                                        _formatDuration(_totalDuration),
-                                        AppLocalizations.of(context)
-                                            .translate('total'),
-                                      ),
-                                    ],
-                                  ),
+            body: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                color: _dominantColor.withOpacity(0.1),
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
+                    _buildSliverAppBar(effectiveImagePath),
+                    // Stats section
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: glassmorphicContainer(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _buildStatItem(
+                                  Icons.music_note_rounded,
+                                  '${_allSongs.length}',
+                                  AppLocalizations.of(context)
+                                      .translate('songs'),
                                 ),
-                              ),
+                                _buildStatDivider(),
+                                _buildStatItem(
+                                  Icons.album_rounded,
+                                  '${_albums.length}',
+                                  AppLocalizations.of(context)
+                                      .translate('albums'),
+                                ),
+                                _buildStatDivider(),
+                                _buildStatItem(
+                                  Icons.timer_outlined,
+                                  _formatDuration(_totalDuration),
+                                  AppLocalizations.of(context)
+                                      .translate('total'),
+                                ),
+                              ],
                             ),
                           ),
-                          // Action buttons
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 16),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildActionButton(
-                                      context,
-                                      Icons.play_arrow_rounded,
-                                      AppLocalizations.of(context)
-                                          .translate('play_all'),
-                                      () => _playAllSongs(context),
-                                      isPrimary: true,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildActionButton(
-                                      context,
-                                      Icons.shuffle_rounded,
-                                      AppLocalizations.of(context)
-                                          .translate('shuffle'),
-                                      () => _shuffleAllSongs(context),
-                                      isPrimary: false,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          // Category tabs
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildCategoryTab(
-                                      'Songs (${_allSongs.length})',
-                                      0,
-                                      Icons.music_note_rounded,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildCategoryTab(
-                                      'Albums (${_albums.length})',
-                                      1,
-                                      Icons.album_rounded,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          // Content based on selected category
-                          _selectedCategory == 0
-                              ? _buildSongsList()
-                              : _buildAlbumsList(),
-                          // Bottom padding for mini player
-                          SliverToBoxAdapter(
-                            child: Selector<AudioPlayerService, bool>(
-                              selector: (_, service) =>
-                                  service.currentSong != null,
-                              builder: (context, hasCurrentSong, _) {
-                                return SizedBox(
-                                  height: hasCurrentSong
-                                      ? ExpandingPlayer
-                                          .getMiniPlayerPaddingHeight(context)
-                                      : 16,
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  );
-                }));
+                    // Action buttons
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _buildActionButton(
+                                context,
+                                Icons.play_arrow_rounded,
+                                AppLocalizations.of(context)
+                                    .translate('play_all'),
+                                () => _playAllSongs(context),
+                                isPrimary: true,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildActionButton(
+                                context,
+                                Icons.shuffle_rounded,
+                                AppLocalizations.of(context)
+                                    .translate('shuffle'),
+                                () => _shuffleAllSongs(context),
+                                isPrimary: false,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Category tabs
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _buildCategoryTab(
+                                'Songs (${_allSongs.length})',
+                                0,
+                                Icons.music_note_rounded,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildCategoryTab(
+                                'Albums (${_albums.length})',
+                                1,
+                                Icons.album_rounded,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Content based on selected category
+                    _selectedCategory == 0
+                        ? _buildSongsList()
+                        : _buildAlbumsList(),
+                    // Bottom padding for mini player
+                    SliverToBoxAdapter(
+                      child: Selector<AudioPlayerService, bool>(
+                        selector: (_, service) => service.currentSong != null,
+                        builder: (context, hasCurrentSong, _) {
+                          return SizedBox(
+                            height: hasCurrentSong
+                                ? ExpandingPlayer.getMiniPlayerPaddingHeight(
+                                    context)
+                                : 16,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ));
       },
     );
   }
@@ -404,7 +398,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                             height: 200,
                           )
                         : Image.asset(
-                            'assets/images/logo/default_art.png',
+                            'assets/images/UI/unknown.png',
                             fit: BoxFit.cover,
                             width: 200,
                             height: 200,
@@ -861,15 +855,20 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: Colors.white, size: 22),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

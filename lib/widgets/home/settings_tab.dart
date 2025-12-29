@@ -15,6 +15,7 @@ import '../../services/cache_manager.dart';
 import '../../services/artwork_cache_service.dart';
 import '../../services/donation_service.dart';
 import '../../screens/artist_separator_settings.dart';
+import '../../screens/home_layout_settings.dart';
 import '../glassmorphic_container.dart';
 import '../expanding_player.dart';
 
@@ -522,23 +523,28 @@ class _SettingsTabState extends State<SettingsTab> {
             _buildGlassmorphicCard(
               children: [
                 _buildSwitchTile(
-                  icon: Icons.dark_mode_rounded,
-                  title: l10n.translate('settings_dark_mode'),
-                  subtitle: themeProvider.isDarkMode
-                      ? l10n.translate('settings_enabled')
-                      : l10n.translate('settings_disabled'),
-                  value: themeProvider.isDarkMode,
-                  onChanged: (value) => themeProvider.toggleTheme(),
-                  isFirst: true,
-                ),
-                _buildSwitchTile(
                   icon: Icons.palette_rounded,
                   title: l10n.translate('settings_material_you'),
                   subtitle: l10n.translate('settings_material_you_desc'),
                   value: themeProvider.useDynamicColor,
                   onChanged: (value) => themeProvider.toggleDynamicColor(),
+                  isFirst: true,
                 ),
                 _buildLanguageTile(),
+                _buildActionTile(
+                  icon: Icons.dashboard_customize_rounded,
+                  title: l10n.translate('homeLayout'),
+                  subtitle: l10n.translate('homeLayoutDesc'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HomeLayoutSettingsScreen(),
+                      ),
+                    );
+                  },
+                  isLast: true,
+                ),
               ],
             ),
 

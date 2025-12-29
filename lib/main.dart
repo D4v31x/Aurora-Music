@@ -16,6 +16,7 @@ import 'services/shader_warmup_service.dart';
 import 'services/background_manager_service.dart';
 import 'services/sleep_timer_controller.dart';
 import 'services/artist_separator_service.dart';
+import 'services/home_layout_service.dart';
 import 'localization/app_localizations.dart';
 import 'localization/generated/app_localizations.dart';
 import 'screens/splash_screen.dart';
@@ -48,6 +49,9 @@ void main() async {
 
     // Initialize artist separator service
     await ArtistSeparatorService().initialize();
+
+    // Initialize home layout service
+    await HomeLayoutService().initialize();
 
     // Warmup shaders for better performance
     await ShaderWarmupService.warmupShaders();
@@ -95,6 +99,7 @@ void main() async {
                 create: (_) => BackgroundManagerService(), lazy: false),
             ChangeNotifierProvider(
                 create: (_) => SleepTimerController(), lazy: true),
+            ChangeNotifierProvider.value(value: HomeLayoutService()),
             Provider<ErrorTrackingService>.value(value: errorTracker),
           ],
           child: Builder(
@@ -215,8 +220,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
             locale: _locale,
-            themeMode: themeProvider.themeMode,
-            theme: themeProvider.lightTheme,
+            themeMode: ThemeMode.dark,
             darkTheme: themeProvider.darkTheme,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

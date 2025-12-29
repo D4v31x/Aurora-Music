@@ -1,57 +1,116 @@
 import 'dart:ui';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 
 /// A beautiful animated background that displays heavily blurred artwork
 /// with smooth transitions
-class AnimatedArtworkBackground extends HookWidget {
+class AnimatedArtworkBackground extends StatefulWidget {
   final Uint8List? currentArtwork;
-  final Uint8List? previousArtwork;
-  final bool isTransitioning;
   final Widget child;
   final Color? fallbackColor;
 
   const AnimatedArtworkBackground({
     super.key,
     this.currentArtwork,
-    this.previousArtwork,
-    this.isTransitioning = false,
+    Uint8List? previousArtwork, // Ignored - managed internally
+    bool isTransitioning = false, // Ignored - managed internally
     required this.child,
     this.fallbackColor,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final crossfadeController = useAnimationController(
+  State<AnimatedArtworkBackground> createState() =>
+      _AnimatedArtworkBackgroundState();
+}
+
+class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _crossfadeController;
+  late Animation<double> _crossfadeAnimation;
+  Uint8List? _previousArtworkCache;
+
+  @override
+  void initState() {
+    super.initState();
+    _crossfadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
-      initialValue: currentArtwork != null ? 1.0 : 0.0,
+      value: widget.currentArtwork != null ? 1.0 : 0.0,
+      vsync: this,
     );
-
-    final crossfadeAnimation = useAnimation(
-      CurvedAnimation(
-        parent: crossfadeController,
-        curve: Curves.easeInOut,
-      ),
+    _crossfadeAnimation = CurvedAnimation(
+      parent: _crossfadeController,
+      curve: Curves.easeInOut,
     );
+  }
 
-    // Store previous artwork for comparison
-    final prevArtworkRef = usePrevious(currentArtwork);
+  @override
+  void didUpdateWidget(AnimatedArtworkBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
-    // Handle artwork changes
-    useEffect(() {
-      if (currentArtwork != prevArtworkRef) {
-        if (prevArtworkRef == null && currentArtwork != null) {
-          crossfadeController.value = 1.0;
-        } else if (currentArtwork != null) {
-          crossfadeController.forward(from: 0.0);
+    // Only animate if artwork actually changed (check by reference or hash)
+    final bool artworkChanged =
+        !_areArtworksEqual(widget.currentArtwork, oldWidget.currentArtwork);
+
+    if (artworkChanged) {
+      if (oldWidget.currentArtwork == null && widget.currentArtwork != null) {
+        // No animation when appearing for first time
+        if (mounted) {
+          setState(() {
+            _crossfadeController.value = 1.0;
+            _previousArtworkCache = null;
+          });
+        }
+      } else if (widget.currentArtwork != null) {
+        // Animate new artwork in
+        if (mounted) {
+          setState(() {
+            _previousArtworkCache = oldWidget.currentArtwork;
+          });
+          _crossfadeController.forward(from: 0.0).then((_) {
+            // Clear previous artwork after animation completes
+            if (mounted) {
+              setState(() {
+                _previousArtworkCache = null;
+              });
+            }
+          });
+        }
+      } else {
+        // Artwork removed - fade out
+        if (mounted) {
+          setState(() {
+            _previousArtworkCache = oldWidget.currentArtwork;
+          });
+          _crossfadeController.reverse(from: 1.0).then((_) {
+            if (mounted) {
+              setState(() {
+                _previousArtworkCache = null;
+              });
+            }
+          });
         }
       }
-      return null;
-    }, [currentArtwork]);
+    }
+  }
 
+  // Helper to check if artworks are equal (by reference)
+  bool _areArtworksEqual(Uint8List? a, Uint8List? b) {
+    if (identical(a, b)) return true;
+    if (a == null || b == null) return false;
+    // Use identical for performance - BackgroundManagerService should reuse instances
+    return identical(a, b);
+  }
+
+  @override
+  void dispose() {
+    _crossfadeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final backgroundColor =
-        fallbackColor ?? Theme.of(context).colorScheme.surface;
+        widget.fallbackColor ?? Theme.of(context).colorScheme.surface;
 
     return Stack(
       fit: StackFit.expand,
@@ -61,20 +120,32 @@ class AnimatedArtworkBackground extends HookWidget {
           color: backgroundColor,
         ),
 
-        // Previous artwork (fading out)
-        if (previousArtwork != null)
-          Opacity(
-            opacity: (1.0 - crossfadeAnimation).clamp(0.0, 1.0),
-            child: _buildBlurredArtwork(previousArtwork!),
+        // Previous artwork (fading out) - only show during transition
+        if (_previousArtworkCache != null && _crossfadeController.isAnimating)
+          AnimatedBuilder(
+            animation: _crossfadeAnimation,
+            builder: (context, child) => Opacity(
+              opacity: (1.0 - _crossfadeAnimation.value).clamp(0.0, 1.0),
+              child: child!,
+            ),
+            child: _buildBlurredArtwork(_previousArtworkCache!),
           ),
 
-        // Current artwork (fading in or fully visible)
-        if (currentArtwork != null)
-          crossfadeController.value >= 1.0
-              ? _buildBlurredArtwork(currentArtwork!)
-              : Opacity(
-                  opacity: crossfadeAnimation.clamp(0.0, 1.0),
-                  child: _buildBlurredArtwork(currentArtwork!),
+        // Current artwork (always visible once loaded, no animation wrapper when stable)
+        if (widget.currentArtwork != null)
+          _crossfadeController.isAnimating
+              ? AnimatedBuilder(
+                  animation: _crossfadeAnimation,
+                  builder: (context, child) => Opacity(
+                    opacity: _crossfadeAnimation.value.clamp(0.0, 1.0),
+                    child: child!,
+                  ),
+                  child: RepaintBoundary(
+                    child: _buildBlurredArtwork(widget.currentArtwork!),
+                  ),
+                )
+              : RepaintBoundary(
+                  child: _buildBlurredArtwork(widget.currentArtwork!),
                 ),
 
         // Overlay for better text readability
@@ -98,7 +169,7 @@ class AnimatedArtworkBackground extends HookWidget {
         ),
 
         // Child content
-        child,
+        widget.child,
       ],
     );
   }

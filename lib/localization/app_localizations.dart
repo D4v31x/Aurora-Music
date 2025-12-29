@@ -744,6 +744,70 @@ extension AppLocalizationsExtension on generated.AppLocalizations {
         return coverArtUpdated;
       case 'scan_failed':
         return scanFailed;
+      case 'onboarding_audio_required':
+        return onboardingAudioRequired;
+      case 'buy_me_a_coffee':
+        return buyMeACoffee;
+      case 'donation_note':
+        return donationNote;
+      case 'homeLayout':
+        return homeLayout;
+      case 'homeLayoutDesc':
+        return homeLayoutDesc;
+      case 'dragToReorder':
+        return dragToReorder;
+      case 'listening_history':
+        return listeningHistory;
+      case 'library_stats':
+        return libraryStats;
+      case 'customizeHomeTab':
+        return customizeHomeTab;
+      case 'resetLayoutConfirm':
+        return resetLayoutConfirm;
+      case 'resetLayoutMessage':
+        return resetLayoutMessage;
+      case 'resetToDefault':
+        return resetToDefault;
+      case 'beta_welcome_title':
+        return beta_welcome_title;
+      case 'beta_welcome_thanks':
+        return beta_welcome_thanks;
+      case 'beta_expect_bugs_title':
+        return beta_expect_bugs_title;
+      case 'beta_expect_bugs_desc':
+        return beta_expect_bugs_desc;
+      case 'beta_feedback_title':
+        return beta_feedback_title;
+      case 'beta_feedback_desc':
+        return beta_feedback_desc;
+      case 'beta_updates_title':
+        return beta_updates_title;
+      case 'beta_updates_desc':
+        return beta_updates_desc;
+      case 'back':
+        return back;
+      case 'continueButton':
+        return continueButton;
+      case 'downloadPreferences':
+        return downloadPreferences;
+      case 'downloadContentSubtitle':
+        return downloadContentSubtitle;
+      case 'downloadAlbumArt':
+        return downloadAlbumArt;
+      case 'downloadAlbumArtDesc':
+        return downloadAlbumArtDesc;
+      case 'downloadLyricsTitle':
+        return downloadLyricsTitle;
+      case 'downloadLyricsDesc':
+        return downloadLyricsDesc;
+      case 'wifiOnly':
+        return wifiOnly;
+      case 'wifiOnlyDesc':
+        return wifiOnlyDesc;
+      case 'downloadSettingsNote':
+        return downloadSettingsNote;
+      case 'maybeLater':
+        return maybeLater;
       default:
         return key; // Return the key itself if not found
     }

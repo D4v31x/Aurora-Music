@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../screens/Artist_screen.dart';
 import '../../services/local_caching_service.dart';
 import '../../services/artwork_cache_service.dart';
@@ -36,46 +35,38 @@ class SuggestedArtistsSection extends StatelessWidget {
 
     return RepaintBoundary(
       child: SizedBox(
-        height: 180,
-        child: AnimationLimiter(
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: randomArtists.length,
-            itemBuilder: (context, index) {
-              final artist = randomArtists[index];
-              return AnimationConfiguration.staggeredList(
-                position: index,
-                duration: const Duration(milliseconds: 375),
-                child: SlideAnimation(
-                  horizontalOffset: 50.0,
-                  child: FadeInAnimation(
-                    child: GlassmorphicCard.artist(
-                      key: ValueKey(artist),
-                      artistName: artist,
-                      artworkService: _artworkService,
-                      circularArtwork: false,
-                      onTap: () async {
-                        final imagePath =
-                            await _artworkService.getArtistImageByName(artist);
-                        if (context.mounted) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ArtistDetailsScreen(
-                                artistName: artist,
-                                artistImagePath: imagePath,
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+        height: 190,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: randomArtists.length,
+          itemBuilder: (context, index) {
+            final artist = randomArtists[index];
+            return RepaintBoundary(
+              key: ValueKey('artist_card_$artist'),
+              child: GlassmorphicCard.artist(
+                key: ValueKey('artist_content_$artist'),
+                artistName: artist,
+                artworkService: _artworkService,
+                circularArtwork: false,
+                onTap: () async {
+                  final imagePath =
+                      await _artworkService.getArtistImageByName(artist);
+                  if (context.mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ArtistDetailsScreen(
+                          artistName: artist,
+                          artistImagePath: imagePath,
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            );
+          },
         ),
       ),
     );

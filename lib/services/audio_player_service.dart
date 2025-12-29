@@ -29,7 +29,7 @@ class AudioPlayerService extends ChangeNotifier {
   int _currentIndex = -1;
   bool _isPlaying = false;
   bool _isShuffle = false;
-  bool _isRepeat = false;
+  LoopMode _loopMode = LoopMode.off; // Changed from bool to LoopMode
   bool _isLoading = false;
   Set<String> _librarySet = {};
 
@@ -56,7 +56,9 @@ class AudioPlayerService extends ChangeNotifier {
   int get currentIndex => _currentIndex;
   bool get isPlaying => _isPlaying;
   bool get isShuffle => _isShuffle;
-  bool get isRepeat => _isRepeat;
+  LoopMode get loopMode => _loopMode;
+  // Deprecated: kept for compatibility, use loopMode instead
+  bool get isRepeat => _loopMode != LoopMode.off;
   SongModel? get currentSong =>
       _currentIndex >= 0 && _currentIndex < _playlist.length
           ? _playlist[_currentIndex]
@@ -110,7 +112,10 @@ class AudioPlayerService extends ChangeNotifier {
   final ValueNotifier<List<Playlist>> playlistsNotifier =
       ValueNotifier<List<Playlist>>([]);
   final ValueNotifier<bool> isShuffleNotifier = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> isRepeatNotifier = ValueNotifier<bool>(false);
+  final ValueNotifier<LoopMode> loopModeNotifier =
+      ValueNotifier<LoopMode>(LoopMode.off);
+  final ValueNotifier<Set<String>> likedSongsNotifier =
+      ValueNotifier<Set<String>>({});
 
   // ValueNotifier for songs list to enable efficient rebuilds
   final ValueNotifier<List<SongModel>> songsNotifier =
@@ -316,9 +321,12 @@ class AudioPlayerService extends ChangeNotifier {
     // Listen to track index changes for gapless playback
     // This fires when just_audio automatically transitions to the next track
     _audioPlayer.currentIndexStream.listen((index) async {
+      debugPrint(
+          '🎵 [INDEX_STREAM] Index changed: $index (previous: $_currentIndex, shuffle: ${_audioPlayer.shuffleModeEnabled}, loop: ${_audioPlayer.loopMode})');
       if (index != null && index != _currentIndex && index < _playlist.length) {
         _currentIndex = index;
         final song = _playlist[_currentIndex];
+        debugPrint('🎵 [INDEX_STREAM] Playing: ${song.title}');
 
         // Update all song-related state
         _currentSongController.add(song);
@@ -337,12 +345,25 @@ class AudioPlayerService extends ChangeNotifier {
       }
     });
 
-    _audioPlayer.positionStream.listen((position) {
-      final duration = _audioPlayer.duration;
-      if (duration != null && position >= duration) {
-        skip();
+    // Listen for when playback completes (end of playlist with no loop)
+    _audioPlayer.processingStateStream.listen((state) {
+      debugPrint(
+          '🎵 [PROCESSING_STATE] State changed: $state (loopMode: $_loopMode)');
+      if (state == ProcessingState.completed) {
+        debugPrint('🎵 [PROCESSING_STATE] Playback completed!');
+        // Playback completed - if loop mode is off and we're at end, stop
+        if (_loopMode == LoopMode.off) {
+          debugPrint('🎵 [PROCESSING_STATE] Loop OFF, stopping playback');
+          _isPlaying = false;
+          isPlayingNotifier.value = false;
+          _scheduleNotify();
+        } else {
+          debugPrint(
+              '🎵 [PROCESSING_STATE] Loop mode: $_loopMode, should loop automatically');
+        }
       }
     });
+
     _startCacheCleanup();
   }
 
@@ -634,6 +655,14 @@ class AudioPlayerService extends ChangeNotifier {
             initialPosition: Duration.zero,
           );
 
+          // Apply current shuffle and loop settings to the player
+          debugPrint(
+              '🎵 [AUDIO_SOURCE] Applying shuffle: $_isShuffle, loopMode: $_loopMode');
+          await _audioPlayer.setShuffleModeEnabled(_isShuffle);
+          await _audioPlayer.setLoopMode(_loopMode);
+          debugPrint(
+              '🎵 [AUDIO_SOURCE] Player state - shuffle: ${_audioPlayer.shuffleModeEnabled}, loop: ${_audioPlayer.loopMode}');
+
           // Update current media item in notification
           audioHandler.updateNotificationMediaItem(mediaItems[_currentIndex]);
 
@@ -844,13 +873,24 @@ class AudioPlayerService extends ChangeNotifier {
 
   void skip() async {
     _isLoading = false; // Reset loading flag to allow new song to play
-    int nextIndex = _currentIndex + 1;
-    if (_isShuffle) {
-      nextIndex = _getRandomIndex();
-    } else if (nextIndex >= _playlist.length) {
-      nextIndex = _isRepeat ? 0 : _currentIndex;
+
+    debugPrint(
+        '⏭️ [SKIP] Called - hasNext: ${_audioPlayer.hasNext}, currentIndex: $_currentIndex, shuffle: $_isShuffle, loopMode: $_loopMode');
+
+    // Use just_audio's built-in seekToNext which respects shuffle mode
+    if (_audioPlayer.hasNext) {
+      debugPrint('⏭️ [SKIP] Seeking to next track');
+      await _audioPlayer.seekToNext();
+    } else if (_loopMode == LoopMode.all) {
+      // If loop all is on and we're at the end, go back to start
+      debugPrint('⏭️ [SKIP] At end with loop ALL, going to start');
+      await _audioPlayer.seek(Duration.zero, index: 0);
+      await _audioPlayer.play();
+    } else {
+      debugPrint(
+          '⏭️ [SKIP] At end, staying on current song (loopMode: $_loopMode)');
     }
-    await play(index: nextIndex);
+    // If no next and no repeat, just stay on current song
   }
 
   void back() async {
@@ -864,26 +904,52 @@ class AudioPlayerService extends ChangeNotifier {
       return;
     }
 
-    // Go to previous song
-    int prevIndex = _currentIndex - 1;
-    if (_isShuffle) {
-      prevIndex = _getRandomIndex();
-    } else if (prevIndex < 0) {
-      prevIndex = _isRepeat ? _playlist.length - 1 : _currentIndex;
+    // Use just_audio's built-in seekToPrevious which respects shuffle mode
+    if (_audioPlayer.hasPrevious) {
+      await _audioPlayer.seekToPrevious();
+    } else if (_loopMode == LoopMode.all) {
+      // If loop all is on and we're at the start, go to end
+      await _audioPlayer.seek(Duration.zero, index: _playlist.length - 1);
+      await _audioPlayer.play();
     }
-    await play(index: prevIndex);
+    // If no previous and no repeat, just restart current song
+    else {
+      await _audioPlayer.seek(Duration.zero);
+    }
   }
 
   void toggleShuffle() {
     _isShuffle = !_isShuffle;
     isShuffleNotifier.value = _isShuffle;
-    // ValueNotifier handles reactive updates - no notifyListeners needed
+    debugPrint('🔀 [SHUFFLE] Toggled shuffle: $_isShuffle');
+    // Apply shuffle mode to the audio player
+    _audioPlayer.setShuffleModeEnabled(_isShuffle);
+    debugPrint(
+        '🔀 [SHUFFLE] Applied to player, shuffleModeEnabled: ${_audioPlayer.shuffleModeEnabled}');
+    notifyListeners();
   }
 
   void toggleRepeat() {
-    _isRepeat = !_isRepeat;
-    isRepeatNotifier.value = _isRepeat;
-    // ValueNotifier handles reactive updates - no notifyListeners needed
+    // Cycle through: off → one → all → off
+    switch (_loopMode) {
+      case LoopMode.off:
+        _loopMode = LoopMode.one;
+        break;
+      case LoopMode.one:
+        _loopMode = LoopMode.all;
+        break;
+      case LoopMode.all:
+      default:
+        _loopMode = LoopMode.off;
+        break;
+    }
+    loopModeNotifier.value = _loopMode;
+    debugPrint('🔁 [REPEAT] Cycled loop mode: $_loopMode');
+    // Apply loop mode to the audio player
+    _audioPlayer.setLoopMode(_loopMode);
+    debugPrint(
+        '🔁 [REPEAT] Applied to player, current loopMode: ${_audioPlayer.loopMode}');
+    notifyListeners();
   }
 
   int _getRandomIndex() {
@@ -963,6 +1029,8 @@ class AudioPlayerService extends ChangeNotifier {
       final contents = await file.readAsString();
       final json = jsonDecode(contents);
       _likedSongs = Set<String>.from(json['liked_songs']);
+      // Update notifier for reactive UI
+      likedSongsNotifier.value = Set<String>.from(_likedSongs);
     }
   }
 
@@ -1022,6 +1090,9 @@ class AudioPlayerService extends ChangeNotifier {
       _likedSongs.add(song.id.toString());
     }
 
+    // Update notifier for reactive UI
+    likedSongsNotifier.value = Set<String>.from(_likedSongs);
+
     await saveLikedSongs();
     _updateLikedSongsPlaylist();
     _scheduleNotify();
@@ -1044,7 +1115,7 @@ class AudioPlayerService extends ChangeNotifier {
     currentSongNotifier.dispose();
     isPlayingNotifier.dispose();
     isShuffleNotifier.dispose();
-    isRepeatNotifier.dispose();
+    loopModeNotifier.dispose();
     sleepTimerDurationNotifier.dispose();
     playlistsNotifier.dispose();
     songsNotifier.dispose();

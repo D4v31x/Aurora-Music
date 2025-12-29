@@ -208,24 +208,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                             : _contentFadeAnimation,
                         child: Column(
                           children: [
-                            // Light mode option
-                            _buildThemeOption(
-                              context: context,
-                              title: AppLocalizations.of(context)
-                                  .translate('onboarding_light_mode'),
-                              description: AppLocalizations.of(context)
-                                  .translate('onboarding_light_mode_desc'),
-                              icon: Icons.light_mode_rounded,
-                              isSelected: !themeProvider.isDarkMode,
-                              isDark: isDark,
-                              onTap: () {
-                                themeProvider.toggleTheme();
-                              },
-                            ),
-
-                            const SizedBox(height: 12),
-
-                            // Dark mode option
+                            // Dark mode display (app is dark mode only)
                             _buildThemeOption(
                               context: context,
                               title: AppLocalizations.of(context)
@@ -233,10 +216,10 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                               description: AppLocalizations.of(context)
                                   .translate('onboarding_dark_mode_desc'),
                               icon: Icons.dark_mode_rounded,
-                              isSelected: themeProvider.isDarkMode,
+                              isSelected: true,
                               isDark: isDark,
                               onTap: () {
-                                themeProvider.toggleTheme();
+                                // Dark mode is always enabled
                               },
                             ),
 
@@ -322,6 +305,9 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
                     child: PillNavigationButtons(
+                      backText: AppLocalizations.of(context).translate('back'),
+                      continueText: AppLocalizations.of(context)
+                          .translate('continueButton'),
                       onBack: widget.onBack,
                       onContinue: () async {
                         await _exitController.forward();

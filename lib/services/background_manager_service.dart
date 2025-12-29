@@ -17,6 +17,8 @@ class BackgroundManagerService extends ChangeNotifier {
   Uint8List? _previousArtwork;
   bool _isTransitioning = false;
   SongModel? _currentSong;
+  bool _isUpdating = false; // Prevent concurrent updates
+  int _updateCounter = 0; // Track update sequence
 
   static const Color _defaultDarkPrimary = Color(0xFF1A237E);
   static const Color _defaultDarkSecondary = Color(0xFF311B92);
@@ -63,8 +65,14 @@ class BackgroundManagerService extends ChangeNotifier {
 
   /// Update colors based on artwork
   Future<void> updateColorsFromArtwork(Uint8List? artworkData) async {
+    await _updateColorsFromArtworkSilent(artworkData);
+    notifyListeners();
+  }
+
+  /// Update colors without notifying listeners (internal use)
+  Future<void> _updateColorsFromArtworkSilent(Uint8List? artworkData) async {
     if (artworkData == null) {
-      _useDefaultColors();
+      _currentColors = _getDefaultColors();
       return;
     }
 
@@ -78,12 +86,11 @@ class BackgroundManagerService extends ChangeNotifier {
       final colors = _extractColorsFromPalette(palette);
       if (colors.length >= 2) {
         _currentColors = colors;
-        notifyListeners();
       } else {
-        _useDefaultColors();
+        _currentColors = _getDefaultColors();
       }
     } catch (e) {
-      _useDefaultColors();
+      _currentColors = _getDefaultColors();
     }
   }
 
@@ -101,8 +108,15 @@ class BackgroundManagerService extends ChangeNotifier {
       return;
     }
 
+    // Prevent concurrent updates
+    if (_isUpdating) {
+      return;
+    }
+
     try {
+      _isUpdating = true;
       _currentSong = song;
+      final currentUpdateId = ++_updateCounter;
 
       // Start transition animation
       _previousArtwork = _currentArtwork;
@@ -111,18 +125,23 @@ class BackgroundManagerService extends ChangeNotifier {
 
       // Try to get artwork with multiple retries and increasing delays
       Uint8List? artworkData;
-      for (int attempt = 1; attempt <= 5; attempt++) {
+      for (int attempt = 1; attempt <= 3; attempt++) {
         artworkData = await _artworkCache.getArtwork(song.id);
 
         if (artworkData != null && artworkData.isNotEmpty) {
           break;
         }
 
-        if (attempt < 5) {
-          // Increasing delays: 100ms, 200ms, 400ms, 800ms
-          await Future.delayed(
-              Duration(milliseconds: 100 * (1 << (attempt - 1))));
+        if (attempt < 3) {
+          // Shorter delays: 100ms, 200ms
+          await Future.delayed(Duration(milliseconds: 100 * attempt));
         }
+      }
+
+      // Check if this update is still current
+      if (currentUpdateId != _updateCounter || _currentSong?.id != song.id) {
+        _isUpdating = false;
+        return;
       }
 
       // Update artwork for blurred background (only if valid)
@@ -132,40 +151,29 @@ class BackgroundManagerService extends ChangeNotifier {
         _currentArtwork = null;
       }
 
-      // Notify immediately after setting artwork so UI updates
+      // Update colors WITHOUT notifying yet
+      await _updateColorsFromArtworkSilent(artworkData);
+
+      // Single notify after everything is ready
       notifyListeners();
-
-      // Force a frame to ensure the UI repaints
-      WidgetsBinding.instance.scheduleFrame();
-
-      await updateColorsFromArtwork(artworkData);
 
       // End transition after a short delay for animation
       Future.delayed(const Duration(milliseconds: 500), () {
-        _isTransitioning = false;
-        _previousArtwork = null;
-        notifyListeners();
-      });
-
-      // If we still don't have artwork, schedule a delayed retry
-      if (artworkData == null && _currentSong?.id == song.id) {
-        Future.delayed(const Duration(milliseconds: 1500), () async {
-          if (_currentSong?.id == song.id && _currentArtwork == null) {
-            final retryArtwork = await _artworkCache.getArtwork(song.id);
-            if (retryArtwork != null &&
-                retryArtwork.isNotEmpty &&
-                _currentSong?.id == song.id) {
-              _currentArtwork = retryArtwork;
-              notifyListeners();
-              await updateColorsFromArtwork(retryArtwork);
-            }
+        if (currentUpdateId == _updateCounter && _currentSong?.id == song.id) {
+          _isTransitioning = false;
+          _previousArtwork = null;
+          // Only notify if we're still on the same song
+          if (_currentSong?.id == song.id) {
+            notifyListeners();
           }
-        });
-      }
+        }
+      });
     } catch (e) {
       debugPrint('BackgroundManager error: $e');
       _clearArtwork();
       _useDefaultColors();
+    } finally {
+      _isUpdating = false;
     }
   }
 
@@ -175,12 +183,15 @@ class BackgroundManagerService extends ChangeNotifier {
     _currentArtwork = null;
     _currentSong = null;
     _isTransitioning = true;
+    final clearUpdateId = ++_updateCounter;
     notifyListeners();
 
     Future.delayed(const Duration(milliseconds: 500), () {
-      _isTransitioning = false;
-      _previousArtwork = null;
-      notifyListeners();
+      if (clearUpdateId == _updateCounter && _currentArtwork == null) {
+        _isTransitioning = false;
+        _previousArtwork = null;
+        notifyListeners();
+      }
     });
   }
 

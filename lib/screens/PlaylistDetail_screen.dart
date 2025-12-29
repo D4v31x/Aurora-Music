@@ -450,17 +450,22 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(Icons.play_arrow_rounded,
                             color: Colors.white, size: 22),
                         const SizedBox(width: 6),
-                        Text(
-                          localizations.translate('play_all'),
-                          style: const TextStyle(
-                            fontFamily: 'ProductSans',
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                        Flexible(
+                          child: Text(
+                            localizations.translate('play_all'),
+                            style: const TextStyle(
+                              fontFamily: 'ProductSans',
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -501,6 +506,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.shuffle_rounded,
@@ -510,15 +516,19 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           size: 20,
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          localizations.translate('shuffle'),
-                          style: TextStyle(
-                            fontFamily: 'ProductSans',
-                            color: playlist.songs.isEmpty
-                                ? (isDark ? Colors.white30 : Colors.black26)
-                                : (isDark ? Colors.white : Colors.black87),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                        Flexible(
+                          child: Text(
+                            localizations.translate('shuffle'),
+                            style: TextStyle(
+                              fontFamily: 'ProductSans',
+                              color: playlist.songs.isEmpty
+                                  ? (isDark ? Colors.white30 : Colors.black26)
+                                  : (isDark ? Colors.white : Colors.black87),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],

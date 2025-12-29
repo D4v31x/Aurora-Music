@@ -187,14 +187,19 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(icon, color: Colors.white),
                   const SizedBox(width: 8),
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

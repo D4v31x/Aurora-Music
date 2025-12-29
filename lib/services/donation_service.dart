@@ -114,19 +114,6 @@ class DonationService {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Heart icon with animation
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.pink.withOpacity(0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.favorite_rounded,
-                  color: Colors.pink,
-                  size: 40,
-                ),
-              ),
               const SizedBox(height: 20),
               // Title
               Text(
@@ -234,20 +221,6 @@ class DonationService {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Heart icon
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.pink.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.favorite_rounded,
-                      color: Colors.pink,
-                      size: 32,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   // Title
                   Text(
                     loc.translate('support_aurora_title'),
@@ -276,7 +249,6 @@ class DonationService {
                   const SizedBox(height: 28),
                   // Donation options
                   _DonationOption(
-                    icon: '☕',
                     title: loc.translate('buy_me_coffee'),
                     subtitle: loc.translate('one_time_support'),
                     color: const Color(0xFFFFDD00),
@@ -288,7 +260,6 @@ class DonationService {
                   ),
                   const SizedBox(height: 12),
                   _DonationOption(
-                    icon: '❤️',
                     title: loc.translate('kofi'),
                     subtitle: loc.translate('coffee_support'),
                     color: const Color(0xFFFF5E5B),
@@ -300,7 +271,6 @@ class DonationService {
                   ),
                   const SizedBox(height: 12),
                   _DonationOption(
-                    icon: '💳',
                     title: loc.translate('paypal'),
                     subtitle: loc.translate('direct_donation'),
                     color: const Color(0xFF0070BA),
@@ -331,7 +301,6 @@ class DonationService {
 }
 
 class _DonationOption extends StatelessWidget {
-  final String icon;
   final String title;
   final String subtitle;
   final Color color;
@@ -339,7 +308,6 @@ class _DonationOption extends StatelessWidget {
   final bool isDark;
 
   const _DonationOption({
-    required this.icon,
     required this.title,
     required this.subtitle,
     required this.color,
@@ -369,20 +337,6 @@ class _DonationOption extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    icon,
-                    style: const TextStyle(fontSize: 24),
-                  ),
-                ),
-              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

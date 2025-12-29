@@ -9,7 +9,9 @@ import 'package:permission_handler/permission_handler.dart'
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../models/utils.dart';
+import '../models/separated_artist.dart';
 import '../services/audio_player_service.dart';
+import '../services/artist_aggregator_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/changelog_dialog.dart';
 import '../widgets/home/home_tab.dart';
@@ -23,7 +25,6 @@ import '../services/notification_manager.dart';
 import '../services/download_progress_monitor.dart';
 import '../services/version_service.dart';
 import '../services/bluetooth_service.dart';
-import '../services/donation_service.dart';
 import '../widgets/library_tab.dart';
 import 'package:aurora_music_v01/screens/onboarding/onboarding_screen.dart';
 import 'package:aurora_music_v01/providers/theme_provider.dart';
@@ -42,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   late final LocalCachingArtistService _artistService =
       LocalCachingArtistService();
+  final ArtistAggregatorService _artistAggregator = ArtistAggregatorService();
   List<SongModel> songs = [];
   List<String> randomArtists = [];
   List<SongModel> randomSongs = [];
@@ -49,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   final ValueNotifier<bool> _isScrolledNotifier = ValueNotifier<bool>(false);
   int _totalSongs = 0;
-  List<ArtistModel> artists = [];
+  List<SeparatedArtist> artists = [];
   List<AlbumModel> albums = [];
   // Removed expandable bottom sheet in favor of simple Hero-based navigation
   bool _isInitialized = false;
@@ -125,9 +127,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _setupListeners() {
     _scrollController.addListener(_scrollListener);
-    _tabController.addListener(() {
-      if (mounted) setState(() {});
-    });
+    // Only rebuild when tab index changes, not on animation frames
+    _tabController.addListener(_tabListener);
+  }
+
+  void _tabListener() {
+    // Only rebuild on actual tab change, not animation updates
+    if (_tabController.indexIsChanging && mounted) {
+      setState(() {});
+    }
   }
 
   void _showWelcomeMessage() {
@@ -138,13 +146,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           duration: const Duration(seconds: 3),
           onComplete: () => _notificationManager.showDefaultTitle(),
         );
-      }
-    });
-
-    // Check and show donation reminder after a delay
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        DonationService.showReminderIfNeeded(context);
       }
     });
   }
@@ -218,7 +219,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     try {
       final onAudioQuery = OnAudioQuery();
       final loadedAlbums = await onAudioQuery.queryAlbums();
-      final loadedArtists = await onAudioQuery.queryArtists();
+      // Use ArtistAggregatorService for properly separated artists
+      final loadedArtists = await _artistAggregator.getAllArtists();
       if (mounted) {
         setState(() {
           albums = loadedAlbums;
@@ -245,6 +247,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _animationController?.dispose();
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
+    _tabController.removeListener(_tabListener);
     _isScrolledNotifier.dispose();
     _tabController.dispose();
     _appBarTextController.dispose();
@@ -620,58 +623,55 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 },
               ),
             ),
-            AnimatedContainer(
+            // Performance: Use AnimatedSize instead of AnimatedContainer
+            // and Visibility instead of AnimatedOpacity for the bluetooth indicator
+            AnimatedSize(
               duration: const Duration(milliseconds: 400),
               curve: Curves.ease,
-              height: isConnected ? 30 : 0,
-              child: ClipRect(
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 400),
-                  curve: Curves.ease,
-                  opacity: isConnected ? 1.0 : 0.0,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: const Color(0xFF10B981), // Green color
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.bluetooth_connected,
-                          color: Color(0xFF10B981),
-                          size: 16,
+              child: isConnected
+                  ? Container(
+                      height: 30,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: const Color(0xFF10B981), // Green color
+                          width: 1.5,
                         ),
-                        const SizedBox(width: 6),
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          transitionBuilder:
-                              (Widget child, Animation<double> animation) {
-                            return FadeTransition(
-                                opacity: animation, child: child);
-                          },
-                          child: Text(
-                            _bluetoothService.connectedDeviceName,
-                            key:
-                                ValueKey(_bluetoothService.connectedDeviceName),
-                            style: const TextStyle(
-                              fontFamily: 'ProductSans',
-                              fontSize: 12,
-                              color: Color(0xFF10B981),
-                              fontWeight: FontWeight.w600,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.bluetooth_connected,
+                            color: Color(0xFF10B981),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            transitionBuilder:
+                                (Widget child, Animation<double> animation) {
+                              return FadeTransition(
+                                  opacity: animation, child: child);
+                            },
+                            child: Text(
+                              _bluetoothService.connectedDeviceName,
+                              key: ValueKey(
+                                  _bluetoothService.connectedDeviceName),
+                              style: const TextStyle(
+                                fontFamily: 'ProductSans',
+                                fontSize: 12,
+                                color: Color(0xFF10B981),
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
           ],
         );
@@ -681,8 +681,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService = Provider.of<AudioPlayerService>(context);
-    final currentSong = audioPlayerService.currentSong;
+    // Only listen to currentSong changes, not all AudioPlayerService changes
+    final currentSong = context.select<AudioPlayerService, SongModel?>(
+      (service) => service.currentSong,
+    );
 
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -704,31 +706,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       floating: true,
                       pinned: true,
                       expandedHeight: 250,
-                      flexibleSpace: ClipRRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                          child: FlexibleSpaceBar(
-                            background: Container(
-                              color: Colors.transparent,
-                              child: Center(
-                                child: buildAppBarTitle(),
-                              ),
-                            ),
-                            centerTitle: true,
-                            title: innerBoxIsScrolled
-                                ? Text(
-                                    AppLocalizations.of(context)
-                                        .translate('aurora_music'),
-                                    style: const TextStyle(
-                                      fontFamily: 'ProductSans',
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  )
-                                : null,
+                      // Performance: Removed BackdropFilter - blur during scroll causes dropped frames
+                      // The app background already provides visual depth
+                      flexibleSpace: FlexibleSpaceBar(
+                        background: Container(
+                          color: Colors.transparent,
+                          child: Center(
+                            child: buildAppBarTitle(),
                           ),
                         ),
+                        centerTitle: true,
+                        title: innerBoxIsScrolled
+                            ? Text(
+                                AppLocalizations.of(context)
+                                    .translate('aurora_music'),
+                                style: const TextStyle(
+                                  fontFamily: 'ProductSans',
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            : null,
                       ),
                       bottom: PreferredSize(
                         preferredSize: const Size.fromHeight(55),

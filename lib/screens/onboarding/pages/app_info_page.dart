@@ -287,7 +287,13 @@ class _AppInfoPageState extends State<AppInfoPage>
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
                     child: PillNavigationButtons(
-                      onBack: widget.onBack,
+                      backText: AppLocalizations.of(context).translate('back'),
+                      continueText: AppLocalizations.of(context)
+                          .translate('continueButton'),
+                      onBack: () async {
+                        await _exitController.forward();
+                        widget.onBack();
+                      },
                       onContinue: () async {
                         await _exitController.forward();
                         widget.onContinue();

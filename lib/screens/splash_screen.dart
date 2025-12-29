@@ -57,63 +57,8 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
-  // Permission requests moved to onboarding flow
-  // This prevents startup crashes and improves UX
-  /*
-  Future<bool> _requestPermissions() async {
-    try {
-      if (Platform.isWindows) {
-        // Windows doesn't need audio permissions
-        return true;
-      }
-      
-      // Android permission logic
-      final permissionStatus = await OnAudioQuery().permissionsStatus();
-      if (!permissionStatus) {
-        final granted = await OnAudioQuery().permissionsRequest();
-        if (!granted) {
-          if (mounted) {
-            await showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => AlertDialog(
-                title: const Text('Required Permissions'),
-                content: const Text(
-                  'The app needs access to your music library to function properly. '
-                  'Please grant permissions in the app settings.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      SystemNavigator.pop();
-                    },
-                    child: const Text('Exit'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      openAppSettings();
-                    },
-                    child: const Text('Open Settings'),
-                  ),
-                ],
-              ),
-            );
-          }
-          return false;
-        }
-      }
-      await Future.delayed(const Duration(milliseconds: 100));
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-  */
-
   Future<void> _initializeApp() async {
     try {
-      // Skip permission requests during splash - they will be handled in onboarding
-
       final tasks = [
         ('Warming shaders', _warmupShaders()),
         ('Initializing Services', _initializeServices()),
@@ -232,11 +177,6 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _loadAppData() async {
     try {
-      // Don't try to access media library in splash screen anymore
-      // Just show loading animation and move on
-      // The actual initialization is now handled in home_screen.dart
-
-      // Just a short delay for animation
       await Future.delayed(const Duration(milliseconds: 500));
     } catch (e) {
       debugPrint('Error in splash screen: $e');
@@ -252,10 +192,7 @@ class _SplashScreenState extends State<SplashScreen>
 
       // For Windows, we'll only preload static images
       if (Platform.isWindows) {
-        final staticImages = [
-          'assets/images/background/Bcg_V0.0.9.png',
-          'assets/images/logo/default_art.png',
-        ];
+        final staticImages = ['assets/images/logo/default_art.png'];
 
         for (final image in staticImages) {
           if (!mounted) return;
@@ -277,10 +214,7 @@ class _SplashScreenState extends State<SplashScreen>
       // This prevents permission errors
 
       // Load static images
-      final staticImages = [
-        'assets/images/background/Bcg_V0.0.9.png',
-        'assets/images/logo/default_art.png',
-      ];
+      final staticImages = ['assets/images/logo/default_art.png'];
 
       for (final image in staticImages) {
         if (!mounted) return;
@@ -544,8 +478,8 @@ class _SplashScreenState extends State<SplashScreen>
                               'assets/animations/Splash.json',
                               controller: _fadeController,
                               fit: BoxFit.contain,
-                              width: 220,
-                              height: 220,
+                              width: 320,
+                              height: 320,
                               frameRate: FrameRate.composition,
                               onLoaded: (composition) {
                                 _fadeController.duration = composition.duration;

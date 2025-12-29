@@ -9,12 +9,12 @@ import '../../../widgets/pill_button.dart';
 
 class LanguageSelectionPage extends StatefulWidget {
   final VoidCallback onContinue;
-  final VoidCallback onBack;
+  final VoidCallback? onBack;
 
   const LanguageSelectionPage({
     super.key,
     required this.onContinue,
-    required this.onBack,
+    this.onBack,
   });
 
   @override
@@ -347,14 +347,16 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
                     child: Row(
                       children: [
-                        Expanded(
-                          child: PillButton(
-                            text: localizations.translate('onboarding_back'),
-                            onPressed: widget.onBack,
-                            isPrimary: false,
+                        if (widget.onBack != null) ...[
+                          Expanded(
+                            child: PillButton(
+                              text: localizations.translate('onboarding_back'),
+                              onPressed: widget.onBack!,
+                              isPrimary: false,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
+                          const SizedBox(width: 16),
+                        ],
                         Expanded(
                           child: PillButton(
                             text:

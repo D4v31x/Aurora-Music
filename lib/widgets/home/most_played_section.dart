@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../services/audio_player_service.dart';
@@ -71,34 +70,25 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
     // Take top 3 most played songs
     final topSongs = mostPlayedSongs.take(3).toList();
 
-    return AnimationLimiter(
-      child: Column(
-        children: AnimationConfiguration.toStaggeredList(
-          duration: const Duration(milliseconds: 375),
-          childAnimationBuilder: (widget) => SlideAnimation(
-            verticalOffset: 50.0,
-            child: FadeInAnimation(child: widget),
-          ),
-          children: topSongs.asMap().entries.map((entry) {
-            final index = entry.key;
-            final song = entry.value;
+    return Column(
+      children: topSongs.asMap().entries.map((entry) {
+        final index = entry.key;
+        final song = entry.value;
 
-            return RepaintBoundary(
-              key: ValueKey(song.id),
-              child: _MostPlayedTile(
-                song: song,
-                rank: index + 1,
-                artworkService: _artworkService,
-                onTap: () {
-                  final audioPlayerService =
-                      Provider.of<AudioPlayerService>(context, listen: false);
-                  audioPlayerService.setPlaylist(topSongs, index);
-                },
-              ),
-            );
-          }).toList(),
-        ),
-      ),
+        return RepaintBoundary(
+          key: ValueKey(song.id),
+          child: _MostPlayedTile(
+            song: song,
+            rank: index + 1,
+            artworkService: _artworkService,
+            onTap: () {
+              final audioPlayerService =
+                  Provider.of<AudioPlayerService>(context, listen: false);
+              audioPlayerService.setPlaylist(topSongs, index);
+            },
+          ),
+        );
+      }).toList(),
     );
   }
 }

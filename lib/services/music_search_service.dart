@@ -1,5 +1,6 @@
 import 'package:on_audio_query/on_audio_query.dart';
 import '../models/utils.dart';
+import '../models/separated_artist.dart';
 
 /// Improved search service with fuzzy matching and scoring
 class MusicSearchService {
@@ -137,7 +138,8 @@ class MusicSearchService {
     return scoredSongs.take(limit).map((entry) => entry.key).toList();
   }
 
-  /// Search artists
+  /// Search artists (using ArtistModel from on_audio_query)
+  /// Note: For separated artist search, use searchSeparatedArtists instead
   static List<ArtistModel> searchArtists(
     List<ArtistModel> artists,
     String query, {
@@ -154,6 +156,38 @@ class MusicSearchService {
         })
         .take(limit)
         .toList();
+  }
+
+  /// Search separated artists with proper individual artist matching
+  static List<SeparatedArtist> searchSeparatedArtists(
+    List<SeparatedArtist> artists,
+    String query, {
+    int limit = 30,
+  }) {
+    if (query.isEmpty) return [];
+
+    final queryLower = query.toLowerCase();
+
+    final results = artists.where((artist) {
+      final name = artist.name.toLowerCase();
+      return name.contains(queryLower);
+    }).toList();
+
+    // Sort by relevance (starts with > contains, then by track count)
+    results.sort((a, b) {
+      final aName = a.name.toLowerCase();
+      final bName = b.name.toLowerCase();
+      final aStartsWith = aName.startsWith(queryLower);
+      final bStartsWith = bName.startsWith(queryLower);
+
+      if (aStartsWith && !bStartsWith) return -1;
+      if (!aStartsWith && bStartsWith) return 1;
+
+      // If same relevance, sort by track count (more tracks first)
+      return b.numberOfTracks.compareTo(a.numberOfTracks);
+    });
+
+    return results.take(limit).toList();
   }
 
   /// Search albums

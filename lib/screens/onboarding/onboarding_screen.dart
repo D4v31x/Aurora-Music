@@ -6,13 +6,12 @@ import '../../providers/theme_provider.dart';
 import '../../localization/app_localizations.dart';
 import '../home_screen.dart';
 import 'pages/welcome_page.dart';
+import 'pages/beta_welcome_page.dart';
 import 'pages/app_info_page.dart';
 import 'pages/language_selection_page.dart';
 import 'pages/theme_selection_page.dart';
 import 'pages/internet_usage_page.dart';
 import 'pages/asset_download_page.dart';
-import 'pages/download_choice_page.dart';
-import 'pages/download_progress_page.dart';
 import 'pages/permissions_page.dart';
 import 'pages/completion_page.dart';
 import 'pages/donation_page.dart';
@@ -21,13 +20,11 @@ import '../../widgets/grainy_gradient_background.dart';
 class OnboardingScreen extends HookWidget {
   const OnboardingScreen({super.key});
 
-  static const int _totalPages = 11;
+  static const int _totalPages = 10;
 
   @override
   Widget build(BuildContext context) {
     final currentPage = useState(0);
-    final downloadLyrics = useState(false);
-    final downloadArtwork = useState(false);
 
     final transitionController = useAnimationController(
       duration: const Duration(milliseconds: 400),
@@ -75,58 +72,41 @@ class OnboardingScreen extends HookWidget {
             onBack: previousPage,
           );
         case 2:
-          return AppInfoPage(
+          return BetaWelcomePage(
             onContinue: nextPage,
             onBack: previousPage,
           );
         case 3:
-          return ThemeSelectionPage(
+          return AppInfoPage(
             onContinue: nextPage,
             onBack: previousPage,
           );
         case 4:
-          return InternetUsagePage(
-            onContinue: nextPage,
-            onBack: previousPage,
-          );
-        case 5:
-          return AssetDownloadPage(
-            onContinue: nextPage,
-            onBack: previousPage,
-          );
-        case 6:
           return PermissionsPage(
             onContinue: nextPage,
             onBack: previousPage,
           );
-        case 7:
-          return DownloadChoicePage(
+        case 5:
+          return ThemeSelectionPage(
             onContinue: nextPage,
             onBack: previousPage,
-            onChoiceSelected: (lyrics, artwork) {
-              downloadLyrics.value = lyrics;
-              downloadArtwork.value = artwork;
-            },
+          );
+        case 6:
+          return InternetUsagePage(
+            onContinue: nextPage,
+            onBack: previousPage,
+          );
+        case 7:
+          return AssetDownloadPage(
+            onContinue: nextPage,
+            onBack: previousPage,
           );
         case 8:
-          if (downloadLyrics.value || downloadArtwork.value) {
-            return DownloadProgressPage(
-              onComplete: nextPage,
-              downloadLyrics: downloadLyrics.value,
-              downloadArtwork: downloadArtwork.value,
-            );
-          } else {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              nextPage();
-            });
-            return Container();
-          }
-        case 9:
           return DonationPage(
             onContinue: nextPage,
             onBack: previousPage,
           );
-        case 10:
+        case 9:
           return CompletionPage(onComplete: () => _completeOnboarding(context));
         default:
           return WelcomePage(onContinue: nextPage);
@@ -185,9 +165,7 @@ class OnboardingScreen extends HookWidget {
               ),
 
             // Page indicator
-            if (currentPage.value > 0 &&
-                currentPage.value < _totalPages - 1 &&
-                currentPage.value != 8)
+            if (currentPage.value > 0 && currentPage.value < _totalPages - 1)
               Positioned(
                 bottom: 20,
                 left: 0,

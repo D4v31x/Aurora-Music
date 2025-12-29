@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/background_manager_service.dart';
@@ -20,24 +21,30 @@ class AppBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaceColor = Theme.of(context).colorScheme.surface;
 
-    return Consumer<BackgroundManagerService>(
-      builder: (context, backgroundManager, _) {
+    return Selector<BackgroundManagerService, Uint8List?>(
+      selector: (context, backgroundManager) =>
+          backgroundManager.currentArtwork,
+      shouldRebuild: (prev, next) {
+        // Only rebuild if artwork reference changed
+        return !identical(prev, next);
+      },
+      builder: (context, currentArtwork, _) {
         // Always use AnimatedArtworkBackground - it handles null artwork internally
         // This keeps the widget tree stable and avoids remounting issues
         if (enableAnimation) {
           return AnimatedArtworkBackground(
-            currentArtwork: backgroundManager.currentArtwork,
-            previousArtwork: backgroundManager.previousArtwork,
-            isTransitioning: backgroundManager.isTransitioning,
+            currentArtwork: currentArtwork,
+            previousArtwork: null, // Let AnimatedArtworkBackground manage this
+            isTransitioning: false,
             fallbackColor: surfaceColor,
             child: child,
           );
         }
 
         // Simple blurred background for when animations are disabled
-        if (backgroundManager.hasArtwork) {
+        if (currentArtwork != null) {
           return SimpleBlurredBackground(
-            artwork: backgroundManager.currentArtwork,
+            artwork: currentArtwork,
             blurIntensity: 50.0,
             overlayColor: Colors.black.withValues(alpha: 0.3),
             child: child,

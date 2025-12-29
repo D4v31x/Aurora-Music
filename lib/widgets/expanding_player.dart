@@ -103,7 +103,8 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
               surfaceBright: Colors.transparent,
               surfaceTint: Colors.transparent,
               onSurface: theme.colorScheme.onSurface,
-            ), dialogTheme: DialogThemeData(backgroundColor: Colors.transparent),
+            ),
+            dialogTheme: DialogThemeData(backgroundColor: Colors.transparent),
           ),
           child: Miniplayer(
             controller: _controller,
@@ -125,28 +126,39 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
               // Slide effect for expanded player
               final slideOffset = (1 - expandedOpacity) * 50.0;
 
+              // Get fallback color for when there's no artwork
+              final surfaceColor = theme.colorScheme.surface;
+
               return Stack(
                 children: [
+                  // Fallback background for expanded player (when no artwork)
+                  // This ensures the screen is never transparent
+                  if (percentage > 0.01)
+                    Positioned.fill(
+                      child: ColoredBox(
+                        color: surfaceColor.withValues(alpha: expandedOpacity),
+                      ),
+                    ),
+
                   // Expanded Player (Now Playing)
-                  IgnorePointer(
-                    ignoring: percentage < 0.15,
-                    child: Visibility(
-                      visible: percentage > 0.01,
-                      maintainState: true,
-                      child: Opacity(
-                        opacity: expandedOpacity,
-                        child: OverflowBox(
-                          minHeight: maxHeight,
-                          maxHeight: maxHeight,
-                          alignment: Alignment.topCenter,
-                          child: Transform.translate(
-                            offset: Offset(0, slideOffset),
-                            child: Material(
-                              type: MaterialType.transparency,
-                              child: _ExpandedPlayerContent(
-                                percentage: percentage,
-                                controller: _controller,
-                              ),
+                  // Performance: Use Visibility + color alpha instead of Opacity widget
+                  Visibility(
+                    visible: percentage > 0.01,
+                    maintainState: true,
+                    child: IgnorePointer(
+                      ignoring: percentage < 0.15,
+                      child: OverflowBox(
+                        minHeight: maxHeight,
+                        maxHeight: maxHeight,
+                        alignment: Alignment.topCenter,
+                        child: Transform.translate(
+                          offset: Offset(0, slideOffset),
+                          child: Material(
+                            type: MaterialType.transparency,
+                            child: _ExpandedPlayerContent(
+                              percentage: percentage,
+                              controller: _controller,
+                              opacity: expandedOpacity,
                             ),
                           ),
                         ),
@@ -155,10 +167,11 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
                   ),
 
                   // Mini Player Island
-                  IgnorePointer(
-                    ignoring: percentage > 0.15,
-                    child: Opacity(
-                      opacity: miniOpacity,
+                  // Performance: Use Visibility instead of Opacity when fully hidden
+                  Visibility(
+                    visible: miniOpacity > 0.01,
+                    child: IgnorePointer(
+                      ignoring: percentage > 0.15,
                       child: Align(
                         alignment: Alignment.bottomCenter,
                         child: SizedBox(
@@ -166,6 +179,7 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
                           child: _MiniPlayerContent(
                             song: currentSong,
                             bottomPadding: bottomPadding,
+                            opacity: miniOpacity,
                           ),
                         ),
                       ),
@@ -184,10 +198,12 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
 class _ExpandedPlayerContent extends StatelessWidget {
   final double percentage;
   final MiniplayerController controller;
+  final double opacity;
 
   const _ExpandedPlayerContent({
     required this.percentage,
     required this.controller,
+    this.opacity = 1.0,
   });
 
   @override
@@ -239,11 +255,13 @@ class _ExpandedPlayerContent extends StatelessWidget {
 class _MiniPlayerContent extends StatelessWidget {
   final SongModel song;
   final double bottomPadding;
+  final double opacity;
   static final _artworkService = ArtworkCacheService();
 
   const _MiniPlayerContent({
     required this.song,
     required this.bottomPadding,
+    this.opacity = 1.0,
   });
 
   @override
@@ -299,31 +317,36 @@ class _MiniPlayerContent extends StatelessWidget {
                   // Song Info
                   Expanded(
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          song.title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'ProductSans',
+                        Flexible(
+                          child: Text(
+                            song.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'ProductSans',
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          splitArtists(song.artist ?? 'Unknown Artist')
-                              .join(', '),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 13,
-                            fontFamily: 'ProductSans',
+                        Flexible(
+                          child: Text(
+                            splitArtists(song.artist ?? 'Unknown Artist')
+                                .join(', '),
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.7),
+                              fontSize: 12,
+                              fontFamily: 'ProductSans',
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),

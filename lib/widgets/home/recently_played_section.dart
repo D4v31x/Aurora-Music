@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../services/audio_player_service.dart';
@@ -67,38 +66,28 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
     }
 
     return SizedBox(
-      height: 180,
-      child: AnimationLimiter(
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          itemCount: recentSongs.length,
-          itemBuilder: (context, index) {
-            final song = recentSongs[index];
-            return AnimationConfiguration.staggeredList(
-              position: index,
-              duration: const Duration(milliseconds: 375),
-              child: SlideAnimation(
-                horizontalOffset: 50.0,
-                child: FadeInAnimation(
-                  child: GlassmorphicCard.song(
-                    key: ValueKey(song.id),
-                    songId: song.id,
-                    title: song.title,
-                    artist: splitArtists(song.artist ?? '').first,
-                    artworkService: _artworkService,
-                    onTap: () {
-                      final audioPlayerService =
-                          Provider.of<AudioPlayerService>(context,
-                              listen: false);
-                      audioPlayerService.setPlaylist(recentSongs, index);
-                    },
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
+      height: 190,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        itemCount: recentSongs.length,
+        itemBuilder: (context, index) {
+          final song = recentSongs[index];
+          return RepaintBoundary(
+            child: GlassmorphicCard.song(
+              key: ValueKey(song.id),
+              songId: song.id,
+              title: song.title,
+              artist: splitArtists(song.artist ?? '').first,
+              artworkService: _artworkService,
+              onTap: () {
+                final audioPlayerService =
+                    Provider.of<AudioPlayerService>(context, listen: false);
+                audioPlayerService.setPlaylist(recentSongs, index);
+              },
+            ),
+          );
+        },
       ),
     );
   }

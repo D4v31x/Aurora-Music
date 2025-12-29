@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:just_audio/just_audio.dart'; // For LoopMode
 // Load Genius API keys from .env
 import '../localization/app_localizations.dart';
 import '../models/utils.dart';
@@ -619,45 +620,41 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                           : _buildNoLyricsPlaceholder(),
                     ),
                   ),
-                  // Glassmorphic expand button positioned at top right
+                  // Expand button positioned at top right
+                  // Performance: Removed BackdropFilter - use semi-transparent background
                   if (_timedLyrics != null && _timedLyrics!.isNotEmpty)
                     Positioned(
                       top: 32,
                       right: 32,
-                      child: ClipOval(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.open_in_full,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const FullscreenLyricsScreen(),
-                                  ),
-                                );
-                              },
-                              tooltip: AppLocalizations.of(context)
-                                  .translate('expand_lyrics'),
-                            ),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.25),
+                            width: 1.5,
                           ),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.open_in_full,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const FullscreenLyricsScreen(),
+                              ),
+                            );
+                          },
+                          tooltip: AppLocalizations.of(context)
+                              .translate('expand_lyrics'),
                         ),
                       ),
                     ),
@@ -691,6 +688,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       final slideOffset =
           distanceFromCenter * 0.15; // fraction for AnimatedSlide
 
+      // Performance: Use simple transforms and color alpha instead of
+      // ShaderMask and AnimatedOpacity which cause expensive compositing
+      final effectiveOpacity = opacity.clamp(0.3, 1.0);
+
       return TweenAnimationBuilder<double>(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeOutCubic,
@@ -700,57 +701,26 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             transform: Matrix4.identity()
               ..setEntry(3, 2, 0.001)
               ..scale(scale)
-              ..translate(0.0, 20.0 * (1 - value)),
+              ..translate(
+                  0.0, 20.0 * (1 - value) + (isCurrent ? 0 : slideOffset * 20)),
             alignment: Alignment.center,
-            child: AnimatedOpacity(
-              opacity: opacity.clamp(0.3, 1.0) * value,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-              child: AnimatedSlide(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
-                offset: Offset(0, isCurrent ? 0 : slideOffset),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width - 80,
-                  child: ShaderMask(
-                    shaderCallback: (Rect bounds) {
-                      return LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: [Colors.white, Colors.white.withOpacity(0.0)],
-                        stops: const [0.8, 1.0],
-                      ).createShader(bounds);
-                    },
-                    blendMode: BlendMode.dstIn,
-                    child: AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOut,
-                      style: TextStyle(
-                        color: isCurrent
-                            ? Colors.white
-                            : Colors.white.withOpacity(0.6),
-                        fontSize: isCurrent ? 20 : 16,
-                        fontFamily: 'ProductSans',
-                        fontWeight:
-                            isCurrent ? FontWeight.bold : FontWeight.normal,
-                        height: 1.2,
-                        letterSpacing: isCurrent ? 0.2 : 0.0,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 16,
-                        ),
-                        child: Text(
-                          lyric.text,
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.fade,
-                          softWrap: true,
-                        ),
-                      ),
-                    ),
-                  ),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width - 80,
+              child: Text(
+                lyric.text,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                softWrap: true,
+                style: TextStyle(
+                  // Use color alpha directly instead of Opacity/ShaderMask
+                  color: (isCurrent ? Colors.white : Colors.white60)
+                      .withValues(alpha: effectiveOpacity * value),
+                  fontSize: isCurrent ? 20 : 16,
+                  fontFamily: 'ProductSans',
+                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                  height: 1.2,
+                  letterSpacing: isCurrent ? 0.2 : 0.0,
                 ),
               ),
             ),
@@ -765,21 +735,19 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       duration: const Duration(milliseconds: 500),
       tween: Tween(begin: 0.0, end: 1.0),
       builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 20 * (1 - value)),
-            child: Text(
-              AppLocalizations.of(context).translate('no_lyrics'),
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-                fontFamily: 'ProductSans',
-                fontWeight: FontWeight.bold,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
+        // Use color alpha instead of Opacity widget for better performance
+        return Transform.translate(
+          offset: Offset(0, 20 * (1 - value)),
+          child: Text(
+            AppLocalizations.of(context).translate('no_lyrics'),
+            style: TextStyle(
+              color: Colors.white70.withValues(alpha: value),
+              fontSize: 16,
+              fontFamily: 'ProductSans',
+              fontWeight: FontWeight.bold,
+              height: 1.5,
             ),
+            textAlign: TextAlign.center,
           ),
         );
       },
@@ -1045,17 +1013,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          IconButton(
-                            icon: Icon(
-                              audioPlayerService.isShuffle
-                                  ? Icons.shuffle
-                                  : Icons.shuffle,
-                              color: audioPlayerService.isShuffle
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(0.7),
-                              size: 24,
-                            ),
-                            onPressed: audioPlayerService.toggleShuffle,
+                          ValueListenableBuilder<bool>(
+                            valueListenable:
+                                audioPlayerService.isShuffleNotifier,
+                            builder: (context, isShuffle, _) {
+                              return IconButton(
+                                icon: Icon(
+                                  Icons.shuffle,
+                                  color: isShuffle
+                                      ? Colors.white
+                                      : Colors.white.withOpacity(0.5),
+                                  size: 24,
+                                ),
+                                onPressed: audioPlayerService.toggleShuffle,
+                              );
+                            },
                           ),
                           IconButton(
                             icon: const Icon(
@@ -1065,14 +1037,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                             ),
                             onPressed: audioPlayerService.back,
                           ),
-                          _PlayPauseButton(
-                            isPlaying: audioPlayerService.isPlaying,
-                            onPressed: () {
-                              if (audioPlayerService.isPlaying) {
-                                audioPlayerService.pause();
-                              } else {
-                                audioPlayerService.resume();
-                              }
+                          ValueListenableBuilder<bool>(
+                            valueListenable:
+                                audioPlayerService.isPlayingNotifier,
+                            builder: (context, isPlaying, _) {
+                              return _PlayPauseButton(
+                                isPlaying: isPlaying,
+                                onPressed: () {
+                                  if (isPlaying) {
+                                    audioPlayerService.pause();
+                                  } else {
+                                    audioPlayerService.resume();
+                                  }
+                                },
+                              );
                             },
                           ),
                           IconButton(
@@ -1083,38 +1061,57 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                             ),
                             onPressed: audioPlayerService.skip,
                           ),
-                          IconButton(
-                            icon: Icon(
-                              audioPlayerService.isRepeat
-                                  ? Icons.repeat_one
-                                  : Icons.repeat,
-                              color: audioPlayerService.isRepeat
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(0.7),
-                              size: 24,
-                            ),
-                            onPressed: audioPlayerService.toggleRepeat,
+                          ValueListenableBuilder<LoopMode>(
+                            valueListenable:
+                                audioPlayerService.loopModeNotifier,
+                            builder: (context, loopMode, _) {
+                              IconData icon;
+                              Color color;
+
+                              switch (loopMode) {
+                                case LoopMode.off:
+                                  icon = Icons.repeat;
+                                  color = Colors.white.withOpacity(0.5);
+                                  break;
+                                case LoopMode.one:
+                                  icon = Icons.repeat_one;
+                                  color = Colors.white;
+                                  break;
+                                case LoopMode.all:
+                                  icon = Icons.repeat;
+                                  color = Colors.white;
+                                  break;
+                              }
+
+                              return IconButton(
+                                icon: Icon(icon, color: color, size: 24),
+                                onPressed: audioPlayerService.toggleRepeat,
+                              );
+                            },
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 20),
                     Center(
-                      child: IconButton(
-                        icon: Icon(
-                          audioPlayerService
-                                  .isLiked(audioPlayerService.currentSong!)
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: audioPlayerService
-                                  .isLiked(audioPlayerService.currentSong!)
-                              ? Colors.red
-                              : Colors.white,
-                          size: 30,
-                        ),
-                        onPressed: () {
-                          audioPlayerService
-                              .toggleLike(audioPlayerService.currentSong!);
+                      child: ValueListenableBuilder<Set<String>>(
+                        valueListenable: audioPlayerService.likedSongsNotifier,
+                        builder: (context, likedSongs, _) {
+                          final currentSong = audioPlayerService.currentSong;
+                          if (currentSong == null)
+                            return const SizedBox.shrink();
+                          final isLiked =
+                              likedSongs.contains(currentSong.id.toString());
+                          return IconButton(
+                            icon: Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              color: isLiked ? Colors.red : Colors.white,
+                              size: 30,
+                            ),
+                            onPressed: () {
+                              audioPlayerService.toggleLike(currentSong);
+                            },
+                          );
                         },
                       ),
                     ),
@@ -1147,150 +1144,149 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      // Performance: Removed BackdropFilter - use solid dark background
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.8),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(32)),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 24),
+        builder: (context, setState) => Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.95),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Text(
+                'Časovač vypnutí',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildCircularOption('5', selectedMinutes == 5,
+                      () => setState(() => selectedMinutes = 5)),
+                  _buildCircularOption('10', selectedMinutes == 10,
+                      () => setState(() => selectedMinutes = 10)),
+                  _buildCircularOption('15', selectedMinutes == 15,
+                      () => setState(() => selectedMinutes = 15)),
+                  _buildCircularOption('30', selectedMinutes == 30,
+                      () => setState(() => selectedMinutes = 30)),
+                ],
+              ),
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: () => _showNumberPicker(context,
+                    (value) => setState(() => selectedMinutes = value)),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(2),
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.2)),
                   ),
-                ),
-                const Text(
-                  'Časovač vypnutí',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildCircularOption('5', selectedMinutes == 5,
-                        () => setState(() => selectedMinutes = 5)),
-                    _buildCircularOption('10', selectedMinutes == 10,
-                        () => setState(() => selectedMinutes = 10)),
-                    _buildCircularOption('15', selectedMinutes == 15,
-                        () => setState(() => selectedMinutes = 15)),
-                    _buildCircularOption('30', selectedMinutes == 30,
-                        () => setState(() => selectedMinutes = 30)),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                GestureDetector(
-                  onTap: () => _showNumberPicker(context,
-                      (value) => setState(() => selectedMinutes = value)),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 24),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add, color: Colors.white.withOpacity(0.8)),
-                        const SizedBox(width: 8),
-                        Text(
-                          AppLocalizations.of(context).translate('own_timer'),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Row(
-                  children: [
-                    if (sleepTimerController.isActive)
-                      Expanded(
-                        child: TextButton.icon(
-                          onPressed: () {
-                            sleepTimerController.cancelTimer();
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.timer_off,
-                              color: Colors.redAccent),
-                          label: Text(
-                              AppLocalizations.of(context).translate('cancel'),
-                              style: const TextStyle(color: Colors.redAccent)),
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.redAccent.withOpacity(0.1),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add,
+                          color: Colors.white.withValues(alpha: 0.8)),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppLocalizations.of(context).translate('own_timer'),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    if (sleepTimerController.isActive)
-                      const SizedBox(width: 12),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  if (sleepTimerController.isActive)
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: selectedMinutes != null
-                            ? () {
-                                sleepTimerController.startTimer(
-                                  Duration(minutes: selectedMinutes!),
-                                  () => audioPlayerService
-                                      .pause(), // Callback to pause when timer completes
-                                );
-                                Navigator.pop(context);
-                                setState(() {
-                                  _isTimerExpanded = true;
-                                  _autoCollapseTimer?.cancel();
-                                  _autoCollapseTimer =
-                                      Timer(const Duration(seconds: 3), () {
-                                    if (mounted) {
-                                      setState(() {
-                                        _isTimerExpanded = false;
-                                      });
-                                    }
-                                  });
-                                });
-                              }
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
+                      child: TextButton.icon(
+                        onPressed: () {
+                          sleepTimerController.cancelTimer();
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(Icons.timer_off,
+                            color: Colors.redAccent),
+                        label: Text(
+                            AppLocalizations.of(context).translate('cancel'),
+                            style: const TextStyle(color: Colors.redAccent)),
+                        style: TextButton.styleFrom(
+                          backgroundColor:
+                              Colors.redAccent.withValues(alpha: 0.1),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: Text(
-                          AppLocalizations.of(context).translate('set'),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      ),
+                    ),
+                  if (sleepTimerController.isActive) const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: selectedMinutes != null
+                          ? () {
+                              sleepTimerController.startTimer(
+                                Duration(minutes: selectedMinutes!),
+                                () => audioPlayerService
+                                    .pause(), // Callback to pause when timer completes
+                              );
+                              Navigator.pop(context);
+                              setState(() {
+                                _isTimerExpanded = true;
+                                _autoCollapseTimer?.cancel();
+                                _autoCollapseTimer =
+                                    Timer(const Duration(seconds: 3), () {
+                                  if (mounted) {
+                                    setState(() {
+                                      _isTimerExpanded = false;
+                                    });
+                                  }
+                                });
+                              });
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        AppLocalizations.of(context).translate('set'),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -1345,61 +1341,59 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  AppLocalizations.of(context).translate('set_minutes'),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+        // Performance: Removed BackdropFilter - use solid dark background
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.95),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                AppLocalizations.of(context).translate('set_minutes'),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  height: 150,
-                  child: CupertinoPicker(
-                    itemExtent: 40,
-                    backgroundColor: Colors.transparent,
-                    onSelectedItemChanged: (index) => onSelect(index + 1),
-                    children: List.generate(
-                      120,
-                      (index) => Center(
-                        child: Text(
-                          '${index + 1} min',
-                          style: const TextStyle(color: Colors.white),
-                        ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                height: 150,
+                child: CupertinoPicker(
+                  itemExtent: 40,
+                  backgroundColor: Colors.transparent,
+                  onSelectedItemChanged: (index) => onSelect(index + 1),
+                  children: List.generate(
+                    120,
+                    (index) => Center(
+                      child: Text(
+                        '${index + 1} min',
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    minimumSize: const Size(double.infinity, 45),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    AppLocalizations.of(context).translate('set'),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  minimumSize: const Size(double.infinity, 45),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-              ],
-            ),
+                child: Text(
+                  AppLocalizations.of(context).translate('set'),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1443,96 +1437,87 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 }
               });
             },
-            child: AnimatedContainer(
+            child: AnimatedSize(
               duration: const Duration(
                   milliseconds:
                       500), // Zvýšení doby trvání pro plynulejší efekt
               curve: Curves.easeOut, // Změna křivky pro plynulejší přechod
-              width: _isTimerExpanded ? 120.0 : 32.0,
-              height: 32.0,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(16.0),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 0.5,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16.0),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Kolapsovaný stav
-                      AnimatedOpacity(
-                        duration: const Duration(
-                            milliseconds: 500), // Synchronizace doby trvání
-                        curve: Curves.easeOut, // Změna křivky
-                        opacity: _isTimerExpanded ? 0.0 : 1.0,
-                        child: ClipOval(
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  value: progress,
-                                  backgroundColor:
-                                      Colors.white.withOpacity(0.1),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white.withOpacity(0.8),
-                                  ),
-                                  strokeWidth: 1.5,
-                                ),
-                              ),
-                              const Icon(
-                                Icons.bedtime_outlined,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // Rozbalený stav
-                      AnimatedOpacity(
-                        duration: const Duration(
-                            milliseconds: 500), // Synchronizace doby trvání
-                        curve: Curves.easeOut, // Změna křivky
-                        opacity: _isTimerExpanded ? 1.0 : 0.0,
-                        child: SizedBox(
-                          width: 100,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.bedtime_outlined,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  '$minutes:$seconds',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 13.0,
-                                    fontWeight: FontWeight.w400,
-                                    letterSpacing: -0.2,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+              child: Container(
+                width: _isTimerExpanded ? 120.0 : 32.0,
+                height: 32.0,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(16.0),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 0.5,
                   ),
+                ),
+                // Performance: Removed BackdropFilter for better scroll performance
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Kolapsovaný stav - use color alpha instead of AnimatedOpacity
+                    IgnorePointer(
+                      ignoring: _isTimerExpanded,
+                      child: ClipOval(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                value: progress,
+                                backgroundColor:
+                                    Colors.white.withValues(alpha: 0.1),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white.withValues(
+                                      alpha: _isTimerExpanded ? 0.0 : 0.8),
+                                ),
+                                strokeWidth: 1.5,
+                              ),
+                            ),
+                            Icon(
+                              Icons.bedtime_outlined,
+                              color: Colors.white.withValues(
+                                  alpha: _isTimerExpanded ? 0.0 : 1.0),
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Rozbalený stav - use visibility and color alpha
+                    if (_isTimerExpanded)
+                      SizedBox(
+                        width: 100,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.bedtime_outlined,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                '$minutes:$seconds',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13.0,
+                                  fontWeight: FontWeight.w400,
+                                  letterSpacing: -0.2,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

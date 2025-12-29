@@ -234,7 +234,7 @@ class _LibraryTabState extends State<LibraryTab> {
           ),
           const SizedBox(height: 12.0),
           SizedBox(
-            height: 180,
+            height: 190,
             child: items is Future
                 ? FutureBuilder<List<dynamic>>(
                     future: items as Future<List<dynamic>>,

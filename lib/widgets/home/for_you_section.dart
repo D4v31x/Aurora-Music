@@ -150,12 +150,12 @@ class _ForYouSectionState extends State<ForYouSection> {
         // Only rebuild if we switched to a different song
         if (prev?.id != next?.id && _lastCurrentSong?.id != next?.id) {
           _lastCurrentSong = next;
-          // Rebuild items on next frame to avoid build-time setState
-          WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Schedule rebuild for next frame to avoid setState during build
+          Future.microtask(() {
             if (mounted) _buildForYouItems();
           });
         }
-        return false; // Don't rebuild widget tree from selector
+        return false; // Never rebuild from selector, let setState handle it
       },
       builder: (context, _, __) {
         final audioService =
@@ -346,32 +346,37 @@ class _FavoriteSongsCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      localizations.translate('favorite_songs'),
-                      style: TextStyle(
-                        color: isDark ? Colors.white : Colors.black87,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'ProductSans',
+                    Flexible(
+                      child: Text(
+                        localizations.translate('favorite_songs'),
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'ProductSans',
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      '${playlist.songs.length} ${localizations.translate('tracks')}',
-                      style: TextStyle(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.6)
-                            : Colors.black54,
-                        fontSize: 12,
-                        fontFamily: 'ProductSans',
+                    Flexible(
+                      child: Text(
+                        '${playlist.songs.length} ${localizations.translate('tracks')}',
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.6)
+                              : Colors.black54,
+                          fontSize: 12,
+                          fontFamily: 'ProductSans',
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -460,33 +465,38 @@ class _ForYouItemCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      item.title,
-                      style: TextStyle(
-                        color: isDark ? Colors.white : Colors.black87,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'ProductSans',
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (item.subtitle != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        item.subtitle!,
+                    Flexible(
+                      child: Text(
+                        item.title,
                         style: TextStyle(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.6)
-                              : Colors.black54,
-                          fontSize: 11,
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                           fontFamily: 'ProductSans',
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (item.subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Flexible(
+                        child: Text(
+                          item.subtitle!,
+                          style: TextStyle(
+                            color: isDark
+                                ? Colors.white.withOpacity(0.6)
+                                : Colors.black54,
+                            fontSize: 11,
+                            fontFamily: 'ProductSans',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ],

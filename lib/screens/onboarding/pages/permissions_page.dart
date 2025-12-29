@@ -186,6 +186,26 @@ class _PermissionsPageState extends State<PermissionsPage>
     });
   }
 
+  Future<void> _requestAudioPermission() async {
+    await Permission.audio.request();
+    await _checkPermissions();
+  }
+
+  Future<void> _requestStoragePermission() async {
+    await Permission.storage.request();
+    await _checkPermissions();
+  }
+
+  Future<void> _requestBluetoothPermission() async {
+    await Permission.bluetoothConnect.request();
+    await _checkPermissions();
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    await Permission.notification.request();
+    await _checkPermissions();
+  }
+
   Future<void> _requestAllPermissions() async {
     setState(() {
       _isChecking = true;
@@ -297,83 +317,90 @@ class _PermissionsPageState extends State<PermissionsPage>
                                 _exitController.isCompleted
                             ? _exitFadeAnimation
                             : _contentFadeAnimation,
-                        child: Column(
-                          children: [
-                            _buildPermissionItem(
-                              context: context,
-                              icon: Icons.music_note_rounded,
-                              title: AppLocalizations.of(context)
-                                  .translate('onboarding_audio_access'),
-                              description: AppLocalizations.of(context)
-                                  .translate('onboarding_audio_access_desc'),
-                              isGranted: _audioPermissionGranted,
-                              isRequired: true,
-                              isDark: isDark,
-                            ),
-
-                            const SizedBox(height: 12),
-
-                            // Only show storage permission for Android 12 and below
-                            if (_shouldShowStoragePermission) ...[
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
                               _buildPermissionItem(
                                 context: context,
-                                icon: Icons.folder_rounded,
+                                icon: Icons.music_note_rounded,
                                 title: AppLocalizations.of(context)
-                                    .translate('onboarding_storage_access'),
+                                    .translate('onboarding_audio_access'),
                                 description: AppLocalizations.of(context)
-                                    .translate(
-                                        'onboarding_storage_access_desc'),
-                                isGranted: _storagePermissionGranted,
+                                    .translate('onboarding_audio_access_desc'),
+                                isGranted: _audioPermissionGranted,
                                 isRequired: true,
                                 isDark: isDark,
+                                onTap: _requestAudioPermission,
                               ),
+
                               const SizedBox(height: 12),
-                            ],
 
-                            _buildPermissionItem(
-                              context: context,
-                              icon: Icons.bluetooth_rounded,
-                              title: AppLocalizations.of(context)
-                                  .translate('onboarding_bluetooth'),
-                              description: AppLocalizations.of(context)
-                                  .translate('onboarding_bluetooth_desc'),
-                              isGranted: _bluetoothPermissionGranted,
-                              isRequired: false,
-                              isDark: isDark,
-                            ),
+                              // Only show storage permission for Android 12 and below
+                              if (_shouldShowStoragePermission) ...[
+                                _buildPermissionItem(
+                                  context: context,
+                                  icon: Icons.folder_rounded,
+                                  title: AppLocalizations.of(context)
+                                      .translate('onboarding_storage_access'),
+                                  description: AppLocalizations.of(context)
+                                      .translate(
+                                          'onboarding_storage_access_desc'),
+                                  isGranted: _storagePermissionGranted,
+                                  isRequired: true,
+                                  isDark: isDark,
+                                  onTap: _requestStoragePermission,
+                                ),
+                                const SizedBox(height: 12),
+                              ],
 
-                            const SizedBox(height: 12),
-
-                            _buildPermissionItem(
-                              context: context,
-                              icon: Icons.notifications_rounded,
-                              title: AppLocalizations.of(context)
-                                  .translate('onboarding_notifications'),
-                              description: AppLocalizations.of(context)
-                                  .translate('onboarding_notifications_desc'),
-                              isGranted: _notificationPermissionGranted,
-                              isRequired: false,
-                              isDark: isDark,
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // Request permissions button
-                            if (!allGranted)
-                              PillButton(
-                                text: _isChecking
-                                    ? AppLocalizations.of(context)
-                                        .translate('onboarding_requesting')
-                                    : AppLocalizations.of(context).translate(
-                                        'onboarding_grant_permissions'),
-                                onPressed:
-                                    _isChecking ? null : _requestAllPermissions,
-                                isPrimary: true,
-                                isLoading: _isChecking,
-                                icon: Icons.shield_rounded,
-                                width: double.infinity,
+                              _buildPermissionItem(
+                                context: context,
+                                icon: Icons.bluetooth_rounded,
+                                title: AppLocalizations.of(context)
+                                    .translate('onboarding_bluetooth'),
+                                description: AppLocalizations.of(context)
+                                    .translate('onboarding_bluetooth_desc'),
+                                isGranted: _bluetoothPermissionGranted,
+                                isRequired: false,
+                                isDark: isDark,
+                                onTap: _requestBluetoothPermission,
                               ),
-                          ],
+
+                              const SizedBox(height: 12),
+
+                              _buildPermissionItem(
+                                context: context,
+                                icon: Icons.notifications_rounded,
+                                title: AppLocalizations.of(context)
+                                    .translate('onboarding_notifications'),
+                                description: AppLocalizations.of(context)
+                                    .translate('onboarding_notifications_desc'),
+                                isGranted: _notificationPermissionGranted,
+                                isRequired: false,
+                                isDark: isDark,
+                                onTap: _requestNotificationPermission,
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              // Request permissions button
+                              if (!allGranted)
+                                PillButton(
+                                  text: _isChecking
+                                      ? AppLocalizations.of(context)
+                                          .translate('onboarding_requesting')
+                                      : AppLocalizations.of(context).translate(
+                                          'onboarding_grant_permissions'),
+                                  onPressed: _isChecking
+                                      ? null
+                                      : _requestAllPermissions,
+                                  isPrimary: true,
+                                  isLoading: _isChecking,
+                                  icon: Icons.shield_rounded,
+                                  width: double.infinity,
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -382,13 +409,42 @@ class _PermissionsPageState extends State<PermissionsPage>
                   // Navigation buttons
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
-                    child: PillNavigationButtons(
-                      onBack: widget.onBack,
-                      onContinue: () async {
-                        await _exitController.forward();
-                        widget.onContinue();
-                      },
-                    ),
+                    child: _audioPermissionGranted
+                        ? PillNavigationButtons(
+                            backText:
+                                AppLocalizations.of(context).translate('back'),
+                            continueText: AppLocalizations.of(context)
+                                .translate('continueButton'),
+                            onBack: widget.onBack,
+                            onContinue: () async {
+                              await _exitController.forward();
+                              widget.onContinue();
+                            },
+                          )
+                        : Column(
+                            children: [
+                              Text(
+                                AppLocalizations.of(context)
+                                    .translate('onboarding_audio_required'),
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFFEF4444),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              PillNavigationButtons(
+                                backText: AppLocalizations.of(context)
+                                    .translate('back'),
+                                continueText: AppLocalizations.of(context)
+                                    .translate('continueButton'),
+                                onBack: widget.onBack,
+                                onContinue: null, // Disabled
+                              ),
+                            ],
+                          ),
                   ),
                 ],
               );
@@ -407,6 +463,7 @@ class _PermissionsPageState extends State<PermissionsPage>
     required bool isGranted,
     required bool isRequired,
     required bool isDark,
+    VoidCallback? onTap,
   }) {
     final containerColor = isDark
         ? Colors.white.withOpacity(0.05)
@@ -419,101 +476,110 @@ class _PermissionsPageState extends State<PermissionsPage>
     final iconColor =
         isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isGranted
-            ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-            : containerColor,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isGranted ? null : onTap,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isGranted
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
-              : borderColor,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isGranted
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                : containerColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
               color: isGranted
-                  ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
-                  : (isDark
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.1)),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              icon,
-              size: 24,
-              color:
-                  isGranted ? Theme.of(context).colorScheme.primary : iconColor,
+                  ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
+                  : borderColor,
+              width: 1,
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isGranted
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
+                      : (isDark
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.black.withOpacity(0.1)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  size: 24,
+                  color: isGranted
+                      ? Theme.of(context).colorScheme.primary
+                      : iconColor,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontFamily: 'Outfit',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: titleColor,
-                      ),
-                    ),
-                    if (isRequired) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          AppLocalizations.of(context)
-                              .translate('onboarding_required'),
-                          style: const TextStyle(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
                             fontFamily: 'Outfit',
-                            fontSize: 10,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFFEF4444),
+                            color: titleColor,
                           ),
                         ),
+                        if (isRequired)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEF4444).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              AppLocalizations.of(context)
+                                  .translate('onboarding_required'),
+                              style: const TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFEF4444),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 13,
+                        color: descriptionColor,
                       ),
-                    ],
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 13,
-                    color: descriptionColor,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 12),
+              Icon(
+                isGranted ? Icons.check_circle : Icons.circle_outlined,
+                color: isGranted
+                    ? Theme.of(context).colorScheme.primary
+                    : (isDark
+                        ? Colors.white.withOpacity(0.3)
+                        : Colors.black.withOpacity(0.3)),
+                size: 24,
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Icon(
-            isGranted ? Icons.check_circle : Icons.circle_outlined,
-            color: isGranted
-                ? Theme.of(context).colorScheme.primary
-                : (isDark
-                    ? Colors.white.withOpacity(0.3)
-                    : Colors.black.withOpacity(0.3)),
-            size: 24,
-          ),
-        ],
+        ),
       ),
     );
   }
