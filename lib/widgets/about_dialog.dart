@@ -104,7 +104,7 @@ class AuroraAboutDialog extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 24),
-                      
+
                       // What's New Button
                       SizedBox(
                         width: double.infinity,
