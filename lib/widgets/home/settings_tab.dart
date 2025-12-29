@@ -1,4 +1,5 @@
 import 'package:aurora_music_v01/widgets/about_dialog.dart';
+import 'package:aurora_music_v01/widgets/changelog_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -410,6 +411,17 @@ class _SettingsTabState extends State<SettingsTab> {
     );
   }
 
+  void _showChangelogDialog() async {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => ChangelogDialog(
+        currentVersion: _currentVersion,
+      ),
+    );
+  }
+
   void _showUpdateAvailableDialog(dynamic latestVersion) {
     final l10n = AppLocalizations.of(context);
     showDialog(
@@ -619,6 +631,13 @@ class _SettingsTabState extends State<SettingsTab> {
                       '${l10n.translate('settings_version')} $_currentVersion',
                   onTap: _showAboutDialog,
                   isFirst: true,
+                ),
+                _buildActionTile(
+                  icon: Icons.new_releases_outlined,
+                  title: l10n.translate('whats_new'),
+                  subtitle: l10n.translate('view_changelog'),
+                  onTap: _showChangelogDialog,
+                  iconColor: Colors.blue,
                 ),
                 _buildActionTile(
                   icon: Icons.favorite_rounded,

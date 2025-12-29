@@ -1175,6 +1175,12 @@ class AppLocalizationsCs extends AppLocalizations {
   String get whatsNew => 'Co je nového (v angličtině)';
 
   @override
+  String get whats_new => 'Co je nového';
+
+  @override
+  String get view_changelog => 'Zobrazit seznam změn a nové funkce';
+
+  @override
   String get year => 'Rok';
 
   @override

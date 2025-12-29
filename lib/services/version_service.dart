@@ -63,4 +63,10 @@ class VersionService {
     }
     return false;
   }
+
+  // Force reset the changelog to show again (useful for testing)
+  static Future<void> resetChangelog() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('last_version');
+  }
 }

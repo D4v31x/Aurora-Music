@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _isInitialized = false;
   late final ScrollController _appBarTextController;
   bool _hasShownChangelog = false;
-  final String _currentVersion = '';
+  String _currentVersion = '';
   final NotificationManager _notificationManager = NotificationManager();
   final DownloadProgressMonitor _downloadMonitor = DownloadProgressMonitor();
   final BluetoothService _bluetoothService = BluetoothService();
@@ -68,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     _initializeControllers();
     _setupListeners();
+    _loadCurrentVersion();
 
     // Initialize Bluetooth service
     _bluetoothService.initialize();
@@ -148,6 +149,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         );
       }
     });
+  }
+
+  Future<void> _loadCurrentVersion() async {
+    _currentVersion = await VersionService.getCurrentVersion();
   }
 
   Future<void> _checkAndShowChangelog() async {

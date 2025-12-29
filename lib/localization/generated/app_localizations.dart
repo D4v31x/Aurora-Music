@@ -2336,6 +2336,18 @@ abstract class AppLocalizations {
   /// **'What\'s New'**
   String get whatsNew;
 
+  /// No description provided for @whats_new.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s New'**
+  String get whats_new;
+
+  /// No description provided for @view_changelog.
+  ///
+  /// In en, this message translates to:
+  /// **'View changelog and new features'**
+  String get view_changelog;
+
   /// No description provided for @year.
   ///
   /// In en, this message translates to:

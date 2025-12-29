@@ -1,10 +1,50 @@
 class ChangelogContent {
   static const Map<String, List<Map<String, List<String>>>> versions = {
     // Latest version at the top
-    '0.1.0': [
+    '0.1.5': [
       {
-        'PRERELEASE': [
-          'Yet to be done',
+        'New Features': [
+          'Complete onboarding flow with theme selection, permissions, and feature introduction',
+          'Asset download configuration (Album Art, Lyrics, Auto-download)',
+          'Donation options integration (Buy Me a Coffee, Ko-fi, PayPal)',
+          'Internet usage explanation screen',
+          'Metadata Editor',
+          'Timed Lyrics support in Now Playing screen',
+        ],
+      },
+      {
+        'UI/UX Improvements': [
+          'Major UI redesign across all screens',
+          'Consistent navigation buttons with smooth animations',
+          'Standardized page transitions throughout the app',
+          'Enhanced onboarding experience with animated pages',
+          'Refined permissions request flow',
+        ],
+      },
+      {
+        'Core Functionality': [
+          'Enhanced audio playback engine',
+          'Improved metadata fetching and display',
+          'Better album and artist information',
+          'Optimized song recommendations algorithm',
+          'Enhanced library management',
+          'Improved search functionality',
+        ],
+      },
+      {
+        'Localization': [
+          'Full app translation support',
+          'Czech language support added',
+          'Localized UI elements and buttons',
+          'Multilingual settings and preferences',
+        ],
+      },
+      {
+        'Technical Improvements': [
+          'Code optimization and refactoring',
+          'Better state management',
+          'Performance enhancements',
+          'Bug fixes and stability improvements',
         ],
       },
     ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
+import '../widgets/changelog_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AuroraAboutDialog extends StatelessWidget {
@@ -17,6 +18,17 @@ class AuroraAboutDialog extends StatelessWidget {
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
     }
+  }
+
+  void _showChangelog(BuildContext context) {
+    Navigator.pop(context); // Close about dialog first
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) => ChangelogDialog(
+        currentVersion: version,
+      ),
+    );
   }
 
   @override
@@ -89,6 +101,35 @@ class AuroraAboutDialog extends StatelessWidget {
                         icon: Icons.copyright,
                         title: 'Copyright',
                         value: '© ${DateTime.now().year} Aurora Software',
+                      ),
+
+                      const SizedBox(height: 24),
+                      
+                      // What's New Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showChangelog(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.withOpacity(0.2),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: Colors.blue.withOpacity(0.3),
+                              ),
+                            ),
+                          ),
+                          icon: const Icon(Icons.new_releases_outlined),
+                          label: Text(
+                            AppLocalizations.of(context).translate('whats_new'),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ),
 
                       const SizedBox(height: 24),

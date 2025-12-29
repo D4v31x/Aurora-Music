@@ -1172,6 +1172,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whatsNew => 'What\'s New';
 
   @override
+  String get whats_new => 'What\'s New';
+
+  @override
+  String get view_changelog => 'View changelog and new features';
+
+  @override
   String get year => 'Year';
 
   @override
