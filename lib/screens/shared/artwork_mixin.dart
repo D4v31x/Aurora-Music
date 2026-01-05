@@ -5,18 +5,18 @@ import 'dart:io';
 import '../../services/artwork_cache_service.dart';
 
 /// A mixin that provides common artwork and color extraction functionality.
-/// 
+///
 /// This mixin handles:
 /// - Loading artwork with caching
 /// - Extracting dominant colors for theming
 /// - Background gradient generation
-/// 
+///
 /// Usage:
 /// ```dart
 /// class _MyScreenState extends State<MyScreen> with ArtworkMixin {
 ///   @override
 ///   ArtworkCacheService get artworkService => _artworkService;
-///   
+///
 ///   @override
 ///   void onDominantColorChanged(Color color) {
 ///     setState(() => _dominantColor = color);
@@ -26,13 +26,13 @@ import '../../services/artwork_cache_service.dart';
 mixin ArtworkMixin<T extends StatefulWidget> on State<T> {
   /// The artwork cache service instance. Must be implemented.
   ArtworkCacheService get artworkService;
-  
+
   /// Called when the dominant color is extracted. Must be implemented.
   void onDominantColorChanged(Color color);
-  
+
   /// Called when colors are extracted for mesh gradients. Override if needed.
   void onColorsExtracted(List<Color> colors) {}
-  
+
   /// The default color to use when no artwork is available.
   Color get defaultColor => Colors.deepPurple.shade900;
 
@@ -52,23 +52,23 @@ mixin ArtworkMixin<T extends StatefulWidget> on State<T> {
       }
     }
   }
-  
+
   /// Extract the dominant color from a file path.
   Future<void> extractColorFromFile(String? filePath) async {
     if (filePath == null) {
       onDominantColorChanged(defaultColor);
       return;
     }
-    
+
     try {
       final paletteGenerator = await PaletteGenerator.fromImageProvider(
         FileImage(File(filePath)),
         maximumColorCount: 8,
         size: const Size(100, 100),
       );
-      
+
       if (!mounted) return;
-      
+
       _processColors(paletteGenerator);
     } catch (e) {
       debugPrint('Error extracting color from file: $e');
@@ -77,7 +77,7 @@ mixin ArtworkMixin<T extends StatefulWidget> on State<T> {
       }
     }
   }
-  
+
   /// Extract colors from raw bytes.
   Future<void> _extractColorsFromBytes(dynamic artwork) async {
     try {
@@ -85,9 +85,9 @@ mixin ArtworkMixin<T extends StatefulWidget> on State<T> {
         MemoryImage(artwork),
         maximumColorCount: 8,
       );
-      
+
       if (!mounted) return;
-      
+
       _processColors(paletteGenerator);
     } catch (e) {
       debugPrint('Error extracting colors: $e');
@@ -96,15 +96,15 @@ mixin ArtworkMixin<T extends StatefulWidget> on State<T> {
       }
     }
   }
-  
+
   void _processColors(PaletteGenerator paletteGenerator) {
     // Set dominant color
     final dominantColor = paletteGenerator.dominantColor?.color ?? defaultColor;
     onDominantColorChanged(dominantColor);
-    
+
     // Extract all colors for gradients
     final List<Color> colors = [];
-    
+
     if (paletteGenerator.dominantColor?.color != null) {
       colors.add(paletteGenerator.dominantColor!.color);
     }
@@ -126,22 +126,22 @@ mixin ArtworkMixin<T extends StatefulWidget> on State<T> {
     if (paletteGenerator.darkMutedColor?.color != null) {
       colors.add(paletteGenerator.darkMutedColor!.color);
     }
-    
+
     if (colors.isNotEmpty) {
       onColorsExtracted(colors);
     }
   }
-  
+
   /// Build a cached artwork widget for a song.
   Widget buildSongArtwork(int songId, {double size = 50}) {
     return artworkService.buildCachedArtwork(songId, size: size);
   }
-  
+
   /// Build a cached artwork widget for an album.
   Widget buildAlbumArtwork(int albumId, {double size = 50}) {
     return artworkService.buildCachedAlbumArtwork(albumId, size: size);
   }
-  
+
   /// Get the cached image provider for a song.
   Future<ImageProvider> getCachedArtwork(int songId) async {
     return await artworkService.getCachedImageProvider(songId);

@@ -136,7 +136,8 @@ class RepeatStateListenable extends StatelessWidget {
     final service = context.read<AudioPlayerService>();
     return ValueListenableBuilder<LoopMode>(
       valueListenable: service.loopModeNotifier,
-      builder: (context, loopMode, _) => builder(context, loopMode != LoopMode.off),
+      builder: (context, loopMode, _) =>
+          builder(context, loopMode != LoopMode.off),
     );
   }
 }
@@ -165,7 +166,8 @@ class PlaybackControlsBuilder extends StatelessWidget {
             return ValueListenableBuilder<LoopMode>(
               valueListenable: service.loopModeNotifier,
               builder: (context, loopMode, _) {
-                return builder(context, isPlaying, isShuffle, loopMode != LoopMode.off);
+                return builder(
+                    context, isPlaying, isShuffle, loopMode != LoopMode.off);
               },
             );
           },

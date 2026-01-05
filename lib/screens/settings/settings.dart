@@ -1,5 +1,5 @@
 /// Settings-related screens.
-/// 
+///
 /// This library exports all screens related to app settings
 /// and configuration.
 

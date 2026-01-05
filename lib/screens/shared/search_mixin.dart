@@ -2,19 +2,19 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 /// A mixin that provides common search functionality with debouncing.
-/// 
+///
 /// This mixin handles:
 /// - Debounced search queries
 /// - Search state management
 /// - Search text controller
-/// 
+///
 /// Usage:
 /// ```dart
 /// class _MyScreenState extends State<MyScreen> with SearchMixin {
 ///   @override
 ///   void onSearchQuery(String query) {
 ///     setState(() {
-///       _filteredItems = _allItems.where((item) => 
+///       _filteredItems = _allItems.where((item) =>
 ///         item.title.toLowerCase().contains(query.toLowerCase())
 ///       ).toList();
 ///     });
@@ -24,16 +24,16 @@ import 'package:flutter/material.dart';
 mixin SearchMixin<T extends StatefulWidget> on State<T> {
   /// The text controller for the search field.
   late TextEditingController searchController;
-  
+
   /// The current search query.
   String searchQuery = '';
-  
+
   /// Debounce timer for search.
   Timer? _searchDebounce;
-  
+
   /// The debounce duration in milliseconds.
   int get debounceMilliseconds => 300;
-  
+
   /// Called when a search query is submitted. Must be implemented.
   void onSearchQuery(String query);
 
@@ -41,13 +41,13 @@ mixin SearchMixin<T extends StatefulWidget> on State<T> {
   void initSearch() {
     searchController = TextEditingController();
   }
-  
+
   /// Dispose search. Call this in dispose().
   void disposeSearch() {
     searchController.dispose();
     _searchDebounce?.cancel();
   }
-  
+
   /// Handle search text changes with debouncing.
   void onSearchChanged(String query) {
     _searchDebounce?.cancel();
@@ -56,14 +56,14 @@ mixin SearchMixin<T extends StatefulWidget> on State<T> {
       onSearchQuery(searchQuery);
     });
   }
-  
+
   /// Clear the search query.
   void clearSearch() {
     searchController.clear();
     searchQuery = '';
     onSearchQuery('');
   }
-  
+
   /// Build a standard search text field.
   Widget buildSearchField({
     String? hintText,
@@ -74,7 +74,7 @@ mixin SearchMixin<T extends StatefulWidget> on State<T> {
     double borderRadius = 25,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       height: height,
       decoration: BoxDecoration(

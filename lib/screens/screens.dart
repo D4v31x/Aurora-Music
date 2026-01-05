@@ -1,5 +1,5 @@
 /// Aurora Music Screens
-/// 
+///
 /// This library exports all screens in the application, organized by category:
 /// - Main: Core screens like home and splash
 /// - Player: Now playing and lyrics screens
@@ -15,7 +15,7 @@ export 'splash_screen.dart';
 // Player screens
 export 'player/player.dart';
 
-// Library screens  
+// Library screens
 export 'library/library.dart';
 
 // Settings screens

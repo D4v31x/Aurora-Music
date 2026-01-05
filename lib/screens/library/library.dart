@@ -1,5 +1,5 @@
 /// Library-related screens.
-/// 
+///
 /// This library exports all screens related to browsing and managing
 /// the music library, including albums, artists, playlists, and tracks.
 
