@@ -1279,4 +1279,32 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get skip => 'Přeskočit';
+
+  @override
+  String get feedback_title => 'Líbí se vám Aurora Music?';
+
+  @override
+  String get feedback_description =>
+      'Vaše zpětná vazba pomáhá vylepšit Aurora Music! Našli jste chybu nebo máte nápad? Rádi si vás vyslechneme.';
+
+  @override
+  String get report_bug => 'Nahlásit chybu';
+
+  @override
+  String get suggest_feature => 'Navrhnout funkci';
+
+  @override
+  String get maybe_later => 'Možná později';
+
+  @override
+  String get dont_ask_again => 'Znovu se neptat';
+
+  @override
+  String get send_feedback => 'Odeslat zpětnou vazbu';
+
+  @override
+  String get send_feedback_desc => 'Nahlásit chyby nebo navrhnout funkce';
+
+  @override
+  String get close => 'Zavřít';
 }

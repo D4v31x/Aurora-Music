@@ -405,5 +405,14 @@
   "downloadSettingsNote": "You can change these settings later in the app preferences.",
   "downloadContent": "Download Content?",
   "downloadContentSubtitle": "Assets will be downloaded as you use the app",
-  "skip": "Skip"
+  "skip": "Skip",
+  "feedback_title": "Enjoying Aurora Music?",
+  "feedback_description": "Your feedback helps make Aurora Music better! Found a bug or have an idea? We'd love to hear from you.",
+  "report_bug": "Report Bug",
+  "suggest_feature": "Suggest Feature",
+  "maybe_later": "Maybe Later",
+  "dont_ask_again": "Don't ask again",
+  "send_feedback": "Send Feedback",
+  "send_feedback_desc": "Report bugs or suggest features",
+  "close": "Close"
 }

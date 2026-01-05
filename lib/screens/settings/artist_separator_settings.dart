@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../services/artist_separator_service.dart';
-import '../localization/app_localizations.dart';
+import '../../services/artist_separator_service.dart';
+import '../../localization/app_localizations.dart';
 
 /// Settings screen for configuring artist name separation
 class ArtistSeparatorSettingsScreen extends StatefulWidget {
@@ -311,36 +311,77 @@ class _ArtistSeparatorSettingsScreenState
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.translate('add_separator')),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: l10n.translate('separator'),
-            hintText: l10n.translate('separator_hint'),
-            border: const OutlineInputBorder(),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AlertDialog(
+          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.white.withOpacity(0.1)),
           ),
+          title: Text(
+            l10n.translate('add_separator'),
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white,
+            ),
+            decoration: InputDecoration(
+              labelText: l10n.translate('separator'),
+              hintText: l10n.translate('separator_hint'),
+              labelStyle: const TextStyle(color: Colors.white70),
+              hintStyle: const TextStyle(color: Colors.white38),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.white),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                l10n.translate('cancel'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white70,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (controller.text.isNotEmpty) {
+                  await _service.addSeparator(controller.text);
+                  setState(() {
+                    _separators = List.from(_service.separators);
+                  });
+                  _updateTestResult();
+                }
+                if (context.mounted) Navigator.pop(context);
+              },
+              child: Text(
+                l10n.translate('add'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.translate('cancel')),
-          ),
-          FilledButton(
-            onPressed: () async {
-              if (controller.text.isNotEmpty) {
-                await _service.addSeparator(controller.text);
-                setState(() {
-                  _separators = List.from(_service.separators);
-                });
-                _updateTestResult();
-              }
-              if (context.mounted) Navigator.pop(context);
-            },
-            child: Text(l10n.translate('add')),
-          ),
-        ],
       ),
     );
   }
@@ -351,36 +392,77 @@ class _ArtistSeparatorSettingsScreenState
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.translate('add_exclusion')),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: l10n.translate('artist_name'),
-            hintText: l10n.translate('exclusion_hint'),
-            border: const OutlineInputBorder(),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AlertDialog(
+          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.white.withOpacity(0.1)),
           ),
+          title: Text(
+            l10n.translate('add_exclusion'),
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white,
+            ),
+            decoration: InputDecoration(
+              labelText: l10n.translate('artist_name'),
+              hintText: l10n.translate('exclusion_hint'),
+              labelStyle: const TextStyle(color: Colors.white70),
+              hintStyle: const TextStyle(color: Colors.white38),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.white),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                l10n.translate('cancel'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white70,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (controller.text.isNotEmpty) {
+                  await _service.addExclusion(controller.text);
+                  setState(() {
+                    _exclusions = List.from(_service.exclusions);
+                  });
+                  _updateTestResult();
+                }
+                if (context.mounted) Navigator.pop(context);
+              },
+              child: Text(
+                l10n.translate('add'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.translate('cancel')),
-          ),
-          FilledButton(
-            onPressed: () async {
-              if (controller.text.isNotEmpty) {
-                await _service.addExclusion(controller.text);
-                setState(() {
-                  _exclusions = List.from(_service.exclusions);
-                });
-                _updateTestResult();
-              }
-              if (context.mounted) Navigator.pop(context);
-            },
-            child: Text(l10n.translate('add')),
-          ),
-        ],
       ),
     );
   }
@@ -406,23 +488,57 @@ class _ArtistSeparatorSettingsScreenState
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.translate('reset_to_defaults')),
-        content: Text(l10n.translate('reset_artist_separation_desc')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.translate('cancel')),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AlertDialog(
+          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.white.withOpacity(0.1)),
           ),
-          FilledButton(
-            onPressed: () async {
-              await _service.resetToDefaults();
-              await _loadSettings();
-              if (context.mounted) Navigator.pop(context);
-            },
-            child: Text(l10n.translate('reset')),
+          title: Text(
+            l10n.translate('reset_to_defaults'),
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ],
+          content: Text(
+            l10n.translate('reset_artist_separation_desc'),
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white70,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                l10n.translate('cancel'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white70,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                await _service.resetToDefaults();
+                await _loadSettings();
+                if (context.mounted) Navigator.pop(context);
+              },
+              child: Text(
+                l10n.translate('reset'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

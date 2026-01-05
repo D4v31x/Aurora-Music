@@ -808,6 +808,24 @@ extension AppLocalizationsExtension on generated.AppLocalizations {
         return downloadSettingsNote;
       case 'maybeLater':
         return maybeLater;
+      case 'dont_ask_again':
+        return dont_ask_again;
+      case 'send_feedback':
+        return send_feedback;
+      case 'send_feedback_desc':
+        return send_feedback_desc;
+      case 'feedback_title':
+        return feedback_title;
+      case 'feedback_description':
+        return feedback_description;
+      case 'report_bug':
+        return report_bug;
+      case 'suggest_feature':
+        return suggest_feature;
+      case 'view_changelog':
+        return view_changelog;
+      case 'close':
+        return close;
       default:
         return key; // Return the key itself if not found
     }

@@ -2,18 +2,19 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import '../models/utils.dart';
-import '../services/audio_player_service.dart';
-import '../services/artwork_cache_service.dart';
-import '../localization/app_localizations.dart';
+import '../../models/utils.dart';
+import '../../services/audio_player_service.dart';
+import '../../services/artwork_cache_service.dart';
+import '../../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
-import '../services/local_caching_service.dart';
-import '../widgets/glassmorphic_container.dart';
-import '../widgets/shimmer_loading.dart';
-import '../widgets/expanding_player.dart';
-import 'AlbumDetailScreen.dart';
+import '../../services/local_caching_service.dart';
+import '../../widgets/glassmorphic_container.dart';
+import '../../widgets/shimmer_loading.dart';
+import '../../widgets/expanding_player.dart';
+import '../../utils/responsive_utils.dart';
+import 'album_detail_screen.dart';
 
 class ArtistDetailsScreen extends StatefulWidget {
   final String artistName;
@@ -505,12 +506,16 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
       );
     }
 
+    final isTablet = ResponsiveUtils.isTablet(context);
+    final columns = isTablet ? 4 : 2;
+    final horizontalPadding = ResponsiveUtils.getHorizontalPadding(context);
+
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.85,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: columns,
+          childAspectRatio: isTablet ? 0.9 : 0.85,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
         ),
@@ -520,10 +525,11 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
 
             final album = _albums[index];
             final albumSongs = _albumSongs[album.id] ?? [];
+            final artworkSize = isTablet ? 100.0 : 120.0;
 
             return AnimationConfiguration.staggeredGrid(
               position: index,
-              columnCount: 2,
+              columnCount: columns,
               duration: const Duration(milliseconds: 200),
               child: ScaleAnimation(
                 child: FadeInAnimation(
@@ -553,7 +559,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                                     child:
                                         _artworkService.buildCachedAlbumArtwork(
                                       album.id,
-                                      size: 120,
+                                      size: artworkSize,
                                     ),
                                   ),
                                 ),

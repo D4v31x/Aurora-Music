@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../screens/Artist_screen.dart';
+import '../../screens/library/artist_detail_screen.dart';
 import '../../services/local_caching_service.dart';
 import '../../services/artwork_cache_service.dart';
 import '../glassmorphic_card.dart';

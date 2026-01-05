@@ -1275,4 +1275,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get skip => 'Skip';
+
+  @override
+  String get feedback_title => 'Enjoying Aurora Music?';
+
+  @override
+  String get feedback_description =>
+      'Your feedback helps make Aurora Music better! Found a bug or have an idea? We\'d love to hear from you.';
+
+  @override
+  String get report_bug => 'Report Bug';
+
+  @override
+  String get suggest_feature => 'Suggest Feature';
+
+  @override
+  String get maybe_later => 'Maybe Later';
+
+  @override
+  String get dont_ask_again => 'Don\'t ask again';
+
+  @override
+  String get send_feedback => 'Send Feedback';
+
+  @override
+  String get send_feedback_desc => 'Report bugs or suggest features';
+
+  @override
+  String get close => 'Close';
 }

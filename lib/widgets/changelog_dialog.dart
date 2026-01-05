@@ -84,168 +84,181 @@ class ChangelogDialog extends StatelessWidget {
     final changelogSections =
         ChangelogContent.getChangelogForVersion(currentVersion);
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-      child: Dialog(
-        backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: isDarkMode
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.05),
-          ),
-        ),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.8,
-            maxWidth: MediaQuery.of(context).size.width * 0.9,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Fixed Title
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                child: AnimatedSlide(
-                  duration: const Duration(milliseconds: 500),
-                  offset: const Offset(0, 0),
-                  child: Text(
-                    AppLocalizations.of(context).translate('whats_new'),
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withValues(alpha: 0.15),
+                  Colors.white.withValues(alpha: 0.05),
+                ],
               ),
-
-              // Version Badge
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isDarkMode
-                        ? Colors.blue.withOpacity(0.2)
-                        : Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isDarkMode
-                          ? Colors.blue.withOpacity(0.3)
-                          : Colors.blue.withOpacity(0.2),
-                    ),
-                  ),
-                  child: Text(
-                    'Version $currentVersion ($codename)',
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.blue[300] : Colors.blue[700],
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
               ),
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+                maxWidth: MediaQuery.of(context).size.width * 0.9,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Fixed Title
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                    child: AnimatedSlide(
+                      duration: const Duration(milliseconds: 500),
+                      offset: const Offset(0, 0),
+                      child: Text(
+                        AppLocalizations.of(context).translate('whats_new'),
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
 
-              // Scrollable Content
-              Flexible(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 500),
-                    opacity: 1.0,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Dynamic changelog sections
-                        ...changelogSections.expand((section) => [
-                              ...section.entries.map((entry) => Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      _buildChangelogSection(
-                                        entry.key,
-                                        entry.value,
-                                        isDarkMode: isDarkMode,
-                                      ),
-                                      const SizedBox(height: 16),
-                                    ],
-                                  )),
-                            ]),
-
-                        // Privacy Notice Section
-                        Divider(
+                  // Version Badge
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isDarkMode
+                            ? Colors.blue.withOpacity(0.2)
+                            : Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
                           color: isDarkMode
-                              ? Colors.white.withOpacity(0.1)
-                              : Colors.black.withOpacity(0.1),
+                              ? Colors.blue.withOpacity(0.3)
+                              : Colors.blue.withOpacity(0.2),
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          AppLocalizations.of(context)
-                              .translate('privacy_notice'),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDarkMode
-                                ? Colors.grey[400]
-                                : Colors.grey[600],
-                          ),
+                      ),
+                      child: Text(
+                        'Version $currentVersion ($codename)',
+                        style: TextStyle(
+                          color:
+                              isDarkMode ? Colors.blue[300] : Colors.blue[700],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
-                        const SizedBox(height: 8),
-                        InkWell(
-                          borderRadius: BorderRadius.circular(8),
-                          onTap: _openPrivacyPolicy,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Text(
+                      ),
+                    ),
+                  ),
+
+                  // Scrollable Content
+                  Flexible(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 500),
+                        opacity: 1.0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Dynamic changelog sections
+                            ...changelogSections.expand((section) => [
+                                  ...section.entries.map((entry) => Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          _buildChangelogSection(
+                                            entry.key,
+                                            entry.value,
+                                            isDarkMode: isDarkMode,
+                                          ),
+                                          const SizedBox(height: 16),
+                                        ],
+                                      )),
+                                ]),
+
+                            // Privacy Notice Section
+                            Divider(
+                              color: isDarkMode
+                                  ? Colors.white.withOpacity(0.1)
+                                  : Colors.black.withOpacity(0.1),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
                               AppLocalizations.of(context)
-                                  .translate('privacy_policy_link'),
+                                  .translate('privacy_notice'),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: isDarkMode
-                                    ? Colors.blue[300]
-                                    : Colors.blue[700],
-                                decoration: TextDecoration.underline,
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
                               ),
                             ),
-                          ),
+                            const SizedBox(height: 8),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(8),
+                              onTap: _openPrivacyPolicy,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 4.0),
+                                child: Text(
+                                  AppLocalizations.of(context)
+                                      .translate('privacy_policy_link'),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDarkMode
+                                        ? Colors.blue[300]
+                                        : Colors.blue[700],
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ),
 
-              // Fixed Actions
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                  // Fixed Actions
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        AppLocalizations.of(context).translate('got_it'),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    backgroundColor: isDarkMode
-                        ? Colors.blue.withOpacity(0.2)
-                        : Colors.blue.withOpacity(0.1),
                   ),
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(
-                    AppLocalizations.of(context).translate('got_it'),
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.blue[300] : Colors.blue[700],
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

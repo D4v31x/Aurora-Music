@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../localization/app_localizations.dart';
 import '../../services/local_caching_service.dart';
 import '../../services/home_layout_service.dart';
+import '../../utils/responsive_utils.dart';
 import '../expanding_player.dart';
 import 'for_you_section.dart';
 import 'suggested_artists_section.dart';
@@ -41,7 +42,7 @@ class _HomeTabState extends State<HomeTab> {
     HapticFeedback.lightImpact();
   }
 
-  Widget _buildSection(HomeSection section) {
+  Widget _buildSection(HomeSection section, bool isTablet, double spacing) {
     final l10n = AppLocalizations.of(context);
 
     switch (section) {
@@ -49,8 +50,8 @@ class _HomeTabState extends State<HomeTab> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionTitle(title: l10n.translate('for_you')),
-            const SizedBox(height: 12.0),
+            _SectionTitle(title: l10n.translate('for_you'), isTablet: isTablet),
+            SizedBox(height: isTablet ? 16.0 : 12.0),
             RepaintBoundary(
               child: ForYouSection(
                 key: const ValueKey('for_you_section'),
@@ -59,15 +60,16 @@ class _HomeTabState extends State<HomeTab> {
                 artistService: widget.artistService,
               ),
             ),
-            const SizedBox(height: 24.0),
+            SizedBox(height: spacing),
           ],
         );
       case HomeSection.suggestedArtists:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionTitle(title: l10n.translate('suggested_artists')),
-            const SizedBox(height: 12.0),
+            _SectionTitle(
+                title: l10n.translate('suggested_artists'), isTablet: isTablet),
+            SizedBox(height: isTablet ? 16.0 : 12.0),
             RepaintBoundary(
               child: SuggestedArtistsSection(
                 key: const ValueKey('suggested_artists_section'),
@@ -75,56 +77,59 @@ class _HomeTabState extends State<HomeTab> {
                 artistService: widget.artistService,
               ),
             ),
-            const SizedBox(height: 24.0),
+            SizedBox(height: spacing),
           ],
         );
       case HomeSection.recentlyPlayed:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionTitle(title: l10n.translate('recently_played')),
-            const SizedBox(height: 12.0),
+            _SectionTitle(
+                title: l10n.translate('recently_played'), isTablet: isTablet),
+            SizedBox(height: isTablet ? 16.0 : 12.0),
             const RepaintBoundary(child: RecentlyPlayedSection()),
-            const SizedBox(height: 24.0),
+            SizedBox(height: spacing),
           ],
         );
       case HomeSection.mostPlayed:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionTitle(title: l10n.translate('most_played')),
-            const SizedBox(height: 12.0),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: RepaintBoundary(child: MostPlayedSection()),
+            _SectionTitle(
+                title: l10n.translate('most_played'), isTablet: isTablet),
+            SizedBox(height: isTablet ? 16.0 : 12.0),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: isTablet ? 24.0 : 16.0),
+              child: const RepaintBoundary(child: MostPlayedSection()),
             ),
-            const SizedBox(height: 24.0),
+            SizedBox(height: spacing),
           ],
         );
       case HomeSection.listeningHistory:
-        return const Column(
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            RepaintBoundary(child: ListeningHistoryCard()),
-            SizedBox(height: 24.0),
+            const RepaintBoundary(child: ListeningHistoryCard()),
+            SizedBox(height: spacing),
           ],
         );
       case HomeSection.recentlyAdded:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionTitle(title: l10n.translate('recently_added')),
-            const SizedBox(height: 12.0),
+            _SectionTitle(
+                title: l10n.translate('recently_added'), isTablet: isTablet),
+            SizedBox(height: isTablet ? 16.0 : 12.0),
             const RepaintBoundary(child: RecentlyAddedSection()),
-            const SizedBox(height: 24.0),
+            SizedBox(height: spacing),
           ],
         );
       case HomeSection.libraryStats:
-        return const Column(
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            RepaintBoundary(child: MusicStatsCard()),
-            SizedBox(height: 24.0),
+            const RepaintBoundary(child: MusicStatsCard()),
+            SizedBox(height: spacing),
           ],
         );
     }
@@ -133,6 +138,9 @@ class _HomeTabState extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isTablet = ResponsiveUtils.isTablet(context);
+    final layoutMode = ResponsiveUtils.getLayoutMode(context);
+    final spacing = ResponsiveUtils.getSpacing(context, base: 24.0);
 
     return Consumer<HomeLayoutService>(
       builder: (context, layoutService, _) {
@@ -149,20 +157,79 @@ class _HomeTabState extends State<HomeTab> {
               parent: BouncingScrollPhysics(),
             ),
             padding: EdgeInsets.only(
-              top: 24.0,
+              top: isTablet ? 32.0 : 24.0,
               bottom: widget.currentSong != null
                   ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
-                  : 40.0,
+                  : isTablet
+                      ? 50.0
+                      : 40.0,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (final section in visibleSections) _buildSection(section),
-              ],
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: ResponsiveUtils.getContentMaxWidth(context),
+                ),
+                child: layoutMode == LayoutMode.twoColumn ||
+                        layoutMode == LayoutMode.wideWithPanel
+                    ? _buildTabletLayout(visibleSections, spacing)
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final section in visibleSections)
+                            _buildSection(section, isTablet, spacing),
+                        ],
+                      ),
+              ),
             ),
           ),
         );
       },
+    );
+  }
+
+  /// Build a two-column layout for tablets in landscape
+  Widget _buildTabletLayout(List<HomeSection> visibleSections, double spacing) {
+    final isTablet = true;
+
+    // Split sections into two columns
+    final leftSections = <HomeSection>[];
+    final rightSections = <HomeSection>[];
+
+    for (int i = 0; i < visibleSections.length; i++) {
+      if (i % 2 == 0) {
+        leftSections.add(visibleSections[i]);
+      } else {
+        rightSections.add(visibleSections[i]);
+      }
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          horizontal: ResponsiveUtils.getHorizontalPadding(context)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final section in leftSections)
+                  _buildSection(section, isTablet, spacing),
+              ],
+            ),
+          ),
+          SizedBox(width: spacing),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final section in rightSections)
+                  _buildSection(section, isTablet, spacing),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -170,20 +237,23 @@ class _HomeTabState extends State<HomeTab> {
 /// Optimized section title widget that prevents unnecessary rebuilds
 class _SectionTitle extends StatelessWidget {
   final String title;
+  final bool isTablet;
 
   const _SectionTitle({
     required this.title,
+    this.isTablet = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: EdgeInsets.symmetric(horizontal: isTablet ? 24.0 : 16.0),
       child: Text(
         title,
         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
               fontFamily: 'ProductSans',
+              fontSize: isTablet ? 26 : null,
             ),
       ),
     );

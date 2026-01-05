@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/audio_player_service.dart';
-import '../services/artwork_cache_service.dart';
-import '../localization/app_localizations.dart';
-import '../models/playlist_model.dart';
-import '../widgets/common_screen_scaffold.dart';
-import '../widgets/glassmorphic_card.dart';
-import 'PlaylistDetail_screen.dart';
+import '../../services/audio_player_service.dart';
+import '../../services/artwork_cache_service.dart';
+import '../../localization/app_localizations.dart';
+import '../../models/playlist_model.dart';
+import '../../widgets/common_screen_scaffold.dart';
+import '../../widgets/glassmorphic_card.dart';
+import 'playlist_detail_screen.dart';
 import 'dart:ui';
 
 /// Data class to hold playlist-related state for efficient rebuilds

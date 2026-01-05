@@ -1,214 +1,78 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:miniplayer/miniplayer.dart';
+import 'package:flutter/services.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
+
+import '../main.dart' show navigatorKey;
 import '../models/utils.dart';
+import '../screens/player/now_playing.dart';
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/background_manager_service.dart';
 import '../services/sleep_timer_controller.dart';
-import '../screens/now_playing.dart';
-import 'glassmorphic_container.dart';
+import '../utils/responsive_utils.dart';
 
-/// Expanding mini player that smoothly transforms into the Now Playing screen
-/// Drag up to expand, drag down to collapse
+/// A beautiful, simple mini player that opens the Now Playing screen.
 class ExpandingPlayer extends StatefulWidget {
   const ExpandingPlayer({super.key});
 
-  /// Height of the mini player content (the island itself)
-  static const double miniPlayerContentHeight = 70.0;
+  /// Height of the mini player
+  static const double miniPlayerHeight = 72.0;
 
-  /// Margin below the mini player (floating effect)
-  static const double bottomMargin = 12.0;
+  /// Bottom margin for floating effect
+  static const double bottomMargin = 16.0;
 
-  /// Total height reserved at the bottom of the screen for the mini player
-  /// Used for padding in other screens
+  /// Get the total height needed for bottom padding in other screens
   static double getMiniPlayerPaddingHeight(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    return miniPlayerContentHeight + bottomMargin + bottomPadding + 16;
+    return miniPlayerHeight + bottomMargin + bottomPadding + 8;
   }
 
-  /// Static controller to allow external access (e.g., for back button handling)
-  static MiniplayerController? _activeController;
-  static double _currentPercentage = 0.0;
+  /// Global state holder
+  static _ExpandingPlayerState? _state;
 
-  /// Check if the player is currently expanded
-  static bool get isExpanded => _currentPercentage > 0.3;
+  /// Notifier for when now playing screen is open/closed
+  static final ValueNotifier<bool> isOpenNotifier = ValueNotifier<bool>(false);
 
-  /// Minimize the player if it's expanded
+  /// Check if player is expanded (now playing screen is open)
+  static bool get isExpanded => isOpenNotifier.value;
+
+  /// Minimize the player (close now playing screen)
   static void minimize() {
-    _activeController?.animateToHeight(state: PanelState.MIN);
+    if (isOpenNotifier.value) {
+      navigatorKey.currentState?.maybePop();
+    }
   }
 
-  /// Expand the player to show Now Playing screen
-  static void expand() {
-    _activeController?.animateToHeight(state: PanelState.MAX);
-  }
+  /// Expand the player (open now playing screen)
+  static void expand() => _state?._openNowPlaying();
 
   @override
   State<ExpandingPlayer> createState() => _ExpandingPlayerState();
 }
 
 class _ExpandingPlayerState extends State<ExpandingPlayer> {
-  final MiniplayerController _controller = MiniplayerController();
-
   @override
   void initState() {
     super.initState();
-    ExpandingPlayer._activeController = _controller;
+    ExpandingPlayer._state = this;
+    // Reset the state in case it got stuck from a previous session
+    ExpandingPlayer.isOpenNotifier.value = false;
   }
 
   @override
   void dispose() {
-    if (ExpandingPlayer._activeController == _controller) {
-      ExpandingPlayer._activeController = null;
+    if (ExpandingPlayer._state == this) {
+      ExpandingPlayer._state = null;
     }
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final maxHeight = screenHeight;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
+  void _openNowPlaying() {
+    // Don't open if already open
+    if (ExpandingPlayer.isOpenNotifier.value) return;
 
-    // Calculate the total height needed for the mini player area
-    final minHeight = ExpandingPlayer.miniPlayerContentHeight +
-        ExpandingPlayer.bottomMargin +
-        bottomPadding;
-
-    // Only rebuild the main player structure when the song changes
-    return Selector<AudioPlayerService, SongModel?>(
-      selector: (context, audioService) => audioService.currentSong,
-      builder: (context, currentSong, child) {
-        if (currentSong == null) {
-          return const SizedBox.shrink();
-        }
-
-        // Force transparency on the Miniplayer by overriding theme colors
-        final theme = Theme.of(context);
-        return Theme(
-          data: theme.copyWith(
-            canvasColor: Colors.transparent,
-            scaffoldBackgroundColor: Colors.transparent,
-            cardColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            colorScheme: theme.colorScheme.copyWith(
-              surface: Colors.transparent,
-              surfaceContainer: Colors.transparent,
-              surfaceContainerLow: Colors.transparent,
-              surfaceContainerHigh: Colors.transparent,
-              surfaceContainerHighest: Colors.transparent,
-              surfaceDim: Colors.transparent,
-              surfaceBright: Colors.transparent,
-              surfaceTint: Colors.transparent,
-              onSurface: theme.colorScheme.onSurface,
-            ),
-            dialogTheme: DialogThemeData(backgroundColor: Colors.transparent),
-          ),
-          child: Miniplayer(
-            controller: _controller,
-            minHeight: minHeight,
-            maxHeight: maxHeight,
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            builder: (height, percentage) {
-              // Track current percentage for external access
-              ExpandingPlayer._currentPercentage = percentage;
-
-              // Calculate opacities for smooth cross-fade
-              // Fade out mini player: 0.0 -> 0.15 (faster fade out)
-              final miniOpacity = (1 - (percentage / 0.15)).clamp(0.0, 1.0);
-              // Fade in expanded player: 0.15 -> 0.4
-              final expandedOpacity =
-                  ((percentage - 0.15) / 0.25).clamp(0.0, 1.0);
-
-              // Slide effect for expanded player
-              final slideOffset = (1 - expandedOpacity) * 50.0;
-
-              // Get fallback color for when there's no artwork
-              final surfaceColor = theme.colorScheme.surface;
-
-              return Stack(
-                children: [
-                  // Fallback background for expanded player (when no artwork)
-                  // This ensures the screen is never transparent
-                  if (percentage > 0.01)
-                    Positioned.fill(
-                      child: ColoredBox(
-                        color: surfaceColor.withValues(alpha: expandedOpacity),
-                      ),
-                    ),
-
-                  // Expanded Player (Now Playing)
-                  // Performance: Use Visibility + color alpha instead of Opacity widget
-                  Visibility(
-                    visible: percentage > 0.01,
-                    maintainState: true,
-                    child: IgnorePointer(
-                      ignoring: percentage < 0.15,
-                      child: OverflowBox(
-                        minHeight: maxHeight,
-                        maxHeight: maxHeight,
-                        alignment: Alignment.topCenter,
-                        child: Transform.translate(
-                          offset: Offset(0, slideOffset),
-                          child: Material(
-                            type: MaterialType.transparency,
-                            child: _ExpandedPlayerContent(
-                              percentage: percentage,
-                              controller: _controller,
-                              opacity: expandedOpacity,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Mini Player Island
-                  // Performance: Use Visibility instead of Opacity when fully hidden
-                  Visibility(
-                    visible: miniOpacity > 0.01,
-                    child: IgnorePointer(
-                      ignoring: percentage > 0.15,
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: SizedBox(
-                          height: minHeight,
-                          child: _MiniPlayerContent(
-                            song: currentSong,
-                            bottomPadding: bottomPadding,
-                            opacity: miniOpacity,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _ExpandedPlayerContent extends StatelessWidget {
-  final double percentage;
-  final MiniplayerController controller;
-  final double opacity;
-
-  const _ExpandedPlayerContent({
-    required this.percentage,
-    required this.controller,
-    this.opacity = 1.0,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Get providers from parent context
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
     final backgroundManager =
@@ -216,204 +80,281 @@ class _ExpandedPlayerContent extends StatelessWidget {
     final sleepTimerController =
         Provider.of<SleepTimerController>(context, listen: false);
 
-    // The NowPlayingScreen content
-    // We keep the Navigator to support internal navigation (like Artist Details)
-    // We wrap it in HeroControllerScope.none() to avoid conflicts with the main Navigator's HeroController
-    return HeroControllerScope.none(
-      child: Navigator(
-        onGenerateRoute: (settings) {
-          return PageRouteBuilder(
-            opaque:
-                false, // Ensure the route is transparent so we don't see a solid background
-            settings: settings,
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                MultiProvider(
-              providers: [
-                ChangeNotifierProvider<AudioPlayerService>.value(
-                    value: audioPlayerService),
-                ChangeNotifierProvider<BackgroundManagerService>.value(
-                    value: backgroundManager),
-                ChangeNotifierProvider<SleepTimerController>.value(
-                    value: sleepTimerController),
-              ],
-              child: NowPlayingScreen(
-                onClose: () =>
-                    controller.animateToHeight(state: PanelState.MIN),
-              ),
+    // Use global navigator key since we're in MaterialApp.builder
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) return;
+
+    HapticFeedback.lightImpact();
+    ExpandingPlayer.isOpenNotifier.value = true;
+
+    navigator
+        .push<void>(
+      PageRouteBuilder<void>(
+        opaque: true,
+        barrierDismissible: false,
+        pageBuilder: (_, animation, secondaryAnimation) {
+          return MultiProvider(
+            providers: [
+              ChangeNotifierProvider<AudioPlayerService>.value(
+                  value: audioPlayerService),
+              ChangeNotifierProvider<BackgroundManagerService>.value(
+                  value: backgroundManager),
+              ChangeNotifierProvider<SleepTimerController>.value(
+                  value: sleepTimerController),
+            ],
+            child: NowPlayingScreen(
+              onClose: () {
+                ExpandingPlayer.isOpenNotifier.value = false;
+                navigatorKey.currentState?.pop();
+              },
             ),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return child; // No internal transition, we handle it in ExpandingPlayer
-            },
           );
         },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.1),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              )),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+        reverseTransitionDuration: const Duration(milliseconds: 250),
       ),
+    )
+        .then((_) {
+      ExpandingPlayer.isOpenNotifier.value = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: ExpandingPlayer.isOpenNotifier,
+      builder: (context, isOpen, _) {
+        // Hide mini player when now playing screen is open
+        if (isOpen) return const SizedBox.shrink();
+
+        return Selector<AudioPlayerService, SongModel?>(
+          selector: (_, service) => service.currentSong,
+          builder: (context, currentSong, _) {
+            if (currentSong == null) return const SizedBox.shrink();
+
+            return _MiniPlayerWidget(
+              song: currentSong,
+              onTap: _openNowPlaying,
+            );
+          },
+        );
+      },
     );
   }
 }
 
-class _MiniPlayerContent extends StatelessWidget {
+/// The beautiful floating mini player widget
+class _MiniPlayerWidget extends StatelessWidget {
   final SongModel song;
-  final double bottomPadding;
-  final double opacity;
-  static final _artworkService = ArtworkCacheService();
+  final VoidCallback onTap;
 
-  const _MiniPlayerContent({
+  const _MiniPlayerWidget({
     required this.song,
-    required this.bottomPadding,
-    this.opacity = 1.0,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final audioService =
-        Provider.of<AudioPlayerService>(context, listen: false);
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = ResponsiveUtils.isTablet(context);
+    final margin = isTablet ? 32.0 : 16.0;
 
-    return Container(
-      margin: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        bottom: bottomPadding + ExpandingPlayer.bottomMargin,
-      ),
-      height: ExpandingPlayer.miniPlayerContentHeight,
-      child: GlassmorphicContainer(
-        borderRadius: BorderRadius.circular(24), // More rounded
-        blur: 25,
-        child: Stack(
-          children: [
-            // Content
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Row(
-                children: [
-                  // Artwork
-                  Hero(
-                    tag: 'mini_player_artwork',
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: margin,
+          right: margin,
+          bottom: bottomPadding + ExpandingPlayer.bottomMargin,
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isTablet ? 480 : screenWidth),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+            onVerticalDragEnd: (details) {
+              if ((details.primaryVelocity ?? 0) < -300) onTap();
+            },
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                height: ExpandingPlayer.miniPlayerHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                      spreadRadius: -4,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                     child: Container(
-                      width: 54,
-                      height: 54,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withValues(alpha: 0.15),
+                            Colors.white.withValues(alpha: 0.05),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          // Progress indicator at bottom
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: _ProgressBar(),
+                          ),
+
+                          // Content
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(10, 10, 8, 10),
+                            child: Row(
+                              children: [
+                                // Artwork
+                                _ArtworkThumbnail(songId: song.id, size: 52),
+
+                                const SizedBox(width: 14),
+
+                                // Song info
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        song.title,
+                                        style: const TextStyle(
+                                          fontFamily: 'Outfit',
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: -0.3,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        splitArtists(song.artist ?? 'Unknown')
+                                            .join(', '),
+                                        style: TextStyle(
+                                          fontFamily: 'Outfit',
+                                          color: Colors.white
+                                              .withValues(alpha: 0.55),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                const SizedBox(width: 8),
+
+                                // Controls - these need to block parent GestureDetector
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _PlayPauseButton(size: 46),
+                                    if (isTablet) ...[
+                                      const SizedBox(width: 4),
+                                      _SkipButton(),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: _artworkService.buildCachedArtwork(
-                          song.id,
-                          size: 54,
-                        ),
-                      ),
                     ),
                   ),
-
-                  const SizedBox(width: 12),
-
-                  // Song Info
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            song.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'ProductSans',
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Flexible(
-                          child: Text(
-                            splitArtists(song.artist ?? 'Unknown Artist')
-                                .join(', '),
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontSize: 12,
-                              fontFamily: 'ProductSans',
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Controls
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Play/Pause
-                      ValueListenableBuilder<bool>(
-                        valueListenable: audioService.isPlayingNotifier,
-                        builder: (context, isPlaying, _) {
-                          return Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                isPlaying
-                                    ? Icons.pause_rounded
-                                    : Icons.play_arrow_rounded,
-                                color: Colors.white,
-                                size: 28,
-                              ),
-                              onPressed: () {
-                                if (isPlaying) {
-                                  audioService.pause();
-                                } else {
-                                  audioService.resume();
-                                }
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 4),
-                ],
+                ),
               ),
             ),
-
-            // Progress Bar at bottom
-            Positioned(
-              left: 20,
-              right: 20,
-              bottom: 0,
-              child: _MiniProgressBar(audioService: audioService),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _MiniProgressBar extends StatelessWidget {
-  final AudioPlayerService audioService;
+/// Artwork thumbnail with subtle glow effect
+class _ArtworkThumbnail extends StatelessWidget {
+  final int songId;
+  final double size;
 
-  const _MiniProgressBar({required this.audioService});
+  const _ArtworkThumbnail({
+    required this.songId,
+    required this.size,
+  });
+
+  static final _artworkService = ArtworkCacheService();
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 16,
+            spreadRadius: -2,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: _artworkService.buildCachedArtwork(songId, size: size),
+      ),
+    );
+  }
+}
+
+/// Progress bar at the bottom of mini player
+class _ProgressBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+
     return StreamBuilder<Duration>(
       stream: audioService.audioPlayer.positionStream,
       builder: (context, snapshot) {
@@ -424,32 +365,91 @@ class _MiniProgressBar extends StatelessWidget {
                 .clamp(0.0, 1.0)
             : 0.0;
 
-        return Container(
+        return SizedBox(
           height: 3,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
-          ),
-          child: FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: progress,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(2)),
-                boxShadow: [
-                  BoxShadow(
-                    color:
-                        Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                    blurRadius: 4,
-                  ),
-                ],
+          child: ClipRRect(
+            borderRadius:
+                const BorderRadius.vertical(bottom: Radius.circular(24)),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.primary,
               ),
+              minHeight: 3,
             ),
           ),
         );
       },
+    );
+  }
+}
+
+/// Play/Pause button
+class _PlayPauseButton extends StatelessWidget {
+  final double size;
+
+  const _PlayPauseButton({this.size = 48});
+
+  @override
+  Widget build(BuildContext context) {
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: audioService.isPlayingNotifier,
+      builder: (context, isPlaying, _) {
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            HapticFeedback.selectionClick();
+            isPlaying ? audioService.pause() : audioService.resume();
+          },
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              color: Colors.white,
+              size: size * 0.55,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Skip button for tablets
+class _SkipButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        audioService.skip();
+      },
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.08),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.skip_next_rounded,
+          color: Colors.white,
+          size: 22,
+        ),
+      ),
     );
   }
 }

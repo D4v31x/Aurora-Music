@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../models/playlist_model.dart';
-import '../services/audio_player_service.dart';
-import '../services/artwork_cache_service.dart';
-import '../localization/app_localizations.dart';
-import '../widgets/expanding_player.dart';
-import '../widgets/song_picker_sheet.dart';
-import '../widgets/app_background.dart';
-import '../models/utils.dart';
+import '../../models/playlist_model.dart';
+import '../../services/audio_player_service.dart';
+import '../../services/artwork_cache_service.dart';
+import '../../localization/app_localizations.dart';
+import '../../widgets/expanding_player.dart';
+import '../../widgets/song_picker_sheet.dart';
+import '../../widgets/app_background.dart';
+import '../../models/utils.dart';
 import 'dart:ui';
 
 class PlaylistDetailScreen extends StatefulWidget {

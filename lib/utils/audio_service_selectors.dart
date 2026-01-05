@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:just_audio/just_audio.dart';
 import '../services/audio_player_service.dart';
 import '../models/playlist_model.dart';
 
@@ -133,9 +134,9 @@ class RepeatStateListenable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final service = context.read<AudioPlayerService>();
-    return ValueListenableBuilder<bool>(
-      valueListenable: service.isRepeatNotifier,
-      builder: (context, isRepeat, _) => builder(context, isRepeat),
+    return ValueListenableBuilder<LoopMode>(
+      valueListenable: service.loopModeNotifier,
+      builder: (context, loopMode, _) => builder(context, loopMode != LoopMode.off),
     );
   }
 }
@@ -161,10 +162,10 @@ class PlaybackControlsBuilder extends StatelessWidget {
         return ValueListenableBuilder<bool>(
           valueListenable: service.isShuffleNotifier,
           builder: (context, isShuffle, _) {
-            return ValueListenableBuilder<bool>(
-              valueListenable: service.isRepeatNotifier,
-              builder: (context, isRepeat, _) {
-                return builder(context, isPlaying, isShuffle, isRepeat);
+            return ValueListenableBuilder<LoopMode>(
+              valueListenable: service.loopModeNotifier,
+              builder: (context, loopMode, _) {
+                return builder(context, isPlaying, isShuffle, loopMode != LoopMode.off);
               },
             );
           },

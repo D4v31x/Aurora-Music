@@ -35,15 +35,18 @@ class GlassmorphicCard extends StatelessWidget {
     required VoidCallback onTap,
     Widget? badge,
     ArtworkCacheService? artworkService,
+    double size = 130,
   }) {
     final service = artworkService ?? ArtworkCacheService();
     return GlassmorphicCard(
       key: key,
-      artwork: service.buildCachedArtwork(songId, size: 130),
+      artwork: service.buildCachedArtwork(songId, size: size),
       title: title,
       subtitle: artist,
       onTap: onTap,
       badge: badge,
+      width: size,
+      artworkSize: size,
     );
   }
 
@@ -55,14 +58,17 @@ class GlassmorphicCard extends StatelessWidget {
     String? artistName,
     required VoidCallback onTap,
     ArtworkCacheService? artworkService,
+    double size = 130,
   }) {
     final service = artworkService ?? ArtworkCacheService();
     return GlassmorphicCard(
       key: key,
-      artwork: service.buildCachedAlbumArtwork(albumId, size: 130),
+      artwork: service.buildCachedAlbumArtwork(albumId, size: size),
       title: albumName,
       subtitle: artistName,
       onTap: onTap,
+      width: size,
+      artworkSize: size,
     );
   }
 
@@ -74,23 +80,26 @@ class GlassmorphicCard extends StatelessWidget {
     required VoidCallback onTap,
     ArtworkCacheService? artworkService,
     bool circularArtwork = true,
+    double size = 130,
   }) {
     final service = artworkService ?? ArtworkCacheService();
     return GlassmorphicCard(
       key: key,
       artwork: ClipRRect(
         borderRadius: circularArtwork
-            ? BorderRadius.circular(65)
+            ? BorderRadius.circular(size / 2)
             : const BorderRadius.vertical(top: Radius.circular(16)),
         child: service.buildArtistImageByName(
           artistName,
-          size: 130,
+          size: size,
           circular: circularArtwork,
         ),
       ),
       title: artistName,
       subtitle: info,
       onTap: onTap,
+      width: size,
+      artworkSize: size,
     );
   }
 
@@ -102,6 +111,7 @@ class GlassmorphicCard extends StatelessWidget {
     required VoidCallback onTap,
     String? playlistId,
     Widget? customArtwork,
+    double size = 130,
   }) {
     // Determine artwork based on playlist ID for special playlists
     Widget artworkWidget;
@@ -112,8 +122,8 @@ class GlassmorphicCard extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         child: Image.asset(
           'assets/images/UI/liked.png',
-          width: 130,
-          height: 130,
+          width: size,
+          height: size,
           fit: BoxFit.cover,
         ),
       );
@@ -122,8 +132,8 @@ class GlassmorphicCard extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         child: Image.asset(
           'assets/images/UI/recentlyadded.png',
-          width: 130,
-          height: 130,
+          width: size,
+          height: size,
           fit: BoxFit.cover,
         ),
       );
@@ -132,15 +142,15 @@ class GlassmorphicCard extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         child: Image.asset(
           'assets/images/UI/mostplayed.png',
-          width: 130,
-          height: 130,
+          width: size,
+          height: size,
           fit: BoxFit.cover,
         ),
       );
     } else {
       artworkWidget = Container(
-        width: 130,
-        height: 130,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -151,10 +161,10 @@ class GlassmorphicCard extends StatelessWidget {
             ],
           ),
         ),
-        child: const Icon(
+        child: Icon(
           Icons.playlist_play_rounded,
           color: Colors.white,
-          size: 50,
+          size: size * 0.4,
         ),
       );
     }
@@ -165,6 +175,8 @@ class GlassmorphicCard extends StatelessWidget {
       title: playlistName,
       subtitle: '$songCount tracks',
       onTap: onTap,
+      width: size,
+      artworkSize: size,
     );
   }
 
@@ -173,12 +185,13 @@ class GlassmorphicCard extends StatelessWidget {
     Key? key,
     required String folderName,
     required VoidCallback onTap,
+    double size = 130,
   }) {
     return GlassmorphicCard(
       key: key,
       artwork: Container(
-        width: 130,
-        height: 130,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -189,14 +202,16 @@ class GlassmorphicCard extends StatelessWidget {
             ],
           ),
         ),
-        child: const Icon(
+        child: Icon(
           Icons.folder_rounded,
           color: Colors.white,
-          size: 50,
+          size: size * 0.4,
         ),
       ),
       title: folderName,
       onTap: onTap,
+      width: size,
+      artworkSize: size,
     );
   }
 

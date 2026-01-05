@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.1.5+1
+version: 0.1.15+4
 
 environment:
   sdk: '>=3.3.3 <4.0.0'
@@ -68,7 +68,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_native_splash: ^2.4.1
 
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -173,11 +172,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-
-flutter_native_splash:
-  color: "#1c1118"
-  image: assets/images/logo/Music_logo.png
-  android: true
-  ios: true
-  android_12:
-    icon_background_color: "#1c1118" # Background color for the icon

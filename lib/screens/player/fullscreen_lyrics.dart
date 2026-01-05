@@ -6,12 +6,12 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/timed_lyrics.dart';
-import '../services/audio_player_service.dart';
-import '../services/lyrics_service.dart';
-import '../services/artwork_cache_service.dart';
-import '../localization/app_localizations.dart';
-import '../models/utils.dart';
+import '../../models/timed_lyrics.dart';
+import '../../services/audio_player_service.dart';
+import '../../services/lyrics_service.dart';
+import '../../services/artwork_cache_service.dart';
+import '../../localization/app_localizations.dart';
+import '../../models/utils.dart';
 
 class FullscreenLyricsScreen extends StatefulWidget {
   const FullscreenLyricsScreen({super.key});
@@ -415,86 +415,92 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey.shade900,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          AppLocalizations.of(context).translate('search_lyrics'),
-          style: const TextStyle(
-            fontFamily: 'ProductSans',
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AlertDialog(
+          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.white.withOpacity(0.1)),
           ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: artistController,
-              style: const TextStyle(
-                  color: Colors.white, fontFamily: 'ProductSans'),
-              decoration: InputDecoration(
-                labelText: AppLocalizations.of(context).translate('artists'),
-                labelStyle: const TextStyle(
-                    color: Colors.white70, fontFamily: 'ProductSans'),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white24),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white),
+          title: Text(
+            AppLocalizations.of(context).translate('search_lyrics'),
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: artistController,
+                style: const TextStyle(
+                    color: Colors.white, fontFamily: 'ProductSans'),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).translate('artists'),
+                  labelStyle: const TextStyle(
+                      color: Colors.white70, fontFamily: 'ProductSans'),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.white24),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: titleController,
-              style: const TextStyle(
-                  color: Colors.white, fontFamily: 'ProductSans'),
-              decoration: InputDecoration(
-                labelText: AppLocalizations.of(context).translate('title'),
-                labelStyle: const TextStyle(
+              const SizedBox(height: 16),
+              TextField(
+                controller: titleController,
+                style: const TextStyle(
+                    color: Colors.white, fontFamily: 'ProductSans'),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).translate('title'),
+                  labelStyle: const TextStyle(
+                      color: Colors.white70, fontFamily: 'ProductSans'),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.white24),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                AppLocalizations.of(context).translate('cancel'),
+                style: const TextStyle(
                     color: Colors.white70, fontFamily: 'ProductSans'),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white24),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white),
-                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                final artist = artistController.text.trim();
+                final title = titleController.text.trim();
+                if (artist.isNotEmpty && title.isNotEmpty) {
+                  _performLyricsSearch(artist, title);
+                }
+              },
+              child: Text(
+                AppLocalizations.of(context).translate('search'),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'ProductSans',
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              AppLocalizations.of(context).translate('cancel'),
-              style: const TextStyle(
-                  color: Colors.white70, fontFamily: 'ProductSans'),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final artist = artistController.text.trim();
-              final title = titleController.text.trim();
-              if (artist.isNotEmpty && title.isNotEmpty) {
-                _performLyricsSearch(artist, title);
-              }
-            },
-            child: Text(
-              AppLocalizations.of(context).translate('search'),
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'ProductSans',
-                  fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -569,111 +575,117 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   void _showLyricsResultsDialog(List<Map<String, dynamic>> results) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey.shade900,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          '${AppLocalizations.of(context).translate('results')} (${results.length})',
-          style: const TextStyle(
-            fontFamily: 'ProductSans',
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AlertDialog(
+          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.white.withOpacity(0.1)),
           ),
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 400,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: results.length,
-            itemBuilder: (context, index) {
-              final result = results[index];
-              final trackName = result['trackName'] ?? 'Unknown';
-              final artistName = result['artistName'] ?? 'Unknown';
-              final albumName = result['albumName'] ?? '';
-              final duration =
-                  _parseLyricsDuration(result['syncedLyrics'] as String?);
+          title: Text(
+            '${AppLocalizations.of(context).translate('results')} (${results.length})',
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: results.length,
+              itemBuilder: (context, index) {
+                final result = results[index];
+                final trackName = result['trackName'] ?? 'Unknown';
+                final artistName = result['artistName'] ?? 'Unknown';
+                final albumName = result['albumName'] ?? '';
+                final duration =
+                    _parseLyricsDuration(result['syncedLyrics'] as String?);
 
-              return Card(
-                color: Colors.white.withOpacity(0.1),
-                margin: const EdgeInsets.only(bottom: 8),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  onTap: () => _selectLyricsResult(result),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  title: Text(
-                    trackName,
-                    style: const TextStyle(
-                      fontFamily: 'ProductSans',
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 4),
-                      Text(
-                        artistName,
-                        style: const TextStyle(
-                          fontFamily: 'ProductSans',
-                          color: Colors.white70,
-                          fontSize: 13,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                return Card(
+                  color: Colors.white.withOpacity(0.1),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  child: ListTile(
+                    onTap: () => _selectLyricsResult(result),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    title: Text(
+                      trackName,
+                      style: const TextStyle(
+                        fontFamily: 'ProductSans',
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
                       ),
-                      if (albumName.isNotEmpty) ...[
-                        const SizedBox(height: 2),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
                         Text(
-                          albumName,
-                          style: TextStyle(
+                          artistName,
+                          style: const TextStyle(
                             fontFamily: 'ProductSans',
-                            color: Colors.white.withOpacity(0.5),
-                            fontSize: 12,
+                            color: Colors.white70,
+                            fontSize: 13,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        if (albumName.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            albumName,
+                            style: TextStyle(
+                              fontFamily: 'ProductSans',
+                              color: Colors.white.withOpacity(0.5),
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                  trailing: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(
-                      duration,
-                      style: const TextStyle(
-                        fontFamily: 'ProductSans',
-                        color: Colors.white70,
-                        fontSize: 12,
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        duration,
+                        style: const TextStyle(
+                          fontFamily: 'ProductSans',
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              AppLocalizations.of(context).translate('cancel'),
-              style: const TextStyle(
-                  color: Colors.white70, fontFamily: 'ProductSans'),
+                );
+              },
             ),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                AppLocalizations.of(context).translate('cancel'),
+                style: const TextStyle(
+                    color: Colors.white70, fontFamily: 'ProductSans'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -735,94 +747,99 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: Colors.grey.shade900,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(
-            AppLocalizations.of(context).translate('adjust_sync'),
-            style: const TextStyle(
-              fontFamily: 'ProductSans',
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: Colors.white.withOpacity(0.1)),
             ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '${tempOffset >= 0 ? '+' : ''}${tempOffset}ms',
-                style: const TextStyle(
-                  fontFamily: 'ProductSans',
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+            title: Text(
+              AppLocalizations.of(context).translate('adjust_sync'),
+              style: const TextStyle(
+                fontFamily: 'ProductSans',
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${tempOffset >= 0 ? '+' : ''}${tempOffset}ms',
+                  style: const TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                tempOffset > 0
-                    ? AppLocalizations.of(context).translate('lyrics_ahead')
-                    : tempOffset < 0
-                        ? AppLocalizations.of(context)
-                            .translate('lyrics_behind')
-                        : AppLocalizations.of(context)
-                            .translate('lyrics_synced'),
-                style: const TextStyle(
-                  fontFamily: 'ProductSans',
-                  color: Colors.white70,
-                  fontSize: 14,
+                const SizedBox(height: 8),
+                Text(
+                  tempOffset > 0
+                      ? AppLocalizations.of(context).translate('lyrics_ahead')
+                      : tempOffset < 0
+                          ? AppLocalizations.of(context)
+                              .translate('lyrics_behind')
+                          : AppLocalizations.of(context)
+                              .translate('lyrics_synced'),
+                  style: const TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildSyncButton(
-                      '-500', () => setDialogState(() => tempOffset -= 500)),
-                  _buildSyncButton(
-                      '-100', () => setDialogState(() => tempOffset -= 100)),
-                  _buildSyncButton(
-                      '+100', () => setDialogState(() => tempOffset += 100)),
-                  _buildSyncButton(
-                      '+500', () => setDialogState(() => tempOffset += 500)),
-                ],
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSyncButton(
+                        '-500', () => setDialogState(() => tempOffset -= 500)),
+                    _buildSyncButton(
+                        '-100', () => setDialogState(() => tempOffset -= 100)),
+                    _buildSyncButton(
+                        '+100', () => setDialogState(() => tempOffset += 100)),
+                    _buildSyncButton(
+                        '+500', () => setDialogState(() => tempOffset += 500)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => setDialogState(() => tempOffset = 0),
+                  child: Text(
+                    AppLocalizations.of(context).translate('reset'),
+                    style: const TextStyle(
+                        color: Colors.white70, fontFamily: 'ProductSans'),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
               TextButton(
-                onPressed: () => setDialogState(() => tempOffset = 0),
+                onPressed: () => Navigator.pop(context),
                 child: Text(
-                  AppLocalizations.of(context).translate('reset'),
+                  AppLocalizations.of(context).translate('cancel'),
                   style: const TextStyle(
                       color: Colors.white70, fontFamily: 'ProductSans'),
                 ),
               ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _saveSyncOffset(tempOffset);
+                },
+                child: Text(
+                  AppLocalizations.of(context).translate('save'),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'ProductSans',
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                AppLocalizations.of(context).translate('cancel'),
-                style: const TextStyle(
-                    color: Colors.white70, fontFamily: 'ProductSans'),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _saveSyncOffset(tempOffset);
-              },
-              child: Text(
-                AppLocalizations.of(context).translate('save'),
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'ProductSans',
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -854,29 +871,35 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   void _showFontSizeDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey.shade900,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          AppLocalizations.of(context).translate('font_size'),
-          style: const TextStyle(
-            fontFamily: 'ProductSans',
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AlertDialog(
+          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.white.withOpacity(0.1)),
           ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildFontSizeOption(
-                AppLocalizations.of(context).translate('small'), 0.8),
-            _buildFontSizeOption(
-                AppLocalizations.of(context).translate('medium'), 1.0),
-            _buildFontSizeOption(
-                AppLocalizations.of(context).translate('large'), 1.2),
-            _buildFontSizeOption(
-                AppLocalizations.of(context).translate('extra_large'), 1.4),
-          ],
+          title: Text(
+            AppLocalizations.of(context).translate('font_size'),
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildFontSizeOption(
+                  AppLocalizations.of(context).translate('small'), 0.8),
+              _buildFontSizeOption(
+                  AppLocalizations.of(context).translate('medium'), 1.0),
+              _buildFontSizeOption(
+                  AppLocalizations.of(context).translate('large'), 1.2),
+              _buildFontSizeOption(
+                  AppLocalizations.of(context).translate('extra_large'), 1.4),
+            ],
+          ),
         ),
       ),
     );

@@ -14,6 +14,8 @@ import '../services/audio_player_service.dart';
 import '../services/artist_aggregator_service.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/changelog_dialog.dart';
+import '../widgets/glassmorphic_dialog.dart';
+import '../widgets/feedback_reminder_dialog.dart';
 import '../widgets/home/home_tab.dart';
 import '../widgets/home/search_tab.dart';
 import '../widgets/home/settings_tab.dart';
@@ -97,6 +99,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Initialize the home screen and check permissions
   Future<void> _initializeHomeScreen() async {
     try {
+      // Set the toast context for notifications
+      NotificationManager.setToastContext(context);
+
       // Set initialized state
       if (mounted) {
         setState(() {
@@ -162,6 +167,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (shouldShow && mounted) {
       _showChangelogDialog();
       _hasShownChangelog = true;
+    } else {
+      // If no changelog, check for feedback reminder after a delay
+      _checkAndShowFeedbackReminder();
+    }
+  }
+
+  Future<void> _checkAndShowFeedbackReminder() async {
+    // Wait a bit before showing feedback reminder
+    await Future.delayed(const Duration(seconds: 10));
+    if (mounted) {
+      FeedbackReminderDialog.showIfNeeded(context);
     }
   }
 
@@ -244,6 +260,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Only update if state actually changed
     if (isScrolled != _isScrolledNotifier.value) {
       _isScrolledNotifier.value = isScrolled;
+      // Update notification manager so toast only shows when app bar is hidden
+      NotificationManager.setAppBarVisible(!isScrolled);
     }
   }
 
@@ -272,32 +290,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
 
     try {
-      final onAudioQuery = OnAudioQuery();
-      final allSongs = await onAudioQuery.querySongs();
-      _totalSongs = allSongs.length;
+      // Re-initialize the music library from AudioPlayerService
+      // Force rescan to truly re-query all songs from MediaStore
+      final success =
+          await audioPlayerService.initializeMusicLibrary(forceRescan: true);
 
-      // Process songs in batches to avoid excessive setState calls
-      for (var song in allSongs) {
-        await audioPlayerService.addSongToLibrary(song);
+      if (success) {
+        // Get the updated songs from the service
+        final allSongs = audioPlayerService.songs;
+        _totalSongs = allSongs.length;
+
+        // Update local state and trigger UI refresh
+        if (mounted) {
+          setState(() {
+            songs = allSongs;
+          });
+
+          // Reload smart suggestions for For You section
+          await _loadSmartSuggestions();
+
+          // Reload albums and artists
+          await _loadAlbumsAndArtists();
+        }
+
+        _notificationManager.showNotification(
+          '${AppLocalizations.of(context).translate('library_updated')} ($_totalSongs ${AppLocalizations.of(context).translate('songs_loaded')})',
+          duration: const Duration(seconds: 5),
+          onComplete: () => _notificationManager.showDefaultTitle(),
+        );
+
+        await audioPlayerService.saveLibrary();
+      } else {
+        _notificationManager.showNotification(
+          AppLocalizations.of(context).translate('scan_failed'),
+          duration: const Duration(seconds: 5),
+          onComplete: () => _notificationManager.showDefaultTitle(),
+        );
       }
-
-      // Single setState after all processing
-      if (mounted) {
-        setState(() {
-          songs = allSongs;
-          _randomizeContent();
-        });
-        _loadAlbumsAndArtists();
-      }
-
-      _notificationManager.showNotification(
-        '${AppLocalizations.of(context).translate('library_updated')} ($_totalSongs ${AppLocalizations.of(context).translate('songs_loaded')})',
-        duration: const Duration(seconds: 5),
-        onComplete: () => _notificationManager.showDefaultTitle(),
-      );
-
-      await audioPlayerService.saveLibrary();
     } catch (e) {
+      debugPrint('Error refreshing library: $e');
       _notificationManager.showNotification(
         AppLocalizations.of(context).translate('scan_failed'),
         duration: const Duration(seconds: 5),
@@ -526,7 +557,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // Windows file handling moved to AudioPlayerService
 
-  Future<bool> _onWillPop() async {
+  Future<bool> _showExitConfirmation() async {
     // If the player is expanded, minimize it instead of showing exit dialog
     if (ExpandingPlayer.isExpanded) {
       ExpandingPlayer.minimize();
@@ -534,19 +565,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
 
     // Show the exit dialog when user attempts to leave the app
-    final shouldExit = await showDialog<bool>(
+    final shouldExit = await showGlassmorphicDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (context) => GlassmorphicDialog(
             title: Text(AppLocalizations.of(context).translate('exit_app')),
             content: Text(
                 AppLocalizations.of(context).translate('exit_app_confirm')),
             actions: <Widget>[
-              TextButton(
+              GlassmorphicTextButton(
                 onPressed: () => Navigator.of(context).pop(false),
                 child: Text(AppLocalizations.of(context).translate('no')),
               ),
-              TextButton(
+              GlassmorphicTextButton(
                 onPressed: () => Navigator.of(context).pop(true),
+                isPrimary: true,
                 child: Text(AppLocalizations.of(context).translate('yes')),
               ),
             ],
@@ -568,7 +600,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         exit(0);
       }
     }
-    return false; // Don't pop the route, we handle exit manually
+    return shouldExit;
   }
 
   @override
@@ -691,8 +723,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       (service) => service.currentSong,
     );
 
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _showExitConfirmation();
+      },
       child: AppBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
@@ -806,7 +842,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              // Remove ExpandingPlayer from here - it's now global in main.dart
+              // Mini player - placed here so dialogs/popups appear above it
+              const ExpandingPlayer(),
             ],
           ),
         ),

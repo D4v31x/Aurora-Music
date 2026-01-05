@@ -11,8 +11,8 @@ import '../../services/audio_player_service.dart';
 import '../../services/music_search_service.dart';
 import '../../services/artwork_cache_service.dart';
 import '../../models/separated_artist.dart';
-import '../../screens/Artist_screen.dart';
-import '../../screens/AlbumDetailScreen.dart';
+import '../../screens/library/artist_detail_screen.dart';
+import '../../screens/library/album_detail_screen.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/expanding_player.dart';
 

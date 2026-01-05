@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../localization/app_localizations.dart';
-import '../screens/metadata_detail_screen.dart';
+import '../screens/settings/metadata_detail_screen.dart';
 
 /// Compact glassmorphic widget to display music file metadata overview
 class MusicMetadataWidget extends StatelessWidget {

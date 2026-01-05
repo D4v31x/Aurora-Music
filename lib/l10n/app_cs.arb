@@ -405,5 +405,14 @@
   "downloadSettingsNote": "Tato nastavení můžete později změnit v předvolbách aplikace.",
   "downloadContent": "Stáhnout obsah?",
   "downloadContentSubtitle": "Obsah bude stahován při používání aplikace",
-  "skip": "Přeskočit"
+  "skip": "Přeskočit",
+  "feedback_title": "Líbí se vám Aurora Music?",
+  "feedback_description": "Vaše zpětná vazba pomáhá vylepšit Aurora Music! Našli jste chybu nebo máte nápad? Rádi si vás vyslechneme.",
+  "report_bug": "Nahlásit chybu",
+  "suggest_feature": "Navrhnout funkci",
+  "maybe_later": "Možná později",
+  "dont_ask_again": "Znovu se neptat",
+  "send_feedback": "Odeslat zpětnou vazbu",
+  "send_feedback_desc": "Nahlásit chyby nebo navrhnout funkce",
+  "close": "Zavřít"
 }

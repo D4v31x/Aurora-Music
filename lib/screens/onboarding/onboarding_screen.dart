@@ -25,6 +25,7 @@ class OnboardingScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final currentPage = useState(0);
+    final skippedToPermissions = useState(false);
 
     final transitionController = useAnimationController(
       duration: const Duration(milliseconds: 400),
@@ -56,9 +57,17 @@ class OnboardingScreen extends HookWidget {
       }
     }
 
-    Future<void> skipToEnd() async {
+    Future<void> skipToPermissions() async {
       await transitionController.reverse();
-      currentPage.value = _totalPages - 1;
+      skippedToPermissions.value = true;
+      currentPage.value = 4; // Permissions page
+      await transitionController.forward();
+    }
+
+    // Function to go to completion page (used after permissions when skipped)
+    Future<void> goToCompletion() async {
+      await transitionController.reverse();
+      currentPage.value = _totalPages - 1; // Completion page
       await transitionController.forward();
     }
 
@@ -83,7 +92,7 @@ class OnboardingScreen extends HookWidget {
           );
         case 4:
           return PermissionsPage(
-            onContinue: nextPage,
+            onContinue: skippedToPermissions.value ? goToCompletion : nextPage,
             onBack: previousPage,
           );
         case 5:
@@ -128,8 +137,10 @@ class OnboardingScreen extends HookWidget {
               child: getCurrentPage(),
             ),
 
-            // Top bar with skip button (except on first and last page)
-            if (currentPage.value > 0 && currentPage.value < _totalPages - 1)
+            // Top bar with skip button (except on first, permissions, and last page)
+            if (currentPage.value > 0 &&
+                currentPage.value != 4 &&
+                currentPage.value < _totalPages - 1)
               Positioned(
                 top: 0,
                 left: 0,
@@ -142,7 +153,7 @@ class OnboardingScreen extends HookWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          onPressed: skipToEnd,
+                          onPressed: skipToPermissions,
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.white.withOpacity(0.7),
                             padding: const EdgeInsets.symmetric(

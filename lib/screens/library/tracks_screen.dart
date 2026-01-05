@@ -2,14 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import '../models/playlist_model.dart';
-import '../models/utils.dart';
-import '../services/audio_player_service.dart';
-import '../services/artwork_cache_service.dart';
-import '../localization/app_localizations.dart';
-import '../widgets/glassmorphic_container.dart';
-import '../widgets/optimized_tiles.dart'; // Import optimized tile
-import '../widgets/common_screen_scaffold.dart';
+import '../../models/playlist_model.dart';
+import '../../models/utils.dart';
+import '../../services/audio_player_service.dart';
+import '../../services/artwork_cache_service.dart';
+import '../../localization/app_localizations.dart';
+import '../../widgets/glassmorphic_container.dart';
+import '../../widgets/optimized_tiles.dart'; // Import optimized tile
+import '../../widgets/common_screen_scaffold.dart';
+import '../../utils/responsive_utils.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class TracksScreen extends StatefulWidget {
@@ -250,6 +251,14 @@ class _TracksScreenState extends State<TracksScreen>
                 Text('No songs found', style: TextStyle(color: Colors.white))),
       );
     } else {
+      final isTablet = ResponsiveUtils.isTablet(context);
+      final horizontalPadding = ResponsiveUtils.getHorizontalPadding(context);
+
+      // On tablets, use a grid layout for songs
+      if (isTablet) {
+        return _buildTabletSongGrid(audioPlayerService, horizontalPadding);
+      }
+
       return AnimationLimiter(
         child: SliverList(
           delegate: SliverChildBuilderDelegate(
@@ -271,8 +280,8 @@ class _TracksScreenState extends State<TracksScreen>
                     verticalOffset: 50.0,
                     child: FadeInAnimation(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 16.0),
+                        padding: EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: horizontalPadding),
                         child: _buildSongCard(song, audioPlayerService, index),
                       ),
                     ),
@@ -285,6 +294,50 @@ class _TracksScreenState extends State<TracksScreen>
         ),
       );
     }
+  }
+
+  /// Build a grid layout for tablets
+  Widget _buildTabletSongGrid(
+      AudioPlayerService audioPlayerService, double horizontalPadding) {
+    final columns = ResponsiveUtils.getCardColumns(context);
+
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      sliver: AnimationLimiter(
+        child: SliverGrid(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 3.5, // Wide cards for song tiles
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              if (index == _displayedSongs.length) {
+                return _hasMoreSongs
+                    ? const Center(child: CircularProgressIndicator())
+                    : const SizedBox.shrink();
+              }
+              final song = _displayedSongs[index];
+              return RepaintBoundary(
+                key: ValueKey(song.id),
+                child: AnimationConfiguration.staggeredGrid(
+                  position: index,
+                  columnCount: columns,
+                  duration: const Duration(milliseconds: 200),
+                  child: ScaleAnimation(
+                    child: FadeInAnimation(
+                      child: _buildSongCard(song, audioPlayerService, index),
+                    ),
+                  ),
+                ),
+              );
+            },
+            childCount: _displayedSongs.length + (_hasMoreSongs ? 1 : 0),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildSongCard(

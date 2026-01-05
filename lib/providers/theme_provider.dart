@@ -58,6 +58,54 @@ class ThemeProvider with ChangeNotifier {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       iconTheme: IconThemeData(color: colorScheme.onSurface),
+      // Glassmorphic popup menu theme
+      popupMenuTheme: PopupMenuThemeData(
+        color: Colors.grey[900]?.withValues(alpha: 0.9),
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: Colors.white.withValues(alpha: 0.15),
+            width: 1,
+          ),
+        ),
+        textStyle: const TextStyle(
+          fontFamily: 'Outfit',
+          color: Colors.white,
+          fontSize: 15,
+        ),
+      ),
+      // Glassmorphic dialog theme
+      dialogTheme: DialogThemeData(
+        backgroundColor: Colors.grey[900]?.withValues(alpha: 0.95),
+        elevation: 16,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(
+            color: Colors.white.withValues(alpha: 0.15),
+            width: 1,
+          ),
+        ),
+        titleTextStyle: const TextStyle(
+          fontFamily: 'Outfit',
+          color: Colors.white,
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+        ),
+        contentTextStyle: TextStyle(
+          fontFamily: 'Outfit',
+          color: Colors.white.withValues(alpha: 0.8),
+          fontSize: 15,
+        ),
+      ),
+      // Bottom sheet theme
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: Colors.grey[900]?.withValues(alpha: 0.95),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        modalBarrierColor: Colors.black54,
+      ),
     );
   }
 

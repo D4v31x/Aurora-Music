@@ -1,11 +1,14 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audiotags/audiotags.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../services/metadata_service.dart';
-import '../localization/app_localizations.dart';
-import '../widgets/app_background.dart';
+import 'package:provider/provider.dart';
+import '../../services/audio_player_service.dart';
+import '../../services/metadata_service.dart';
+import '../../localization/app_localizations.dart';
+import '../../widgets/app_background.dart';
 
 class MetadataDetailScreen extends StatefulWidget {
   final SongModel song;
@@ -35,6 +38,9 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   // AudioTags instance for reading/writing metadata
   Tag? _currentTag;
   Uint8List? _pendingCoverArt;
+
+  // OnAudioQuery instance for MediaStore operations
+  final OnAudioQuery _audioQuery = OnAudioQuery();
 
   @override
   void initState() {
@@ -240,83 +246,162 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             }
           }
 
-          return AlertDialog(
-            backgroundColor: Colors.grey[900],
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: Text(loc.translate('auto_tag'),
-                style: const TextStyle(color: Colors.white)),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: searchController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: loc.translate('search_metadata'),
-                      hintStyle:
-                          TextStyle(color: Colors.white.withOpacity(0.5)),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.search, color: Colors.white),
-                        onPressed: search,
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.white.withOpacity(0.3)),
-                      ),
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                    ),
-                    onSubmitted: (_) => search(),
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.7,
                   ),
-                  const SizedBox(height: 16),
-                  if (isLoading)
-                    const Center(child: CircularProgressIndicator())
-                  else if (results != null)
-                    Flexible(
-                      child: results!.isEmpty
-                          ? Text(
-                              loc.translate('no_results'),
-                              style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7)),
-                            )
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: results!.length,
-                              itemBuilder: (context, index) {
-                                final item = results![index];
-                                final artist = item['artist']['name'];
-                                final title = item['title'];
-                                final album = item['album']['title'];
-
-                                return ListTile(
-                                  title: Text(title,
-                                      style:
-                                          const TextStyle(color: Colors.white)),
-                                  subtitle: Text('$artist - $album',
-                                      style: TextStyle(
-                                          color:
-                                              Colors.white.withOpacity(0.7))),
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    _applyMetadata(item);
-                                  },
-                                );
-                              },
-                            ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.15),
+                        Colors.white.withValues(alpha: 0.05),
+                      ],
                     ),
-                ],
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                        child: Text(
+                          loc.translate('auto_tag'),
+                          style: const TextStyle(
+                            fontFamily: 'Outfit',
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                        child: TextField(
+                          controller: searchController,
+                          style: const TextStyle(
+                              color: Colors.white, fontFamily: 'Outfit'),
+                          decoration: InputDecoration(
+                            hintText: loc.translate('search_metadata'),
+                            hintStyle: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              fontFamily: 'Outfit',
+                            ),
+                            suffixIcon: IconButton(
+                              icon:
+                                  const Icon(Icons.search, color: Colors.white),
+                              onPressed: search,
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.3)),
+                            ),
+                            focusedBorder: const UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.white),
+                            ),
+                          ),
+                          onSubmitted: (_) => search(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (isLoading)
+                        const Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (results != null)
+                        Flexible(
+                          child: results!.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Text(
+                                    loc.translate('no_results'),
+                                    style: TextStyle(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.7),
+                                      fontFamily: 'Outfit',
+                                    ),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  shrinkWrap: true,
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  itemCount: results!.length,
+                                  itemBuilder: (context, index) {
+                                    final item = results![index];
+                                    final artist = item['artist']['name'];
+                                    final title = item['title'];
+                                    final album = item['album']['title'];
+
+                                    return ListTile(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      title: Text(
+                                        title,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'Outfit',
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        '$artist - $album',
+                                        style: TextStyle(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.7),
+                                          fontFamily: 'Outfit',
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        _applyMetadata(item);
+                                      },
+                                    );
+                                  },
+                                ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white70,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                loc.translate('cancel'),
+                                style: const TextStyle(fontFamily: 'Outfit'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(loc.translate('cancel')),
-              ),
-            ],
           );
         },
       ),
@@ -370,33 +455,59 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     final loc = AppLocalizations.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          loc.translate('save_changes'),
-          style: const TextStyle(color: Colors.white),
-        ),
-        content: Text(
-          loc.translate('save_changes_desc'),
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _discardChanges();
-            },
-            child: Text(loc.translate('discard')),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AlertDialog(
+          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.white.withOpacity(0.1)),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _saveChanges();
-            },
-            child: Text(loc.translate('save')),
+          title: Text(
+            loc.translate('save_changes'),
+            style: const TextStyle(
+              color: Colors.white,
+              fontFamily: 'ProductSans',
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ],
+          content: Text(
+            loc.translate('save_changes_desc'),
+            style: const TextStyle(
+              color: Colors.white70,
+              fontFamily: 'ProductSans',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _discardChanges();
+              },
+              child: Text(
+                loc.translate('discard'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white70,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _saveChanges();
+              },
+              child: Text(
+                loc.translate('save'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -460,8 +571,18 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
       // Save the changes to the file
       await AudioTags.write(widget.song.data, updatedTag);
 
+      // Trigger MediaStore rescan so the updated metadata is reflected
+      await _audioQuery.scanMedia(widget.song.data);
+
       // Reload tags to confirm changes
       _currentTag = await AudioTags.read(widget.song.data);
+
+      // Refresh the audio player service's song list to reflect changes
+      if (mounted) {
+        final audioPlayerService =
+            Provider.of<AudioPlayerService>(context, listen: false);
+        await audioPlayerService.initializeMusicLibrary();
+      }
 
       setState(() {
         _isEditing = false;
@@ -499,63 +620,85 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   void _showSaveErrorDialog(AppLocalizations loc, String error) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.error_outline, color: Colors.red[400]),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                loc.translate('save_failed'),
-                style: const TextStyle(color: Colors.white, fontSize: 18),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              loc.translate('save_failed_desc'),
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    loc.translate('possible_reasons'),
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildReasonItem(loc.translate('reason_permissions')),
-                  _buildReasonItem(loc.translate('reason_readonly')),
-                  _buildReasonItem(loc.translate('reason_format')),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(loc.translate('got_it')),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AlertDialog(
+          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.white.withOpacity(0.1)),
           ),
-        ],
+          title: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.red[400]),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  loc.translate('save_failed'),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontFamily: 'ProductSans',
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                loc.translate('save_failed_desc'),
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontFamily: 'ProductSans',
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      loc.translate('possible_reasons'),
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        fontFamily: 'ProductSans',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildReasonItem(loc.translate('reason_permissions')),
+                    _buildReasonItem(loc.translate('reason_readonly')),
+                    _buildReasonItem(loc.translate('reason_format')),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                loc.translate('got_it'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -585,38 +728,60 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   void _showPermissionDialog(AppLocalizations loc) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.folder_off, color: Colors.orange[400]),
-            const SizedBox(width: 12),
-            Expanded(
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AlertDialog(
+          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.folder_off, color: Colors.orange[400]),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  loc.translate('permission_required'),
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            loc.translate('storage_permission_needed'),
+            style: const TextStyle(
+              color: Colors.white70,
+              fontFamily: 'ProductSans',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
               child: Text(
-                loc.translate('permission_required'),
-                style: const TextStyle(color: Colors.white, fontSize: 18),
+                loc.translate('cancel'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white70,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                openAppSettings();
+              },
+              child: Text(
+                loc.translate('open_settings'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
         ),
-        content: Text(
-          loc.translate('storage_permission_needed'),
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(loc.translate('cancel')),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              openAppSettings();
-            },
-            child: Text(loc.translate('open_settings')),
-          ),
-        ],
       ),
     );
   }

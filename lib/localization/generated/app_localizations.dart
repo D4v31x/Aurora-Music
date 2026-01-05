@@ -2533,6 +2533,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skip'**
   String get skip;
+
+  /// No description provided for @feedback_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoying Aurora Music?'**
+  String get feedback_title;
+
+  /// No description provided for @feedback_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Your feedback helps make Aurora Music better! Found a bug or have an idea? We\'d love to hear from you.'**
+  String get feedback_description;
+
+  /// No description provided for @report_bug.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Bug'**
+  String get report_bug;
+
+  /// No description provided for @suggest_feature.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest Feature'**
+  String get suggest_feature;
+
+  /// No description provided for @maybe_later.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe Later'**
+  String get maybe_later;
+
+  /// No description provided for @dont_ask_again.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t ask again'**
+  String get dont_ask_again;
+
+  /// No description provided for @send_feedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Feedback'**
+  String get send_feedback;
+
+  /// No description provided for @send_feedback_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Report bugs or suggest features'**
+  String get send_feedback_desc;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 }
 
 class _AppLocalizationsDelegate

@@ -2,8 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../services/home_layout_service.dart';
-import '../localization/app_localizations.dart';
+import '../../services/home_layout_service.dart';
+import '../../localization/app_localizations.dart';
 
 /// Settings screen for customizing home tab layout and section order
 class HomeLayoutSettingsScreen extends StatefulWidget {
@@ -159,45 +159,60 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
 
   void _showResetDialog(BuildContext context, HomeLayoutService layoutService) {
     final l10n = AppLocalizations.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1A1A1F) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          l10n.translate('resetLayoutConfirm'),
-          style: const TextStyle(fontFamily: 'ProductSans'),
-        ),
-        content: Text(
-          l10n.translate('resetLayoutMessage'),
-          style: TextStyle(
-            fontFamily: 'ProductSans',
-            color: isDark ? Colors.white70 : Colors.black54,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AlertDialog(
+          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.white.withOpacity(0.1)),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.translate('cancel')),
+          title: Text(
+            l10n.translate('resetLayoutConfirm'),
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              layoutService.resetToDefault();
-              Navigator.pop(context);
-              HapticFeedback.mediumImpact();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          content: Text(
+            l10n.translate('resetLayoutMessage'),
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white70,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                l10n.translate('cancel'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white70,
+                ),
               ),
             ),
-            child: Text(l10n.translate('resetToDefault')),
-          ),
-        ],
+            TextButton(
+              onPressed: () {
+                layoutService.resetToDefault();
+                Navigator.pop(context);
+                HapticFeedback.mediumImpact();
+              },
+              child: Text(
+                l10n.translate('resetToDefault'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

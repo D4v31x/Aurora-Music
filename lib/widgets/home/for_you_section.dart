@@ -6,9 +6,9 @@ import '../../services/audio_player_service.dart';
 import '../../services/artwork_cache_service.dart';
 import '../../services/local_caching_service.dart';
 import '../../models/playlist_model.dart';
-import '../../screens/PlaylistDetail_screen.dart';
-import '../../screens/AlbumDetailScreen.dart';
-import '../../screens/Artist_screen.dart';
+import '../../screens/library/playlist_detail_screen.dart';
+import '../../screens/library/album_detail_screen.dart';
+import '../../screens/library/artist_detail_screen.dart';
 import '../../localization/app_localizations.dart';
 
 /// A "For You" section with a 2-row fixed grid of personalized content
@@ -47,10 +47,30 @@ class _ForYouSectionState extends State<ForYouSection> {
   @override
   void didUpdateWidget(ForYouSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.randomSongs.length != widget.randomSongs.length ||
-        oldWidget.randomArtists.length != widget.randomArtists.length) {
+    // Rebuild if randomSongs or randomArtists content changed
+    final songsChanged =
+        oldWidget.randomSongs.length != widget.randomSongs.length ||
+            !_listEquals(oldWidget.randomSongs, widget.randomSongs);
+    final artistsChanged =
+        oldWidget.randomArtists.length != widget.randomArtists.length ||
+            !_listEquals(oldWidget.randomArtists, widget.randomArtists);
+
+    if (songsChanged || artistsChanged) {
       _buildForYouItems();
     }
+  }
+
+  // Helper to compare lists by content
+  bool _listEquals<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] is SongModel && b[i] is SongModel) {
+        if ((a[i] as SongModel).id != (b[i] as SongModel).id) return false;
+      } else if (a[i] != b[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   void _buildForYouItems() {

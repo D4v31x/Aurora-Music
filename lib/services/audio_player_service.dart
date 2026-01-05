@@ -179,8 +179,66 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
+  // Scan common music directories to update MediaStore with new files
+  Future<void> _scanMusicDirectories() async {
+    try {
+      // Common music directories on Android
+      final musicPaths = [
+        '/storage/emulated/0/Music',
+        '/storage/emulated/0/Download',
+        '/storage/emulated/0/Downloads',
+        '/storage/emulated/0/DCIM',
+        '/storage/emulated/0/Podcasts',
+        '/storage/emulated/0/Ringtones',
+        '/storage/emulated/0/Notifications',
+        '/storage/emulated/0/Alarms',
+        '/sdcard/Music',
+        '/sdcard/Download',
+        '/sdcard/Downloads',
+      ];
+
+      debugPrint('Scanning music directories for new files...');
+      int scannedCount = 0;
+
+      for (final basePath in musicPaths) {
+        final dir = Directory(basePath);
+        if (await dir.exists()) {
+          try {
+            await for (final entity
+                in dir.list(recursive: true, followLinks: false)) {
+              if (entity is File) {
+                final path = entity.path.toLowerCase();
+                // Check for common audio file extensions
+                if (path.endsWith('.mp3') ||
+                    path.endsWith('.m4a') ||
+                    path.endsWith('.flac') ||
+                    path.endsWith('.wav') ||
+                    path.endsWith('.aac') ||
+                    path.endsWith('.ogg') ||
+                    path.endsWith('.wma') ||
+                    path.endsWith('.opus')) {
+                  await _audioQuery.scanMedia(entity.path);
+                  scannedCount++;
+                }
+              }
+            }
+          } catch (e) {
+            debugPrint('Error scanning $basePath: $e');
+          }
+        }
+      }
+
+      debugPrint('Scanned $scannedCount audio files');
+
+      // Give MediaStore a moment to process the scanned files
+      await Future.delayed(const Duration(milliseconds: 500));
+    } catch (e) {
+      debugPrint('Error scanning music directories: $e');
+    }
+  }
+
   // Public method to initialize music library - should be called only from HomeScreen
-  Future<bool> initializeMusicLibrary() async {
+  Future<bool> initializeMusicLibrary({bool forceRescan = false}) async {
     try {
       final hasPermissions = await _checkPermissionStatus();
 
@@ -189,13 +247,34 @@ class AudioPlayerService extends ChangeNotifier {
         return false;
       }
 
-      // Load library from cache first
-      await loadLibrary();
+      // Only load from cache if not forcing a rescan
+      if (!forceRescan) {
+        await loadLibrary();
+      } else {
+        // Clear the library set to force fresh query
+        _librarySet.clear();
+        debugPrint('Force rescan: cleared library cache');
 
-      // Try to load songs
+        // Scan common music directories to update MediaStore
+        await _scanMusicDirectories();
+      }
+
+      // Try to load songs - always query fresh from MediaStore
       try {
-        final songs = await _audioQuery.querySongs();
+        // Query with proper parameters to get all songs from external storage
+        final songs = await _audioQuery.querySongs(
+          sortType: null,
+          orderType: OrderType.ASC_OR_SMALLER,
+          uriType: UriType.EXTERNAL,
+          ignoreCase: true,
+        );
+        debugPrint('Queried ${songs.length} songs from storage');
         _updateSongs(songs);
+
+        // Save the updated library
+        if (forceRescan) {
+          await saveLibrary();
+        }
 
         // Initialize the liked songs playlist
         await loadLikedSongs();
@@ -564,7 +643,12 @@ class AudioPlayerService extends ChangeNotifier {
 
   // Most Played Queries
   Future<List<SongModel>> getMostPlayedTracks() async {
-    final allSongs = await _audioQuery.querySongs();
+    final allSongs = await _audioQuery.querySongs(
+      sortType: null,
+      orderType: OrderType.ASC_OR_SMALLER,
+      uriType: UriType.EXTERNAL,
+      ignoreCase: true,
+    );
     final sortedTracks = allSongs
       ..sort((a, b) => (_trackPlayCounts[b.id.toString()] ?? 0)
           .compareTo(_trackPlayCounts[a.id.toString()] ?? 0));
@@ -1456,7 +1540,12 @@ class AudioPlayerService extends ChangeNotifier {
 
   // Add this new method
   Future<List<SongModel>> getRecentlyPlayed() async {
-    final allSongs = await _audioQuery.querySongs();
+    final allSongs = await _audioQuery.querySongs(
+      sortType: null,
+      orderType: OrderType.ASC_OR_SMALLER,
+      uriType: UriType.EXTERNAL,
+      ignoreCase: true,
+    );
     final recentlyPlayedSongs = allSongs
         .where((song) => _trackPlayCounts.containsKey(song.id.toString()))
         .toList();

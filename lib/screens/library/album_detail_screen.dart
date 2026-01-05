@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import '../services/audio_player_service.dart';
-import '../localization/app_localizations.dart';
+import '../../services/audio_player_service.dart';
+import '../../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
-import '../services/artwork_cache_service.dart';
-import '../widgets/glassmorphic_container.dart';
-import '../widgets/app_background.dart';
-import '../widgets/shimmer_loading.dart';
-import '../widgets/expanding_player.dart';
-import '../models/utils.dart';
+import '../../services/artwork_cache_service.dart';
+import '../../widgets/glassmorphic_container.dart';
+import '../../widgets/app_background.dart';
+import '../../widgets/shimmer_loading.dart';
+import '../../widgets/expanding_player.dart';
+import '../../models/utils.dart';
 
 class AlbumDetailScreen extends StatefulWidget {
   final String albumName;

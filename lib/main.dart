@@ -26,6 +26,9 @@ import 'providers/performance_mode_provider.dart';
 import 'widgets/performance_debug_overlay.dart';
 import 'widgets/expanding_player.dart';
 
+/// Global navigator key for accessing navigator from anywhere
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 /// Global audio handler instance
 late AuroraAudioHandler audioHandler;
 
@@ -218,6 +221,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           locale: _locale,
           setLocale: setLocale,
           child: MaterialApp(
+            navigatorKey: navigatorKey,
             debugShowCheckedModeBanner: false,
             locale: _locale,
             themeMode: ThemeMode.dark,
@@ -232,14 +236,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     return MaterialRectCenterArcTween(begin: begin, end: end);
                   },
                 ),
-                child: Stack(
-                  children: [
-                    // Main app content
-                    child ?? const SizedBox.shrink(),
-                    // Global mini player overlay
-                    const ExpandingPlayer(),
-                  ],
-                ),
+                // Just pass the child, mini player is handled in home screen
+                child: child ?? const SizedBox.shrink(),
               );
             },
             home: Builder(
