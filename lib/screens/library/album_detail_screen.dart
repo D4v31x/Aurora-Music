@@ -11,6 +11,7 @@ import '../../widgets/app_background.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/expanding_player.dart';
 import '../../models/utils.dart';
+import '../shared/detail_screen_mixin.dart';
 
 class AlbumDetailScreen extends StatefulWidget {
   final String albumName;
@@ -24,7 +25,8 @@ class AlbumDetailScreen extends StatefulWidget {
   State<AlbumDetailScreen> createState() => _AlbumDetailScreenState();
 }
 
-class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
+class _AlbumDetailScreenState extends State<AlbumDetailScreen>
+    with DetailScreenMixin {
   final OnAudioQuery _audioQuery = OnAudioQuery();
   final ArtworkCacheService _artworkService = ArtworkCacheService();
   late ScrollController _scrollController;
@@ -42,6 +44,13 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   String? _artistName;
   Duration _totalDuration = Duration.zero;
   List<AlbumModel> _relatedAlbums = [];
+
+  // DetailScreenMixin requirements
+  @override
+  Color get dominantColor => _dominantColorNotifier.value;
+
+  @override
+  List<SongModel> get allSongs => _allSongs;
 
   @override
   void initState() {
@@ -260,16 +269,16 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                _buildStatItem(
+                                buildStatItem(
                                   Icons.music_note_rounded,
                                   '${_allSongs.length}',
                                   AppLocalizations.of(context)
                                       .translate('songs'),
                                 ),
-                                _buildStatDivider(),
-                                _buildStatItem(
+                                buildStatDivider(),
+                                buildStatItem(
                                   Icons.timer_outlined,
-                                  _formatDuration(_totalDuration),
+                                  formatDuration(_totalDuration),
                                   AppLocalizations.of(context)
                                       .translate('total'),
                                 ),
@@ -283,35 +292,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                 ),
                 // Action buttons
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _buildActionButton(
-                            context,
-                            Icons.play_arrow_rounded,
-                            AppLocalizations.of(context).translate('play_all'),
-                            () => _playAllSongs(context),
-                            dominantColor,
-                            isPrimary: true,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildActionButton(
-                            context,
-                            Icons.shuffle_rounded,
-                            AppLocalizations.of(context).translate('shuffle'),
-                            () => _shuffleAllSongs(context),
-                            dominantColor,
-                            isPrimary: false,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: buildActionButtonsRow(),
                 ),
                 // Songs header
                 SliverToBoxAdapter(
@@ -408,19 +389,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                   ),
                 ],
                 // Bottom padding for mini player
-                SliverToBoxAdapter(
-                  child: Selector<AudioPlayerService, bool>(
-                    selector: (_, service) => service.currentSong != null,
-                    builder: (context, hasCurrentSong, _) {
-                      return SizedBox(
-                        height: hasCurrentSong
-                            ? ExpandingPlayer.getMiniPlayerPaddingHeight(
-                                context)
-                            : 16,
-                      );
-                    },
-                  ),
-                ),
+                buildMiniPlayerPadding(),
               ],
             ),
           );
@@ -486,119 +455,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                   ),
           );
         },
-      ),
-    );
-  }
-
-  void _playAllSongs(BuildContext context) async {
-    if (_allSongs.isNotEmpty) {
-      final audioPlayerService =
-          Provider.of<AudioPlayerService>(context, listen: false);
-      audioPlayerService.setPlaylist(_allSongs, 0);
-    }
-  }
-
-  void _shuffleAllSongs(BuildContext context) async {
-    if (_allSongs.isNotEmpty) {
-      final shuffledSongs = List<SongModel>.from(_allSongs)..shuffle();
-      final audioPlayerService =
-          Provider.of<AudioPlayerService>(context, listen: false);
-      audioPlayerService.setPlaylist(shuffledSongs, 0);
-    }
-  }
-
-  Widget _buildStatItem(IconData icon, String value, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: Colors.white70, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.6),
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatDivider() {
-    return Container(
-      height: 40,
-      width: 1,
-      color: Colors.white.withOpacity(0.2),
-    );
-  }
-
-  String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    if (hours > 0) {
-      return '${hours}h ${minutes}m';
-    }
-    return '${minutes}m';
-  }
-
-  Widget _buildActionButton(
-    BuildContext context,
-    IconData icon,
-    String label,
-    VoidCallback onTap,
-    Color dominantColor, {
-    bool isPrimary = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-        decoration: BoxDecoration(
-          gradient: isPrimary
-              ? LinearGradient(
-                  colors: [
-                    dominantColor.withOpacity(0.8),
-                    dominantColor.withOpacity(0.6),
-                  ],
-                )
-              : null,
-          color: isPrimary ? null : Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isPrimary ? dominantColor : Colors.white.withOpacity(0.2),
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.white, size: 22),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

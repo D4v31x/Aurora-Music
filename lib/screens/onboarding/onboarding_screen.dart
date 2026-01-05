@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../services/user_preferences.dart';
 import '../../providers/theme_provider.dart';
 import '../../localization/app_localizations.dart';
-import '../home_screen.dart';
+import '../main/home_screen.dart';
 import 'pages/welcome_page.dart';
 import 'pages/beta_welcome_page.dart';
 import 'pages/app_info_page.dart';
