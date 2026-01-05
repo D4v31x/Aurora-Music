@@ -36,6 +36,3 @@ export 'grainy_gradient_background.dart';
 
 // Debug and performance
 export 'performance_debug_overlay.dart';
-
-// Home tab widgets - accessible via 'home/' subpath
-// import 'package:aurora_music_v01/widgets/home/home_tab.dart';
