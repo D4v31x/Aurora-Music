@@ -31,22 +31,44 @@ class GlassmorphicDialog extends StatelessWidget {
     final performanceProvider =
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    final containerDecoration = BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Colors.white.withValues(alpha: shouldBlur ? 0.15 : 0.25),
-          Colors.white.withValues(alpha: shouldBlur ? 0.05 : 0.12),
+    // Use solid surface colors for lowend devices
+    final BoxDecoration containerDecoration;
+    if (shouldBlur) {
+      containerDecoration = BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: 0.15),
+            Colors.white.withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      );
+    } else {
+      // Solid dialog styling for lowend devices
+      containerDecoration = BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
         ],
-      ),
-      borderRadius: BorderRadius.circular(borderRadius),
-      border: Border.all(
-        color: Colors.white.withValues(alpha: 0.2),
-        width: 1,
-      ),
-    );
+      );
+    }
 
     final dialogContent = Container(
       decoration: containerDecoration,
@@ -178,6 +200,7 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
     final performanceProvider =
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return PopupMenuButton<T>(
       onSelected: onSelected,
@@ -193,14 +216,17 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
       ),
       itemBuilder: (context) {
         final items = itemBuilder(context);
-        final menuContent = Container(
-          decoration: BoxDecoration(
+
+        // Use solid surface colors for lowend devices
+        final BoxDecoration menuDecoration;
+        if (shouldBlur) {
+          menuDecoration = BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withValues(alpha: shouldBlur ? 0.15 : 0.25),
-                Colors.white.withValues(alpha: shouldBlur ? 0.05 : 0.12),
+                Colors.white.withValues(alpha: 0.15),
+                Colors.white.withValues(alpha: 0.05),
               ],
             ),
             borderRadius: BorderRadius.circular(borderRadius),
@@ -208,7 +234,28 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.2),
               width: 1,
             ),
-          ),
+          );
+        } else {
+          // Solid menu styling for lowend devices
+          menuDecoration = BoxDecoration(
+            color: colorScheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withOpacity(0.3),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          );
+        }
+
+        final menuContent = Container(
+          decoration: menuDecoration,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: items.map((item) {
@@ -283,6 +330,7 @@ Future<T?> showGlassmorphicBottomSheet<T>({
   final performanceProvider =
       Provider.of<PerformanceModeProvider>(context, listen: false);
   final shouldBlur = performanceProvider.shouldEnableBlur;
+  final colorScheme = Theme.of(context).colorScheme;
 
   return showModalBottomSheet<T>(
     context: context,
@@ -294,22 +342,44 @@ Future<T?> showGlassmorphicBottomSheet<T>({
       borderRadius: BorderRadius.vertical(top: Radius.circular(borderRadius)),
     ),
     builder: (context) {
-      final sheetDecoration = BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: shouldBlur ? 0.15 : 0.25),
-            Colors.white.withValues(alpha: shouldBlur ? 0.05 : 0.12),
+      // Use solid surface colors for lowend devices
+      final BoxDecoration sheetDecoration;
+      if (shouldBlur) {
+        sheetDecoration = BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.15),
+              Colors.white.withValues(alpha: 0.05),
+            ],
+          ),
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(borderRadius)),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        );
+      } else {
+        // Solid bottom sheet styling for lowend devices
+        sheetDecoration = BoxDecoration(
+          color: colorScheme.surfaceContainerHigh,
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(borderRadius)),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withOpacity(0.3),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.25),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
+            ),
           ],
-        ),
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(borderRadius)),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      );
+        );
+      }
 
       final sheetContent = Container(
         decoration: sheetDecoration,

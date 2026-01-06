@@ -219,6 +219,7 @@ class GlassmorphicCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
 
     // Check if blur should be enabled based on performance mode
     // Use listen: false to prevent rebuilding all cards
@@ -226,17 +227,40 @@ class GlassmorphicCard extends StatelessWidget {
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
 
-    final cardDecoration = BoxDecoration(
-      color: isDark
-          ? Colors.white.withOpacity(shouldBlur ? 0.1 : 0.15)
-          : Colors.black.withOpacity(shouldBlur ? 0.05 : 0.08),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
+    // Use solid surface colors for lowend devices, transparent for high-end
+    final BoxDecoration cardDecoration;
+    if (shouldBlur) {
+      cardDecoration = BoxDecoration(
         color: isDark
-            ? Colors.white.withOpacity(0.15)
-            : Colors.black.withOpacity(0.1),
-      ),
-    );
+            ? Colors.white.withOpacity(0.1)
+            : Colors.black.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.15)
+              : Colors.black.withOpacity(0.1),
+        ),
+      );
+    } else {
+      // Solid card styling for lowend devices
+      cardDecoration = BoxDecoration(
+        color: isDark
+            ? colorScheme.surfaceContainerHigh
+            : colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      );
+    }
 
     final cardContent = Container(
       width: width,

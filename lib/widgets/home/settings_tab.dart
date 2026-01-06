@@ -260,9 +260,18 @@ class _SettingsTabState extends State<SettingsTab> {
     final performanceProvider =
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Use solid surface colors for lowend devices
+    final Color backgroundColor;
+    if (shouldBlur) {
+      backgroundColor = Colors.grey[900]!.withOpacity(0.9);
+    } else {
+      backgroundColor = colorScheme.surfaceContainerHigh;
+    }
 
     final dialogContent = AlertDialog(
-      backgroundColor: Colors.grey[900]?.withOpacity(shouldBlur ? 0.9 : 0.95),
+      backgroundColor: backgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: Colors.white.withOpacity(0.1)),
@@ -333,6 +342,15 @@ class _SettingsTabState extends State<SettingsTab> {
     final performanceProvider =
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Use solid surface colors for lowend devices
+    final Color backgroundColor;
+    if (shouldBlur) {
+      backgroundColor = Colors.grey[900]!.withOpacity(0.9);
+    } else {
+      backgroundColor = colorScheme.surfaceContainerHigh;
+    }
 
     try {
       final directory = await getApplicationDocumentsDirectory();
@@ -367,7 +385,7 @@ class _SettingsTabState extends State<SettingsTab> {
       if (!mounted) return;
 
       final dialogContent = AlertDialog(
-        backgroundColor: Colors.grey[900]?.withOpacity(shouldBlur ? 0.9 : 0.95),
+        backgroundColor: backgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(color: Colors.white.withOpacity(0.1)),
@@ -519,9 +537,18 @@ class _SettingsTabState extends State<SettingsTab> {
     final performanceProvider =
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Use solid surface colors for lowend devices
+    final Color backgroundColor;
+    if (shouldBlur) {
+      backgroundColor = Colors.grey[900]!.withOpacity(0.9);
+    } else {
+      backgroundColor = colorScheme.surfaceContainerHigh;
+    }
 
     final dialogContent = AlertDialog(
-      backgroundColor: Colors.grey[900]?.withOpacity(shouldBlur ? 0.9 : 0.95),
+      backgroundColor: backgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: Colors.white.withOpacity(0.1)),

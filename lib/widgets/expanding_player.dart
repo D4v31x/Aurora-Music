@@ -176,27 +176,42 @@ class _MiniPlayerWidget extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = ResponsiveUtils.isTablet(context);
     final margin = isTablet ? 32.0 : 16.0;
+    final colorScheme = Theme.of(context).colorScheme;
 
     // Check if blur should be enabled based on performance mode
     final performanceProvider =
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
 
-    final playerDecoration = BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Colors.white.withValues(alpha: shouldBlur ? 0.15 : 0.25),
-          Colors.white.withValues(alpha: shouldBlur ? 0.05 : 0.12),
-        ],
-      ),
-      borderRadius: BorderRadius.circular(24),
-      border: Border.all(
-        color: Colors.white.withValues(alpha: 0.2),
-        width: 1,
-      ),
-    );
+    // Use solid surface colors for lowend devices
+    final BoxDecoration playerDecoration;
+    if (shouldBlur) {
+      playerDecoration = BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: 0.15),
+            Colors.white.withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      );
+    } else {
+      // Solid player styling for lowend devices
+      playerDecoration = BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+          width: 1,
+        ),
+      );
+    }
 
     final playerContent = Container(
       decoration: playerDecoration,
