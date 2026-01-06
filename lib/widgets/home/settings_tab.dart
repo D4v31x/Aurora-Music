@@ -12,6 +12,7 @@ import '../../services/audio_player_service.dart';
 import '../../localization/app_localizations.dart';
 import '../../localization/locale_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/performance_mode_provider.dart';
 import '../../services/version_service.dart';
 import '../../services/notification_manager.dart';
 import '../../services/cache_manager.dart';
@@ -254,70 +255,84 @@ class _SettingsTabState extends State<SettingsTab> {
 
   void _showClearCacheDialog() {
     final l10n = AppLocalizations.of(context);
-    showDialog(
-      context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
-          ),
-          title: Text(
-            l10n.translate('settings_clear_cache_title'),
-            style: const TextStyle(
-              fontFamily: 'ProductSans',
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Text(
-            l10n.translate('settings_clear_cache_message'),
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
+    final dialogContent = AlertDialog(
+      backgroundColor: Colors.grey[900]?.withOpacity(shouldBlur ? 0.9 : 0.95),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: Colors.white.withOpacity(0.1)),
+      ),
+      title: Text(
+        l10n.translate('settings_clear_cache_title'),
+        style: const TextStyle(
+          fontFamily: 'ProductSans',
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      content: Text(
+        l10n.translate('settings_clear_cache_message'),
+        style: const TextStyle(
+          fontFamily: 'ProductSans',
+          color: Colors.white70,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            l10n.translate('cancel'),
             style: const TextStyle(
               fontFamily: 'ProductSans',
               color: Colors.white70,
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                l10n.translate('cancel'),
-                style: const TextStyle(
-                  fontFamily: 'ProductSans',
-                  color: Colors.white70,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                await _clearAllCaches();
-                if (mounted) {
-                  widget.notificationManager.showNotification(
-                    l10n.translate('settings_cache_cleared'),
-                    duration: const Duration(seconds: 2),
-                  );
-                }
-              },
-              child: Text(
-                l10n.translate('delete'),
-                style: TextStyle(
-                  fontFamily: 'ProductSans',
-                  color: Theme.of(context).colorScheme.error,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
         ),
-      ),
+        TextButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            await _clearAllCaches();
+            if (mounted) {
+              widget.notificationManager.showNotification(
+                l10n.translate('settings_cache_cleared'),
+                duration: const Duration(seconds: 2),
+              );
+            }
+          },
+          child: Text(
+            l10n.translate('delete'),
+            style: TextStyle(
+              fontFamily: 'ProductSans',
+              color: Theme.of(context).colorScheme.error,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => shouldBlur
+          ? BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: dialogContent,
+            )
+          : dialogContent,
     );
   }
 
   void _showCacheInfo() async {
     final l10n = AppLocalizations.of(context);
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
     try {
       final directory = await getApplicationDocumentsDirectory();
 
@@ -350,77 +365,80 @@ class _SettingsTabState extends State<SettingsTab> {
 
       if (!mounted) return;
 
-      showDialog(
-        context: context,
-        builder: (context) => BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: AlertDialog(
-            backgroundColor: Colors.grey[900]?.withOpacity(0.9),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: Colors.white.withOpacity(0.1)),
-            ),
-            title: Text(
-              l10n.translate('settings_cache_info'),
-              style: const TextStyle(
-                fontFamily: 'ProductSans',
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    l10n.translate('settings_storage'),
-                    style: const TextStyle(
-                      fontFamily: 'ProductSans',
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildInfoRow(
-                      l10n.translate('lyrics'), _formatBytes(lyricsSize)),
-                  _buildInfoRow(l10n.translate('onboarding_album_artwork'),
-                      _formatBytes(artworkSize)),
-                  Divider(color: Colors.white.withOpacity(0.2)),
-                  _buildInfoRow('Total', _formatBytes(totalSize), bold: true),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Memory Cache',
-                    style: const TextStyle(
-                      fontFamily: 'ProductSans',
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildInfoRow(l10n.translate('lyrics'),
-                      '${cacheSizes['lyrics']} items'),
-                  _buildInfoRow(l10n.translate('onboarding_album_artwork'),
-                      '${cacheSizes['artwork']} items'),
-                  _buildInfoRow(l10n.translate('metadata'),
-                      '${cacheSizes['metadata']} items'),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  l10n.translate('cancel'),
-                  style: const TextStyle(
-                    fontFamily: 'ProductSans',
-                    color: Colors.white70,
-                  ),
+      final dialogContent = AlertDialog(
+        backgroundColor: Colors.grey[900]?.withOpacity(shouldBlur ? 0.9 : 0.95),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        ),
+        title: Text(
+          l10n.translate('settings_cache_info'),
+          style: const TextStyle(
+            fontFamily: 'ProductSans',
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.translate('settings_storage'),
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+              const SizedBox(height: 8),
+              _buildInfoRow(l10n.translate('lyrics'), _formatBytes(lyricsSize)),
+              _buildInfoRow(l10n.translate('onboarding_album_artwork'),
+                  _formatBytes(artworkSize)),
+              Divider(color: Colors.white.withOpacity(0.2)),
+              _buildInfoRow('Total', _formatBytes(totalSize), bold: true),
+              const SizedBox(height: 16),
+              Text(
+                'Memory Cache',
+                style: const TextStyle(
+                  fontFamily: 'ProductSans',
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildInfoRow(
+                  l10n.translate('lyrics'), '${cacheSizes['lyrics']} items'),
+              _buildInfoRow(l10n.translate('onboarding_album_artwork'),
+                  '${cacheSizes['artwork']} items'),
+              _buildInfoRow(
+                  l10n.translate('metadata'), '${cacheSizes['metadata']} items'),
             ],
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              l10n.translate('cancel'),
+              style: const TextStyle(
+                fontFamily: 'ProductSans',
+                color: Colors.white70,
+              ),
+            ),
+          ),
+        ],
+      );
+
+      showDialog(
+        context: context,
+        builder: (context) => shouldBlur
+            ? BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: dialogContent,
+              )
+            : dialogContent,
       );
     } catch (e) {
       debugPrint('Error getting cache info: $e');
@@ -496,61 +514,70 @@ class _SettingsTabState extends State<SettingsTab> {
 
   void _showUpdateAvailableDialog(dynamic latestVersion) {
     final l10n = AppLocalizations.of(context);
-    showDialog(
-      context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
+    final dialogContent = AlertDialog(
+      backgroundColor: Colors.grey[900]?.withOpacity(shouldBlur ? 0.9 : 0.95),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: Colors.white.withOpacity(0.1)),
+      ),
+      title: Text(
+        l10n.translate('update_available'),
+        style: const TextStyle(
+          fontFamily: 'ProductSans',
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      content: Text(
+        '${l10n.translate('update_message')}: $latestVersion',
+        style: const TextStyle(
+          fontFamily: 'ProductSans',
+          color: Colors.white70,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            l10n.translate('later'),
+            style: const TextStyle(
+              fontFamily: 'ProductSans',
+              color: Colors.white70,
+            ),
           ),
-          title: Text(
-            l10n.translate('update_available'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            if (widget.onUpdateCheck != null) {
+              widget.onUpdateCheck!();
+            }
+          },
+          child: Text(
+            l10n.translate('update_now'),
             style: const TextStyle(
               fontFamily: 'ProductSans',
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
-          content: Text(
-            '${l10n.translate('update_message')}: $latestVersion',
-            style: const TextStyle(
-              fontFamily: 'ProductSans',
-              color: Colors.white70,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                l10n.translate('later'),
-                style: const TextStyle(
-                  fontFamily: 'ProductSans',
-                  color: Colors.white70,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                if (widget.onUpdateCheck != null) {
-                  widget.onUpdateCheck!();
-                }
-              },
-              child: Text(
-                l10n.translate('update_now'),
-                style: const TextStyle(
-                  fontFamily: 'ProductSans',
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
         ),
-      ),
+      ],
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => shouldBlur
+          ? BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: dialogContent,
+            )
+          : dialogContent,
     );
   }
 
