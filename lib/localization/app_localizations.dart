@@ -610,6 +610,10 @@ extension AppLocalizationsExtension on generated.AppLocalizations {
         return settingsMaterialYou;
       case 'settings_material_you_desc':
         return settingsMaterialYouDesc;
+      case 'settings_highend_ui':
+        return settingsHighendUi;
+      case 'settings_highend_ui_desc':
+        return settingsHighendUiDesc;
       case 'settings_language':
         return settingsLanguage;
       case 'settings_playback':

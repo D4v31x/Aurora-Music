@@ -2587,6 +2587,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// No description provided for @settingsHighendUi.
+  ///
+  /// In en, this message translates to:
+  /// **'High-end UI'**
+  String get settingsHighendUi;
+
+  /// No description provided for @settingsHighendUiDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable advanced visual effects and animations'**
+  String get settingsHighendUiDesc;
 }
 
 class _AppLocalizationsDelegate

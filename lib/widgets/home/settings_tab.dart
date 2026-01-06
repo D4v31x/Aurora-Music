@@ -13,6 +13,7 @@ import '../../localization/app_localizations.dart';
 import '../../localization/locale_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/performance_mode_provider.dart';
+import '../../services/device_performance_service.dart';
 import '../../services/version_service.dart';
 import '../../services/notification_manager.dart';
 import '../../services/cache_manager.dart';
@@ -711,6 +712,23 @@ class _SettingsTabState extends State<SettingsTab> {
               value: themeProvider.useDynamicColor,
               onChanged: (value) => themeProvider.toggleDynamicColor(),
               isFirst: true,
+            ),
+            Consumer<PerformanceModeProvider>(
+              builder: (context, performanceProvider, _) {
+                final isHighEnd =
+                    performanceProvider.currentMode == PerformanceLevel.high;
+                return _buildSwitchTile(
+                  icon: Icons.speed_rounded,
+                  title: l10n.translate('settings_highend_ui'),
+                  subtitle: l10n.translate('settings_highend_ui_desc'),
+                  value: isHighEnd,
+                  onChanged: (value) {
+                    performanceProvider.setPerformanceMode(
+                      value ? PerformanceLevel.high : PerformanceLevel.low,
+                    );
+                  },
+                );
+              },
             ),
             _buildLanguageTile(),
             _buildActionTile(
