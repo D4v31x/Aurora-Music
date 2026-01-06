@@ -397,7 +397,7 @@ class _LibraryTabState extends State<LibraryTab> {
     } else {
       // Solid button styling for lowend devices
       detailsButtonDecoration = BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
+        color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: colorScheme.outlineVariant.withOpacity(0.3),
@@ -605,7 +605,7 @@ class _LibraryTabState extends State<LibraryTab> {
     } else {
       // Solid button styling for lowend devices
       detailsButtonDecoration = BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
+        color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: colorScheme.outlineVariant.withOpacity(0.3),
