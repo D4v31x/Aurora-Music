@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../widgets/app_background.dart';
 import '../widgets/expanding_player.dart';
+import '../providers/performance_mode_provider.dart';
 
+/// A common scaffold for screens with a glassmorphic app bar.
+/// Performance-aware: Respects device performance mode for blur effects.
 class CommonScreenScaffold extends StatelessWidget {
   final String title;
   final Widget? searchBar;
@@ -22,6 +26,11 @@ class CommonScreenScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
     return AppBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -54,17 +63,27 @@ class CommonScreenScaffold extends StatelessWidget {
                           ? ((110.0 - top) / range).clamp(0.0, 1.0)
                           : 1.0;
 
-                      return Opacity(
-                        opacity: opacity,
-                        child: ClipRect(
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                            child: Container(
-                              color: Colors.black.withOpacity(0.4),
+                      // Performance: Only apply blur when device supports it
+                      if (shouldBlur) {
+                        return Opacity(
+                          opacity: opacity,
+                          child: ClipRect(
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                              child: Container(
+                                color: Colors.black.withOpacity(0.4),
+                              ),
                             ),
                           ),
-                        ),
-                      );
+                        );
+                      } else {
+                        return Opacity(
+                          opacity: opacity,
+                          child: Container(
+                            color: Colors.black.withOpacity(0.7),
+                          ),
+                        );
+                      }
                     },
                   ),
                   FlexibleSpaceBar(

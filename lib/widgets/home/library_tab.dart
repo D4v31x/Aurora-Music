@@ -18,6 +18,7 @@ import '../glassmorphic_card.dart';
 import '../shimmer_loading.dart';
 import '../../localization/app_localizations.dart';
 import '../../utils/responsive_utils.dart';
+import '../../providers/performance_mode_provider.dart';
 
 import '../expanding_player.dart';
 
@@ -373,6 +374,36 @@ class _LibraryTabState extends State<LibraryTab> {
     final cardSize = isWideLayout ? 120.0 : 110.0;
     final sectionHeight = cardSize + 60; // Card size + text space
 
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
+    final detailsButtonDecoration = BoxDecoration(
+      color: isDark
+          ? Colors.white.withOpacity(shouldBlur ? 0.1 : 0.15)
+          : Colors.black.withOpacity(shouldBlur ? 0.05 : 0.08),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: isDark
+            ? Colors.white.withOpacity(0.15)
+            : Colors.black.withOpacity(0.1),
+      ),
+    );
+
+    final detailsButtonContent = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: detailsButtonDecoration,
+      child: Text(
+        AppLocalizations.of(context).translate('details'),
+        style: theme.textTheme.bodySmall?.copyWith(
+          fontWeight: FontWeight.w500,
+          fontFamily: 'ProductSans',
+          fontSize: 12,
+        ),
+      ),
+    );
+
     return RepaintBoundary(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,35 +421,15 @@ class _LibraryTabState extends State<LibraryTab> {
               ),
               GestureDetector(
                 onTap: onDetailsTap,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.1)
-                            : Colors.black.withOpacity(0.05),
+                child: shouldBlur
+                    ? ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.15)
-                              : Colors.black.withOpacity(0.1),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: detailsButtonContent,
                         ),
-                      ),
-                      child: Text(
-                        AppLocalizations.of(context).translate('details'),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'ProductSans',
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                      )
+                    : detailsButtonContent,
               ),
             ],
           ),
@@ -556,6 +567,35 @@ class _LibraryTabState extends State<LibraryTab> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
+    final detailsButtonDecoration = BoxDecoration(
+      color: isDark
+          ? Colors.white.withOpacity(shouldBlur ? 0.1 : 0.15)
+          : Colors.black.withOpacity(shouldBlur ? 0.05 : 0.08),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: isDark
+            ? Colors.white.withOpacity(0.15)
+            : Colors.black.withOpacity(0.1),
+      ),
+    );
+
+    final detailsButtonContent = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: detailsButtonDecoration,
+      child: Text(
+        AppLocalizations.of(context).translate('details'),
+        style: theme.textTheme.bodySmall?.copyWith(
+          fontWeight: FontWeight.w500,
+          fontFamily: 'ProductSans',
+        ),
+      ),
+    );
+
     return RepaintBoundary(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -573,34 +613,15 @@ class _LibraryTabState extends State<LibraryTab> {
               ),
               GestureDetector(
                 onTap: onDetailsTap,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.1)
-                            : Colors.black.withOpacity(0.05),
+                child: shouldBlur
+                    ? ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.15)
-                              : Colors.black.withOpacity(0.1),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: detailsButtonContent,
                         ),
-                      ),
-                      child: Text(
-                        AppLocalizations.of(context).translate('details'),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'ProductSans',
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                      )
+                    : detailsButtonContent,
               ),
             ],
           ),

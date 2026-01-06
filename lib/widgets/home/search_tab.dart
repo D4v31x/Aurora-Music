@@ -15,6 +15,7 @@ import '../../screens/library/artist_detail_screen.dart';
 import '../../screens/library/album_detail_screen.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/expanding_player.dart';
+import '../../providers/performance_mode_provider.dart';
 
 class SearchTab extends StatefulWidget {
   final List<SongModel> songs;
@@ -691,6 +692,7 @@ class _SearchSongTile extends StatelessWidget {
 }
 
 /// Top result card with glassmorphic effect and color accent extraction from artwork
+/// Performance-aware: Respects device performance mode for blur effects.
 class _TopResultCardWithArtwork extends HookWidget {
   final int id;
   final ArtworkCacheService artworkService;
@@ -735,113 +737,127 @@ class _TopResultCardWithArtwork extends HookWidget {
     final dominantColor = colorState.value.dominant;
     final accentColor = colorState.value.accent;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: hasArtwork && dominantColor != null
-                  ? LinearGradient(
-                      colors: [
-                        dominantColor.withOpacity(0.35),
-                        (accentColor ?? dominantColor).withOpacity(0.15),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              color: hasArtwork ? null : Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: hasArtwork && dominantColor != null
-                    ? dominantColor.withOpacity(0.3)
-                    : Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Row(
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
+    final cardDecoration = BoxDecoration(
+      gradient: hasArtwork && dominantColor != null
+          ? LinearGradient(
+              colors: [
+                dominantColor.withOpacity(shouldBlur ? 0.35 : 0.45),
+                (accentColor ?? dominantColor)
+                    .withOpacity(shouldBlur ? 0.15 : 0.25),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            )
+          : null,
+      color: hasArtwork ? null : Colors.white.withOpacity(shouldBlur ? 0.1 : 0.15),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: hasArtwork && dominantColor != null
+            ? dominantColor.withOpacity(0.3)
+            : Colors.white.withOpacity(0.2),
+        width: 1,
+      ),
+    );
+
+    final cardContent = Container(
+      padding: const EdgeInsets.all(16),
+      decoration: cardDecoration,
+      child: Row(
+        children: [
+          heroTag != null
+              ? Hero(
+                  tag: heroTag!,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: isAlbum
+                        ? artworkService.buildCachedAlbumArtwork(id, size: 100)
+                        : artworkService.buildCachedArtwork(id, size: 100),
+                  ),
+                )
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: isAlbum
+                      ? artworkService.buildCachedAlbumArtwork(id, size: 100)
+                      : artworkService.buildCachedArtwork(id, size: 100),
+                ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                heroTag != null
-                    ? Hero(
-                        tag: heroTag!,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: isAlbum
-                              ? artworkService.buildCachedAlbumArtwork(id,
-                                  size: 100)
-                              : artworkService.buildCachedArtwork(id,
-                                  size: 100),
-                        ),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: isAlbum
-                            ? artworkService.buildCachedAlbumArtwork(id,
-                                size: 100)
-                            : artworkService.buildCachedArtwork(id, size: 100),
-                      ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: hasArtwork && accentColor != null
-                              ? accentColor.withOpacity(0.2)
-                              : Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          typeLabel,
-                          style: TextStyle(
-                            fontFamily: 'ProductSans',
-                            color: hasArtwork && accentColor != null
-                                ? Colors.white.withOpacity(0.9)
-                                : Colors.white.withOpacity(0.7),
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontFamily: 'ProductSans',
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontFamily: 'ProductSans',
-                          color: Colors.white.withOpacity(0.6),
-                          fontSize: 14,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: hasArtwork && accentColor != null
+                        ? accentColor.withOpacity(0.2)
+                        : Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    typeLabel,
+                    style: TextStyle(
+                      fontFamily: 'ProductSans',
+                      color: hasArtwork && accentColor != null
+                          ? Colors.white.withOpacity(0.9)
+                          : Colors.white.withOpacity(0.7),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
                   ),
                 ),
-                trailing,
+                const SizedBox(height: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
-        ),
+          trailing,
+        ],
+      ),
+    );
+
+    return GestureDetector(
+      onTap: onTap,
+      child: RepaintBoundary(
+        child: shouldBlur
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                  child: cardContent,
+                ),
+              )
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: cardContent,
+              ),
       ),
     );
   }
@@ -879,6 +895,7 @@ class _TopResultCardWithArtwork extends HookWidget {
 }
 
 /// Top artist result card with artwork extraction for glassmorphic styling
+/// Performance-aware: Respects device performance mode for blur effects.
 class _TopArtistResultCard extends HookWidget {
   final SeparatedArtist artist;
   final ArtworkCacheService artworkService;
@@ -913,104 +930,121 @@ class _TopArtistResultCard extends HookWidget {
     final dominantColor = colorState.value.dominant;
     final accentColor = colorState.value.accent;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: hasArtwork && dominantColor != null
-                  ? LinearGradient(
-                      colors: [
-                        dominantColor.withOpacity(0.35),
-                        (accentColor ?? dominantColor).withOpacity(0.15),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              color: hasArtwork ? null : Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: hasArtwork && dominantColor != null
-                    ? dominantColor.withOpacity(0.3)
-                    : Colors.white.withOpacity(0.2),
-                width: 1,
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
+    final cardDecoration = BoxDecoration(
+      gradient: hasArtwork && dominantColor != null
+          ? LinearGradient(
+              colors: [
+                dominantColor.withOpacity(shouldBlur ? 0.35 : 0.45),
+                (accentColor ?? dominantColor)
+                    .withOpacity(shouldBlur ? 0.15 : 0.25),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            )
+          : null,
+      color: hasArtwork ? null : Colors.white.withOpacity(shouldBlur ? 0.1 : 0.15),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: hasArtwork && dominantColor != null
+            ? dominantColor.withOpacity(0.3)
+            : Colors.white.withOpacity(0.2),
+        width: 1,
+      ),
+    );
+
+    final cardContent = Container(
+      padding: const EdgeInsets.all(16),
+      decoration: cardDecoration,
+      child: Row(
+        children: [
+          Hero(
+            tag: 'artist_image_${artist.name}',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: artworkService.buildArtistImageByName(
+                artist.name,
+                size: 100,
+                circular: true,
               ),
             ),
-            child: Row(
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Hero(
-                  tag: 'artist_image_${artist.name}',
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: artworkService.buildArtistImageByName(
-                      artist.name,
-                      size: 100,
-                      circular: true,
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: hasArtwork && accentColor != null
+                        ? accentColor.withOpacity(0.2)
+                        : Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    typeLabel,
+                    style: TextStyle(
+                      fontFamily: 'ProductSans',
+                      color: hasArtwork && accentColor != null
+                          ? Colors.white.withOpacity(0.9)
+                          : Colors.white.withOpacity(0.7),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: hasArtwork && accentColor != null
-                              ? accentColor.withOpacity(0.2)
-                              : Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          typeLabel,
-                          style: TextStyle(
-                            fontFamily: 'ProductSans',
-                            color: hasArtwork && accentColor != null
-                                ? Colors.white.withOpacity(0.9)
-                                : Colors.white.withOpacity(0.7),
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        artist.name,
-                        style: const TextStyle(
-                          fontFamily: 'ProductSans',
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${artist.numberOfTracks} ${AppLocalizations.of(context).translate('songs').toLowerCase()}',
-                        style: TextStyle(
-                          fontFamily: 'ProductSans',
-                          color: Colors.white.withOpacity(0.6),
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 8),
+                Text(
+                  artist.name,
+                  style: const TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${artist.numberOfTracks} ${AppLocalizations.of(context).translate('songs').toLowerCase()}',
+                  style: TextStyle(
+                    fontFamily: 'ProductSans',
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 14,
                   ),
                 ),
-                Icon(Icons.chevron_right,
-                    color: Colors.white.withOpacity(0.5), size: 32),
               ],
             ),
           ),
-        ),
+          Icon(Icons.chevron_right,
+              color: Colors.white.withOpacity(0.5), size: 32),
+        ],
+      ),
+    );
+
+    return GestureDetector(
+      onTap: onTap,
+      child: RepaintBoundary(
+        child: shouldBlur
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                  child: cardContent,
+                ),
+              )
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: cardContent,
+              ),
       ),
     );
   }

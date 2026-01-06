@@ -5,6 +5,7 @@ import 'dart:ui';
 import '../../services/audio_player_service.dart';
 import '../../localization/app_localizations.dart';
 import '../../models/utils.dart';
+import '../../providers/performance_mode_provider.dart';
 
 /// Holds computed library statistics
 class _LibraryStats {
@@ -61,7 +62,8 @@ class _LibraryStats {
   int get hashCode => totalSongs.hashCode ^ totalPlaylists.hashCode;
 }
 
-/// A minimalistic glassmorphic card showing music library statistics
+/// A minimalistic glassmorphic card showing music library statistics.
+/// Performance-aware: Respects device performance mode for blur effects.
 class MusicStatsCard extends StatelessWidget {
   const MusicStatsCard({super.key});
 
@@ -77,6 +79,11 @@ class MusicStatsCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
     // Use Selector to only rebuild when songs or playlists count changes
     return Selector<AudioPlayerService, _LibraryStats>(
       selector: (_, service) => _LibraryStats.compute(
@@ -85,94 +92,100 @@ class MusicStatsCard extends StatelessWidget {
       ),
       shouldRebuild: (prev, next) => prev != next,
       builder: (context, stats, _) {
+        final cardDecoration = BoxDecoration(
+          color: isDark
+              ? Colors.white.withOpacity(shouldBlur ? 0.08 : 0.15)
+              : Colors.black.withOpacity(shouldBlur ? 0.04 : 0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withOpacity(0.1)
+                : Colors.black.withOpacity(0.05),
+            width: 0.5,
+          ),
+        );
+
+        final cardContent = Container(
+          padding: const EdgeInsets.all(20),
+          decoration: cardDecoration,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Minimal header
+              Row(
+                children: [
+                  Icon(
+                    Icons.library_music_outlined,
+                    color: isDark ? Colors.white70 : Colors.black54,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    AppLocalizations.of(context).translate('your_library'),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'ProductSans',
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${stats.totalHours}h ${stats.totalMinutes}m',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontFamily: 'ProductSans',
+                      color: isDark ? Colors.white38 : Colors.black38,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Stats row - minimalistic
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _MinimalStat(
+                    value: _formatNumber(stats.totalSongs),
+                    label: AppLocalizations.of(context).translate('songs'),
+                    isDark: isDark,
+                  ),
+                  _MinimalStat(
+                    value: _formatNumber(stats.totalArtists),
+                    label: AppLocalizations.of(context).translate('artists'),
+                    isDark: isDark,
+                  ),
+                  _MinimalStat(
+                    value: _formatNumber(stats.totalAlbums),
+                    label: AppLocalizations.of(context).translate('albums'),
+                    isDark: isDark,
+                  ),
+                  _MinimalStat(
+                    value: _formatNumber(stats.totalPlaylists),
+                    label: AppLocalizations.of(context).translate('playlists'),
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withOpacity(0.08)
-                      : Colors.black.withOpacity(0.04),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.05),
-                    width: 0.5,
+          child: RepaintBoundary(
+            child: shouldBlur
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                      child: cardContent,
+                    ),
+                  )
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: cardContent,
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Minimal header
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.library_music_outlined,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          AppLocalizations.of(context)
-                              .translate('your_library'),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'ProductSans',
-                            color: isDark ? Colors.white70 : Colors.black54,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '${stats.totalHours}h ${stats.totalMinutes}m',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontFamily: 'ProductSans',
-                            color: isDark ? Colors.white38 : Colors.black38,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    // Stats row - minimalistic
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _MinimalStat(
-                          value: _formatNumber(stats.totalSongs),
-                          label:
-                              AppLocalizations.of(context).translate('songs'),
-                          isDark: isDark,
-                        ),
-                        _MinimalStat(
-                          value: _formatNumber(stats.totalArtists),
-                          label:
-                              AppLocalizations.of(context).translate('artists'),
-                          isDark: isDark,
-                        ),
-                        _MinimalStat(
-                          value: _formatNumber(stats.totalAlbums),
-                          label:
-                              AppLocalizations.of(context).translate('albums'),
-                          isDark: isDark,
-                        ),
-                        _MinimalStat(
-                          value: _formatNumber(stats.totalPlaylists),
-                          label: AppLocalizations.of(context)
-                              .translate('playlists'),
-                          isDark: isDark,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
         );
       },

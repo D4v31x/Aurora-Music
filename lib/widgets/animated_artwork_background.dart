@@ -1,9 +1,12 @@
 import 'dart:ui';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/performance_mode_provider.dart';
 
 /// A beautiful animated background that displays heavily blurred artwork
-/// with smooth transitions
+/// with smooth transitions.
+/// Performance-aware: Respects device performance mode for blur effects.
 class AnimatedArtworkBackground extends StatefulWidget {
   final Uint8List? currentArtwork;
   final Widget child;
@@ -112,6 +115,11 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
     final backgroundColor =
         widget.fallbackColor ?? Theme.of(context).colorScheme.surface;
 
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -128,7 +136,7 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
               opacity: (1.0 - _crossfadeAnimation.value).clamp(0.0, 1.0),
               child: child!,
             ),
-            child: _buildBlurredArtwork(_previousArtworkCache!),
+            child: _buildBlurredArtwork(_previousArtworkCache!, shouldBlur),
           ),
 
         // Current artwork (always visible once loaded, no animation wrapper when stable)
@@ -141,11 +149,13 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
                     child: child!,
                   ),
                   child: RepaintBoundary(
-                    child: _buildBlurredArtwork(widget.currentArtwork!),
+                    child:
+                        _buildBlurredArtwork(widget.currentArtwork!, shouldBlur),
                   ),
                 )
               : RepaintBoundary(
-                  child: _buildBlurredArtwork(widget.currentArtwork!),
+                  child:
+                      _buildBlurredArtwork(widget.currentArtwork!, shouldBlur),
                 ),
 
         // Overlay for better text readability
@@ -174,7 +184,7 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
     );
   }
 
-  Widget _buildBlurredArtwork(Uint8List artworkData) {
+  Widget _buildBlurredArtwork(Uint8List artworkData, bool shouldBlur) {
     return RepaintBoundary(
       child: Stack(
         fit: StackFit.expand,
@@ -187,23 +197,30 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
             height: double.infinity,
             gaplessPlayback: true,
           ),
-          // The blur layer on top
-          BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: 50.0,
-              sigmaY: 50.0,
+          // The blur layer on top - only apply if performance mode allows
+          if (shouldBlur)
+            BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: 50.0,
+                sigmaY: 50.0,
+              ),
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.2),
+              ),
+            )
+          else
+            // Fallback: darker overlay instead of blur for low-end devices
+            Container(
+              color: Colors.black.withValues(alpha: 0.5),
             ),
-            child: Container(
-              color: Colors.black.withValues(alpha: 0.2),
-            ),
-          ),
         ],
       ),
     );
   }
 }
 
-/// Optimized blurred background for when performance is critical
+/// Optimized blurred background for when performance is critical.
+/// Performance-aware: Respects device performance mode for blur effects.
 class SimpleBlurredBackground extends StatelessWidget {
   final Uint8List? artwork;
   final double blurIntensity;
@@ -227,6 +244,11 @@ class SimpleBlurredBackground extends StatelessWidget {
       );
     }
 
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -243,16 +265,22 @@ class SimpleBlurredBackground extends StatelessWidget {
                 height: double.infinity,
                 gaplessPlayback: true,
               ),
-              // The blur layer on top
-              BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: blurIntensity,
-                  sigmaY: blurIntensity,
+              // The blur layer on top - only apply if performance mode allows
+              if (shouldBlur)
+                BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: blurIntensity,
+                    sigmaY: blurIntensity,
+                  ),
+                  child: Container(
+                    color: overlayColor,
+                  ),
+                )
+              else
+                // Fallback: darker overlay instead of blur for low-end devices
+                Container(
+                  color: Colors.black.withValues(alpha: 0.5),
                 ),
-                child: Container(
-                  color: overlayColor,
-                ),
-              ),
             ],
           ),
         ),

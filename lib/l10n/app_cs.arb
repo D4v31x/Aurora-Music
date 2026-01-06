@@ -414,5 +414,7 @@
   "dont_ask_again": "Znovu se neptat",
   "send_feedback": "Odeslat zpětnou vazbu",
   "send_feedback_desc": "Nahlásit chyby nebo navrhnout funkce",
-  "close": "Zavřít"
+  "close": "Zavřít",
+  "settingsHighendUi": "Vysoce výkonné UI",
+  "settingsHighendUiDesc": "Povolit pokročilé vizuální efekty a animace"
 }

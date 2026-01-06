@@ -414,5 +414,7 @@
   "dont_ask_again": "Don't ask again",
   "send_feedback": "Send Feedback",
   "send_feedback_desc": "Report bugs or suggest features",
-  "close": "Close"
+  "close": "Close",
+  "settingsHighendUi": "High-end UI",
+  "settingsHighendUiDesc": "Enable advanced visual effects and animations"
 }

@@ -1303,4 +1303,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get close => 'Close';
+
+  @override
+  String get settingsHighendUi => 'High-end UI';
+
+  @override
+  String get settingsHighendUiDesc =>
+      'Enable advanced visual effects and animations';
 }

@@ -1307,4 +1307,11 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get close => 'Zavřít';
+
+  @override
+  String get settingsHighendUi => 'Vysoce výkonné UI';
+
+  @override
+  String get settingsHighendUiDesc =>
+      'Povolit pokročilé vizuální efekty a animace';
 }
