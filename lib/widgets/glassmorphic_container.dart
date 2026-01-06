@@ -83,12 +83,14 @@ class PerformanceBlur extends StatelessWidget {
   final Widget child;
   final double blur;
   final bool forceBlur;
+  final BorderRadius? borderRadius;
 
   const PerformanceBlur({
     super.key,
     required this.child,
     this.blur = 10,
     this.forceBlur = false,
+    this.borderRadius,
   });
 
   @override
@@ -100,11 +102,74 @@ class PerformanceBlur extends StatelessWidget {
       return child;
     }
 
-    return BackdropFilter(
+    final blurWidget = BackdropFilter(
       filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
       child: child,
     );
+
+    if (borderRadius != null) {
+      return ClipRRect(
+        borderRadius: borderRadius!,
+        child: blurWidget,
+      );
+    }
+
+    return blurWidget;
   }
+}
+
+/// A utility function to build performance-aware blur effect.
+/// Returns a widget that applies blur only when device performance allows.
+/// 
+/// Use this function when you need to wrap existing widgets with blur
+/// and can't use [GlassmorphicContainer].
+/// 
+/// Example:
+/// ```dart
+/// buildPerformanceAwareBlur(
+///   context: context,
+///   blur: 20,
+///   borderRadius: BorderRadius.circular(24),
+///   child: myWidget,
+/// )
+/// ```
+Widget buildPerformanceAwareBlur({
+  required BuildContext context,
+  required Widget child,
+  double blur = 10,
+  BorderRadius? borderRadius,
+  bool forceBlur = false,
+}) {
+  final performanceProvider =
+      Provider.of<PerformanceModeProvider>(context, listen: false);
+  final shouldBlur = forceBlur || performanceProvider.shouldEnableBlur;
+
+  if (!shouldBlur) {
+    return child;
+  }
+
+  Widget blurWidget = BackdropFilter(
+    filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+    child: child,
+  );
+
+  if (borderRadius != null) {
+    blurWidget = ClipRRect(
+      borderRadius: borderRadius,
+      child: blurWidget,
+    );
+  }
+
+  return blurWidget;
+}
+
+/// Check if blur should be enabled based on performance mode.
+/// Use this for one-time sync checks (e.g., in build methods).
+bool shouldEnableBlur(BuildContext context, {bool listen = false}) {
+  final performanceProvider = listen
+      ? Provider.of<PerformanceModeProvider>(context)
+      : Provider.of<PerformanceModeProvider>(context, listen: false);
+  return performanceProvider.shouldEnableBlur;
 }
 
 // Keep the function for backward compatibility but mark as deprecated

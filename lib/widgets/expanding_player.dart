@@ -12,6 +12,7 @@ import '../services/artwork_cache_service.dart';
 import '../services/background_manager_service.dart';
 import '../services/sleep_timer_controller.dart';
 import '../utils/responsive_utils.dart';
+import '../providers/performance_mode_provider.dart';
 
 /// A beautiful, simple mini player that opens the Now Playing screen.
 class ExpandingPlayer extends StatefulWidget {
@@ -159,6 +160,7 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
 }
 
 /// The beautiful floating mini player widget
+/// Performance-aware: Respects device performance mode for blur effects.
 class _MiniPlayerWidget extends StatelessWidget {
   final SongModel song;
   final VoidCallback onTap;
@@ -174,6 +176,103 @@ class _MiniPlayerWidget extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = ResponsiveUtils.isTablet(context);
     final margin = isTablet ? 32.0 : 16.0;
+
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
+    final playerDecoration = BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withValues(alpha: shouldBlur ? 0.15 : 0.25),
+          Colors.white.withValues(alpha: shouldBlur ? 0.05 : 0.12),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(
+        color: Colors.white.withValues(alpha: 0.2),
+        width: 1,
+      ),
+    );
+
+    final playerContent = Container(
+      decoration: playerDecoration,
+      child: Stack(
+        children: [
+          // Progress indicator at bottom
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _ProgressBar(),
+          ),
+
+          // Content
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 10, 8, 10),
+            child: Row(
+              children: [
+                // Artwork
+                _ArtworkThumbnail(songId: song.id, size: 52),
+
+                const SizedBox(width: 14),
+
+                // Song info
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        song.title,
+                        style: const TextStyle(
+                          fontFamily: 'Outfit',
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.3,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        splitArtists(song.artist ?? 'Unknown').join(', '),
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          color: Colors.white.withValues(alpha: 0.55),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                // Controls - these need to block parent GestureDetector
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _PlayPauseButton(size: 46),
+                    if (isTablet) ...[
+                      const SizedBox(width: 4),
+                      _SkipButton(),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -206,103 +305,19 @@ class _MiniPlayerWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withValues(alpha: 0.15),
-                            Colors.white.withValues(alpha: 0.05),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: Stack(
-                        children: [
-                          // Progress indicator at bottom
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            child: _ProgressBar(),
+                child: RepaintBoundary(
+                  child: shouldBlur
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                            child: playerContent,
                           ),
-
-                          // Content
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 10, 8, 10),
-                            child: Row(
-                              children: [
-                                // Artwork
-                                _ArtworkThumbnail(songId: song.id, size: 52),
-
-                                const SizedBox(width: 14),
-
-                                // Song info
-                                Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        song.title,
-                                        style: const TextStyle(
-                                          fontFamily: 'Outfit',
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: -0.3,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 3),
-                                      Text(
-                                        splitArtists(song.artist ?? 'Unknown')
-                                            .join(', '),
-                                        style: TextStyle(
-                                          fontFamily: 'Outfit',
-                                          color: Colors.white
-                                              .withValues(alpha: 0.55),
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                const SizedBox(width: 8),
-
-                                // Controls - these need to block parent GestureDetector
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    _PlayPauseButton(size: 46),
-                                    if (isTablet) ...[
-                                      const SizedBox(width: 4),
-                                      _SkipButton(),
-                                    ],
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                        )
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: playerContent,
+                        ),
                 ),
               ),
             ),

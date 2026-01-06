@@ -1,7 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/performance_mode_provider.dart';
 
 /// A glassmorphic dialog with blur effect and rounded corners.
+/// Performance-aware: Respects device performance mode for blur effects.
 class GlassmorphicDialog extends StatelessWidget {
   final Widget? title;
   final Widget? content;
@@ -24,73 +27,89 @@ class GlassmorphicDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
+    final containerDecoration = BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withValues(alpha: shouldBlur ? 0.15 : 0.25),
+          Colors.white.withValues(alpha: shouldBlur ? 0.05 : 0.12),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: Border.all(
+        color: Colors.white.withValues(alpha: 0.2),
+        width: 1,
+      ),
+    );
+
+    final dialogContent = Container(
+      decoration: containerDecoration,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (title != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              child: DefaultTextStyle(
+                style: const TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+                child: title!,
+              ),
+            ),
+          if (content != null)
+            Padding(
+              padding:
+                  contentPadding ?? const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: DefaultTextStyle(
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+                child: content!,
+              ),
+            ),
+          if (actions != null && actions!.isNotEmpty)
+            Padding(
+              padding:
+                  actionsPadding ?? const EdgeInsets.fromLTRB(16, 24, 16, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: actions!,
+              ),
+            ),
+        ],
+      ),
+    );
+
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withValues(alpha: 0.15),
-                  Colors.white.withValues(alpha: 0.05),
-                ],
+      child: RepaintBoundary(
+        child: shouldBlur
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(borderRadius),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                  child: dialogContent,
+                ),
+              )
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(borderRadius),
+                child: dialogContent,
               ),
-              borderRadius: BorderRadius.circular(borderRadius),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (title != null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                    child: DefaultTextStyle(
-                      style: const TextStyle(
-                        fontFamily: 'Outfit',
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                      child: title!,
-                    ),
-                  ),
-                if (content != null)
-                  Padding(
-                    padding: contentPadding ??
-                        const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                    child: DefaultTextStyle(
-                      style: TextStyle(
-                        fontFamily: 'Outfit',
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white.withValues(alpha: 0.8),
-                      ),
-                      child: content!,
-                    ),
-                  ),
-                if (actions != null && actions!.isNotEmpty)
-                  Padding(
-                    padding: actionsPadding ??
-                        const EdgeInsets.fromLTRB(16, 24, 16, 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: actions!,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -128,6 +147,7 @@ Widget buildGlassmorphicPopupMenu<T>({
 }
 
 /// Custom popup menu that wraps content in glassmorphic container
+/// Performance-aware: Respects device performance mode for blur effects.
 class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
   final List<PopupMenuEntry<T>> Function(BuildContext) itemBuilder;
   final void Function(T)? onSelected;
@@ -154,6 +174,11 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
     return PopupMenuButton<T>(
       onSelected: onSelected,
       offset: offset,
@@ -168,47 +193,56 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
       ),
       itemBuilder: (context) {
         final items = itemBuilder(context);
+        final menuContent = Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withValues(alpha: shouldBlur ? 0.15 : 0.25),
+                Colors.white.withValues(alpha: shouldBlur ? 0.05 : 0.12),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: items.map((item) {
+              if (item is PopupMenuItem<T>) {
+                return InkWell(
+                  onTap: () {
+                    Navigator.of(context).pop(item.value);
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: item.child,
+                );
+              }
+              return const SizedBox.shrink();
+            }).toList(),
+          ),
+        );
+
         return [
           PopupMenuItem<T>(
             enabled: false,
             padding: EdgeInsets.zero,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(borderRadius),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withValues(alpha: 0.15),
-                        Colors.white.withValues(alpha: 0.05),
-                      ],
+            child: RepaintBoundary(
+              child: shouldBlur
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(borderRadius),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                        child: menuContent,
+                      ),
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(borderRadius),
+                      child: menuContent,
                     ),
-                    borderRadius: BorderRadius.circular(borderRadius),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: items.map((item) {
-                      if (item is PopupMenuItem<T>) {
-                        return InkWell(
-                          onTap: () {
-                            Navigator.of(context).pop(item.value);
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          child: item.child,
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    }).toList(),
-                  ),
-                ),
-              ),
             ),
           ),
         ];
@@ -236,6 +270,7 @@ Future<T?> showGlassmorphicDialog<T>({
 }
 
 /// Show a glassmorphic modal bottom sheet
+/// Performance-aware: Respects device performance mode for blur effects.
 Future<T?> showGlassmorphicBottomSheet<T>({
   required BuildContext context,
   required Widget Function(BuildContext) builder,
@@ -244,6 +279,11 @@ Future<T?> showGlassmorphicBottomSheet<T>({
   double borderRadius = 28,
   double blur = 25,
 }) {
+  // Check if blur should be enabled based on performance mode
+  final performanceProvider =
+      Provider.of<PerformanceModeProvider>(context, listen: false);
+  final shouldBlur = performanceProvider.shouldEnableBlur;
+
   return showModalBottomSheet<T>(
     context: context,
     isDismissible: isDismissible,
@@ -254,30 +294,43 @@ Future<T?> showGlassmorphicBottomSheet<T>({
       borderRadius: BorderRadius.vertical(top: Radius.circular(borderRadius)),
     ),
     builder: (context) {
-      return ClipRRect(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(borderRadius)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withValues(alpha: 0.15),
-                  Colors.white.withValues(alpha: 0.05),
-                ],
-              ),
-              borderRadius:
-                  BorderRadius.vertical(top: Radius.circular(borderRadius)),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ),
-            ),
-            child: builder(context),
-          ),
+      final sheetDecoration = BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: shouldBlur ? 0.15 : 0.25),
+            Colors.white.withValues(alpha: shouldBlur ? 0.05 : 0.12),
+          ],
         ),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(borderRadius)),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      );
+
+      final sheetContent = Container(
+        decoration: sheetDecoration,
+        child: builder(context),
+      );
+
+      return RepaintBoundary(
+        child: shouldBlur
+            ? ClipRRect(
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(borderRadius)),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                  child: sheetContent,
+                ),
+              )
+            : ClipRRect(
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(borderRadius)),
+                child: sheetContent,
+              ),
       );
     },
   );
