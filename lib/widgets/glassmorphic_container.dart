@@ -30,15 +30,49 @@ class GlassmorphicContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final radius = borderRadius ?? BorderRadius.circular(15);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     // Check if blur should be enabled based on performance mode
     final performanceProvider = context.watch<PerformanceModeProvider>();
     final shouldBlur = forceBlur || performanceProvider.shouldEnableBlur;
 
+    // If blur is disabled, use solid surface colors for better performance and UX
+    if (!shouldBlur) {
+      final solidDecoration = BoxDecoration(
+        color: isDark
+            ? colorScheme.surfaceContainerHigh
+            : colorScheme.surfaceContainerHighest,
+        borderRadius: radius,
+        border: Border.all(
+          color: isDark
+              ? colorScheme.outlineVariant.withOpacity(0.3)
+              : colorScheme.outline.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      );
+
+      return RepaintBoundary(
+        child: Container(
+          width: width,
+          padding: padding,
+          decoration: solidDecoration,
+          child: child,
+        ),
+      );
+    }
+
+    // Glassmorphic decoration for high-end devices
     final containerDecoration = BoxDecoration(
       color: isDark
-          ? Colors.white.withOpacity(shouldBlur ? 0.1 : 0.15)
-          : Colors.black.withOpacity(shouldBlur ? 0.1 : 0.08),
+          ? Colors.white.withOpacity(0.1)
+          : Colors.black.withOpacity(0.1),
       borderRadius: radius,
       border: Border.all(
         color: isDark
@@ -47,18 +81,6 @@ class GlassmorphicContainer extends StatelessWidget {
         width: 1.5,
       ),
     );
-
-    // If blur is disabled, return a simple container for better performance
-    if (!shouldBlur) {
-      return RepaintBoundary(
-        child: Container(
-          width: width,
-          padding: padding,
-          decoration: containerDecoration,
-          child: child,
-        ),
-      );
-    }
 
     return RepaintBoundary(
       child: ClipRRect(

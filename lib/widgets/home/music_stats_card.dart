@@ -78,6 +78,7 @@ class MusicStatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
 
     // Check if blur should be enabled based on performance mode
     final performanceProvider =
@@ -92,18 +93,39 @@ class MusicStatsCard extends StatelessWidget {
       ),
       shouldRebuild: (prev, next) => prev != next,
       builder: (context, stats, _) {
-        final cardDecoration = BoxDecoration(
-          color: isDark
-              ? Colors.white.withOpacity(shouldBlur ? 0.08 : 0.15)
-              : Colors.black.withOpacity(shouldBlur ? 0.04 : 0.08),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
+        // Use solid surface colors for lowend devices
+        final BoxDecoration cardDecoration;
+        if (shouldBlur) {
+          cardDecoration = BoxDecoration(
             color: isDark
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.05),
-            width: 0.5,
-          ),
-        );
+                ? Colors.white.withOpacity(0.08)
+                : Colors.black.withOpacity(0.04),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.05),
+              width: 0.5,
+            ),
+          );
+        } else {
+          // Solid card styling for lowend devices
+          cardDecoration = BoxDecoration(
+            color: colorScheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withOpacity(0.3),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          );
+        }
 
         final cardContent = Container(
           padding: const EdgeInsets.all(20),

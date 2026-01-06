@@ -371,6 +371,7 @@ class _LibraryTabState extends State<LibraryTab> {
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
     final cardSize = isWideLayout ? 120.0 : 110.0;
     final sectionHeight = cardSize + 60; // Card size + text space
 
@@ -379,17 +380,31 @@ class _LibraryTabState extends State<LibraryTab> {
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
 
-    final detailsButtonDecoration = BoxDecoration(
-      color: isDark
-          ? Colors.white.withOpacity(shouldBlur ? 0.1 : 0.15)
-          : Colors.black.withOpacity(shouldBlur ? 0.05 : 0.08),
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(
+    // Use solid surface colors for lowend devices
+    final BoxDecoration detailsButtonDecoration;
+    if (shouldBlur) {
+      detailsButtonDecoration = BoxDecoration(
         color: isDark
-            ? Colors.white.withOpacity(0.15)
-            : Colors.black.withOpacity(0.1),
-      ),
-    );
+            ? Colors.white.withOpacity(0.1)
+            : Colors.black.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.15)
+              : Colors.black.withOpacity(0.1),
+        ),
+      );
+    } else {
+      // Solid button styling for lowend devices
+      detailsButtonDecoration = BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+          width: 1,
+        ),
+      );
+    }
 
     final detailsButtonContent = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -566,23 +581,38 @@ class _LibraryTabState extends State<LibraryTab> {
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
 
     // Check if blur should be enabled based on performance mode
     final performanceProvider =
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
 
-    final detailsButtonDecoration = BoxDecoration(
-      color: isDark
-          ? Colors.white.withOpacity(shouldBlur ? 0.1 : 0.15)
-          : Colors.black.withOpacity(shouldBlur ? 0.05 : 0.08),
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(
+    // Use solid surface colors for lowend devices
+    final BoxDecoration detailsButtonDecoration;
+    if (shouldBlur) {
+      detailsButtonDecoration = BoxDecoration(
         color: isDark
-            ? Colors.white.withOpacity(0.15)
-            : Colors.black.withOpacity(0.1),
-      ),
-    );
+            ? Colors.white.withOpacity(0.1)
+            : Colors.black.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.15)
+              : Colors.black.withOpacity(0.1),
+        ),
+      );
+    } else {
+      // Solid button styling for lowend devices
+      detailsButtonDecoration = BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+          width: 1,
+        ),
+      );
+    }
 
     final detailsButtonContent = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

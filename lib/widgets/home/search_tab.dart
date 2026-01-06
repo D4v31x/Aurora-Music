@@ -736,33 +736,54 @@ class _TopResultCardWithArtwork extends HookWidget {
     final hasArtwork = colorState.value.hasArtwork;
     final dominantColor = colorState.value.dominant;
     final accentColor = colorState.value.accent;
+    final colorScheme = Theme.of(context).colorScheme;
 
     // Check if blur should be enabled based on performance mode
     final performanceProvider =
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
 
-    final cardDecoration = BoxDecoration(
-      gradient: hasArtwork && dominantColor != null
-          ? LinearGradient(
-              colors: [
-                dominantColor.withOpacity(shouldBlur ? 0.35 : 0.45),
-                (accentColor ?? dominantColor)
-                    .withOpacity(shouldBlur ? 0.15 : 0.25),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            )
-          : null,
-      color: hasArtwork ? null : Colors.white.withOpacity(shouldBlur ? 0.1 : 0.15),
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(
-        color: hasArtwork && dominantColor != null
-            ? dominantColor.withOpacity(0.3)
-            : Colors.white.withOpacity(0.2),
-        width: 1,
-      ),
-    );
+    // Use solid surface colors for lowend devices
+    final BoxDecoration cardDecoration;
+    if (shouldBlur) {
+      cardDecoration = BoxDecoration(
+        gradient: hasArtwork && dominantColor != null
+            ? LinearGradient(
+                colors: [
+                  dominantColor.withOpacity(0.35),
+                  (accentColor ?? dominantColor).withOpacity(0.15),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        color: hasArtwork ? null : Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: hasArtwork && dominantColor != null
+              ? dominantColor.withOpacity(0.3)
+              : Colors.white.withOpacity(0.2),
+          width: 1,
+        ),
+      );
+    } else {
+      // Solid card styling for lowend devices
+      cardDecoration = BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      );
+    }
 
     final cardContent = Container(
       padding: const EdgeInsets.all(16),
@@ -929,33 +950,54 @@ class _TopArtistResultCard extends HookWidget {
     final hasArtwork = colorState.value.hasArtwork;
     final dominantColor = colorState.value.dominant;
     final accentColor = colorState.value.accent;
+    final colorScheme = Theme.of(context).colorScheme;
 
     // Check if blur should be enabled based on performance mode
     final performanceProvider =
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
 
-    final cardDecoration = BoxDecoration(
-      gradient: hasArtwork && dominantColor != null
-          ? LinearGradient(
-              colors: [
-                dominantColor.withOpacity(shouldBlur ? 0.35 : 0.45),
-                (accentColor ?? dominantColor)
-                    .withOpacity(shouldBlur ? 0.15 : 0.25),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            )
-          : null,
-      color: hasArtwork ? null : Colors.white.withOpacity(shouldBlur ? 0.1 : 0.15),
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(
-        color: hasArtwork && dominantColor != null
-            ? dominantColor.withOpacity(0.3)
-            : Colors.white.withOpacity(0.2),
-        width: 1,
-      ),
-    );
+    // Use solid surface colors for lowend devices
+    final BoxDecoration cardDecoration;
+    if (shouldBlur) {
+      cardDecoration = BoxDecoration(
+        gradient: hasArtwork && dominantColor != null
+            ? LinearGradient(
+                colors: [
+                  dominantColor.withOpacity(0.35),
+                  (accentColor ?? dominantColor).withOpacity(0.15),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        color: hasArtwork ? null : Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: hasArtwork && dominantColor != null
+              ? dominantColor.withOpacity(0.3)
+              : Colors.white.withOpacity(0.2),
+          width: 1,
+        ),
+      );
+    } else {
+      // Solid card styling for lowend devices
+      cardDecoration = BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      );
+    }
 
     final cardContent = Container(
       padding: const EdgeInsets.all(16),

@@ -163,22 +163,44 @@ class _ToastWidgetState extends State<_ToastWidget>
   Widget build(BuildContext context) {
     // Position above mini player (approximately 100dp from bottom)
     final bottomPadding = MediaQuery.of(context).padding.bottom + 120;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    final toastDecoration = BoxDecoration(
-      color: Colors.grey[900]?.withOpacity(widget.shouldBlur ? 0.85 : 0.95),
-      borderRadius: BorderRadius.circular(30),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.15),
-        width: 1,
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.3),
-          blurRadius: 20,
-          offset: const Offset(0, 5),
+    // Use solid surface colors for lowend devices
+    final BoxDecoration toastDecoration;
+    if (widget.shouldBlur) {
+      toastDecoration = BoxDecoration(
+        color: Colors.grey[900]?.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.15),
+          width: 1,
         ),
-      ],
-    );
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      );
+    } else {
+      // Solid toast styling for lowend devices
+      toastDecoration = BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      );
+    }
 
     final toastContent = Container(
       padding: const EdgeInsets.symmetric(
