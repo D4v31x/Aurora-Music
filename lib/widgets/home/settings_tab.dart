@@ -413,8 +413,8 @@ class _SettingsTabState extends State<SettingsTab> {
                   l10n.translate('lyrics'), '${cacheSizes['lyrics']} items'),
               _buildInfoRow(l10n.translate('onboarding_album_artwork'),
                   '${cacheSizes['artwork']} items'),
-              _buildInfoRow(
-                  l10n.translate('metadata'), '${cacheSizes['metadata']} items'),
+              _buildInfoRow(l10n.translate('metadata'),
+                  '${cacheSizes['metadata']} items'),
             ],
           ),
         ),
