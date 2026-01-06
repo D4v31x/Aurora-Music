@@ -10,6 +10,7 @@ import '../../localization/app_localizations.dart';
 import '../../widgets/glassmorphic_container.dart';
 import '../../widgets/app_background.dart';
 import '../../widgets/expanding_player.dart';
+import '../shared/detail_screen_mixin.dart';
 
 class FolderDetailScreen extends StatefulWidget {
   final String folderPath;
@@ -20,7 +21,8 @@ class FolderDetailScreen extends StatefulWidget {
   State<FolderDetailScreen> createState() => _FolderDetailScreenState();
 }
 
-class _FolderDetailScreenState extends State<FolderDetailScreen> {
+class _FolderDetailScreenState extends State<FolderDetailScreen>
+    with DetailScreenMixin {
   final ArtworkCacheService _artworkService = ArtworkCacheService();
   late ScrollController _scrollController;
   final Color _dominantColor = Colors.deepPurple.shade900;
@@ -32,6 +34,13 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
   final int _songsPerPage = 20;
   bool _isLoading = false;
   bool _hasMoreSongs = true;
+
+  // DetailScreenMixin requirements
+  @override
+  Color get dominantColor => _dominantColor;
+
+  @override
+  List<SongModel> get allSongs => _allSongs;
 
   @override
   void initState() {
@@ -95,23 +104,6 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
         _isLoading = false;
         _hasMoreSongs = false;
       });
-    }
-  }
-
-  void _playAllSongs(BuildContext context) {
-    if (_allSongs.isNotEmpty) {
-      final audioPlayerService =
-          Provider.of<AudioPlayerService>(context, listen: false);
-      audioPlayerService.setPlaylist(_allSongs, 0);
-    }
-  }
-
-  void _shuffleAllSongs(BuildContext context) {
-    if (_allSongs.isNotEmpty) {
-      final shuffledSongs = List<SongModel>.from(_allSongs)..shuffle();
-      final audioPlayerService =
-          Provider.of<AudioPlayerService>(context, listen: false);
-      audioPlayerService.setPlaylist(shuffledSongs, 0);
     }
   }
 
@@ -329,13 +321,13 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                             context,
                             Icons.play_arrow,
                             AppLocalizations.of(context).translate('play_all'),
-                            () => _playAllSongs(context),
+                            playAllSongs,
                           ),
                           _buildActionPill(
                             context,
                             Icons.shuffle,
                             AppLocalizations.of(context).translate('shuffle'),
-                            () => _shuffleAllSongs(context),
+                            shuffleAllSongs,
                           ),
                         ],
                       ),
@@ -343,19 +335,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
                   ),
                   _buildSongsList(),
                   // Bottom padding for mini player
-                  SliverToBoxAdapter(
-                    child: Selector<AudioPlayerService, bool>(
-                      selector: (_, service) => service.currentSong != null,
-                      builder: (context, hasCurrentSong, _) {
-                        return SizedBox(
-                          height: hasCurrentSong
-                              ? ExpandingPlayer.getMiniPlayerPaddingHeight(
-                                  context)
-                              : 16,
-                        );
-                      },
-                    ),
-                  ),
+                  buildMiniPlayerPadding(),
                 ],
               ),
           ],

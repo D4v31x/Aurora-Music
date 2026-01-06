@@ -66,47 +66,66 @@ lib/
 ├── main.dart                          # Application entry point
 ├── constants/                         # Application-wide constants
 │   ├── animation_constants.dart       # Animation durations & configs
-│   ├── app_config.dart               # App configuration values
-│   └── performance_constants.dart     # Performance thresholds
+│   └── app_config.dart               # App configuration values
 ├── localization/                      # Internationalization
 │   ├── app_localizations.dart        # Localization manager
-│   └── locale_provider.dart          # Locale state management
+│   ├── locale_provider.dart          # Locale state management
+│   └── generated/                    # Generated localization files
 ├── models/                            # Data models
 │   ├── playlist_model.dart           # Playlist data structure
 │   ├── timed_lyrics.dart             # Synced lyrics model
-│   ├── utils.dart                    # Spotify & music models
-│   └── version_check_result.dart     # Version checking model
+│   ├── separated_artist.dart         # Artist separation model
+│   └── utils.dart                    # Utility functions for music
 ├── providers/                         # State management
 │   ├── performance_mode_provider.dart # Performance optimization
 │   └── theme_provider.dart           # Theme & color management
 ├── screens/                           # Application screens
+│   ├── screens.dart                  # Barrel file exporting all screens
 │   ├── splash_screen.dart            # Initial splash/loading
-│   ├── home_screen.dart              # Main app interface
-│   ├── now_playing.dart              # Full-screen player
-│   ├── fullscreen_lyrics.dart        # Fullscreen lyrics view
-│   ├── AlbumDetailScreen.dart        # Album details
-│   ├── Artist_screen.dart            # Artists list
-│   ├── PlaylistDetail_screen.dart    # Playlist details
-│   ├── Playlist_screen.dart          # Playlists list
-│   ├── FolderDetail_screen.dart      # Folder contents
-│   ├── categories.dart               # Category browsing
-│   ├── tracks_screen.dart            # All tracks view
+│   ├── main/                         # Main app screens
+│   │   ├── main.dart                 # Barrel file
+│   │   └── home_screen.dart          # Main app interface with tabs
+│   ├── player/                       # Player screens
+│   │   ├── player.dart               # Barrel file
+│   │   ├── now_playing.dart          # Full-screen player
+│   │   └── fullscreen_lyrics.dart    # Fullscreen lyrics view
+│   ├── library/                      # Library screens
+│   │   ├── library.dart              # Barrel file
+│   │   ├── album_detail_screen.dart  # Album details
+│   │   ├── artist_detail_screen.dart # Artist details
+│   │   ├── playlist_detail_screen.dart # Playlist details
+│   │   ├── playlists_screen.dart     # Playlists list
+│   │   ├── folder_detail_screen.dart # Folder contents
+│   │   ├── tracks_screen.dart        # All tracks view
+│   │   └── categories.dart           # Category browsing (Albums, Artists, Folders)
+│   ├── settings/                     # Settings screens
+│   │   ├── settings.dart             # Barrel file
+│   │   ├── home_layout_settings.dart # Home layout customization
+│   │   ├── artist_separator_settings.dart # Artist separator config
+│   │   └── metadata_detail_screen.dart # Song metadata viewer
+│   ├── shared/                       # Shared mixins and utilities
+│   │   ├── shared.dart               # Barrel file
+│   │   ├── lazy_loading_mixin.dart   # Pagination for song lists
+│   │   ├── artwork_mixin.dart        # Artwork loading and color extraction
+│   │   ├── playback_mixin.dart       # Common playback functionality
+│   │   ├── search_mixin.dart         # Search with debouncing
+│   │   └── detail_screen_mixin.dart  # Common detail screen patterns
 │   └── onboarding/                   # First-time setup
 │       ├── onboarding_screen.dart    # Onboarding flow manager
 │       └── pages/                    # Individual onboarding pages
 │           ├── welcome_page.dart
+│           ├── beta_welcome_page.dart
 │           ├── app_info_page.dart
 │           ├── language_selection_page.dart
 │           ├── theme_selection_page.dart
 │           ├── permissions_page.dart
 │           ├── internet_usage_page.dart
 │           ├── asset_download_page.dart
-│           ├── download_choice_page.dart
-│           ├── download_progress_page.dart
+│           ├── donation_page.dart
 │           └── completion_page.dart
 ├── services/                          # Business logic services
 │   ├── audio_player_service.dart     # Core audio playback
-│   ├── audio_session_service.dart    # Audio session management
+│   ├── audio_handler.dart            # Audio service handler
 │   ├── artwork_cache_service.dart    # Album art caching
 │   ├── background_manager_service.dart # Background gradient
 │   ├── batch_download_service.dart   # Bulk downloads
@@ -131,47 +150,50 @@ lib/
 │   ├── user_preferences.dart         # User preferences
 │   ├── version_service.dart          # Version checking
 │   └── performance/                  # Performance optimizations
-│       ├── performance_manager.dart
-│       └── single_background_manager.dart
+│       └── performance_manager.dart
 ├── utils/                             # Utility functions
-│   ├── artwork_color_utils.dart      # Color extraction
+│   ├── audio_service_selectors.dart  # Audio service selectors
 │   ├── changelog_content.dart        # Version changelog
 │   ├── device_capabilities.dart      # Device detection
-│   ├── file_utils.dart               # File operations
 │   ├── frame_rate_monitor.dart       # FPS monitoring
-│   ├── responsive_utils.dart         # Responsive design
-│   ├── theme_utils.dart              # Theme creation
-│   └── validation_utils.dart         # Input validation
+│   └── responsive_utils.dart         # Responsive design
 └── widgets/                           # Reusable UI components
-    ├── about_dialog.dart             # About app dialog
-    ├── animated_mesh_background.dart # Animated backgrounds
-    ├── animated_mesh_gradient.dart   # Mesh gradient animation
-    ├── app_background.dart           # App-wide background
-    ├── artist_card.dart              # Artist display card
-    ├── artwork_mesh_background.dart  # Artwork-based background
-    ├── auto_scroll_text.dart         # Auto-scrolling text
-    ├── background_builder.dart       # Background generator
-    ├── changelog_dialog.dart         # Changelog display
-    ├── expandable_bottom.dart        # Expandable player sheet
+    ├── widgets.dart                  # Barrel file exporting all widgets
+    ├── common_screen_scaffold.dart   # Common screen layout
     ├── glassmorphic_container.dart   # Glassmorphism effect
+    ├── glassmorphic_card.dart        # Glassmorphic card component
+    ├── glassmorphic_dialog.dart      # Glassmorphic dialog
+    ├── app_background.dart           # App-wide background
+    ├── animated_artwork_background.dart # Animated artwork background
     ├── grainy_gradient_background.dart # Grainy gradient
-    ├── library_tab.dart              # Library tab content
-    ├── mesh_background.dart          # Mesh gradient
-    ├── mini_player.dart              # Mini player bar
-    ├── music_metadata_widget.dart    # Song metadata display
-    ├── music_player_widgets.dart     # Player controls
-    ├── onboarding_language_switcher.dart # Language selector
-    ├── optimized_tiles.dart          # Performance-optimized tiles
-    ├── outline_indicator.dart        # Tab indicator
-    ├── performance_debug_overlay.dart # Debug overlay
+    ├── expanding_player.dart         # Expandable mini player
+    ├── artist_card.dart              # Artist display card
+    ├── auto_scroll_text.dart         # Auto-scrolling text
+    ├── changelog_dialog.dart         # Changelog display
+    ├── about_dialog.dart             # About app dialog
+    ├── feedback_reminder_dialog.dart # Feedback reminder
     ├── pill_button.dart              # Rounded button component
-    └── home/                         # Home screen widgets
-        ├── home_tab.dart
-        ├── search_tab.dart
-        ├── settings_tab.dart
-        ├── quick_access_section.dart
-        ├── suggested_artists_section.dart
-        └── suggested_tracks_section.dart
+    ├── optimized_tiles.dart          # Performance-optimized tiles
+    ├── shimmer_loading.dart          # Shimmer loading effects
+    ├── outline_indicator.dart        # Tab indicator
+    ├── music_metadata_widget.dart    # Song metadata display
+    ├── responsive_scaffold.dart      # Responsive scaffold
+    ├── song_picker_sheet.dart        # Song picker bottom sheet
+    ├── toast_notification.dart       # Toast notifications
+    ├── performance_debug_overlay.dart # Debug overlay
+    └── home/                         # Home screen tab widgets
+        ├── home.dart                 # Barrel file
+        ├── home_tab.dart             # Home tab content
+        ├── library_tab.dart          # Library tab content
+        ├── search_tab.dart           # Search tab content
+        ├── settings_tab.dart         # Settings tab content
+        ├── for_you_section.dart      # For You section
+        ├── recently_played_section.dart # Recently played
+        ├── recently_added_section.dart # Recently added
+        ├── most_played_section.dart  # Most played
+        ├── suggested_artists_section.dart # Suggested artists
+        ├── music_stats_card.dart     # Music stats card
+        └── listening_history_card.dart # Listening history
 ```
 
 ---

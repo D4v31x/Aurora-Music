@@ -8,30 +8,30 @@ import 'package:permission_handler/permission_handler.dart'
     as permissionhandler;
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../models/utils.dart';
-import '../models/separated_artist.dart';
-import '../services/audio_player_service.dart';
-import '../services/artist_aggregator_service.dart';
-import '../localization/app_localizations.dart';
-import '../widgets/changelog_dialog.dart';
-import '../widgets/glassmorphic_dialog.dart';
-import '../widgets/feedback_reminder_dialog.dart';
-import '../widgets/home/home_tab.dart';
-import '../widgets/home/search_tab.dart';
-import '../widgets/home/settings_tab.dart';
-import '../widgets/outline_indicator.dart';
-import '../widgets/expanding_player.dart'; // For back button handling
-import '../widgets/auto_scroll_text.dart';
-import '../services/local_caching_service.dart';
-import '../services/notification_manager.dart';
-import '../services/download_progress_monitor.dart';
-import '../services/version_service.dart';
-import '../services/bluetooth_service.dart';
-import '../widgets/library_tab.dart';
+import '../../models/utils.dart';
+import '../../models/separated_artist.dart';
+import '../../services/audio_player_service.dart';
+import '../../services/artist_aggregator_service.dart';
+import '../../localization/app_localizations.dart';
+import '../../widgets/changelog_dialog.dart';
+import '../../widgets/glassmorphic_dialog.dart';
+import '../../widgets/feedback_reminder_dialog.dart';
+import '../../widgets/home/home_tab.dart';
+import '../../widgets/home/search_tab.dart';
+import '../../widgets/home/settings_tab.dart';
+import '../../widgets/outline_indicator.dart';
+import '../../widgets/expanding_player.dart'; // For back button handling
+import '../../widgets/auto_scroll_text.dart';
+import '../../services/local_caching_service.dart';
+import '../../services/notification_manager.dart';
+import '../../services/download_progress_monitor.dart';
+import '../../services/version_service.dart';
+import '../../services/bluetooth_service.dart';
+import '../../widgets/home/library_tab.dart';
 import 'package:aurora_music_v01/screens/onboarding/onboarding_screen.dart';
 import 'package:aurora_music_v01/providers/theme_provider.dart';
-import '../widgets/app_background.dart';
-import '../widgets/glassmorphic_container.dart';
+import '../../widgets/app_background.dart';
+import '../../widgets/glassmorphic_container.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

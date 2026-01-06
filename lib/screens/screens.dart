@@ -9,7 +9,7 @@
 /// - Shared: Reusable mixins and utilities
 
 // Main screens
-export 'home_screen.dart';
+export 'main/main.dart';
 export 'splash_screen.dart';
 
 // Player screens

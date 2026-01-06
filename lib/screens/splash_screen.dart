@@ -9,7 +9,7 @@ import '../services/user_preferences.dart';
 import '../services/logging_service.dart';
 import '../constants/animation_constants.dart';
 import 'onboarding/onboarding_screen.dart';
-import 'home_screen.dart';
+import 'main/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 
