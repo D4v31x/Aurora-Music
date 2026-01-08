@@ -34,4 +34,13 @@ class AppConfig {
   static const Duration defaultAnimationDuration = Duration(milliseconds: 300);
   static const Duration fastAnimationDuration = Duration(milliseconds: 200);
   static const Duration slowAnimationDuration = Duration(milliseconds: 400);
+
+  // Image Sizes for Performance (avoids oversized bitmaps)
+  static const double thumbnailSize = 60.0;
+  static const double cardArtworkSize = 130.0;
+  static const double gridArtworkSize = 150.0;
+  static const double largeArtworkSize = 400.0;
+  
+  // List Performance Settings
+  static const double listItemHeight = 76.0; // For itemExtent in ListView.builder
 }
