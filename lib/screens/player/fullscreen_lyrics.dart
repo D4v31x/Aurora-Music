@@ -176,10 +176,9 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     }
 
     if (newIndex != _currentLyricIndex) {
-      // Update the index - setState triggers rebuild but RepaintBoundary 
-      // isolates repaints to only the changed lyric lines
       _currentLyricIndex = newIndex;
       _scrollToCurrentLyric();
+      // Trigger rebuild - RepaintBoundary isolates repaints to changed lines only
       if (mounted) {
         setState(() {});
       }

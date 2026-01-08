@@ -977,12 +977,12 @@ class _AlbumGridTile extends StatelessWidget {
   final VoidCallback onLongPress;
 
   const _AlbumGridTile({
-    required Key key,
+    super.key,
     required this.album,
     required this.artworkService,
     required this.onTap,
     required this.onLongPress,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1065,13 +1065,13 @@ class _AlbumListTile extends StatelessWidget {
   final VoidCallback onPlay;
 
   const _AlbumListTile({
-    required Key key,
+    super.key,
     required this.album,
     required this.artworkService,
     required this.onTap,
     required this.onLongPress,
     required this.onPlay,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1161,12 +1161,12 @@ class _ArtistGridTile extends StatelessWidget {
   final VoidCallback onLongPress;
 
   const _ArtistGridTile({
-    required Key key,
+    super.key,
     required this.artist,
     required this.imagePath,
     required this.onTap,
     required this.onLongPress,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1238,13 +1238,13 @@ class _ArtistListTile extends StatelessWidget {
   final VoidCallback onPlay;
 
   const _ArtistListTile({
-    required Key key,
+    super.key,
     required this.artist,
     required this.imagePath,
     required this.onTap,
     required this.onLongPress,
     required this.onPlay,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1394,7 +1394,7 @@ class FoldersScreen extends StatelessWidget {
                           ),
                           subtitle: Text(
                             folder,
-                            style: const TextStyle(color: Color(0xFF9E9E9E)),
+                            style: const TextStyle(color: Colors.grey),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
