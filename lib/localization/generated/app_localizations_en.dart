@@ -1310,4 +1310,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsHighendUiDesc =>
       'Enable advanced visual effects and animations';
+
+  @override
+  String get restartRequired => 'Restart Required';
+
+  @override
+  String get restartRequiredDesc =>
+      'The app needs to restart to apply the UI mode change. Restart now?';
+
+  @override
+  String get restartNow => 'Restart Now';
 }

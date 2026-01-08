@@ -413,7 +413,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                 ? Text(
                     widget.albumName,
                     style: const TextStyle(
-                      fontFamily: 'ProductSans',
+                      fontFamily: 'Outfit',
                       fontStyle: FontStyle.normal,
                       color: Colors.white,
                       fontSize: 24,
@@ -441,7 +441,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                       Text(
                         widget.albumName,
                         style: const TextStyle(
-                          fontFamily: 'ProductSans',
+                          fontFamily: 'Outfit',
                           fontStyle: FontStyle.normal,
                           color: Colors.white,
                           fontSize: 32,

@@ -416,5 +416,8 @@
   "send_feedback_desc": "Nahlásit chyby nebo navrhnout funkce",
   "close": "Zavřít",
   "settingsHighendUi": "Vysoce výkonné UI",
-  "settingsHighendUiDesc": "Povolit pokročilé vizuální efekty a animace"
+  "settingsHighendUiDesc": "Povolit pokročilé vizuální efekty a animace",
+  "restartRequired": "Vyžadován restart",
+  "restartRequiredDesc": "Aplikace musí být restartována pro aplikování změny režimu UI. Restartovat nyní?",
+  "restartNow": "Restartovat nyní"
 }

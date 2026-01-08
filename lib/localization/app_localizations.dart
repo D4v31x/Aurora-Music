@@ -614,6 +614,12 @@ extension AppLocalizationsExtension on generated.AppLocalizations {
         return settingsHighendUi;
       case 'settings_highend_ui_desc':
         return settingsHighendUiDesc;
+      case 'restart_required':
+        return restartRequired;
+      case 'restart_required_desc':
+        return restartRequiredDesc;
+      case 'restart_now':
+        return restartNow;
       case 'settings_language':
         return settingsLanguage;
       case 'settings_playback':

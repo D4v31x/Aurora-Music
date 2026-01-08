@@ -467,7 +467,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             loc.translate('save_changes'),
             style: const TextStyle(
               color: Colors.white,
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -475,7 +475,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             loc.translate('save_changes_desc'),
             style: const TextStyle(
               color: Colors.white70,
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
             ),
           ),
           actions: [
@@ -487,7 +487,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               child: Text(
                 loc.translate('discard'),
                 style: const TextStyle(
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   color: Colors.white70,
                 ),
               ),
@@ -500,7 +500,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               child: Text(
                 loc.translate('save'),
                 style: const TextStyle(
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -638,7 +638,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
-                    fontFamily: 'ProductSans',
+                    fontFamily: 'Outfit',
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -653,7 +653,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                 loc.translate('save_failed_desc'),
                 style: const TextStyle(
                   color: Colors.white70,
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                 ),
               ),
               const SizedBox(height: 16),
@@ -673,7 +673,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                         color: Colors.white.withOpacity(0.7),
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
-                        fontFamily: 'ProductSans',
+                        fontFamily: 'Outfit',
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -691,7 +691,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               child: Text(
                 loc.translate('got_it'),
                 style: const TextStyle(
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -752,7 +752,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             loc.translate('storage_permission_needed'),
             style: const TextStyle(
               color: Colors.white70,
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
             ),
           ),
           actions: [
@@ -761,7 +761,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               child: Text(
                 loc.translate('cancel'),
                 style: const TextStyle(
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   color: Colors.white70,
                 ),
               ),
@@ -774,7 +774,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               child: Text(
                 loc.translate('open_settings'),
                 style: const TextStyle(
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -822,7 +822,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             loc.translate('metadata'),
             style: const TextStyle(
               color: Colors.white,
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1011,7 +1011,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                     color: _getQualityColor(loc),
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'ProductSans',
+                    fontFamily: 'Outfit',
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1064,7 +1064,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                 ),
               ),
             ],

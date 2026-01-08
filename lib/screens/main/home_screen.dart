@@ -638,7 +638,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             key: const ValueKey('default'),
                             textAlign: TextAlign.center,
                             style: const TextStyle(
-                              fontFamily: 'ProductSans',
+                              fontFamily: 'Outfit',
                               color: Colors.white,
                               fontSize: 34,
                               fontWeight: FontWeight.bold,
@@ -648,7 +648,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             key: ValueKey(message),
                             text: message,
                             style: const TextStyle(
-                              fontFamily: 'ProductSans',
+                              fontFamily: 'Outfit',
                               color: Colors.white,
                               fontSize: 34,
                               fontWeight: FontWeight.bold,
@@ -698,7 +698,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               key: ValueKey(
                                   _bluetoothService.connectedDeviceName),
                               style: const TextStyle(
-                                fontFamily: 'ProductSans',
+                                fontFamily: 'Outfit',
                                 fontSize: 12,
                                 color: Color(0xFF10B981),
                                 fontWeight: FontWeight.w600,
@@ -762,7 +762,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 AppLocalizations.of(context)
                                     .translate('aurora_music'),
                                 style: const TextStyle(
-                                  fontFamily: 'ProductSans',
+                                  fontFamily: 'Outfit',
                                   color: Colors.white,
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -870,7 +870,7 @@ class _HomeTabBar extends StatelessWidget {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               fontWeight: FontWeight.w500,
             ),
           ),

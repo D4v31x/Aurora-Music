@@ -1314,4 +1314,14 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String get settingsHighendUiDesc =>
       'Povolit pokročilé vizuální efekty a animace';
+
+  @override
+  String get restartRequired => 'Vyžadován restart';
+
+  @override
+  String get restartRequiredDesc =>
+      'Aplikace musí být restartována pro aplikování změny režimu UI. Restartovat nyní?';
+
+  @override
+  String get restartNow => 'Restartovat nyní';
 }

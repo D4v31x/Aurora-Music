@@ -302,7 +302,7 @@ class GlassmorphicCard extends StatelessWidget {
                   title,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    fontFamily: 'ProductSans',
+                    fontFamily: 'Outfit',
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -314,7 +314,7 @@ class GlassmorphicCard extends StatelessWidget {
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurface.withOpacity(0.6),
                       fontSize: 11,
-                      fontFamily: 'ProductSans',
+                      fontFamily: 'Outfit',
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -372,7 +372,7 @@ class CardBadge extends StatelessWidget {
           color: Colors.white,
           fontSize: 10,
           fontWeight: FontWeight.bold,
-          fontFamily: 'ProductSans',
+          fontFamily: 'Outfit',
         ),
       ),
     );

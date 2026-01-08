@@ -2599,6 +2599,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enable advanced visual effects and animations'**
   String get settingsHighendUiDesc;
+
+  /// No description provided for @restartRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart Required'**
+  String get restartRequired;
+
+  /// No description provided for @restartRequiredDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The app needs to restart to apply the UI mode change. Restart now?'**
+  String get restartRequiredDesc;
+
+  /// No description provided for @restartNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart Now'**
+  String get restartNow;
 }
 
 class _AppLocalizationsDelegate

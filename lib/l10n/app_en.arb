@@ -416,5 +416,8 @@
   "send_feedback_desc": "Report bugs or suggest features",
   "close": "Close",
   "settingsHighendUi": "High-end UI",
-  "settingsHighendUiDesc": "Enable advanced visual effects and animations"
+  "settingsHighendUiDesc": "Enable advanced visual effects and animations",
+  "restartRequired": "Restart Required",
+  "restartRequiredDesc": "The app needs to restart to apply the UI mode change. Restart now?",
+  "restartNow": "Restart Now"
 }

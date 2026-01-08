@@ -36,7 +36,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
         title: Text(
           l10n.translate('customizeHomeTab'),
           style: TextStyle(
-            fontFamily: 'ProductSans',
+            fontFamily: 'Outfit',
             fontWeight: FontWeight.bold,
             color: isDark ? Colors.white : Colors.black,
           ),
@@ -93,7 +93,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
                             child: Text(
                               l10n.translate('dragToReorder'),
                               style: TextStyle(
-                                fontFamily: 'ProductSans',
+                                fontFamily: 'Outfit',
                                 fontSize: 14,
                                 color: isDark ? Colors.white70 : Colors.black54,
                               ),
@@ -173,7 +173,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
           title: Text(
             l10n.translate('resetLayoutConfirm'),
             style: const TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -181,7 +181,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
           content: Text(
             l10n.translate('resetLayoutMessage'),
             style: const TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Colors.white70,
             ),
           ),
@@ -191,7 +191,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
               child: Text(
                 l10n.translate('cancel'),
                 style: const TextStyle(
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   color: Colors.white70,
                 ),
               ),
@@ -205,7 +205,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
               child: Text(
                 l10n.translate('resetToDefault'),
                 style: const TextStyle(
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -294,7 +294,7 @@ class _SectionTile extends StatelessWidget {
               title: Text(
                 l10n.translate(section.translationKey),
                 style: TextStyle(
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
                   color: isVisible

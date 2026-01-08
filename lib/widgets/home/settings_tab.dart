@@ -2,6 +2,7 @@ import 'package:aurora_music_v01/widgets/about_dialog.dart';
 import 'package:aurora_music_v01/widgets/changelog_dialog.dart';
 import 'package:aurora_music_v01/widgets/feedback_reminder_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -279,7 +280,7 @@ class _SettingsTabState extends State<SettingsTab> {
       title: Text(
         l10n.translate('settings_clear_cache_title'),
         style: const TextStyle(
-          fontFamily: 'ProductSans',
+          fontFamily: 'Outfit',
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
@@ -287,7 +288,7 @@ class _SettingsTabState extends State<SettingsTab> {
       content: Text(
         l10n.translate('settings_clear_cache_message'),
         style: const TextStyle(
-          fontFamily: 'ProductSans',
+          fontFamily: 'Outfit',
           color: Colors.white70,
         ),
       ),
@@ -297,7 +298,7 @@ class _SettingsTabState extends State<SettingsTab> {
           child: Text(
             l10n.translate('cancel'),
             style: const TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Colors.white70,
             ),
           ),
@@ -316,7 +317,7 @@ class _SettingsTabState extends State<SettingsTab> {
           child: Text(
             l10n.translate('delete'),
             style: TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Theme.of(context).colorScheme.error,
               fontWeight: FontWeight.bold,
             ),
@@ -393,7 +394,7 @@ class _SettingsTabState extends State<SettingsTab> {
         title: Text(
           l10n.translate('settings_cache_info'),
           style: const TextStyle(
-            fontFamily: 'ProductSans',
+            fontFamily: 'Outfit',
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -406,7 +407,7 @@ class _SettingsTabState extends State<SettingsTab> {
               Text(
                 l10n.translate('settings_storage'),
                 style: const TextStyle(
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
@@ -421,7 +422,7 @@ class _SettingsTabState extends State<SettingsTab> {
               Text(
                 'Memory Cache',
                 style: const TextStyle(
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
@@ -442,7 +443,7 @@ class _SettingsTabState extends State<SettingsTab> {
             child: Text(
               l10n.translate('cancel'),
               style: const TextStyle(
-                fontFamily: 'ProductSans',
+                fontFamily: 'Outfit',
                 color: Colors.white70,
               ),
             ),
@@ -494,6 +495,84 @@ class _SettingsTabState extends State<SettingsTab> {
       return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
     }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
+  }
+
+  /// Show restart dialog after UI mode change
+  /// Only applies the change after user confirms and restarts
+  void _showRestartDialog(bool newIsHighEnd) {
+    final l10n = AppLocalizations.of(context);
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
+    final dialogContent = AlertDialog(
+      backgroundColor: Colors.grey[900]?.withOpacity(shouldBlur ? 0.9 : 0.95),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: Colors.white.withOpacity(0.1)),
+      ),
+      title: Text(
+        l10n.translate('restart_required'),
+        style: const TextStyle(
+          fontFamily: 'Outfit',
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      content: Text(
+        l10n.translate('restart_required_desc'),
+        style: const TextStyle(
+          fontFamily: 'Outfit',
+          color: Colors.white70,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () async {
+            // Apply the mode change only now, right before restart
+            await performanceProvider.setPerformanceMode(
+              newIsHighEnd ? PerformanceLevel.high : PerformanceLevel.low,
+            );
+
+            // Stop audio and exit the app
+            if (!context.mounted) return;
+            final audioService =
+                Provider.of<AudioPlayerService>(context, listen: false);
+            await audioService.stop();
+            audioService.dispose();
+
+            // Exit the app
+            if (Platform.isAndroid) {
+              SystemNavigator.pop();
+            } else if (Platform.isIOS) {
+              exit(0);
+            }
+          },
+          child: Text(
+            l10n.translate('restart_now'),
+            style: TextStyle(
+              fontFamily: 'Outfit',
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Cannot dismiss by tapping outside
+      builder: (context) => PopScope(
+        canPop: false, // Cannot dismiss with back button
+        child: shouldBlur
+            ? BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: dialogContent,
+              )
+            : dialogContent,
+      ),
+    );
   }
 
   void _showAboutDialog() async {
@@ -556,7 +635,7 @@ class _SettingsTabState extends State<SettingsTab> {
       title: Text(
         l10n.translate('update_available'),
         style: const TextStyle(
-          fontFamily: 'ProductSans',
+          fontFamily: 'Outfit',
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
@@ -564,7 +643,7 @@ class _SettingsTabState extends State<SettingsTab> {
       content: Text(
         '${l10n.translate('update_message')}: $latestVersion',
         style: const TextStyle(
-          fontFamily: 'ProductSans',
+          fontFamily: 'Outfit',
           color: Colors.white70,
         ),
       ),
@@ -574,7 +653,7 @@ class _SettingsTabState extends State<SettingsTab> {
           child: Text(
             l10n.translate('later'),
             style: const TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Colors.white70,
             ),
           ),
@@ -589,7 +668,7 @@ class _SettingsTabState extends State<SettingsTab> {
           child: Text(
             l10n.translate('update_now'),
             style: const TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -750,9 +829,9 @@ class _SettingsTabState extends State<SettingsTab> {
                   subtitle: l10n.translate('settings_highend_ui_desc'),
                   value: isHighEnd,
                   onChanged: (value) {
-                    performanceProvider.setPerformanceMode(
-                      value ? PerformanceLevel.high : PerformanceLevel.low,
-                    );
+                    // Don't change mode here - show dialog first
+                    // Mode will only change when user confirms restart
+                    _showRestartDialog(value);
                   },
                 );
               },

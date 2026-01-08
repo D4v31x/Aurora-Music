@@ -372,7 +372,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                 ? Text(
                     widget.artistName,
                     style: const TextStyle(
-                      fontFamily: 'ProductSans',
+                      fontFamily: 'Outfit',
                       fontStyle: FontStyle.normal,
                       color: Colors.white,
                       fontSize: 24,
@@ -412,7 +412,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                   child: Text(
                     widget.artistName,
                     style: const TextStyle(
-                      fontFamily: 'ProductSans',
+                      fontFamily: 'Outfit',
                       fontStyle: FontStyle.normal,
                       color: Colors.white,
                       fontSize: 32,

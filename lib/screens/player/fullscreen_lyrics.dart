@@ -313,7 +313,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 Text(
                   audioService.currentSong?.title ?? '',
                   style: const TextStyle(
-                    fontFamily: 'ProductSans',
+                    fontFamily: 'Outfit',
                     color: Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -326,7 +326,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 Text(
                   audioService.currentSong?.artist ?? '',
                   style: const TextStyle(
-                    fontFamily: 'ProductSans',
+                    fontFamily: 'Outfit',
                     color: Colors.white70,
                     fontSize: 14,
                   ),
@@ -378,7 +378,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           Text(
             text,
             style: const TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Colors.white,
               fontSize: 14,
             ),
@@ -426,7 +426,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           title: Text(
             AppLocalizations.of(context).translate('search_lyrics'),
             style: const TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -437,11 +437,11 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               TextField(
                 controller: artistController,
                 style: const TextStyle(
-                    color: Colors.white, fontFamily: 'ProductSans'),
+                    color: Colors.white, fontFamily: 'Outfit'),
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context).translate('artists'),
                   labelStyle: const TextStyle(
-                      color: Colors.white70, fontFamily: 'ProductSans'),
+                      color: Colors.white70, fontFamily: 'Outfit'),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Colors.white24),
@@ -456,11 +456,11 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               TextField(
                 controller: titleController,
                 style: const TextStyle(
-                    color: Colors.white, fontFamily: 'ProductSans'),
+                    color: Colors.white, fontFamily: 'Outfit'),
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context).translate('title'),
                   labelStyle: const TextStyle(
-                      color: Colors.white70, fontFamily: 'ProductSans'),
+                      color: Colors.white70, fontFamily: 'Outfit'),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Colors.white24),
@@ -479,7 +479,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               child: Text(
                 AppLocalizations.of(context).translate('cancel'),
                 style: const TextStyle(
-                    color: Colors.white70, fontFamily: 'ProductSans'),
+                    color: Colors.white70, fontFamily: 'Outfit'),
               ),
             ),
             TextButton(
@@ -495,7 +495,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 AppLocalizations.of(context).translate('search'),
                 style: const TextStyle(
                     color: Colors.white,
-                    fontFamily: 'ProductSans',
+                    fontFamily: 'Outfit',
                     fontWeight: FontWeight.bold),
               ),
             ),
@@ -586,7 +586,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           title: Text(
             '${AppLocalizations.of(context).translate('results')} (${results.length})',
             style: const TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -617,7 +617,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                     title: Text(
                       trackName,
                       style: const TextStyle(
-                        fontFamily: 'ProductSans',
+                        fontFamily: 'Outfit',
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
@@ -632,7 +632,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                         Text(
                           artistName,
                           style: const TextStyle(
-                            fontFamily: 'ProductSans',
+                            fontFamily: 'Outfit',
                             color: Colors.white70,
                             fontSize: 13,
                           ),
@@ -644,7 +644,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                           Text(
                             albumName,
                             style: TextStyle(
-                              fontFamily: 'ProductSans',
+                              fontFamily: 'Outfit',
                               color: Colors.white.withOpacity(0.5),
                               fontSize: 12,
                             ),
@@ -664,7 +664,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                       child: Text(
                         duration,
                         style: const TextStyle(
-                          fontFamily: 'ProductSans',
+                          fontFamily: 'Outfit',
                           color: Colors.white70,
                           fontSize: 12,
                         ),
@@ -681,7 +681,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               child: Text(
                 AppLocalizations.of(context).translate('cancel'),
                 style: const TextStyle(
-                    color: Colors.white70, fontFamily: 'ProductSans'),
+                    color: Colors.white70, fontFamily: 'Outfit'),
               ),
             ),
           ],
@@ -759,7 +759,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             title: Text(
               AppLocalizations.of(context).translate('adjust_sync'),
               style: const TextStyle(
-                fontFamily: 'ProductSans',
+                fontFamily: 'Outfit',
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
@@ -770,7 +770,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 Text(
                   '${tempOffset >= 0 ? '+' : ''}${tempOffset}ms',
                   style: const TextStyle(
-                    fontFamily: 'ProductSans',
+                    fontFamily: 'Outfit',
                     color: Colors.white,
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
@@ -786,7 +786,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                           : AppLocalizations.of(context)
                               .translate('lyrics_synced'),
                   style: const TextStyle(
-                    fontFamily: 'ProductSans',
+                    fontFamily: 'Outfit',
                     color: Colors.white70,
                     fontSize: 14,
                   ),
@@ -811,7 +811,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                   child: Text(
                     AppLocalizations.of(context).translate('reset'),
                     style: const TextStyle(
-                        color: Colors.white70, fontFamily: 'ProductSans'),
+                        color: Colors.white70, fontFamily: 'Outfit'),
                   ),
                 ),
               ],
@@ -822,7 +822,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 child: Text(
                   AppLocalizations.of(context).translate('cancel'),
                   style: const TextStyle(
-                      color: Colors.white70, fontFamily: 'ProductSans'),
+                      color: Colors.white70, fontFamily: 'Outfit'),
                 ),
               ),
               TextButton(
@@ -834,7 +834,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                   AppLocalizations.of(context).translate('save'),
                   style: const TextStyle(
                       color: Colors.white,
-                      fontFamily: 'ProductSans',
+                      fontFamily: 'Outfit',
                       fontWeight: FontWeight.bold),
                 ),
               ),
@@ -858,7 +858,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         child: Text(
           label,
           style: const TextStyle(
-            fontFamily: 'ProductSans',
+            fontFamily: 'Outfit',
             color: Colors.white,
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -882,7 +882,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           title: Text(
             AppLocalizations.of(context).translate('font_size'),
             style: const TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -919,7 +919,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       title: Text(
         label,
         style: TextStyle(
-          fontFamily: 'ProductSans',
+          fontFamily: 'Outfit',
           color: isSelected ? Colors.white : Colors.white70,
           fontSize: 16,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -975,7 +975,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         child: AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 300),
           style: TextStyle(
-            fontFamily: 'ProductSans',
+            fontFamily: 'Outfit',
             fontSize: adjustedFontSize,
             fontWeight: isCurrent ? FontWeight.bold : FontWeight.w400,
             color: isCurrent
@@ -1017,7 +1017,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           Text(
             AppLocalizations.of(context).translate('no_lyrics'),
             style: const TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -1027,7 +1027,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           Text(
             AppLocalizations.of(context).translate('no_lyrics_desc'),
             style: const TextStyle(
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               color: Colors.white54,
               fontSize: 14,
             ),
@@ -1110,7 +1110,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                           Text(
                             _formatDuration(position),
                             style: TextStyle(
-                              fontFamily: 'ProductSans',
+                              fontFamily: 'Outfit',
                               color: Colors.white.withOpacity(0.7),
                               fontSize: 11,
                             ),
@@ -1118,7 +1118,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                           Text(
                             _formatDuration(duration),
                             style: TextStyle(
-                              fontFamily: 'ProductSans',
+                              fontFamily: 'Outfit',
                               color: Colors.white.withOpacity(0.7),
                               fontSize: 11,
                             ),

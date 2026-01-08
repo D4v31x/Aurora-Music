@@ -133,7 +133,7 @@ class _MostPlayedTile extends StatelessWidget {
                     child: Text(
                       '$rank',
                       style: TextStyle(
-                        fontFamily: 'ProductSans',
+                        fontFamily: 'Outfit',
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.primary,
@@ -163,7 +163,7 @@ class _MostPlayedTile extends StatelessWidget {
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  fontFamily: 'ProductSans',
+                                  fontFamily: 'Outfit',
                                 ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -176,7 +176,7 @@ class _MostPlayedTile extends StatelessWidget {
                                   .colorScheme
                                   .onSurface
                                   .withValues(alpha: 0.6),
-                              fontFamily: 'ProductSans',
+                              fontFamily: 'Outfit',
                             ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

@@ -413,7 +413,7 @@ class _LibraryTabState extends State<LibraryTab> {
         AppLocalizations.of(context).translate('details'),
         style: theme.textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.w500,
-          fontFamily: 'ProductSans',
+          fontFamily: 'Outfit',
           fontSize: 12,
         ),
       ),
@@ -430,7 +430,7 @@ class _LibraryTabState extends State<LibraryTab> {
                 title,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   fontSize: 26,
                 ),
               ),
@@ -621,7 +621,7 @@ class _LibraryTabState extends State<LibraryTab> {
         AppLocalizations.of(context).translate('details'),
         style: theme.textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.w500,
-          fontFamily: 'ProductSans',
+          fontFamily: 'Outfit',
         ),
       ),
     );
@@ -637,7 +637,7 @@ class _LibraryTabState extends State<LibraryTab> {
                 title,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   fontSize: ResponsiveUtils.isTablet(context) ? 26 : null,
                 ),
               ),

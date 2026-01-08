@@ -93,7 +93,7 @@ class CommonScreenScaffold extends StatelessWidget {
                       title,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontFamily: 'ProductSans',
+                        fontFamily: 'Outfit',
                         fontWeight: FontWeight.bold,
                         fontSize: 24,
                       ),

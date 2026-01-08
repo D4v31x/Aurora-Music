@@ -233,7 +233,7 @@ class _ToastWidgetState extends State<_ToastWidget>
             child: Text(
               _message,
               style: const TextStyle(
-                fontFamily: 'ProductSans',
+                fontFamily: 'Outfit',
                 color: Colors.white,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,

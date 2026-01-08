@@ -101,7 +101,7 @@ class MusicMetadataWidget extends StatelessWidget {
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
             ),
             textAlign: TextAlign.center,
           ),

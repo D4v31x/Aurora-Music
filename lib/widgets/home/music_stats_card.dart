@@ -147,7 +147,7 @@ class MusicStatsCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      fontFamily: 'ProductSans',
+                      fontFamily: 'Outfit',
                       color: isDark ? Colors.white70 : Colors.black54,
                     ),
                   ),
@@ -156,7 +156,7 @@ class MusicStatsCard extends StatelessWidget {
                     '${stats.totalHours}h ${stats.totalMinutes}m',
                     style: TextStyle(
                       fontSize: 12,
-                      fontFamily: 'ProductSans',
+                      fontFamily: 'Outfit',
                       color: isDark ? Colors.white38 : Colors.black38,
                     ),
                   ),
@@ -235,7 +235,7 @@ class _MinimalStat extends StatelessWidget {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600,
-            fontFamily: 'ProductSans',
+            fontFamily: 'Outfit',
             color: isDark ? Colors.white : Colors.black87,
           ),
         ),
@@ -244,7 +244,7 @@ class _MinimalStat extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 11,
-            fontFamily: 'ProductSans',
+            fontFamily: 'Outfit',
             color: isDark ? Colors.white38 : Colors.black38,
           ),
         ),

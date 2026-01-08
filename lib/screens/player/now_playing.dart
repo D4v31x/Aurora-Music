@@ -462,7 +462,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
-                            fontFamily: 'ProductSans',
+                            fontFamily: 'Outfit',
                           ),
                           child: (toHeroContext.widget as Hero).child,
                         ),
@@ -477,7 +477,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                           fontSize: isTablet ? 22 : 18,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
-                          fontFamily: 'ProductSans',
+                          fontFamily: 'Outfit',
                         ),
                       ),
                     ),
@@ -497,7 +497,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                         child: DefaultTextStyle.merge(
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.7),
-                            fontFamily: 'ProductSans',
+                            fontFamily: 'Outfit',
                           ),
                           child: (toHeroContext.widget as Hero).child,
                         ),
@@ -512,7 +512,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                         style: TextStyle(
                           fontSize: isTablet ? 16 : 14,
                           color: Colors.white.withOpacity(0.7),
-                          fontFamily: 'ProductSans',
+                          fontFamily: 'Outfit',
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 1,
@@ -635,7 +635,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        fontFamily: 'ProductSans',
+                        fontFamily: 'Outfit',
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -654,7 +654,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                       style: TextStyle(
                         fontSize: 20,
                         color: Colors.white.withOpacity(0.7),
-                        fontFamily: 'ProductSans',
+                        fontFamily: 'Outfit',
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -668,7 +668,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.white.withOpacity(0.5),
-                      fontFamily: 'ProductSans',
+                      fontFamily: 'Outfit',
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -699,7 +699,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 color: Colors.white,
                 fontSize: isTablet ? 26 : 22,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'ProductSans',
+                fontFamily: 'Outfit',
                 letterSpacing: 0.5,
               ),
             ),
@@ -846,7 +846,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                   color: (isCurrent ? Colors.white : Colors.white60)
                       .withValues(alpha: effectiveOpacity * value),
                   fontSize: isCurrent ? 20 : 16,
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
                   height: 1.2,
                   letterSpacing: isCurrent ? 0.2 : 0.0,
@@ -872,7 +872,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             style: TextStyle(
               color: Colors.white70.withValues(alpha: value),
               fontSize: 16,
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               fontWeight: FontWeight.bold,
               height: 1.5,
             ),
@@ -902,7 +902,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
             ),
             textAlign: TextAlign.center,
           ),
@@ -2370,7 +2370,7 @@ class _ProgressBarState extends State<_ProgressBar> {
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
                           fontSize: 11,
-                          fontFamily: 'ProductSans',
+                          fontFamily: 'Outfit',
                         ),
                       ),
                       Text(
@@ -2378,7 +2378,7 @@ class _ProgressBarState extends State<_ProgressBar> {
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
                           fontSize: 11,
-                          fontFamily: 'ProductSans',
+                          fontFamily: 'Outfit',
                         ),
                       ),
                     ],

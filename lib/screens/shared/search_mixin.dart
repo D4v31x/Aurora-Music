@@ -86,13 +86,13 @@ mixin SearchMixin<T extends StatefulWidget> on State<T> {
         onChanged: onSearchChanged,
         style: TextStyle(
           color: textColor ?? (isDark ? Colors.white : Colors.black),
-          fontFamily: 'ProductSans',
+          fontFamily: 'Outfit',
         ),
         decoration: InputDecoration(
           hintText: hintText ?? 'Search...',
           hintStyle: TextStyle(
             color: hintColor ?? Colors.white.withOpacity(0.5),
-            fontFamily: 'ProductSans',
+            fontFamily: 'Outfit',
           ),
           prefixIcon: Icon(
             Icons.search,

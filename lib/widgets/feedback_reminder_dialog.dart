@@ -87,7 +87,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                 Text(
                   l10n.translate('feedback_title'),
                   style: const TextStyle(
-                    fontFamily: 'ProductSans',
+                    fontFamily: 'Outfit',
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -100,7 +100,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                 Text(
                   l10n.translate('feedback_description'),
                   style: TextStyle(
-                    fontFamily: 'ProductSans',
+                    fontFamily: 'Outfit',
                     fontSize: 14,
                     color: Colors.white.withOpacity(0.7),
                     height: 1.5,
@@ -148,7 +148,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                       child: Text(
                         l10n.translate('maybe_later'),
                         style: TextStyle(
-                          fontFamily: 'ProductSans',
+                          fontFamily: 'Outfit',
                           color: Colors.white.withOpacity(0.6),
                         ),
                       ),
@@ -164,7 +164,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                       child: Text(
                         l10n.translate('dont_ask_again'),
                         style: TextStyle(
-                          fontFamily: 'ProductSans',
+                          fontFamily: 'Outfit',
                           color: Colors.white.withOpacity(0.4),
                           fontSize: 12,
                         ),
@@ -222,7 +222,7 @@ class _FeedbackButton extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontFamily: 'ProductSans',
+                  fontFamily: 'Outfit',
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: color,

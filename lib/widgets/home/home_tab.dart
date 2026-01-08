@@ -252,7 +252,7 @@ class _SectionTitle extends StatelessWidget {
         title,
         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              fontFamily: 'ProductSans',
+              fontFamily: 'Outfit',
               fontSize: isTablet ? 26 : null,
             ),
       ),
