@@ -371,7 +371,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     }
   }
 
-  // Optimized artwork display widget
+  // Optimized artwork display widget with RepaintBoundary
   Widget _buildArtwork() {
     if (_isLoadingArtwork) {
       return const Center(
@@ -379,22 +379,24 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: _currentArtwork != null
-            ? Image(image: _currentArtwork!, fit: BoxFit.cover)
-            : const Center(child: CircularProgressIndicator()),
+    return RepaintBoundary(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0x33000000), // Pre-computed opacity
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: _currentArtwork != null
+              ? Image(image: _currentArtwork!, fit: BoxFit.cover)
+              : const Center(child: CircularProgressIndicator()),
+        ),
       ),
     );
   }
