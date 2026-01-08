@@ -312,15 +312,13 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final album = _filteredAlbums[index];
-            return AnimationConfiguration.staggeredGrid(
-              position: index,
-              columnCount: 2,
-              duration: const Duration(milliseconds: 300),
-              child: ScaleAnimation(
-                child: FadeInAnimation(
-                  child: _buildAlbumGridTile(album),
-                ),
-              ),
+            // Remove staggered animations for better scroll performance
+            return _AlbumGridTile(
+              key: ValueKey(album.id),
+              album: album,
+              artworkService: _artworkService,
+              onTap: () => _navigateToAlbumDetail(album),
+              onLongPress: () => _showAlbumOptions(album),
             );
           },
           childCount: _filteredAlbums.length,
@@ -329,68 +327,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     );
   }
 
-  Widget _buildAlbumGridTile(AlbumModel album) {
-    return GestureDetector(
-      onTap: () => _navigateToAlbumDetail(album),
-      onLongPress: () => _showAlbumOptions(album),
-      child: glassmorphicContainer(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Album artwork
-              Expanded(
-                flex: 3,
-                child: Center(
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: _artworkService.buildCachedAlbumArtwork(
-                        album.id,
-                        size: 150,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              // Album name
-              Expanded(
-                flex: 1,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      album.album,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${splitArtists(album.artist ?? 'Unknown').join(', ')} • ${album.numOfSongs} tracks',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
-                        fontSize: 11,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // Deprecated - replaced with extracted widget
+  // Widget _buildAlbumGridTile(AlbumModel album) { ... }
 
   Widget _buildAlbumsList(AudioPlayerService audioPlayerService) {
     return SliverPadding(
@@ -399,17 +337,16 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final album = _filteredAlbums[index];
-            return AnimationConfiguration.staggeredList(
-              position: index,
-              duration: const Duration(milliseconds: 300),
-              child: SlideAnimation(
-                verticalOffset: 30,
-                child: FadeInAnimation(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _buildAlbumListTile(album),
-                  ),
-                ),
+            // Remove staggered animations for better scroll performance
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _AlbumListTile(
+                key: ValueKey(album.id),
+                album: album,
+                artworkService: _artworkService,
+                onTap: () => _navigateToAlbumDetail(album),
+                onLongPress: () => _showAlbumOptions(album),
+                onPlay: () => _playAlbum(album),
               ),
             );
           },
@@ -419,75 +356,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     );
   }
 
-  Widget _buildAlbumListTile(AlbumModel album) {
-    return GestureDetector(
-      onTap: () => _navigateToAlbumDetail(album),
-      onLongPress: () => _showAlbumOptions(album),
-      child: glassmorphicContainer(
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              // Album artwork with hero animation
-              Hero(
-                tag: 'album_image_${album.album}',
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: _artworkService.buildCachedAlbumArtwork(
-                    album.id,
-                    size: 60,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Album info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      album.album,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      splitArtists(album.artist ?? 'Unknown Artist').join(', '),
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 13,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${album.numOfSongs} tracks',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Quick play button
-              IconButton(
-                icon: const Icon(Icons.play_circle_filled,
-                    color: Colors.white70, size: 36),
-                onPressed: () => _playAlbum(album),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // Deprecated - replaced with extracted widget
+  // Widget _buildAlbumListTile(AlbumModel album) { ... }
 
   void _navigateToAlbumDetail(AlbumModel album) {
     Navigator.push(
@@ -1249,6 +1119,190 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
       final shuffled = List<SongModel>.from(artistSongs)..shuffle();
       audioPlayerService.setPlaylist(shuffled, 0);
     }
+  }
+}
+
+// Extracted Album Grid Tile Widget for Performance
+class _AlbumGridTile extends StatelessWidget {
+  final AlbumModel album;
+  final ArtworkCacheService artworkService;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  const _AlbumGridTile({
+    required Key key,
+    required this.album,
+    required this.artworkService,
+    required this.onTap,
+    required this.onLongPress,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Memoize text styles for better performance
+    const titleStyle = TextStyle(
+      color: Colors.white,
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+    );
+    
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        child: glassmorphicContainer(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Album artwork with RepaintBoundary
+                Expanded(
+                  flex: 3,
+                  child: Center(
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: RepaintBoundary(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: artworkService.buildCachedAlbumArtwork(
+                            album.id,
+                            size: 150,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Album info
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        album.album,
+                        style: titleStyle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${splitArtists(album.artist ?? 'Unknown').join(', ')} • ${album.numOfSongs} tracks',
+                        style: const TextStyle(
+                          color: Color(0x99FFFFFF), // Pre-computed opacity
+                          fontSize: 11,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Extracted Album List Tile Widget for Performance
+class _AlbumListTile extends StatelessWidget {
+  final AlbumModel album;
+  final ArtworkCacheService artworkService;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+  final VoidCallback onPlay;
+
+  const _AlbumListTile({
+    required Key key,
+    required this.album,
+    required this.artworkService,
+    required this.onTap,
+    required this.onLongPress,
+    required this.onPlay,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Memoize text styles
+    const titleStyle = TextStyle(
+      color: Colors.white,
+      fontSize: 15,
+      fontWeight: FontWeight.w600,
+    );
+    
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        child: glassmorphicContainer(
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Row(
+              children: [
+                // Album artwork with Hero and RepaintBoundary
+                RepaintBoundary(
+                  child: Hero(
+                    tag: 'album_image_${album.album}',
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: artworkService.buildCachedAlbumArtwork(
+                        album.id,
+                        size: 60,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Album info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        album.album,
+                        style: titleStyle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        splitArtists(album.artist ?? 'Unknown Artist').join(', '),
+                        style: const TextStyle(
+                          color: Color(0xB3FFFFFF), // Pre-computed opacity
+                          fontSize: 13,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${album.numOfSongs} tracks',
+                        style: const TextStyle(
+                          color: Color(0x80FFFFFF), // Pre-computed opacity
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Quick play button
+                IconButton(
+                  icon: const Icon(Icons.play_circle_filled,
+                      color: Color(0xB3FFFFFF), size: 36),
+                  onPressed: onPlay,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

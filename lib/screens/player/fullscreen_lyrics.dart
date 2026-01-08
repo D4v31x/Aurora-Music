@@ -176,8 +176,13 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     }
 
     if (newIndex != _currentLyricIndex) {
-      setState(() => _currentLyricIndex = newIndex);
+      // Only update the index, don't trigger full rebuild
+      _currentLyricIndex = newIndex;
       _scrollToCurrentLyric();
+      // Force rebuild only for changed lyric lines - not the whole widget
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
@@ -965,29 +970,32 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     final baseFontSize = isCurrent ? 24.0 : 18.0;
     final adjustedFontSize = baseFontSize * _fontSize;
 
-    return GestureDetector(
-      key: _lyricKeys[index],
-      onTap: () => _seekToLyric(index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-        padding: EdgeInsets.symmetric(vertical: isCurrent ? 14 : 8),
-        child: AnimatedDefaultTextStyle(
+    // Use RepaintBoundary to isolate lyric lines
+    return RepaintBoundary(
+      child: GestureDetector(
+        key: _lyricKeys[index],
+        onTap: () => _seekToLyric(index),
+        child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          style: TextStyle(
-            fontFamily: 'ProductSans',
-            fontSize: adjustedFontSize,
-            fontWeight: isCurrent ? FontWeight.bold : FontWeight.w400,
-            color: isCurrent
-                ? Colors.white
-                : isPast
-                    ? Colors.white.withValues(alpha: 0.4)
-                    : Colors.white.withValues(alpha: 0.6),
-            height: 1.4,
-          ),
-          child: Text(
-            lyric.text,
-            textAlign: TextAlign.center,
+          curve: Curves.easeOut,
+          padding: EdgeInsets.symmetric(vertical: isCurrent ? 14 : 8),
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 300),
+            style: TextStyle(
+              fontFamily: 'ProductSans',
+              fontSize: adjustedFontSize,
+              fontWeight: isCurrent ? FontWeight.bold : FontWeight.w400,
+              color: isCurrent
+                  ? Colors.white
+                  : isPast
+                      ? const Color(0x66FFFFFF) // Pre-computed opacity
+                      : const Color(0x99FFFFFF), // Pre-computed opacity
+              height: 1.4,
+            ),
+            child: Text(
+              lyric.text,
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       ),
