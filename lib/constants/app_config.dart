@@ -43,4 +43,11 @@ class AppConfig {
   
   // List Performance Settings
   static const double listItemHeight = 76.0; // For itemExtent in ListView.builder
+  
+  // Pre-computed Colors for Performance (avoid runtime opacity calculations)
+  static const Color white60 = Color(0x99FFFFFF); // 60% white opacity
+  static const Color white70 = Color(0xB3FFFFFF); // 70% white opacity
+  static const Color white50 = Color(0x80FFFFFF); // 50% white opacity
+  static const Color white40 = Color(0x66FFFFFF); // 40% white opacity
+  static const Color black20 = Color(0x33000000); // 20% black opacity
 }

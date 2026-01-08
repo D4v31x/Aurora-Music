@@ -11,6 +11,7 @@ import '../../widgets/shimmer_loading.dart';
 import '../../widgets/common_screen_scaffold.dart';
 import '../../localization/app_localizations.dart';
 import '../../models/utils.dart';
+import '../../constants/app_config.dart';
 import 'artist_detail_screen.dart';
 import 'folder_detail_screen.dart';
 import 'album_detail_screen.dart';
@@ -327,9 +328,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     );
   }
 
-  // Deprecated - replaced with extracted widget
-  // Widget _buildAlbumGridTile(AlbumModel album) { ... }
-
   Widget _buildAlbumsList(AudioPlayerService audioPlayerService) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -355,9 +353,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
       ),
     );
   }
-
-  // Deprecated - replaced with extracted widget
-  // Widget _buildAlbumListTile(AlbumModel album) { ... }
 
   void _navigateToAlbumDetail(AlbumModel album) {
     Navigator.push(
@@ -817,8 +812,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     );
   }
 
-  // Deprecated - replaced with extracted widget
-  // Widget _buildArtistGridTile(SeparatedArtist artist) { ... }
+  }
 
   Widget _buildArtistsList() {
     return SliverPadding(
@@ -845,9 +839,6 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
       ),
     );
   }
-
-  // Deprecated - replaced with extracted widget
-  // Widget _buildArtistListTile(SeparatedArtist artist) { ... }
 
   void _navigateToArtistDetail(SeparatedArtist artist) {
     Navigator.push(
@@ -1047,7 +1038,7 @@ class _AlbumGridTile extends StatelessWidget {
                       Text(
                         '${splitArtists(album.artist ?? 'Unknown').join(', ')} • ${album.numOfSongs} tracks',
                         style: const TextStyle(
-                          color: Color(0x99FFFFFF), // Pre-computed opacity
+                          color: AppConfig.white60,
                           fontSize: 11,
                         ),
                         maxLines: 1,

@@ -15,6 +15,7 @@ import '../../services/lyrics_service.dart'; // Genius lyrics fetching service
 import '../../services/artwork_cache_service.dart'; // Centralized artwork caching
 import '../../services/artist_separator_service.dart';
 import '../../services/background_manager_service.dart'; // Background artwork management
+import '../../constants/app_config.dart';
 import 'fullscreen_lyrics.dart'; // Fullscreen lyrics viewer
 // Importujte službu pro timed lyrics
 import '../../widgets/artist_card.dart';
@@ -385,7 +386,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: const Color(0x33000000), // Pre-computed opacity
+              color: AppConfig.black20,
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),

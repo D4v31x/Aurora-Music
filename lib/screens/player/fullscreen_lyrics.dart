@@ -176,10 +176,10 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     }
 
     if (newIndex != _currentLyricIndex) {
-      // Only update the index, don't trigger full rebuild
+      // Update the index - setState triggers rebuild but RepaintBoundary 
+      // isolates repaints to only the changed lyric lines
       _currentLyricIndex = newIndex;
       _scrollToCurrentLyric();
-      // Force rebuild only for changed lyric lines - not the whole widget
       if (mounted) {
         setState(() {});
       }
