@@ -15,6 +15,7 @@ import '../../services/lyrics_service.dart'; // Genius lyrics fetching service
 import '../../services/artwork_cache_service.dart'; // Centralized artwork caching
 import '../../services/artist_separator_service.dart';
 import '../../services/background_manager_service.dart'; // Background artwork management
+import '../../constants/app_config.dart';
 import 'fullscreen_lyrics.dart'; // Fullscreen lyrics viewer
 // Importujte službu pro timed lyrics
 import '../../widgets/artist_card.dart';
@@ -371,7 +372,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     }
   }
 
-  // Optimized artwork display widget
+  // Optimized artwork display widget with RepaintBoundary
   Widget _buildArtwork() {
     if (_isLoadingArtwork) {
       return const Center(
@@ -379,22 +380,24 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: _currentArtwork != null
-            ? Image(image: _currentArtwork!, fit: BoxFit.cover)
-            : const Center(child: CircularProgressIndicator()),
+    return RepaintBoundary(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: AppConfig.black20,
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: _currentArtwork != null
+              ? Image(image: _currentArtwork!, fit: BoxFit.cover)
+              : const Center(child: CircularProgressIndicator()),
+        ),
       ),
     );
   }
