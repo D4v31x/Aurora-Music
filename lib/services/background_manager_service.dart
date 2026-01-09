@@ -3,9 +3,15 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'dart:typed_data';
 import 'artwork_cache_service.dart';
+import '../utils/performance_optimizations.dart';
 
 /// Service that manages background colors and artwork
 /// Provides artwork data for blurred backgrounds across the app
+/// 
+/// Performance optimizations:
+/// - Cached color extraction to avoid redundant palette generation
+/// - Throttled updates to prevent excessive rebuilds
+/// - Batch notifications to reduce listener calls
 class BackgroundManagerService extends ChangeNotifier {
   final ArtworkCacheService _artworkCache = ArtworkCacheService();
 
@@ -19,6 +25,11 @@ class BackgroundManagerService extends ChangeNotifier {
   SongModel? _currentSong;
   bool _isUpdating = false; // Prevent concurrent updates
   int _updateCounter = 0; // Track update sequence
+
+  // Performance optimizations
+  final Map<int, List<Color>> _colorCache = {}; // Cache colors by song ID
+  final Throttler _updateThrottler = Throttler(interval: const Duration(milliseconds: 300));
+  final Memoizer<List<Color>> _colorMemoizer = Memoizer<List<Color>>();
 
   static const Color _defaultDarkPrimary = Color(0xFF1A237E);
   static const Color _defaultDarkSecondary = Color(0xFF311B92);
@@ -65,14 +76,24 @@ class BackgroundManagerService extends ChangeNotifier {
 
   /// Update colors based on artwork
   Future<void> updateColorsFromArtwork(Uint8List? artworkData) async {
-    await _updateColorsFromArtworkSilent(artworkData);
-    notifyListeners();
+    // Throttle updates to prevent excessive rebuilds
+    _updateThrottler.call(() async {
+      await _updateColorsFromArtworkSilent(artworkData);
+      notifyListeners();
+    });
   }
 
   /// Update colors without notifying listeners (internal use)
   Future<void> _updateColorsFromArtworkSilent(Uint8List? artworkData) async {
     if (artworkData == null) {
       _currentColors = _getDefaultColors();
+      return;
+    }
+
+    // Check cache first
+    final artworkHash = artworkData.hashCode;
+    if (_colorCache.containsKey(artworkHash)) {
+      _currentColors = _colorCache[artworkHash]!;
       return;
     }
 
@@ -86,6 +107,17 @@ class BackgroundManagerService extends ChangeNotifier {
       final colors = _extractColorsFromPalette(palette);
       if (colors.length >= 2) {
         _currentColors = colors;
+        // Cache the extracted colors
+        _colorCache[artworkHash] = colors;
+        
+        // Limit cache size to prevent memory leaks
+        if (_colorCache.length > 50) {
+          // Remove oldest entries (first keys)
+          final keysToRemove = _colorCache.keys.take(_colorCache.length - 50).toList();
+          for (final key in keysToRemove) {
+            _colorCache.remove(key);
+          }
+        }
       } else {
         _currentColors = _getDefaultColors();
       }
@@ -300,5 +332,12 @@ class BackgroundManagerService extends ChangeNotifier {
     // Take up to 9 colors for the mesh (3x3 grid)
     _currentColors = colors.take(9).toList();
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _updateThrottler.dispose();
+    _colorCache.clear();
+    super.dispose();
   }
 }

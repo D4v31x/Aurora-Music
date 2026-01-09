@@ -929,29 +929,33 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   }
 
   Widget _buildLyricsView() {
-    return ShaderMask(
-      shaderCallback: (bounds) => const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Colors.transparent,
-          Colors.white,
-          Colors.white,
-          Colors.transparent
-        ],
-        stops: [0.0, 0.08, 0.92, 1.0],
-      ).createShader(bounds),
-      blendMode: BlendMode.dstIn,
-      child: ListView.builder(
-        key: _scrollKey,
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: MediaQuery.of(context).size.height * 0.3,
+    return RepaintBoundary(
+      child: ShaderMask(
+        shaderCallback: (bounds) => const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.white,
+            Colors.white,
+            Colors.transparent
+          ],
+          stops: [0.0, 0.08, 0.92, 1.0],
+        ).createShader(bounds),
+        blendMode: BlendMode.dstIn,
+        child: ListView.builder(
+          key: _scrollKey,
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: MediaQuery.of(context).size.height * 0.3,
+          ),
+          itemCount: _currentLyrics!.length,
+          // Optimize list performance with cacheExtent
+          cacheExtent: 1000,
+          itemBuilder: (context, index) => _buildLyricLine(index),
         ),
-        itemCount: _currentLyrics!.length,
-        itemBuilder: (context, index) => _buildLyricLine(index),
       ),
     );
   }
@@ -965,29 +969,32 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     final baseFontSize = isCurrent ? 24.0 : 18.0;
     final adjustedFontSize = baseFontSize * _fontSize;
 
-    return GestureDetector(
-      key: _lyricKeys[index],
-      onTap: () => _seekToLyric(index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-        padding: EdgeInsets.symmetric(vertical: isCurrent ? 14 : 8),
-        child: AnimatedDefaultTextStyle(
+    // Wrap each line in RepaintBoundary to isolate repaints
+    return RepaintBoundary(
+      child: GestureDetector(
+        key: _lyricKeys[index],
+        onTap: () => _seekToLyric(index),
+        child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          style: TextStyle(
-            fontFamily: 'Outfit',
-            fontSize: adjustedFontSize,
-            fontWeight: isCurrent ? FontWeight.bold : FontWeight.w400,
-            color: isCurrent
-                ? Colors.white
-                : isPast
-                    ? Colors.white.withValues(alpha: 0.4)
-                    : Colors.white.withValues(alpha: 0.6),
-            height: 1.4,
-          ),
-          child: Text(
-            lyric.text,
-            textAlign: TextAlign.center,
+          curve: Curves.easeOut,
+          padding: EdgeInsets.symmetric(vertical: isCurrent ? 14 : 8),
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 300),
+            style: TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: adjustedFontSize,
+              fontWeight: isCurrent ? FontWeight.bold : FontWeight.w400,
+              color: isCurrent
+                  ? Colors.white
+                  : isPast
+                      ? Colors.white.withValues(alpha: 0.4)
+                      : Colors.white.withValues(alpha: 0.6),
+              height: 1.4,
+            ),
+            child: Text(
+              lyric.text,
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       ),

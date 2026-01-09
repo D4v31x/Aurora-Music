@@ -38,8 +38,9 @@ class _PermissionsPageState extends State<PermissionsPage>
   bool _notificationPermissionGranted = false;
   bool _bluetoothPermissionGranted = false;
   bool _isChecking = false;
-  bool _shouldShowStoragePermission = false; // Android version check
+  bool _shouldShowStoragePermission = false; // Android 12 and below
   bool _shouldShowBluetoothPermission = false;
+  bool _shouldShowAudioPermission = false; // Android 13+ only
 
   @override
   void initState() {
@@ -148,15 +149,18 @@ class _PermissionsPageState extends State<PermissionsPage>
         // Show storage permission only for Android 12 (API 32) and lower
         _shouldShowStoragePermission = androidInfo.version.sdkInt <= 32;
         _shouldShowBluetoothPermission = androidInfo.version.sdkInt >= 31;
+        // Show audio permission only for Android 13 (API 33) and higher
+        _shouldShowAudioPermission = androidInfo.version.sdkInt >= 33;
       });
       debugPrint(
-          '📱 Android SDK: ${androidInfo.version.sdkInt}, Show storage permission: $_shouldShowStoragePermission');
+          '📱 Android SDK: ${androidInfo.version.sdkInt}, Show storage permission: $_shouldShowStoragePermission, Show audio permission: $_shouldShowAudioPermission');
     } catch (e) {
       debugPrint('⚠️ Error checking Android version: $e');
-      // Fallback: show storage permission if we can't determine version
+      // Fallback: show both permissions if we can't determine version
       setState(() {
         _shouldShowStoragePermission = true;
         _shouldShowBluetoothPermission = true;
+        _shouldShowAudioPermission = true;
       });
     }
   }
@@ -166,9 +170,14 @@ class _PermissionsPageState extends State<PermissionsPage>
       _isChecking = true;
     });
 
-    final audioStatus = await Permission.audio.status;
     final notificationStatus = await Permission.notification.status;
     final bluetoothStatus = await Permission.bluetoothConnect.status;
+
+    // Only check audio permission on Android 13+
+    PermissionStatus? audioStatus;
+    if (_shouldShowAudioPermission) {
+      audioStatus = await Permission.audio.status;
+    }
 
     // Only check storage permission if needed (Android 12 and below)
     PermissionStatus? storageStatus;
@@ -177,7 +186,8 @@ class _PermissionsPageState extends State<PermissionsPage>
     }
 
     setState(() {
-      _audioPermissionGranted = audioStatus.isGranted;
+      _audioPermissionGranted = audioStatus?.isGranted ??
+          true; // Auto-grant if not needed (Android < 13)
       _storagePermissionGranted =
           storageStatus?.isGranted ?? true; // Auto-grant if not needed
       _notificationPermissionGranted = notificationStatus.isGranted;
@@ -211,7 +221,10 @@ class _PermissionsPageState extends State<PermissionsPage>
       _isChecking = true;
     });
 
-    await Permission.audio.request();
+    // Only request audio permission on Android 13+
+    if (_shouldShowAudioPermission) {
+      await Permission.audio.request();
+    }
 
     // Only request storage permission if needed (Android 12 and below)
     if (_shouldShowStoragePermission) {
@@ -242,6 +255,10 @@ class _PermissionsPageState extends State<PermissionsPage>
     final subtitleColor =
         isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
 
+    // Required permission is granted: audio on Android 13+, storage on Android 12-
+    final requiredPermissionGranted = _shouldShowAudioPermission
+        ? _audioPermissionGranted
+        : _storagePermissionGranted;
     final allGranted = _audioPermissionGranted && _storagePermissionGranted;
 
     return Scaffold(
@@ -320,20 +337,23 @@ class _PermissionsPageState extends State<PermissionsPage>
                         child: SingleChildScrollView(
                           child: Column(
                             children: [
-                              _buildPermissionItem(
-                                context: context,
-                                icon: Icons.music_note_rounded,
-                                title: AppLocalizations.of(context)
-                                    .translate('onboarding_audio_access'),
-                                description: AppLocalizations.of(context)
-                                    .translate('onboarding_audio_access_desc'),
-                                isGranted: _audioPermissionGranted,
-                                isRequired: true,
-                                isDark: isDark,
-                                onTap: _requestAudioPermission,
-                              ),
-
-                              const SizedBox(height: 12),
+                              // Only show audio permission for Android 13+
+                              if (_shouldShowAudioPermission) ...[
+                                _buildPermissionItem(
+                                  context: context,
+                                  icon: Icons.music_note_rounded,
+                                  title: AppLocalizations.of(context)
+                                      .translate('onboarding_audio_access'),
+                                  description: AppLocalizations.of(context)
+                                      .translate(
+                                          'onboarding_audio_access_desc'),
+                                  isGranted: _audioPermissionGranted,
+                                  isRequired: true,
+                                  isDark: isDark,
+                                  onTap: _requestAudioPermission,
+                                ),
+                                const SizedBox(height: 12),
+                              ],
 
                               // Only show storage permission for Android 12 and below
                               if (_shouldShowStoragePermission) ...[
@@ -409,7 +429,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                   // Navigation buttons
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
-                    child: _audioPermissionGranted
+                    child: requiredPermissionGranted
                         ? PillNavigationButtons(
                             backText:
                                 AppLocalizations.of(context).translate('back'),
