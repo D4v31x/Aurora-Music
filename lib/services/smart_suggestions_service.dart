@@ -9,7 +9,7 @@ import '../utils/performance_optimizations.dart';
 
 /// Smart suggestion service that analyzes user listening patterns
 /// to provide personalized track and artist recommendations
-/// 
+///
 /// Performance optimizations:
 /// - Memoized suggestions to avoid recomputation
 /// - Cached score calculations
@@ -49,11 +49,12 @@ class SmartSuggestionsService {
   bool _isLoaded = false;
 
   // Performance optimizations
-  final Memoizer<List<SongModel>> _suggestionsMemoizer = Memoizer<List<SongModel>>();
+  final Memoizer<Future<List<SongModel>>> _suggestionsMemoizer =
+      Memoizer<Future<List<SongModel>>>();
   final Memoizer<List<String>> _artistsMemoizer = Memoizer<List<String>>();
   final Debouncer _saveDebouncer = Debouncer(delay: const Duration(seconds: 5));
   DateTime? _lastSuggestionTime;
-  
+
   // Cache suggestion results for 5 minutes
   static const _suggestionCacheDuration = Duration(minutes: 5);
 
@@ -151,19 +152,21 @@ class SmartSuggestionsService {
   Future<List<SongModel>> getSuggestedTracks({int count = 3}) async {
     final now = DateTime.now();
     final cacheKey = '${now.hour}_${now.weekday}_$count';
-    
+
     // Check if we can use cached suggestions
     if (_lastSuggestionTime != null) {
       final timeSinceLastSuggestion = now.difference(_lastSuggestionTime!);
       if (timeSinceLastSuggestion < _suggestionCacheDuration) {
-        return _suggestionsMemoizer.call(cacheKey, () => _computeSuggestedTracks(count));
+        return _suggestionsMemoizer.call(
+            cacheKey, () => _computeSuggestedTracks(count));
       }
     }
-    
+
     // Clear cache and recompute
     _suggestionsMemoizer.clear();
     _lastSuggestionTime = now;
-    return _suggestionsMemoizer.call(cacheKey, () => _computeSuggestedTracks(count));
+    return _suggestionsMemoizer.call(
+        cacheKey, () => _computeSuggestedTracks(count));
   }
 
   /// Internal method to compute suggestions (expensive operation)
