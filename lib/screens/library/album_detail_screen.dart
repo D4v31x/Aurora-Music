@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../services/audio_player_service.dart';
 import '../../localization/app_localizations.dart';
@@ -51,6 +52,12 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
 
   @override
   List<SongModel> get allSongs => _allSongs;
+
+  @override
+  PlaybackSourceInfo get playbackSource => PlaybackSourceInfo(
+        source: PlaybackSource.album,
+        name: widget.albumName,
+      );
 
   @override
   void initState() {
@@ -413,7 +420,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                 ? Text(
                     widget.albumName,
                     style: const TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       fontStyle: FontStyle.normal,
                       color: Colors.white,
                       fontSize: 24,
@@ -441,7 +448,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                       Text(
                         widget.albumName,
                         style: const TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           fontStyle: FontStyle.normal,
                           color: Colors.white,
                           fontSize: 32,

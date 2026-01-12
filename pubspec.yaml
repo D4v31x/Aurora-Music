@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.1.15+4
+version: 0.1.10+4
 
 environment:
   sdk: '>=3.3.3 <4.0.0'
@@ -64,6 +64,7 @@ dependencies:
   audiotags: ^1.4.5
   clarity_flutter: ^1.6.0
   flutter_hooks: ^0.21.3+1
+  interactive_slider: ^0.5.1
   
 dev_dependencies:
   flutter_test:
@@ -107,6 +108,28 @@ flutter:
           weight: 800
         - asset: assets/fonts/Outfit-Black.ttf
           weight: 900
+
+    - family: Questrial
+      fonts:
+        - asset: assets/fonts/Questrial-Regular.ttf
+    
+    - family: Scandia
+      fonts:
+        - asset: assets/fonts/Scandia.otf
+          weight: 500
+        - asset: assets/fonts/Scandia_Bold.otf
+          weight: 700
+        - asset: assets/fonts/Scandia_Light.otf
+          weight: 300
+
+    - family: Urbanist
+      fonts:
+        - asset: assets/fonts/Urbanist-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Urbanist-Regular.ttf
+        - asset: assets/fonts/Urbanist-Bold.ttf
+          weight: 700
+
 
   assets:
     - assets/images/background/welcome_bg.jpg

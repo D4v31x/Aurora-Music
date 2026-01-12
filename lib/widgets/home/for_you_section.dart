@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../models/utils.dart';
@@ -279,7 +280,11 @@ class _ForYouSectionState extends State<ForYouSection> {
         final songs =
             widget.randomSongs.isNotEmpty ? widget.randomSongs : [item.song!];
         final index = songs.indexWhere((s) => s.id == item.song!.id);
-        audioService.setPlaylist(songs, index >= 0 ? index : 0);
+        audioService.setPlaylist(
+          songs,
+          index >= 0 ? index : 0,
+          source: const PlaybackSourceInfo(source: PlaybackSource.forYou),
+        );
         break;
       case _ForYouItemType.album:
         Navigator.push(
@@ -377,7 +382,7 @@ class _FavoriteSongsCard extends StatelessWidget {
                           color: isDark ? Colors.white : Colors.black87,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -392,7 +397,7 @@ class _FavoriteSongsCard extends StatelessWidget {
                               ? Colors.white.withOpacity(0.6)
                               : Colors.black54,
                           fontSize: 12,
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -423,7 +428,14 @@ class _FavoriteSongsCard extends StatelessWidget {
                       context,
                       listen: false,
                     );
-                    audioService.setPlaylist(playlist.songs, 0);
+                    audioService.setPlaylist(
+                      playlist.songs,
+                      0,
+                      source: PlaybackSourceInfo(
+                        source: PlaybackSource.playlist,
+                        name: playlist.name,
+                      ),
+                    );
                   }
                 },
               ),
@@ -496,7 +508,7 @@ class _ForYouItemCard extends StatelessWidget {
                           color: isDark ? Colors.white : Colors.black87,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -512,7 +524,7 @@ class _ForYouItemCard extends StatelessWidget {
                                 ? Colors.white.withOpacity(0.6)
                                 : Colors.black54,
                             fontSize: 11,
-                            fontFamily: 'Outfit',
+                            fontFamily: FontConstants.fontFamily,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

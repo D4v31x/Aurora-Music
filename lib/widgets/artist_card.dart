@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../constants/font_constants.dart';
 import '../services/local_caching_service.dart';
 import '../services/performance/performance_manager.dart';
 import '../services/artist_separator_service.dart';
@@ -244,6 +245,7 @@ class _ArtistCardState extends State<ArtistCard>
                         color: Colors.white,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
+                        fontFamily: FontConstants.fontFamily,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -254,6 +256,7 @@ class _ArtistCardState extends State<ArtistCard>
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.8),
                         fontSize: 14,
+                        fontFamily: FontConstants.fontFamily,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -105,7 +106,12 @@ class _LibraryTabState extends State<LibraryTab> {
               ),
               onItemTap: (song) {
                 if (song is SongModel) {
-                  audioPlayerService.setPlaylist([song], 0);
+                  audioPlayerService.setPlaylist(
+                    [song],
+                    0,
+                    source: const PlaybackSourceInfo(
+                        source: PlaybackSource.library),
+                  );
                 }
               },
             ),
@@ -238,7 +244,12 @@ class _LibraryTabState extends State<LibraryTab> {
                     ),
                     onItemTap: (song) {
                       if (song is SongModel) {
-                        audioPlayerService.setPlaylist([song], 0);
+                        audioPlayerService.setPlaylist(
+                          [song],
+                          0,
+                          source: const PlaybackSourceInfo(
+                              source: PlaybackSource.library),
+                        );
                       }
                     },
                     isWideLayout: isWideLayout,
@@ -413,7 +424,7 @@ class _LibraryTabState extends State<LibraryTab> {
         AppLocalizations.of(context).translate('details'),
         style: theme.textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.w500,
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           fontSize: 12,
         ),
       ),
@@ -430,7 +441,7 @@ class _LibraryTabState extends State<LibraryTab> {
                 title,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   fontSize: 26,
                 ),
               ),
@@ -621,7 +632,7 @@ class _LibraryTabState extends State<LibraryTab> {
         AppLocalizations.of(context).translate('details'),
         style: theme.textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.w500,
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
         ),
       ),
     );
@@ -637,7 +648,7 @@ class _LibraryTabState extends State<LibraryTab> {
                 title,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   fontSize: ResponsiveUtils.isTablet(context) ? 26 : null,
                 ),
               ),

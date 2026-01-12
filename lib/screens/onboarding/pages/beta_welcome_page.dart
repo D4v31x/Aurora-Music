@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../localization/app_localizations.dart';
@@ -129,7 +130,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                         AppLocalizations.of(context)
                             .translate('beta_welcome_title'),
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
                           fontWeight: FontWeight.w600,
                           color: textColor,
@@ -149,7 +150,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                       AppLocalizations.of(context)
                           .translate('beta_welcome_thanks'),
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                         color: subtitleColor,
@@ -272,7 +273,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                 Text(
                   AppLocalizations.of(context).translate(titleKey),
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: titleColor,
@@ -282,7 +283,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                 Text(
                   AppLocalizations.of(context).translate(descriptionKey),
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     fontSize: 13,
                     color: descriptionColor,
                   ),

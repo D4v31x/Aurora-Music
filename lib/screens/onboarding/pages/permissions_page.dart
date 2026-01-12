@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -288,7 +289,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                         AppLocalizations.of(context)
                             .translate('onboarding_permissions_title'),
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
                           fontWeight: FontWeight.w600,
                           color: textColor,
@@ -311,7 +312,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                       AppLocalizations.of(context)
                           .translate('onboarding_permissions_subtitle'),
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                         color: subtitleColor,
@@ -447,7 +448,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                                 AppLocalizations.of(context)
                                     .translate('onboarding_audio_required'),
                                 style: TextStyle(
-                                  fontFamily: 'Outfit',
+                                  fontFamily: FontConstants.fontFamily,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                   color: const Color(0xFFEF4444),
@@ -548,7 +549,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                         Text(
                           title,
                           style: TextStyle(
-                            fontFamily: 'Outfit',
+                            fontFamily: FontConstants.fontFamily,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: titleColor,
@@ -566,7 +567,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                               AppLocalizations.of(context)
                                   .translate('onboarding_required'),
                               style: const TextStyle(
-                                fontFamily: 'Outfit',
+                                fontFamily: FontConstants.fontFamily,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFFEF4444),
@@ -579,7 +580,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                     Text(
                       description,
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontSize: 13,
                         color: descriptionColor,
                       ),

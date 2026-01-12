@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -146,7 +147,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     child: Text(
                       '${updatedPlaylist.songs.length} ${localizations.translate('tracks')}',
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         color: isDark ? Colors.white54 : Colors.black45,
                         fontSize: 13,
                       ),
@@ -196,7 +197,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               playlist.name,
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black,
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
                 fontWeight: FontWeight.bold,
               ),
             )
@@ -286,7 +287,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                 child: Text(
                                   playlist.name,
                                   style: TextStyle(
-                                    fontFamily: 'Outfit',
+                                    fontFamily: FontConstants.fontFamily,
                                     color:
                                         isDark ? Colors.white : Colors.black87,
                                     fontSize: 22,
@@ -378,7 +379,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   onSubmitted: (_) => _saveNewName(context),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     color: isDark ? Colors.white : Colors.black87,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -435,7 +436,14 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             child: GestureDetector(
               onTap: playlist.songs.isEmpty
                   ? null
-                  : () => audioService.setPlaylist(playlist.songs, 0),
+                  : () => audioService.setPlaylist(
+                        playlist.songs,
+                        0,
+                        source: PlaybackSourceInfo(
+                          source: PlaybackSource.playlist,
+                          name: playlist.name,
+                        ),
+                      ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: BackdropFilter(
@@ -459,7 +467,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           child: Text(
                             localizations.translate('play_all'),
                             style: const TextStyle(
-                              fontFamily: 'Outfit',
+                              fontFamily: FontConstants.fontFamily,
                               color: Colors.white,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -483,7 +491,14 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   ? null
                   : () {
                       final shuffled = List.of(playlist.songs)..shuffle();
-                      audioService.setPlaylist(shuffled, 0);
+                      audioService.setPlaylist(
+                        shuffled,
+                        0,
+                        source: PlaybackSourceInfo(
+                          source: PlaybackSource.playlist,
+                          name: playlist.name,
+                        ),
+                      );
                     },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14),
@@ -520,7 +535,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           child: Text(
                             localizations.translate('shuffle'),
                             style: TextStyle(
-                              fontFamily: 'Outfit',
+                              fontFamily: FontConstants.fontFamily,
                               color: playlist.songs.isEmpty
                                   ? (isDark ? Colors.white30 : Colors.black26)
                                   : (isDark ? Colors.white : Colors.black87),
@@ -677,7 +692,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   child: Text(
                     '${index + 1}',
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: isPlaying
                           ? theme.colorScheme.primary
                           : (isDark ? Colors.white38 : Colors.black38),
@@ -704,7 +719,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       Text(
                         song.title,
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           color: isPlaying
                               ? theme.colorScheme.primary
                               : (isDark ? Colors.white : Colors.black87),
@@ -719,7 +734,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       Text(
                         splitArtists(song.artist ?? 'Unknown').join(', '),
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           color: isDark ? Colors.white54 : Colors.black45,
                           fontSize: 12,
                         ),
@@ -762,7 +777,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
           Text(
             localizations.translate('no_songs_in_playlist'),
             style: TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: isDark ? Colors.white60 : Colors.black54,
               fontSize: 15,
             ),
@@ -772,7 +787,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             Text(
               localizations.translate('tap_add_to_add_songs'),
               style: TextStyle(
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
                 color: isDark ? Colors.white38 : Colors.black38,
                 fontSize: 13,
               ),
@@ -873,7 +888,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   Text(
                     localizations.translate('remove_song'),
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white : Colors.black87,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -883,7 +898,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   Text(
                     localizations.translate('remove_song_confirmation'),
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white54 : Colors.black45,
                       fontSize: 14,
                     ),
@@ -898,7 +913,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           child: Text(
                             localizations.translate('cancel'),
                             style: TextStyle(
-                              fontFamily: 'Outfit',
+                              fontFamily: FontConstants.fontFamily,
                               color: isDark ? Colors.white54 : Colors.black45,
                             ),
                           ),
@@ -923,7 +938,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                               child: Text(
                                 localizations.translate('remove'),
                                 style: const TextStyle(
-                                  fontFamily: 'Outfit',
+                                  fontFamily: FontConstants.fontFamily,
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -985,7 +1000,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 Text(
                   playlist.name,
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     color: isDark ? Colors.white : Colors.black87,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -1055,7 +1070,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
                 color: isDestructive
                     ? Colors.red
                     : (isDark ? Colors.white : Colors.black87),
@@ -1105,7 +1120,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   Text(
                     localizations.translate('delete_playlist'),
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white : Colors.black87,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -1115,7 +1130,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   Text(
                     localizations.translate('delete_playlist_confirmation'),
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white54 : Colors.black45,
                       fontSize: 14,
                     ),
@@ -1130,7 +1145,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           child: Text(
                             localizations.translate('cancel'),
                             style: TextStyle(
-                              fontFamily: 'Outfit',
+                              fontFamily: FontConstants.fontFamily,
                               color: isDark ? Colors.white54 : Colors.black45,
                             ),
                           ),
@@ -1157,7 +1172,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                               child: Text(
                                 localizations.translate('delete'),
                                 style: const TextStyle(
-                                  fontFamily: 'Outfit',
+                                  fontFamily: FontConstants.fontFamily,
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
                                 ),

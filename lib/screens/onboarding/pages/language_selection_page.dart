@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui' as ui;
@@ -193,7 +194,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                       child: Text(
                         localizations.translate('onboarding_choose_language'),
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
                           fontWeight: FontWeight.w600,
                           color: textColor,
@@ -215,7 +216,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                     child: Text(
                       localizations.translate('onboarding_select_language'),
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                         color: subtitleColor,
@@ -296,7 +297,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                                               Text(
                                                 language['native']!,
                                                 style: TextStyle(
-                                                  fontFamily: 'Outfit',
+                                                  fontFamily: FontConstants.fontFamily,
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.w600,
                                                   color: isSelected
@@ -310,7 +311,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                                               Text(
                                                 language['name']!,
                                                 style: TextStyle(
-                                                  fontFamily: 'Outfit',
+                                                  fontFamily: FontConstants.fontFamily,
                                                   fontSize: 14,
                                                   color: secondaryTextColor,
                                                 ),

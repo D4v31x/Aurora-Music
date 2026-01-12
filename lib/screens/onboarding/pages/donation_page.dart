@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../services/donation_service.dart';
@@ -130,7 +131,7 @@ class _DonationPageState extends State<DonationPage>
                         AppLocalizations.of(context)
                             .translate('support_aurora'),
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
                           fontWeight: FontWeight.w600,
                           color: textColor,
@@ -150,7 +151,7 @@ class _DonationPageState extends State<DonationPage>
                       AppLocalizations.of(context)
                           .translate('support_aurora_desc'),
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                         color: subtitleColor,
@@ -224,7 +225,7 @@ class _DonationPageState extends State<DonationPage>
                                       AppLocalizations.of(context)
                                           .translate('donation_note'),
                                       style: TextStyle(
-                                        fontFamily: 'Outfit',
+                                        fontFamily: FontConstants.fontFamily,
                                         fontSize: 13,
                                         fontWeight: FontWeight.w400,
                                         color: subtitleColor,
@@ -312,7 +313,7 @@ class _DonationPageState extends State<DonationPage>
                   child: Text(
                     title,
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: titleColor,

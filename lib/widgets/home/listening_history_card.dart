@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../services/audio_player_service.dart';
 import '../../services/artwork_cache_service.dart';
@@ -73,7 +74,7 @@ class ListeningHistoryCard extends StatelessWidget {
                     'Ready to play',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -81,7 +82,7 @@ class ListeningHistoryCard extends StatelessWidget {
                     'Tap a song to start listening',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                     ),
                   ),
                 ],
@@ -154,7 +155,7 @@ class ListeningHistoryCard extends StatelessWidget {
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.primary,
                                 fontWeight: FontWeight.w600,
-                                fontFamily: 'Outfit',
+                                fontFamily: FontConstants.fontFamily,
                               ),
                             );
                           },
@@ -164,7 +165,7 @@ class ListeningHistoryCard extends StatelessWidget {
                           song.title,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            fontFamily: 'Outfit',
+                            fontFamily: FontConstants.fontFamily,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -175,7 +176,7 @@ class ListeningHistoryCard extends StatelessWidget {
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurface
                                 .withValues(alpha: 0.6),
-                            fontFamily: 'Outfit',
+                            fontFamily: FontConstants.fontFamily,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

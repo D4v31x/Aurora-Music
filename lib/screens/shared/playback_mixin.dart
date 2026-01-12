@@ -21,13 +21,17 @@ mixin PlaybackMixin<T extends StatefulWidget> on State<T> {
   /// The list of songs that can be played. Must be implemented.
   List<SongModel> get playableSongs;
 
+  /// The playback source info for tracking where playback started from.
+  /// Override this to provide correct source tracking.
+  PlaybackSourceInfo get playbackSource => PlaybackSourceInfo.unknown;
+
   /// Play all songs starting from the first.
   void playAllSongs() {
     if (playableSongs.isEmpty) return;
 
     final audioService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    audioService.setPlaylist(playableSongs, 0);
+    audioService.setPlaylist(playableSongs, 0, source: playbackSource);
   }
 
   /// Shuffle and play all songs.
@@ -37,7 +41,7 @@ mixin PlaybackMixin<T extends StatefulWidget> on State<T> {
     final shuffledSongs = List<SongModel>.from(playableSongs)..shuffle();
     final audioService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    audioService.setPlaylist(shuffledSongs, 0);
+    audioService.setPlaylist(shuffledSongs, 0, source: playbackSource);
   }
 
   /// Play a specific song from the list.
@@ -47,7 +51,8 @@ mixin PlaybackMixin<T extends StatefulWidget> on State<T> {
     final songIndex = playableSongs.indexWhere((s) => s.id == song.id);
 
     if (songIndex >= 0) {
-      audioService.setPlaylist(playableSongs, songIndex);
+      audioService.setPlaylist(playableSongs, songIndex,
+          source: playbackSource);
     }
   }
 

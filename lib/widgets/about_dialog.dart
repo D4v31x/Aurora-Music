@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/font_constants.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/changelog_dialog.dart';
@@ -127,6 +128,7 @@ class AuroraAboutDialog extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
+                              fontFamily: FontConstants.fontFamily,
                             ),
                           ),
                         ),
@@ -143,6 +145,7 @@ class AuroraAboutDialog extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
                           fontSize: 14,
+                          fontFamily: FontConstants.fontFamily,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -200,6 +203,7 @@ class AuroraAboutDialog extends StatelessWidget {
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
+                      fontFamily: FontConstants.fontFamily,
                     ),
                   ),
                 ),
@@ -225,6 +229,7 @@ class AuroraAboutDialog extends StatelessWidget {
           style: TextStyle(
             color: Colors.white.withOpacity(0.7),
             fontSize: 14,
+            fontFamily: FontConstants.fontFamily,
           ),
         ),
         const SizedBox(width: 8),
@@ -235,6 +240,7 @@ class AuroraAboutDialog extends StatelessWidget {
               color: Colors.white,
               fontSize: 14,
               fontWeight: FontWeight.w500,
+              fontFamily: FontConstants.fontFamily,
             ),
             textAlign: TextAlign.right,
           ),

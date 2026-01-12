@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -262,7 +263,11 @@ class _SearchTabState extends State<SearchTab> {
     int initialIndex = playlist.indexWhere((s) => s.id == song.id);
 
     if (initialIndex >= 0) {
-      audioPlayerService.setPlaylist(playlist, initialIndex);
+      audioPlayerService.setPlaylist(
+        playlist,
+        initialIndex,
+        source: const PlaybackSourceInfo(source: PlaybackSource.search),
+      );
     }
   }
 
@@ -292,12 +297,12 @@ class _SearchTabState extends State<SearchTab> {
           child: TextField(
             controller: _searchController,
             focusNode: _searchFocusNode,
-            style:
-                const TextStyle(color: Colors.white, fontFamily: 'Outfit'),
+            style: const TextStyle(
+                color: Colors.white, fontFamily: FontConstants.fontFamily),
             decoration: InputDecoration(
               hintText: AppLocalizations.of(context).translate('search'),
               hintStyle: const TextStyle(
-                  color: Colors.white54, fontFamily: 'Outfit'),
+                  color: Colors.white54, fontFamily: FontConstants.fontFamily),
               prefixIcon: const Icon(Icons.search, color: Colors.white54),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
@@ -341,7 +346,7 @@ class _SearchTabState extends State<SearchTab> {
             Text(
               AppLocalizations.of(context).translate('Start_type'),
               style: TextStyle(
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
                 color: Colors.white.withOpacity(0.5),
                 fontSize: 16,
               ),
@@ -366,7 +371,7 @@ class _SearchTabState extends State<SearchTab> {
             Text(
               'No results found',
               style: TextStyle(
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
                 color: Colors.white.withOpacity(0.5),
                 fontSize: 16,
               ),
@@ -453,7 +458,7 @@ class _SearchTabState extends State<SearchTab> {
     return Text(
       title,
       style: TextStyle(
-        fontFamily: 'Outfit',
+        fontFamily: FontConstants.fontFamily,
         color: Theme.of(context).textTheme.titleLarge?.color,
         fontSize: 20,
         fontWeight: FontWeight.bold,
@@ -567,7 +572,7 @@ class _SearchTabState extends State<SearchTab> {
             Text(
               artist.name,
               style: TextStyle(
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
                 color: Theme.of(context).textTheme.bodyMedium?.color,
                 fontSize: 13,
               ),
@@ -610,7 +615,7 @@ class _SearchTabState extends State<SearchTab> {
             Text(
               album.album,
               style: TextStyle(
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
                 color: Theme.of(context).textTheme.bodyMedium?.color,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
@@ -621,7 +626,7 @@ class _SearchTabState extends State<SearchTab> {
             Text(
               album.artist ?? '',
               style: TextStyle(
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
                 color: Theme.of(context)
                     .textTheme
                     .bodySmall
@@ -662,7 +667,7 @@ class _SearchSongTile extends StatelessWidget {
         title: Text(
           song.title,
           style: TextStyle(
-            fontFamily: 'Outfit',
+            fontFamily: FontConstants.fontFamily,
             color: Theme.of(context).textTheme.bodyLarge?.color,
           ),
           maxLines: 1,
@@ -671,7 +676,7 @@ class _SearchSongTile extends StatelessWidget {
         subtitle: Text(
           song.artist ?? '',
           style: TextStyle(
-            fontFamily: 'Outfit',
+            fontFamily: FontConstants.fontFamily,
             color:
                 Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
           ),
@@ -823,7 +828,7 @@ class _TopResultCardWithArtwork extends HookWidget {
                   child: Text(
                     typeLabel,
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: hasArtwork && accentColor != null
                           ? Colors.white.withOpacity(0.9)
                           : Colors.white.withOpacity(0.7),
@@ -837,7 +842,7 @@ class _TopResultCardWithArtwork extends HookWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -849,7 +854,7 @@ class _TopResultCardWithArtwork extends HookWidget {
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     color: Colors.white.withOpacity(0.7),
                     fontSize: 14,
                   ),
@@ -1032,7 +1037,7 @@ class _TopArtistResultCard extends HookWidget {
                   child: Text(
                     typeLabel,
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: hasArtwork && accentColor != null
                           ? Colors.white.withOpacity(0.9)
                           : Colors.white.withOpacity(0.7),
@@ -1046,7 +1051,7 @@ class _TopArtistResultCard extends HookWidget {
                 Text(
                   artist.name,
                   style: const TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -1058,7 +1063,7 @@ class _TopArtistResultCard extends HookWidget {
                 Text(
                   '${artist.numberOfTracks} ${AppLocalizations.of(context).translate('songs').toLowerCase()}',
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     color: Colors.white.withOpacity(0.6),
                     fontSize: 14,
                   ),

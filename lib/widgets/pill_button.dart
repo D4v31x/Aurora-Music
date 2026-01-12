@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 
@@ -93,7 +94,7 @@ class PillButton extends StatelessWidget {
           Text(
             text,
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               fontSize: 16,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.2,
@@ -105,7 +106,7 @@ class PillButton extends StatelessWidget {
       buttonChild = Text(
         text,
         style: const TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           fontSize: 16,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.2,

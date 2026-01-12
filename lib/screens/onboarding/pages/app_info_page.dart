@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../localization/app_localizations.dart';
@@ -185,7 +186,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                       child: Text(
                         localizations.translate('onboarding_app_info_title'),
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
                           fontWeight: FontWeight.w600,
                           color: textColor,
@@ -207,7 +208,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                     child: Text(
                       localizations.translate('onboarding_app_info_subtitle'),
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                         color: subtitleColor,
@@ -357,7 +358,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                 Text(
                   title,
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: titleColor,
@@ -367,7 +368,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                 Text(
                   description,
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     fontSize: 14,
                     color: descriptionColor,
                   ),

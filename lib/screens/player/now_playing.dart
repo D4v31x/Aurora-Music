@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
@@ -18,8 +19,10 @@ import '../../services/background_manager_service.dart'; // Background artwork m
 import 'fullscreen_lyrics.dart'; // Fullscreen lyrics viewer
 // Importujte službu pro timed lyrics
 import '../../widgets/artist_card.dart';
+import '../../widgets/album_card.dart';
 import '../../widgets/music_metadata_widget.dart';
 import '../library/artist_detail_screen.dart';
+import '../library/album_detail_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../models/timed_lyrics.dart';
 import '../../widgets/app_background.dart';
@@ -72,7 +75,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   // Make artwork service static to prevent recreation on every rebuild
   static final _artworkService = ArtworkCacheService();
   ImageProvider<Object>? _currentArtwork;
-  bool _isLoadingArtwork = true;
   int? _lastSongId;
 
   List<TimedLyric>? _timedLyrics;
@@ -347,8 +349,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   }
 
   Future<void> _updateArtwork(SongModel song) async {
-    setState(() => _isLoadingArtwork = true);
-
     try {
       // Use centralized artwork service
       final provider = await _artworkService.getCachedImageProvider(song.id);
@@ -356,7 +356,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       if (mounted) {
         setState(() {
           _currentArtwork = provider;
-          _isLoadingArtwork = false;
         });
       }
     } catch (e) {
@@ -365,7 +364,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           _currentArtwork =
               const AssetImage('assets/images/logo/default_art.png')
                   as ImageProvider<Object>;
-          _isLoadingArtwork = false;
         });
       }
     }
@@ -373,12 +371,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
   // Optimized artwork display widget
   Widget _buildArtwork() {
-    if (_isLoadingArtwork) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
-      );
-    }
-
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
@@ -393,8 +385,19 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: _currentArtwork != null
-            ? Image(image: _currentArtwork!, fit: BoxFit.cover)
-            : const Center(child: CircularProgressIndicator()),
+            ? Image(
+                image: _currentArtwork!,
+                fit: BoxFit.cover,
+                gaplessPlayback: true, // Prevent flickering
+              )
+            : Container(
+                color: Colors.white.withOpacity(0.1),
+                child: Icon(
+                  Icons.music_note_rounded,
+                  color: Colors.white.withOpacity(0.3),
+                  size: 64,
+                ),
+              ),
       ),
     );
   }
@@ -462,7 +465,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
-                            fontFamily: 'Outfit',
+                            fontFamily: FontConstants.fontFamily,
                           ),
                           child: (toHeroContext.widget as Hero).child,
                         ),
@@ -477,7 +480,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                           fontSize: isTablet ? 22 : 18,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                         ),
                       ),
                     ),
@@ -497,7 +500,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                         child: DefaultTextStyle.merge(
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.7),
-                            fontFamily: 'Outfit',
+                            fontFamily: FontConstants.fontFamily,
                           ),
                           child: (toHeroContext.widget as Hero).child,
                         ),
@@ -512,7 +515,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                         style: TextStyle(
                           fontSize: isTablet ? 16 : 14,
                           color: Colors.white.withOpacity(0.7),
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 1,
@@ -635,7 +638,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -654,7 +657,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                       style: TextStyle(
                         fontSize: 20,
                         color: Colors.white.withOpacity(0.7),
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -668,7 +671,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.white.withOpacity(0.5),
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -699,7 +702,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 color: Colors.white,
                 fontSize: isTablet ? 26 : 22,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
                 letterSpacing: 0.5,
               ),
             ),
@@ -734,19 +737,39 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                       border: Border.all(
                           color: Colors.white.withOpacity(0.15), width: 1.5),
                     ),
-                    child: Center(
-                      child: (_timedLyrics != null && _timedLyrics!.isNotEmpty)
-                          ? ValueListenableBuilder<int>(
-                              valueListenable: _currentLyricIndexNotifier,
-                              builder: (context, currentIndex, _) {
-                                return Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children:
-                                      _buildAnimatedLyricLines(currentIndex),
-                                );
-                              },
-                            )
-                          : _buildNoLyricsPlaceholder(),
+                    child: ClipRect(
+                      child: ShaderMask(
+                        shaderCallback: (Rect bounds) {
+                          return LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.white,
+                              Colors.white,
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.15, 0.85, 1.0],
+                          ).createShader(bounds);
+                        },
+                        blendMode: BlendMode.dstIn,
+                        child: Center(
+                          child: (_timedLyrics != null &&
+                                  _timedLyrics!.isNotEmpty)
+                              ? ValueListenableBuilder<int>(
+                                  valueListenable: _currentLyricIndexNotifier,
+                                  builder: (context, currentIndex, _) {
+                                    return Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: _buildAnimatedLyricLines(
+                                          currentIndex),
+                                    );
+                                  },
+                                )
+                              : _buildNoLyricsPlaceholder(),
+                        ),
+                      ),
                     ),
                   ),
                   // Expand button positioned at top right
@@ -813,26 +836,35 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
       final distanceFromCenter = (index - currentIndex).abs();
       final opacity = 1.0 - (distanceFromCenter * 0.25);
-      final scale = 1.0 - (distanceFromCenter * 0.08);
-      final slideOffset =
-          distanceFromCenter * 0.15; // fraction for AnimatedSlide
+      final scale = 1.0 - (distanceFromCenter * 0.05);
 
       // Performance: Use simple transforms and color alpha instead of
       // ShaderMask and AnimatedOpacity which cause expensive compositing
       final effectiveOpacity = opacity.clamp(0.3, 1.0);
 
-      return TweenAnimationBuilder<double>(
-        duration: const Duration(milliseconds: 400),
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 350),
         curve: Curves.easeOutCubic,
-        tween: Tween<double>(begin: 0.0, end: 1.0),
-        builder: (context, value, child) {
-          return Transform(
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001)
-              ..scale(scale)
-              ..translate(
-                  0.0, 20.0 * (1 - value) + (isCurrent ? 0 : slideOffset * 20)),
-            alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(
+          vertical: isCurrent ? 10.0 : 6.0,
+          horizontal: 4.0,
+        ),
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOutCubic,
+          scale: scale,
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeOutCubic,
+            style: TextStyle(
+              color: (isCurrent ? Colors.white : Colors.white60)
+                  .withValues(alpha: effectiveOpacity),
+              fontSize: isCurrent ? 17 : 14,
+              fontFamily: FontConstants.fontFamily,
+              fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+              height: 1.3,
+              letterSpacing: isCurrent ? 0.2 : 0.0,
+            ),
             child: SizedBox(
               width: MediaQuery.of(context).size.width - 80,
               child: Text(
@@ -841,20 +873,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 softWrap: true,
-                style: TextStyle(
-                  // Use color alpha directly instead of Opacity/ShaderMask
-                  color: (isCurrent ? Colors.white : Colors.white60)
-                      .withValues(alpha: effectiveOpacity * value),
-                  fontSize: isCurrent ? 20 : 16,
-                  fontFamily: 'Outfit',
-                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                  height: 1.2,
-                  letterSpacing: isCurrent ? 0.2 : 0.0,
-                ),
               ),
             ),
-          );
-        },
+          ),
+        ),
       );
     }).toList();
   }
@@ -872,7 +894,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             style: TextStyle(
               color: Colors.white70.withValues(alpha: value),
               fontSize: 16,
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               fontWeight: FontWeight.bold,
               height: 1.5,
             ),
@@ -902,7 +924,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
             ),
             textAlign: TextAlign.center,
           ),
@@ -916,6 +938,45 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               MaterialPageRoute(
                 builder: (context) =>
                     ArtistDetailsScreen(artistName: mainArtist),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAlbumSection(AudioPlayerService audioPlayerService) {
+    final String? albumName = audioPlayerService.currentSong?.album;
+    if (albumName == null || albumName.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Text(
+            AppLocalizations.of(context).translate('album'),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              fontFamily: FontConstants.fontFamily,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          child: AlbumCard(
+            albumName: albumName,
+            artistName: audioPlayerService.currentSong?.artist,
+            albumId: audioPlayerService.currentSong?.albumId,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AlbumDetailScreen(albumName: albumName),
               ),
             ),
           ),
@@ -961,6 +1022,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
+            centerTitle: true,
+            title: _buildPlayingFromHeader(audioPlayerService),
             leading: IconButton(
               icon: const Icon(
                 Icons.keyboard_arrow_down,
@@ -1157,21 +1220,28 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 children: [
                   SizedBox(height: isTablet ? 40 : 30),
                   _buildArtworkWithInfo(audioPlayerService),
-                  SizedBox(height: isTablet && isLandscape ? 40 : 110),
+                  SizedBox(height: isTablet && isLandscape ? 40 : 90),
                   _ProgressBar(
                       audioService: audioPlayerService, isTablet: isTablet),
                   SizedBox(height: isTablet ? 28 : 20),
                   _buildPlaybackControls(audioPlayerService, isTablet),
                   SizedBox(height: isTablet ? 28 : 20),
                   _buildLikeButton(audioPlayerService),
+                  // Reordered: Lyrics first
                   _buildLyricsSection(),
-                  SizedBox(height: isTablet ? 50 : 40),
+                  SizedBox(height: isTablet ? 40 : 30),
+                  // Album section
+                  if (audioPlayerService.currentSong != null)
+                    _buildAlbumSection(audioPlayerService),
+                  SizedBox(height: isTablet ? 40 : 30),
+                  // Artist section
+                  _buildArtistSection(audioPlayerService),
+                  SizedBox(height: isTablet ? 40 : 30),
+                  // Metadata last
                   if (audioPlayerService.currentSong != null)
                     MusicMetadataWidget(
                       song: audioPlayerService.currentSong!,
                     ),
-                  SizedBox(height: isTablet ? 50 : 40),
-                  _buildArtistSection(audioPlayerService),
                   SizedBox(height: isTablet ? 40 : 30),
                 ],
               ),
@@ -1182,13 +1252,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     );
   }
 
-  /// Build playback controls with responsive sizing
+  /// Build playback controls with responsive sizing - matches fullscreen lyrics style
   Widget _buildPlaybackControls(
       AudioPlayerService audioPlayerService, bool isTablet) {
     final iconSize = isTablet ? 28.0 : 24.0;
-    final playButtonSize = isTablet ? 72.0 : 64.0;
-    final playIconSize = isTablet ? 36.0 : 32.0;
-    final skipIconSize = isTablet ? 36.0 : 32.0;
+    final playIconSize = isTablet ? 56.0 : 48.0;
+    final skipIconSize = isTablet ? 40.0 : 36.0;
 
     return RepaintBoundary(
       child: Row(
@@ -1199,9 +1268,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             builder: (context, isShuffle, _) {
               return IconButton(
                 icon: Icon(
-                  Icons.shuffle,
-                  color:
-                      isShuffle ? Colors.white : Colors.white.withOpacity(0.5),
+                  Icons.shuffle_rounded,
+                  color: isShuffle
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.5),
                   size: iconSize,
                 ),
                 onPressed: audioPlayerService.toggleShuffle,
@@ -1210,7 +1280,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           ),
           IconButton(
             icon: Icon(
-              Icons.skip_previous,
+              Icons.skip_previous_rounded,
               color: Colors.white,
               size: skipIconSize,
             ),
@@ -1219,33 +1289,25 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           ValueListenableBuilder<bool>(
             valueListenable: audioPlayerService.isPlayingNotifier,
             builder: (context, isPlaying, _) {
-              return Container(
-                width: playButtonSize,
-                height: playButtonSize,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
+              return IconButton(
+                icon: Icon(
+                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  color: Colors.white,
+                  size: playIconSize,
                 ),
-                child: IconButton(
-                  icon: Icon(
-                    isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: Colors.white,
-                    size: playIconSize,
-                  ),
-                  onPressed: () {
-                    if (isPlaying) {
-                      audioPlayerService.pause();
-                    } else {
-                      audioPlayerService.resume();
-                    }
-                  },
-                ),
+                onPressed: () {
+                  if (isPlaying) {
+                    audioPlayerService.pause();
+                  } else {
+                    audioPlayerService.resume();
+                  }
+                },
               );
             },
           ),
           IconButton(
             icon: Icon(
-              Icons.skip_next,
+              Icons.skip_next_rounded,
               color: Colors.white,
               size: skipIconSize,
             ),
@@ -1259,15 +1321,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
               switch (loopMode) {
                 case LoopMode.off:
-                  icon = Icons.repeat;
-                  color = Colors.white.withOpacity(0.5);
+                  icon = Icons.repeat_rounded;
+                  color = Colors.white.withValues(alpha: 0.5);
                   break;
                 case LoopMode.one:
-                  icon = Icons.repeat_one;
+                  icon = Icons.repeat_one_rounded;
                   color = Colors.white;
                   break;
                 case LoopMode.all:
-                  icon = Icons.repeat;
+                  icon = Icons.repeat_rounded;
                   color = Colors.white;
                   break;
               }
@@ -1581,6 +1643,80 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     );
   }
 
+  /// Build the "Playing from" header in the app bar
+  Widget _buildPlayingFromHeader(AudioPlayerService audioPlayerService) {
+    final source = audioPlayerService.playbackSource;
+
+    String sourceLabel;
+    switch (source.source) {
+      case PlaybackSource.forYou:
+        sourceLabel = AppLocalizations.of(context).translate('for_you');
+        break;
+      case PlaybackSource.recentlyPlayed:
+        sourceLabel = AppLocalizations.of(context).translate('recently_played');
+        break;
+      case PlaybackSource.recentlyAdded:
+        sourceLabel = AppLocalizations.of(context).translate('recently_added');
+        break;
+      case PlaybackSource.mostPlayed:
+        sourceLabel = AppLocalizations.of(context).translate('most_played');
+        break;
+      case PlaybackSource.album:
+        sourceLabel =
+            source.name ?? AppLocalizations.of(context).translate('album');
+        break;
+      case PlaybackSource.artist:
+        sourceLabel =
+            source.name ?? AppLocalizations.of(context).translate('artist');
+        break;
+      case PlaybackSource.playlist:
+        sourceLabel =
+            source.name ?? AppLocalizations.of(context).translate('playlist');
+        break;
+      case PlaybackSource.folder:
+        sourceLabel =
+            source.name ?? AppLocalizations.of(context).translate('folder');
+        break;
+      case PlaybackSource.search:
+        sourceLabel = AppLocalizations.of(context).translate('search');
+        break;
+      case PlaybackSource.library:
+        sourceLabel = AppLocalizations.of(context).translate('library');
+        break;
+      case PlaybackSource.unknown:
+        sourceLabel = AppLocalizations.of(context).translate('library');
+        break;
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          AppLocalizations.of(context).translate('playing_from'),
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.6),
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            fontFamily: FontConstants.fontFamily,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          sourceLabel,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            fontFamily: FontConstants.fontFamily,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+
   Widget _buildSleepTimerIndicator(AudioPlayerService audioPlayerService) {
     return Consumer<SleepTimerController>(
       builder: (context, sleepTimerController, child) {
@@ -1618,28 +1754,28 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 }
               });
             },
-            child: AnimatedSize(
-              duration: const Duration(
-                  milliseconds:
-                      500), // Zvýšení doby trvání pro plynulejší efekt
-              curve: Curves.easeOut, // Změna křivky pro plynulejší přechod
-              child: Container(
-                width: _isTimerExpanded ? 120.0 : 32.0,
-                height: 32.0,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(16.0),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 0.5,
-                  ),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              width: _isTimerExpanded ? 120.0 : 32.0,
+              height: 32.0,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(16.0),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 0.5,
                 ),
-                // Performance: Removed BackdropFilter for better scroll performance
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Kolapsovaný stav - use color alpha instead of AnimatedOpacity
-                    IgnorePointer(
+              ),
+              // Performance: Removed BackdropFilter for better scroll performance
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Collapsed state - use AnimatedOpacity for smooth fade
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: _isTimerExpanded ? 0.0 : 1.0,
+                    child: IgnorePointer(
                       ignoring: _isTimerExpanded,
                       child: ClipOval(
                         child: Stack(
@@ -1652,26 +1788,29 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                 value: progress,
                                 backgroundColor:
                                     Colors.white.withValues(alpha: 0.1),
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white.withValues(
-                                      alpha: _isTimerExpanded ? 0.0 : 0.8),
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
                                 ),
                                 strokeWidth: 1.5,
                               ),
                             ),
-                            Icon(
+                            const Icon(
                               Icons.bedtime_outlined,
-                              color: Colors.white.withValues(
-                                  alpha: _isTimerExpanded ? 0.0 : 1.0),
+                              color: Colors.white,
                               size: 16,
                             ),
                           ],
                         ),
                       ),
                     ),
-                    // Rozbalený stav - use visibility and color alpha
-                    if (_isTimerExpanded)
-                      SizedBox(
+                  ),
+                  // Expanded state - use AnimatedOpacity for smooth fade
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: _isTimerExpanded ? 1.0 : 0.0,
+                    child: IgnorePointer(
+                      ignoring: !_isTimerExpanded,
+                      child: SizedBox(
                         width: 100,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -1698,8 +1837,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                           ],
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -2293,24 +2433,56 @@ class _ProgressBarState extends State<_ProgressBar> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Larger touch target area for easier grabbing
                   SizedBox(
-                    height: widget.isTablet ? 24 : 20,
+                    height: widget.isTablet ? 44 : 40,
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final width = constraints.maxWidth;
                         return GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onHorizontalDragStart: (details) {
+                          behavior: HitTestBehavior.opaque,
+                          onTapDown: (details) {
+                            // Start dragging immediately on touch
+                            final percentage =
+                                (details.localPosition.dx / width)
+                                    .clamp(0.0, 1.0);
                             setState(() {
                               _isDragging = true;
-                              _dragValue = progress;
+                              _dragValue = percentage;
+                            });
+                          },
+                          onTapUp: (details) {
+                            // Seek and stop dragging on tap release
+                            if (_dragValue != null) {
+                              final newPosition = duration * _dragValue!;
+                              widget.audioService.audioPlayer.seek(newPosition);
+                            }
+                            setState(() {
+                              _isDragging = false;
+                              _dragValue = null;
+                            });
+                          },
+                          onTapCancel: () {
+                            setState(() {
+                              _isDragging = false;
+                              _dragValue = null;
+                            });
+                          },
+                          onHorizontalDragStart: (details) {
+                            final percentage =
+                                (details.localPosition.dx / width)
+                                    .clamp(0.0, 1.0);
+                            setState(() {
+                              _isDragging = true;
+                              _dragValue = percentage;
                             });
                           },
                           onHorizontalDragUpdate: (details) {
-                            final delta = details.primaryDelta! / width;
+                            final percentage =
+                                (details.localPosition.dx / width)
+                                    .clamp(0.0, 1.0);
                             setState(() {
-                              _dragValue =
-                                  (_dragValue! + delta).clamp(0.0, 1.0);
+                              _dragValue = percentage;
                             });
                           },
                           onHorizontalDragEnd: (details) {
@@ -2323,34 +2495,32 @@ class _ProgressBarState extends State<_ProgressBar> {
                               _dragValue = null;
                             });
                           },
-                          onTapDown: (details) {
-                            final tapPos = details.localPosition;
-                            final percentage =
-                                (tapPos.dx / width).clamp(0.0, 1.0);
-                            final newPosition = duration * percentage;
-                            widget.audioService.audioPlayer.seek(newPosition);
-                          },
                           child: Center(
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 150),
                               width: width,
-                              height: _isDragging ? 6.0 : 3.0,
+                              height: _isDragging ? 8.0 : 4.0,
                               child: Stack(
                                 children: [
                                   Container(
                                     width: width,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.3),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.3),
                                       borderRadius: BorderRadius.circular(
-                                          _isDragging ? 3.0 : 1.5),
+                                          _isDragging ? 4.0 : 2.0),
                                     ),
                                   ),
-                                  Container(
-                                    width: width * progress,
+                                  AnimatedContainer(
+                                    duration: _isDragging
+                                        ? Duration.zero
+                                        : const Duration(milliseconds: 100),
+                                    width: width *
+                                        (_isDragging ? _dragValue! : progress),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(
-                                          _isDragging ? 3.0 : 1.5),
+                                          _isDragging ? 4.0 : 2.0),
                                     ),
                                   ),
                                 ],
@@ -2361,24 +2531,24 @@ class _ProgressBarState extends State<_ProgressBar> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         _formatDuration(displayPosition),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 11,
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                         ),
                       ),
                       Text(
                         _formatDuration(duration),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 11,
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                         ),
                       ),
                     ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../widgets/pill_button.dart';
@@ -152,7 +153,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                       child: Text(
                         localizations.translate('downloadPreferences'),
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
                           fontWeight: FontWeight.w600,
                           color: textColor,
@@ -171,7 +172,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                     child: Text(
                       localizations.translate('downloadContentSubtitle'),
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                         color: subtitleColor,
@@ -263,7 +264,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                                       localizations
                                           .translate('downloadSettingsNote'),
                                       style: TextStyle(
-                                        fontFamily: 'Outfit',
+                                        fontFamily: FontConstants.fontFamily,
                                         fontSize: 13,
                                         color: subtitleColor,
                                       ),
@@ -362,7 +363,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                       Text(
                         title,
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: titleColor,
@@ -372,7 +373,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                       Text(
                         description,
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           fontSize: 13,
                           color: descriptionColor,
                         ),

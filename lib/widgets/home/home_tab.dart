@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../localization/app_localizations.dart';
@@ -20,7 +20,6 @@ class HomeTab extends StatefulWidget {
   final List<String> randomArtists;
   final LocalCachingArtistService artistService;
   final SongModel? currentSong;
-  final Future<void> Function() onRefresh;
 
   const HomeTab({
     super.key,
@@ -28,7 +27,6 @@ class HomeTab extends StatefulWidget {
     required this.randomArtists,
     required this.artistService,
     required this.currentSong,
-    required this.onRefresh,
   });
 
   @override
@@ -36,12 +34,6 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  Future<void> _handleRefresh() async {
-    HapticFeedback.mediumImpact();
-    await widget.onRefresh();
-    HapticFeedback.lightImpact();
-  }
-
   Widget _buildSection(HomeSection section, bool isTablet, double spacing) {
     final l10n = AppLocalizations.of(context);
 
@@ -137,7 +129,6 @@ class _HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isTablet = ResponsiveUtils.isTablet(context);
     final layoutMode = ResponsiveUtils.getLayoutMode(context);
     final spacing = ResponsiveUtils.getSpacing(context, base: 24.0);
@@ -146,40 +137,34 @@ class _HomeTabState extends State<HomeTab> {
       builder: (context, layoutService, _) {
         final visibleSections = layoutService.visibleSections;
 
-        return RefreshIndicator(
-          onRefresh: _handleRefresh,
-          color: theme.colorScheme.primary,
-          backgroundColor: theme.colorScheme.surface,
-          strokeWidth: 2.5,
-          displacement: 40,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            padding: EdgeInsets.only(
-              top: isTablet ? 32.0 : 24.0,
-              bottom: widget.currentSong != null
-                  ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
-                  : isTablet
-                      ? 50.0
-                      : 40.0,
-            ),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: ResponsiveUtils.getContentMaxWidth(context),
-                ),
-                child: layoutMode == LayoutMode.twoColumn ||
-                        layoutMode == LayoutMode.wideWithPanel
-                    ? _buildTabletLayout(visibleSections, spacing)
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          for (final section in visibleSections)
-                            _buildSection(section, isTablet, spacing),
-                        ],
-                      ),
+        // Removed RefreshIndicator - using custom pull-to-refresh in HomeScreen
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: ClampingScrollPhysics(),
+          ),
+          padding: EdgeInsets.only(
+            top: isTablet ? 32.0 : 24.0,
+            bottom: widget.currentSong != null
+                ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
+                : isTablet
+                    ? 50.0
+                    : 40.0,
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: ResponsiveUtils.getContentMaxWidth(context),
               ),
+              child: layoutMode == LayoutMode.twoColumn ||
+                      layoutMode == LayoutMode.wideWithPanel
+                  ? _buildTabletLayout(visibleSections, spacing)
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (final section in visibleSections)
+                          _buildSection(section, isTablet, spacing),
+                      ],
+                    ),
             ),
           ),
         );
@@ -252,7 +237,7 @@ class _SectionTitle extends StatelessWidget {
         title,
         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               fontSize: isTablet ? 26 : null,
             ),
       ),

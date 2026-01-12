@@ -72,7 +72,12 @@ class RecentlyAddedSection extends StatelessWidget {
                   artworkService: _artworkService,
                   badge: const CardBadge(text: 'NEW'),
                   onTap: () {
-                    audioPlayerService.setPlaylist(recentSongs, index);
+                    audioPlayerService.setPlaylist(
+                      recentSongs,
+                      index,
+                      source: const PlaybackSourceInfo(
+                          source: PlaybackSource.recentlyAdded),
+                    );
                   },
                 ),
               );

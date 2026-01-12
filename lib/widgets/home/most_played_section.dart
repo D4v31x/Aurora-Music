@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../services/audio_player_service.dart';
@@ -84,7 +85,12 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
             onTap: () {
               final audioPlayerService =
                   Provider.of<AudioPlayerService>(context, listen: false);
-              audioPlayerService.setPlaylist(topSongs, index);
+              audioPlayerService.setPlaylist(
+                topSongs,
+                index,
+                source:
+                    const PlaybackSourceInfo(source: PlaybackSource.mostPlayed),
+              );
             },
           ),
         );
@@ -133,7 +139,7 @@ class _MostPlayedTile extends StatelessWidget {
                     child: Text(
                       '$rank',
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.primary,
@@ -163,7 +169,7 @@ class _MostPlayedTile extends StatelessWidget {
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  fontFamily: 'Outfit',
+                                  fontFamily: FontConstants.fontFamily,
                                 ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -176,7 +182,7 @@ class _MostPlayedTile extends StatelessWidget {
                                   .colorScheme
                                   .onSurface
                                   .withValues(alpha: 0.6),
-                              fontFamily: 'Outfit',
+                              fontFamily: FontConstants.fontFamily,
                             ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

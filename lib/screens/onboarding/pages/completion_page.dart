@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../localization/app_localizations.dart';
@@ -98,7 +99,7 @@ class _CompletionPageState extends State<CompletionPage>
                     AppLocalizations.of(context)
                         .translate('onboarding_completion_title'),
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       fontSize: 36,
                       fontWeight: FontWeight.w600,
                       color: textColor,
@@ -118,7 +119,7 @@ class _CompletionPageState extends State<CompletionPage>
                   AppLocalizations.of(context)
                       .translate('onboarding_completion_subtitle'),
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     fontSize: 18,
                     fontWeight: FontWeight.w400,
                     color: subtitleColor,

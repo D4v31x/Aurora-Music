@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import '../../services/artist_separator_service.dart';
 import '../../localization/app_localizations.dart';
@@ -191,7 +192,9 @@ class _ArtistSeparatorSettingsScreenState
                           return ListTile(
                             title: Text(
                               _formatSeparatorForDisplay(separator),
-                              style: const TextStyle(fontFamily: 'monospace'),
+                              style: const TextStyle(
+                                  fontFamily:
+                                      FontConstants.monospaceFontFamily),
                             ),
                             trailing: IconButton(
                               icon: const Icon(Icons.delete_outline,
@@ -322,7 +325,7 @@ class _ArtistSeparatorSettingsScreenState
           title: Text(
             l10n.translate('add_separator'),
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -331,7 +334,7 @@ class _ArtistSeparatorSettingsScreenState
             controller: controller,
             autofocus: true,
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Colors.white,
             ),
             decoration: InputDecoration(
@@ -355,7 +358,7 @@ class _ArtistSeparatorSettingsScreenState
               child: Text(
                 l10n.translate('cancel'),
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: Colors.white70,
                 ),
               ),
@@ -374,7 +377,7 @@ class _ArtistSeparatorSettingsScreenState
               child: Text(
                 l10n.translate('add'),
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -403,7 +406,7 @@ class _ArtistSeparatorSettingsScreenState
           title: Text(
             l10n.translate('add_exclusion'),
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -412,7 +415,7 @@ class _ArtistSeparatorSettingsScreenState
             controller: controller,
             autofocus: true,
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Colors.white,
             ),
             decoration: InputDecoration(
@@ -436,7 +439,7 @@ class _ArtistSeparatorSettingsScreenState
               child: Text(
                 l10n.translate('cancel'),
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: Colors.white70,
                 ),
               ),
@@ -455,7 +458,7 @@ class _ArtistSeparatorSettingsScreenState
               child: Text(
                 l10n.translate('add'),
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -499,7 +502,7 @@ class _ArtistSeparatorSettingsScreenState
           title: Text(
             l10n.translate('reset_to_defaults'),
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -507,7 +510,7 @@ class _ArtistSeparatorSettingsScreenState
           content: Text(
             l10n.translate('reset_artist_separation_desc'),
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Colors.white70,
             ),
           ),
@@ -517,7 +520,7 @@ class _ArtistSeparatorSettingsScreenState
               child: Text(
                 l10n.translate('cancel'),
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: Colors.white70,
                 ),
               ),
@@ -531,7 +534,7 @@ class _ArtistSeparatorSettingsScreenState
               child: Text(
                 l10n.translate('reset'),
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),

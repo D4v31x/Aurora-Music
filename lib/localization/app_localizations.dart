@@ -632,6 +632,10 @@ extension AppLocalizationsExtension on generated.AppLocalizations {
         return settingsNormalization;
       case 'settings_normalization_desc':
         return settingsNormalizationDesc;
+      case 'playback_speed':
+        return playbackSpeed;
+      case 'playback_speed_desc':
+        return playbackSpeedDesc;
       case 'settings_storage':
         return settingsStorage;
       case 'settings_cache_info':
@@ -746,6 +750,10 @@ extension AppLocalizationsExtension on generated.AppLocalizations {
         return artist;
       case 'album':
         return album;
+      case 'playlist':
+        return playlist;
+      case 'playing_from':
+        return playingFrom;
       case 'auto_tag':
         return autoTag;
       case 'search_metadata':

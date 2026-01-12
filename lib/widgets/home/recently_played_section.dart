@@ -83,7 +83,12 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
               onTap: () {
                 final audioPlayerService =
                     Provider.of<AudioPlayerService>(context, listen: false);
-                audioPlayerService.setPlaylist(recentSongs, index);
+                audioPlayerService.setPlaylist(
+                  recentSongs,
+                  index,
+                  source: const PlaybackSourceInfo(
+                      source: PlaybackSource.recentlyPlayed),
+                );
               },
             ),
           );

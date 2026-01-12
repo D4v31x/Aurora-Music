@@ -1,4 +1,5 @@
 import 'package:aurora_music_v01/widgets/about_dialog.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:aurora_music_v01/widgets/changelog_dialog.dart';
 import 'package:aurora_music_v01/widgets/feedback_reminder_dialog.dart';
 import 'package:flutter/material.dart';
@@ -69,6 +70,7 @@ class _SettingsTabState extends State<SettingsTab> {
           fontSize: 13,
           fontWeight: FontWeight.w600,
           letterSpacing: 1.5,
+          fontFamily: FontConstants.fontFamily,
           color: Theme.of(context).colorScheme.primary,
         ),
       ),
@@ -126,7 +128,11 @@ class _SettingsTabState extends State<SettingsTab> {
           ),
           title: Text(
             title,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              fontFamily: FontConstants.fontFamily,
+            ),
           ),
           subtitle: subtitle != null
               ? Padding(
@@ -135,6 +141,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
+                      fontFamily: FontConstants.fontFamily,
                       color: Theme.of(context)
                           .textTheme
                           .bodySmall
@@ -192,7 +199,11 @@ class _SettingsTabState extends State<SettingsTab> {
           ),
           title: Text(
             title,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              fontFamily: FontConstants.fontFamily,
+            ),
           ),
           subtitle: subtitle != null
               ? Padding(
@@ -201,6 +212,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
+                      fontFamily: FontConstants.fontFamily,
                       color: Theme.of(context)
                           .textTheme
                           .bodySmall
@@ -221,6 +233,129 @@ class _SettingsTabState extends State<SettingsTab> {
                     ?.withOpacity(0.5),
               ),
           onTap: onTap,
+        ),
+      ],
+    );
+  }
+
+  // Glassmorphic Slider Tile using classic Flutter Slider
+  Widget _buildSliderTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required double value,
+    required double min,
+    required double max,
+    required ValueChanged<double> onChanged,
+    ValueChanged<double>? onChangeEnd,
+    String Function(double)? valueFormatter,
+    bool isFirst = false,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final displayValue =
+        valueFormatter?.call(value) ?? value.toStringAsFixed(1);
+
+    return Column(
+      children: [
+        if (!isFirst)
+          Divider(
+            height: 1,
+            indent: 56,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
+          ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: FontConstants.fontFamily,
+                          ),
+                        ),
+                        Text(
+                          displayValue,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: FontConstants.fontFamily,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (subtitle != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontFamily: FontConstants.fontFamily,
+                            color: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.color
+                                ?.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: Theme.of(context).colorScheme.primary,
+                        inactiveTrackColor: isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.1),
+                        thumbColor: Theme.of(context).colorScheme.primary,
+                        overlayColor: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.2),
+                        trackHeight: 4,
+                        thumbShape:
+                            const RoundSliderThumbShape(enabledThumbRadius: 8),
+                      ),
+                      child: Slider(
+                        value: value,
+                        min: min,
+                        max: max,
+                        onChanged: onChanged,
+                        onChangeEnd: onChangeEnd,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -280,7 +415,7 @@ class _SettingsTabState extends State<SettingsTab> {
       title: Text(
         l10n.translate('settings_clear_cache_title'),
         style: const TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
@@ -288,7 +423,7 @@ class _SettingsTabState extends State<SettingsTab> {
       content: Text(
         l10n.translate('settings_clear_cache_message'),
         style: const TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           color: Colors.white70,
         ),
       ),
@@ -298,7 +433,7 @@ class _SettingsTabState extends State<SettingsTab> {
           child: Text(
             l10n.translate('cancel'),
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Colors.white70,
             ),
           ),
@@ -317,7 +452,7 @@ class _SettingsTabState extends State<SettingsTab> {
           child: Text(
             l10n.translate('delete'),
             style: TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Theme.of(context).colorScheme.error,
               fontWeight: FontWeight.bold,
             ),
@@ -394,7 +529,7 @@ class _SettingsTabState extends State<SettingsTab> {
         title: Text(
           l10n.translate('settings_cache_info'),
           style: const TextStyle(
-            fontFamily: 'Outfit',
+            fontFamily: FontConstants.fontFamily,
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -407,7 +542,7 @@ class _SettingsTabState extends State<SettingsTab> {
               Text(
                 l10n.translate('settings_storage'),
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
@@ -422,7 +557,7 @@ class _SettingsTabState extends State<SettingsTab> {
               Text(
                 'Memory Cache',
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
@@ -443,7 +578,7 @@ class _SettingsTabState extends State<SettingsTab> {
             child: Text(
               l10n.translate('cancel'),
               style: const TextStyle(
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
                 color: Colors.white70,
               ),
             ),
@@ -474,12 +609,14 @@ class _SettingsTabState extends State<SettingsTab> {
           Text(
             label,
             style: TextStyle(
+              fontFamily: FontConstants.fontFamily,
               fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
           Text(
             value,
             style: TextStyle(
+              fontFamily: FontConstants.fontFamily,
               fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -514,7 +651,7 @@ class _SettingsTabState extends State<SettingsTab> {
       title: Text(
         l10n.translate('restart_required'),
         style: const TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
@@ -522,7 +659,7 @@ class _SettingsTabState extends State<SettingsTab> {
       content: Text(
         l10n.translate('restart_required_desc'),
         style: const TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           color: Colors.white70,
         ),
       ),
@@ -551,7 +688,7 @@ class _SettingsTabState extends State<SettingsTab> {
           child: Text(
             l10n.translate('restart_now'),
             style: TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
             ),
@@ -635,7 +772,7 @@ class _SettingsTabState extends State<SettingsTab> {
       title: Text(
         l10n.translate('update_available'),
         style: const TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
@@ -643,7 +780,7 @@ class _SettingsTabState extends State<SettingsTab> {
       content: Text(
         '${l10n.translate('update_message')}: $latestVersion',
         style: const TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           color: Colors.white70,
         ),
       ),
@@ -653,7 +790,7 @@ class _SettingsTabState extends State<SettingsTab> {
           child: Text(
             l10n.translate('later'),
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Colors.white70,
             ),
           ),
@@ -668,7 +805,7 @@ class _SettingsTabState extends State<SettingsTab> {
           child: Text(
             l10n.translate('update_now'),
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -720,7 +857,11 @@ class _SettingsTabState extends State<SettingsTab> {
           ),
           title: Text(
             l10n.translate('settings_language'),
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              fontFamily: FontConstants.fontFamily,
+            ),
           ),
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -735,6 +876,7 @@ class _SettingsTabState extends State<SettingsTab> {
               style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.w500,
+                fontFamily: FontConstants.fontFamily,
               ),
               items: const [
                 DropdownMenuItem(value: 'en', child: Text('English')),
@@ -874,6 +1016,23 @@ class _SettingsTabState extends State<SettingsTab> {
               value: audioPlayerService.volumeNormalization,
               onChanged: (value) =>
                   audioPlayerService.setVolumeNormalization(value),
+            ),
+            _buildSliderTile(
+              icon: Icons.speed_rounded,
+              title: l10n.translate('playback_speed'),
+              subtitle: l10n.translate('playback_speed_desc'),
+              value: audioPlayerService.playbackSpeed,
+              min: 0.25,
+              max: 5.0,
+              valueFormatter: (v) => '${v.toStringAsFixed(2)}x',
+              onChanged: (value) {
+                // Just update UI during drag, don't apply yet
+              },
+              onChangeEnd: (value) {
+                // Round to nearest 0.05 for nice values and apply
+                final rounded = (value * 20).round() / 20;
+                audioPlayerService.setPlaybackSpeed(rounded);
+              },
             ),
             _buildActionTile(
               icon: Icons.people_outline_rounded,

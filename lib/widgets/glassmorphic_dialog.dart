@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/performance_mode_provider.dart';
@@ -81,7 +82,7 @@ class GlassmorphicDialog extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
               child: DefaultTextStyle(
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -95,7 +96,7 @@ class GlassmorphicDialog extends StatelessWidget {
                   contentPadding ?? const EdgeInsets.fromLTRB(24, 16, 24, 0),
               child: DefaultTextStyle(
                 style: TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
                   color: Colors.white.withValues(alpha: 0.8),
@@ -433,7 +434,7 @@ class GlassmorphicTextButton extends StatelessWidget {
       ),
       child: DefaultTextStyle(
         style: TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           fontSize: 15,
           fontWeight: isPrimary ? FontWeight.w600 : FontWeight.w500,
         ),

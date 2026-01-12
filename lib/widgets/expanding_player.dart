@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -244,7 +245,7 @@ class _MiniPlayerWidget extends StatelessWidget {
                       Text(
                         song.title,
                         style: const TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           color: Colors.white,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -257,7 +258,7 @@ class _MiniPlayerWidget extends StatelessWidget {
                       Text(
                         splitArtists(song.artist ?? 'Unknown').join(', '),
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           color: Colors.white.withValues(alpha: 0.55),
                           fontSize: 13,
                           fontWeight: FontWeight.w400,

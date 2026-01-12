@@ -1484,6 +1484,18 @@ abstract class AppLocalizations {
   /// **'Play All'**
   String get playAll;
 
+  /// No description provided for @playingFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing from'**
+  String get playingFrom;
+
+  /// No description provided for @playlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist'**
+  String get playlist;
+
   /// No description provided for @playlistName.
   ///
   /// In en, this message translates to:
@@ -2023,6 +2035,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Consistent volume levels'**
   String get settingsNormalizationDesc;
+
+  /// No description provided for @playbackSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback Speed'**
+  String get playbackSpeed;
+
+  /// No description provided for @playbackSpeedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust audio playback rate'**
+  String get playbackSpeedDesc;
 
   /// No description provided for @settingsPlayback.
   ///

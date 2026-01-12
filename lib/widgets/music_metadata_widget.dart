@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../localization/app_localizations.dart';
@@ -101,7 +102,7 @@ class MusicMetadataWidget extends StatelessWidget {
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
             ),
             textAlign: TextAlign.center,
           ),

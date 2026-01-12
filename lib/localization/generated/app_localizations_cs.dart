@@ -739,6 +739,12 @@ class AppLocalizationsCs extends AppLocalizations {
   String get playAll => 'Přehrát vše';
 
   @override
+  String get playingFrom => 'Přehrávání z';
+
+  @override
+  String get playlist => 'Playlist';
+
+  @override
   String get playlistName => 'Název playlistu';
 
   @override
@@ -1013,6 +1019,12 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get settingsNormalizationDesc => 'Konzistentní úroveň hlasitosti';
+
+  @override
+  String get playbackSpeed => 'Rychlost přehrávání';
+
+  @override
+  String get playbackSpeedDesc => 'Upravit rychlost přehrávání';
 
   @override
   String get settingsPlayback => 'Přehrávání';

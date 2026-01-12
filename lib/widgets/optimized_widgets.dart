@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 
 /// Optimized widgets for better performance in lists and grids
 /// 
@@ -198,7 +199,7 @@ class OptimizedSectionHeader extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
               ),
             ),
             if (onSeeAll != null)
@@ -207,7 +208,7 @@ class OptimizedSectionHeader extends StatelessWidget {
                 child: const Text(
                   'See all',
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

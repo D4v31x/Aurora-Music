@@ -596,7 +596,14 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     );
     final albumSongs = songs.where((s) => s.album == album.album).toList();
     if (albumSongs.isNotEmpty) {
-      audioPlayerService.setPlaylist(albumSongs, 0);
+      audioPlayerService.setPlaylist(
+        albumSongs,
+        0,
+        source: PlaybackSourceInfo(
+          source: PlaybackSource.album,
+          name: album.album,
+        ),
+      );
     }
   }
 
@@ -612,7 +619,14 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     final albumSongs = songs.where((s) => s.album == album.album).toList()
       ..shuffle();
     if (albumSongs.isNotEmpty) {
-      audioPlayerService.setPlaylist(albumSongs, 0);
+      audioPlayerService.setPlaylist(
+        albumSongs,
+        0,
+        source: PlaybackSourceInfo(
+          source: PlaybackSource.album,
+          name: album.album,
+        ),
+      );
     }
   }
 
@@ -1237,7 +1251,14 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
         Provider.of<AudioPlayerService>(context, listen: false);
     final artistSongs = await _artistAggregator.getSongsByArtist(artist.name);
     if (artistSongs.isNotEmpty) {
-      audioPlayerService.setPlaylist(artistSongs, 0);
+      audioPlayerService.setPlaylist(
+        artistSongs,
+        0,
+        source: PlaybackSourceInfo(
+          source: PlaybackSource.artist,
+          name: artist.name,
+        ),
+      );
     }
   }
 
@@ -1247,7 +1268,14 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     final artistSongs = await _artistAggregator.getSongsByArtist(artist.name);
     if (artistSongs.isNotEmpty) {
       final shuffled = List<SongModel>.from(artistSongs)..shuffle();
-      audioPlayerService.setPlaylist(shuffled, 0);
+      audioPlayerService.setPlaylist(
+        shuffled,
+        0,
+        source: PlaybackSourceInfo(
+          source: PlaybackSource.artist,
+          name: artist.name,
+        ),
+      );
     }
   }
 }

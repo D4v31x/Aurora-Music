@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../../providers/theme_provider.dart';
@@ -375,7 +376,7 @@ class _WelcomePageState extends State<WelcomePage>
                                             _welcomeTexts[_currentLanguageIndex]
                                                 ['title']!,
                                             style: TextStyle(
-                                              fontFamily: 'Outfit',
+                                              fontFamily: FontConstants.fontFamily,
                                               fontSize: 34,
                                               fontWeight: FontWeight.w600,
                                               color: textColor,
@@ -399,7 +400,7 @@ class _WelcomePageState extends State<WelcomePage>
                                                       _welcomeTexts
                                                           .length]['title']!,
                                               style: TextStyle(
-                                                fontFamily: 'Outfit',
+                                                fontFamily: FontConstants.fontFamily,
                                                 fontSize: 34,
                                                 fontWeight: FontWeight.w600,
                                                 color: textColor,
@@ -450,7 +451,7 @@ class _WelcomePageState extends State<WelcomePage>
                                           _welcomeTexts[_currentLanguageIndex]
                                               ['subtitle']!,
                                           style: TextStyle(
-                                            fontFamily: 'Outfit',
+                                            fontFamily: FontConstants.fontFamily,
                                             fontSize: 17,
                                             fontWeight: FontWeight.w400,
                                             color: subtitleColor,
@@ -475,7 +476,7 @@ class _WelcomePageState extends State<WelcomePage>
                                                     _welcomeTexts
                                                         .length]['subtitle']!,
                                             style: TextStyle(
-                                              fontFamily: 'Outfit',
+                                              fontFamily: FontConstants.fontFamily,
                                               fontSize: 17,
                                               fontWeight: FontWeight.w400,
                                               color: subtitleColor,

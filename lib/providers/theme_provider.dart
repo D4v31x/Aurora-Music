@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider with ChangeNotifier {
@@ -70,7 +71,7 @@ class ThemeProvider with ChangeNotifier {
           ),
         ),
         textStyle: const TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           color: Colors.white,
           fontSize: 15,
         ),
@@ -87,13 +88,13 @@ class ThemeProvider with ChangeNotifier {
           ),
         ),
         titleTextStyle: const TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           color: Colors.white,
           fontSize: 22,
           fontWeight: FontWeight.w600,
         ),
         contentTextStyle: TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
           color: Colors.white.withValues(alpha: 0.8),
           fontSize: 15,
         ),

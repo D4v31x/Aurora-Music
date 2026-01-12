@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -233,7 +234,7 @@ class _ToastWidgetState extends State<_ToastWidget>
             child: Text(
               _message,
               style: const TextStyle(
-                fontFamily: 'Outfit',
+                fontFamily: FontConstants.fontFamily,
                 color: Colors.white,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,

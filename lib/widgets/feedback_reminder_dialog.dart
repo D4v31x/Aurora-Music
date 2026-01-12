@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../localization/app_localizations.dart';
@@ -87,7 +88,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                 Text(
                   l10n.translate('feedback_title'),
                   style: const TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -100,7 +101,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                 Text(
                   l10n.translate('feedback_description'),
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     fontSize: 14,
                     color: Colors.white.withOpacity(0.7),
                     height: 1.5,
@@ -148,7 +149,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                       child: Text(
                         l10n.translate('maybe_later'),
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           color: Colors.white.withOpacity(0.6),
                         ),
                       ),
@@ -164,7 +165,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                       child: Text(
                         l10n.translate('dont_ask_again'),
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           color: Colors.white.withOpacity(0.4),
                           fontSize: 12,
                         ),
@@ -222,7 +223,7 @@ class _FeedbackButton extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: color,

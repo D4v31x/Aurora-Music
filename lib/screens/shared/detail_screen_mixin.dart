@@ -31,6 +31,10 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
   /// The list of all songs available. Must be implemented.
   List<SongModel> get allSongs;
 
+  /// The playback source info for tracking where playback started from.
+  /// Override this in detail screens to provide correct source.
+  PlaybackSourceInfo get playbackSource => PlaybackSourceInfo.unknown;
+
   /// Format a duration to a human-readable string (e.g., "1h 23m" or "23m").
   String formatDuration(Duration duration) {
     final hours = duration.inHours;
@@ -53,7 +57,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
     if (allSongs.isEmpty) return;
     final audioService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    audioService.setPlaylist(allSongs, 0);
+    audioService.setPlaylist(allSongs, 0, source: playbackSource);
   }
 
   /// Shuffle and play all songs.
@@ -62,7 +66,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
     final shuffledSongs = List<SongModel>.from(allSongs)..shuffle();
     final audioService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    audioService.setPlaylist(shuffledSongs, 0);
+    audioService.setPlaylist(shuffledSongs, 0, source: playbackSource);
   }
 
   /// Build a stat item widget for displaying counts and labels.

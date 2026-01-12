@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
@@ -147,7 +148,7 @@ class MusicStatsCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white70 : Colors.black54,
                     ),
                   ),
@@ -156,7 +157,7 @@ class MusicStatsCard extends StatelessWidget {
                     '${stats.totalHours}h ${stats.totalMinutes}m',
                     style: TextStyle(
                       fontSize: 12,
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white38 : Colors.black38,
                     ),
                   ),
@@ -235,7 +236,7 @@ class _MinimalStat extends StatelessWidget {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600,
-            fontFamily: 'Outfit',
+            fontFamily: FontConstants.fontFamily,
             color: isDark ? Colors.white : Colors.black87,
           ),
         ),
@@ -244,7 +245,7 @@ class _MinimalStat extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 11,
-            fontFamily: 'Outfit',
+            fontFamily: FontConstants.fontFamily,
             color: isDark ? Colors.white38 : Colors.black38,
           ),
         ),

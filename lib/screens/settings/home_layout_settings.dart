@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +37,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
         title: Text(
           l10n.translate('customizeHomeTab'),
           style: TextStyle(
-            fontFamily: 'Outfit',
+            fontFamily: FontConstants.fontFamily,
             fontWeight: FontWeight.bold,
             color: isDark ? Colors.white : Colors.black,
           ),
@@ -93,7 +94,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
                             child: Text(
                               l10n.translate('dragToReorder'),
                               style: TextStyle(
-                                fontFamily: 'Outfit',
+                                fontFamily: FontConstants.fontFamily,
                                 fontSize: 14,
                                 color: isDark ? Colors.white70 : Colors.black54,
                               ),
@@ -173,7 +174,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
           title: Text(
             l10n.translate('resetLayoutConfirm'),
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -181,7 +182,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
           content: Text(
             l10n.translate('resetLayoutMessage'),
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: Colors.white70,
             ),
           ),
@@ -191,7 +192,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
               child: Text(
                 l10n.translate('cancel'),
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: Colors.white70,
                 ),
               ),
@@ -205,7 +206,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
               child: Text(
                 l10n.translate('resetToDefault'),
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -294,7 +295,7 @@ class _SectionTile extends StatelessWidget {
               title: Text(
                 l10n.translate(section.translationKey),
                 style: TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
                   color: isVisible

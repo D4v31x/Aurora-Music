@@ -738,6 +738,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playAll => 'Play All';
 
   @override
+  String get playingFrom => 'Playing from';
+
+  @override
+  String get playlist => 'Playlist';
+
+  @override
   String get playlistName => 'Playlist name';
 
   @override
@@ -1010,6 +1016,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsNormalizationDesc => 'Consistent volume levels';
+
+  @override
+  String get playbackSpeed => 'Playback Speed';
+
+  @override
+  String get playbackSpeedDesc => 'Adjust audio playback rate';
 
   @override
   String get settingsPlayback => 'Playback';

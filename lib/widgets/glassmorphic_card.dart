@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../services/artwork_cache_service.dart';
@@ -302,7 +303,7 @@ class GlassmorphicCard extends StatelessWidget {
                   title,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -314,7 +315,7 @@ class GlassmorphicCard extends StatelessWidget {
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurface.withOpacity(0.6),
                       fontSize: 11,
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -372,7 +373,7 @@ class CardBadge extends StatelessWidget {
           color: Colors.white,
           fontSize: 10,
           fontWeight: FontWeight.bold,
-          fontFamily: 'Outfit',
+          fontFamily: FontConstants.fontFamily,
         ),
       ),
     );

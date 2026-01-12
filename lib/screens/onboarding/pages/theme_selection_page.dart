@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../localization/app_localizations.dart';
@@ -160,7 +161,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                         AppLocalizations.of(context)
                             .translate('onboarding_theme_title'),
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
                           fontWeight: FontWeight.w600,
                           color: textColor,
@@ -183,7 +184,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                       AppLocalizations.of(context)
                           .translate('onboarding_theme_subtitle'),
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                         color: subtitleColor,
@@ -261,7 +262,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                                   .translate(
                                                       'onboarding_dynamic_colors'),
                                               style: TextStyle(
-                                                fontFamily: 'Outfit',
+                                                fontFamily: FontConstants.fontFamily,
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
                                                 color: textColor,
@@ -273,7 +274,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                                   .translate(
                                                       'onboarding_dynamic_colors_desc'),
                                               style: TextStyle(
-                                                fontFamily: 'Outfit',
+                                                fontFamily: FontConstants.fontFamily,
                                                 fontSize: 14,
                                                 color: subtitleColor,
                                               ),
@@ -383,7 +384,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                     Text(
                       title,
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: isSelected
@@ -395,7 +396,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                     Text(
                       description,
                       style: TextStyle(
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontSize: 14,
                         color: descriptionColor,
                       ),

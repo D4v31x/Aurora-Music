@@ -43,6 +43,12 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
   List<SongModel> get allSongs => _allSongs;
 
   @override
+  PlaybackSourceInfo get playbackSource => PlaybackSourceInfo(
+        source: PlaybackSource.folder,
+        name: widget.folderPath.split('/').last,
+      );
+
+  @override
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_scrollListener);
@@ -113,7 +119,11 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
 
     final songIndex = _allSongs.indexWhere((s) => s.id == song.id);
     if (songIndex >= 0) {
-      audioPlayerService.setPlaylist(_allSongs, songIndex);
+      audioPlayerService.setPlaylist(
+        _allSongs,
+        songIndex,
+        source: playbackSource,
+      );
     }
   }
 

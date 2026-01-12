@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -372,7 +373,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                 ? Text(
                     widget.artistName,
                     style: const TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       fontStyle: FontStyle.normal,
                       color: Colors.white,
                       fontSize: 24,
@@ -412,7 +413,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                   child: Text(
                     widget.artistName,
                     style: const TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       fontStyle: FontStyle.normal,
                       color: Colors.white,
                       fontSize: 32,
@@ -661,7 +662,14 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
               onTap: () {
                 Navigator.pop(context);
                 if (albumSongs.isNotEmpty) {
-                  audioPlayerService.setPlaylist(albumSongs, 0);
+                  audioPlayerService.setPlaylist(
+                    albumSongs,
+                    0,
+                    source: PlaybackSourceInfo(
+                      source: PlaybackSource.album,
+                      name: album.album,
+                    ),
+                  );
                 }
               },
             ),
@@ -673,7 +681,14 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                 Navigator.pop(context);
                 if (albumSongs.isNotEmpty) {
                   final shuffled = List<SongModel>.from(albumSongs)..shuffle();
-                  audioPlayerService.setPlaylist(shuffled, 0);
+                  audioPlayerService.setPlaylist(
+                    shuffled,
+                    0,
+                    source: PlaybackSourceInfo(
+                      source: PlaybackSource.album,
+                      name: album.album,
+                    ),
+                  );
                 }
               },
             ),
@@ -756,7 +771,14 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                         debugPrint(
                             'Tapped song at index: $index, song: ${song.title}');
                         Provider.of<AudioPlayerService>(context, listen: false)
-                            .setPlaylist(_allSongs, index);
+                            .setPlaylist(
+                          _allSongs,
+                          index,
+                          source: PlaybackSourceInfo(
+                            source: PlaybackSource.artist,
+                            name: widget.artistName,
+                          ),
+                        );
                         // Note: setPlaylist already starts playback
                       },
                     ),
@@ -775,7 +797,14 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     if (_allSongs.isNotEmpty) {
       final audioPlayerService =
           Provider.of<AudioPlayerService>(context, listen: false);
-      audioPlayerService.setPlaylist(_allSongs, 0);
+      audioPlayerService.setPlaylist(
+        _allSongs,
+        0,
+        source: PlaybackSourceInfo(
+          source: PlaybackSource.artist,
+          name: widget.artistName,
+        ),
+      );
     }
   }
 
@@ -784,7 +813,14 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
       final shuffledSongs = List<SongModel>.from(_allSongs)..shuffle();
       final audioPlayerService =
           Provider.of<AudioPlayerService>(context, listen: false);
-      audioPlayerService.setPlaylist(shuffledSongs, 0);
+      audioPlayerService.setPlaylist(
+        shuffledSongs,
+        0,
+        source: PlaybackSourceInfo(
+          source: PlaybackSource.artist,
+          name: widget.artistName,
+        ),
+      );
     }
   }
 

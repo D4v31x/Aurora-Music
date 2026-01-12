@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -172,7 +173,7 @@ class SongPickerSheet extends HookWidget {
                           Text(
                             localizations.translate('add_songs'),
                             style: TextStyle(
-                              fontFamily: 'Outfit',
+                              fontFamily: FontConstants.fontFamily,
                               color: isDark ? Colors.white : Colors.black87,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -182,7 +183,7 @@ class SongPickerSheet extends HookWidget {
                             Text(
                               '${selectedSongIds.value.length} ${localizations.translate('selected')}',
                               style: TextStyle(
-                                fontFamily: 'Outfit',
+                                fontFamily: FontConstants.fontFamily,
                                 color: theme.colorScheme.primary,
                                 fontSize: 13,
                               ),
@@ -209,7 +210,7 @@ class SongPickerSheet extends HookWidget {
                               Text(
                                 localizations.translate('add'),
                                 style: const TextStyle(
-                                  fontFamily: 'Outfit',
+                                  fontFamily: FontConstants.fontFamily,
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -224,7 +225,7 @@ class SongPickerSheet extends HookWidget {
                         child: Text(
                           localizations.translate('cancel'),
                           style: TextStyle(
-                            fontFamily: 'Outfit',
+                            fontFamily: FontConstants.fontFamily,
                             color: isDark ? Colors.white54 : Colors.black45,
                           ),
                         ),
@@ -259,13 +260,13 @@ class SongPickerSheet extends HookWidget {
                         onChanged: onSearchChanged,
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black87,
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                         ),
                         decoration: InputDecoration(
                           hintText: localizations.translate('search_tracks'),
                           hintStyle: TextStyle(
                             color: isDark ? Colors.white38 : Colors.black38,
-                            fontFamily: 'Outfit',
+                            fontFamily: FontConstants.fontFamily,
                           ),
                           prefixIcon: Icon(
                             Icons.search_rounded,
@@ -341,7 +342,7 @@ class SongPickerSheet extends HookWidget {
                                     ? localizations.translate('deselect_all')
                                     : localizations.translate('select_all'),
                                 style: TextStyle(
-                                  fontFamily: 'Outfit',
+                                  fontFamily: FontConstants.fontFamily,
                                   fontSize: 13,
                                   color:
                                       isDark ? Colors.white60 : Colors.black45,
@@ -355,7 +356,7 @@ class SongPickerSheet extends HookWidget {
                       Text(
                         '${filteredSongs.value.length} ${localizations.translate('tracks')}',
                         style: TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: FontConstants.fontFamily,
                           color: isDark ? Colors.white38 : Colors.black38,
                           fontSize: 12,
                         ),
@@ -462,7 +463,7 @@ class SongPickerSheet extends HookWidget {
                   Text(
                     song.title,
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white : Colors.black87,
                       fontSize: 14,
                       fontWeight:
@@ -475,7 +476,7 @@ class SongPickerSheet extends HookWidget {
                   Text(
                     splitArtists(song.artist ?? 'Unknown').join(', '),
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white54 : Colors.black45,
                       fontSize: 12,
                     ),
@@ -510,7 +511,7 @@ class SongPickerSheet extends HookWidget {
                 ? localizations.translate('no_results')
                 : localizations.translate('no_songs_available'),
             style: TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               color: isDark ? Colors.white54 : Colors.black45,
               fontSize: 15,
             ),

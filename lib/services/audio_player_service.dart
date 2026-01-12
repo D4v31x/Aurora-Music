@@ -14,6 +14,34 @@ import 'artwork_cache_service.dart';
 import 'smart_suggestions_service.dart';
 import '../main.dart' show audioHandler;
 
+/// Enum to track where the current playback originated from
+enum PlaybackSource {
+  forYou,
+  recentlyPlayed,
+  recentlyAdded,
+  mostPlayed,
+  album,
+  artist,
+  playlist,
+  folder,
+  search,
+  library,
+  unknown,
+}
+
+/// Model to hold playback source information
+class PlaybackSourceInfo {
+  final PlaybackSource source;
+  final String? name; // Album name, playlist name, artist name, etc.
+
+  const PlaybackSourceInfo({
+    this.source = PlaybackSource.unknown,
+    this.name,
+  });
+
+  static const unknown = PlaybackSourceInfo();
+}
+
 class AudioPlayerService extends ChangeNotifier {
   // Use the audio player from the global audio handler
   AudioPlayer get _audioPlayer => audioHandler.player;
@@ -23,6 +51,10 @@ class AudioPlayerService extends ChangeNotifier {
 
   // Background manager for mesh gradient colors
   BackgroundManagerService? _backgroundManager;
+
+  // Playback source tracking
+  PlaybackSourceInfo _playbackSource = PlaybackSourceInfo.unknown;
+  PlaybackSourceInfo get playbackSource => _playbackSource;
 
   List<SongModel> _playlist = [];
   List<Playlist> _playlists = [];
@@ -694,7 +726,14 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   // Playback Control
-  Future<void> setPlaylist(List<SongModel> songs, int startIndex) async {
+  Future<void> setPlaylist(
+    List<SongModel> songs,
+    int startIndex, {
+    PlaybackSourceInfo? source,
+  }) async {
+    // Update playback source
+    _playbackSource = source ?? PlaybackSourceInfo.unknown;
+
     try {
       if (songs.isEmpty || startIndex < 0 || startIndex >= songs.length) {
         debugPrint('Invalid playlist or start index');
@@ -1343,7 +1382,8 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> setPlaybackSpeed(double value) async {
     _playbackSpeed = value;
-    await _applySettings();
+    // Apply speed directly without reloading audio source
+    await _audioPlayer.setSpeed(_playbackSpeed);
     await _saveSettings();
   }
 

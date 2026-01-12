@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ import '../../widgets/home/settings_tab.dart';
 import '../../widgets/outline_indicator.dart';
 import '../../widgets/expanding_player.dart'; // For back button handling
 import '../../widgets/auto_scroll_text.dart';
+import '../../widgets/animated_progress_line.dart';
 import '../../services/local_caching_service.dart';
 import '../../services/notification_manager.dart';
 import '../../services/download_progress_monitor.dart';
@@ -52,6 +54,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   AnimationController? _animationController;
   final ScrollController _scrollController = ScrollController();
   final ValueNotifier<bool> _isScrolledNotifier = ValueNotifier<bool>(false);
+  // Pull-to-refresh tracking
+  double _pullProgress = 0.0;
+  bool _isRefreshing = false;
+  static const double _pullThreshold = 100.0; // pixels to pull for full refresh
   int _totalSongs = 0;
   List<SeparatedArtist> artists = [];
   List<AlbumModel> albums = [];
@@ -278,6 +284,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _downloadStatusSubscription?.cancel();
     _downloadMonitor.stopMonitoring();
     super.dispose();
+  }
+
+  // Handle overscroll for pull-to-refresh
+  bool _handleOverscroll(OverscrollNotification notification) {
+    // Only handle overscroll at the top (negative overscroll)
+    if (notification.overscroll < 0 && !_isRefreshing) {
+      final pullAmount = -notification.overscroll;
+      _pullProgress =
+          (_pullProgress + pullAmount / _pullThreshold).clamp(0.0, 1.0);
+      _notificationManager.updatePullProgress(_pullProgress);
+    }
+    return false;
+  }
+
+  // Handle scroll end to trigger refresh or reset
+  bool _handleScrollEnd(ScrollEndNotification notification) {
+    if (_pullProgress >= 1.0 && !_isRefreshing) {
+      // Trigger refresh
+      _triggerPullRefresh();
+    } else if (!_isRefreshing) {
+      // Reset progress
+      _pullProgress = 0.0;
+      _notificationManager.clearPullProgress();
+    }
+    return false;
+  }
+
+  Future<void> _triggerPullRefresh() async {
+    _isRefreshing = true;
+    _pullProgress = 0.0;
+    HapticFeedback.mediumImpact();
+
+    await _refreshLibrary();
+
+    _isRefreshing = false;
+    HapticFeedback.lightImpact();
   }
 
   Future<void> _refreshLibrary() async {
@@ -624,38 +666,47 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               offset: isConnected ? const Offset(0, -0.3) : Offset.zero,
               duration: const Duration(milliseconds: 400),
               curve: Curves.ease,
-              child: StreamBuilder<String>(
+              child: StreamBuilder<NotificationState>(
                 stream: _notificationManager.notificationStream,
-                initialData: '',
+                initialData: NotificationState.empty,
                 builder: (context, snapshot) {
-                  final message = snapshot.data ?? '';
-                  return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: message.isEmpty
-                        ? Text(
-                            AppLocalizations.of(context)
-                                .translate('aurora_music'),
-                            key: const ValueKey('default'),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontFamily: 'Outfit',
-                              color: Colors.white,
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold,
+                  final state = snapshot.data ?? NotificationState.empty;
+                  final message = state.message;
+                  final isProgress = state.isProgress;
+                  final pullProgress = state.pullProgress;
+
+                  return AnimatedProgressLine(
+                    isAnimating: isProgress,
+                    determinateProgress: pullProgress,
+                    lineColor: Colors.white,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: message.isEmpty
+                          ? Text(
+                              AppLocalizations.of(context)
+                                  .translate('aurora_music'),
+                              key: const ValueKey('default'),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontFamily: FontConstants.fontFamily,
+                                color: Colors.white,
+                                fontSize: 34,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            )
+                          : AutoScrollText(
+                              key: ValueKey(message),
+                              text: message,
+                              style: const TextStyle(
+                                fontFamily: FontConstants.fontFamily,
+                                color: Colors.white,
+                                fontSize: 34,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              onMessageComplete: (message) =>
+                                  _notificationManager.showDefaultTitle(),
                             ),
-                          )
-                        : AutoScrollText(
-                            key: ValueKey(message),
-                            text: message,
-                            style: const TextStyle(
-                              fontFamily: 'Outfit',
-                              color: Colors.white,
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            onMessageComplete: (message) =>
-                                _notificationManager.showDefaultTitle(),
-                          ),
+                    ),
                   );
                 },
               ),
@@ -698,7 +749,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               key: ValueKey(
                                   _bluetoothService.connectedDeviceName),
                               style: const TextStyle(
-                                fontFamily: 'Outfit',
+                                fontFamily: FontConstants.fontFamily,
                                 fontSize: 12,
                                 color: Color(0xFF10B981),
                                 fontWeight: FontWeight.w600,
@@ -736,109 +787,118 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           body: Stack(
             children: [
               RepaintBoundary(
-                child: NestedScrollView(
-                  controller: _scrollController,
-                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                    SliverAppBar(
-                      backgroundColor: Colors.transparent,
-                      elevation: 0.0,
-                      toolbarHeight: 70,
-                      automaticallyImplyLeading: false,
-                      floating: true,
-                      pinned: true,
-                      expandedHeight: 250,
-                      // Performance: Removed BackdropFilter - blur during scroll causes dropped frames
-                      // The app background already provides visual depth
-                      flexibleSpace: FlexibleSpaceBar(
-                        background: Container(
-                          color: Colors.transparent,
-                          child: Center(
-                            child: buildAppBarTitle(),
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification is OverscrollNotification) {
+                      return _handleOverscroll(notification);
+                    } else if (notification is ScrollEndNotification) {
+                      return _handleScrollEnd(notification);
+                    }
+                    return false;
+                  },
+                  child: NestedScrollView(
+                    controller: _scrollController,
+                    headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                      SliverAppBar(
+                        backgroundColor: Colors.transparent,
+                        elevation: 0.0,
+                        toolbarHeight: 70,
+                        automaticallyImplyLeading: false,
+                        floating: true,
+                        pinned: true,
+                        expandedHeight: 250,
+                        // Performance: Removed BackdropFilter - blur during scroll causes dropped frames
+                        // The app background already provides visual depth
+                        flexibleSpace: FlexibleSpaceBar(
+                          background: Container(
+                            color: Colors.transparent,
+                            child: Center(
+                              child: buildAppBarTitle(),
+                            ),
                           ),
+                          centerTitle: true,
+                          title: innerBoxIsScrolled
+                              ? Text(
+                                  AppLocalizations.of(context)
+                                      .translate('aurora_music'),
+                                  style: const TextStyle(
+                                    fontFamily: FontConstants.fontFamily,
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : null,
                         ),
-                        centerTitle: true,
-                        title: innerBoxIsScrolled
-                            ? Text(
-                                AppLocalizations.of(context)
-                                    .translate('aurora_music'),
-                                style: const TextStyle(
-                                  fontFamily: 'Outfit',
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                            : null,
-                      ),
-                      bottom: PreferredSize(
-                        preferredSize: const Size.fromHeight(55),
-                        child: ValueListenableBuilder<bool>(
-                            valueListenable: _isScrolledNotifier,
-                            builder: (context, isScrolled, _) {
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(20, 0, 20, 6),
-                                child: AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 300),
-                                  child: isScrolled
-                                      ? GlassmorphicContainer(
-                                          key: const ValueKey('scrolled'),
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          blur: 20,
-                                          child: _HomeTabBar(
-                                              tabController: _tabController),
-                                        )
-                                      : Container(
-                                          key: const ValueKey('normal'),
-                                          child: _HomeTabBar(
-                                              tabController: _tabController),
-                                        ),
-                                ),
-                              );
-                            }),
-                      ),
-                    ),
-                  ],
-                  body: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      RepaintBoundary(
-                        child: HomeTab(
-                          randomSongs: randomSongs,
-                          randomArtists: randomArtists,
-                          artistService: _artistService,
-                          currentSong: currentSong,
-                          onRefresh: _refreshLibrary,
-                        ),
-                      ),
-                      const RepaintBoundary(child: LibraryTab()),
-                      RepaintBoundary(
-                        child: SearchTab(
-                          songs: songs,
-                          artists: artists,
-                          albums: albums,
-                          isInitialized: _isInitialized,
-                        ),
-                      ),
-                      RepaintBoundary(
-                        child: SettingsTab(
-                          notificationManager: _notificationManager,
-                          onUpdateCheck: () async {
-                            await launchUrl(Uri.parse(
-                                'https://github.com/D4v31x/Aurora-Music/releases/latest'));
-                          },
-                          onResetSetup: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const OnboardingScreen()),
-                            );
-                          },
+                        bottom: PreferredSize(
+                          preferredSize: const Size.fromHeight(55),
+                          child: ValueListenableBuilder<bool>(
+                              valueListenable: _isScrolledNotifier,
+                              builder: (context, isScrolled, _) {
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(20, 0, 20, 6),
+                                  child: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 300),
+                                    child: isScrolled
+                                        ? GlassmorphicContainer(
+                                            key: const ValueKey('scrolled'),
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                            blur: 20,
+                                            child: _HomeTabBar(
+                                                tabController: _tabController),
+                                          )
+                                        : Container(
+                                            key: const ValueKey('normal'),
+                                            child: _HomeTabBar(
+                                                tabController: _tabController),
+                                          ),
+                                  ),
+                                );
+                              }),
                         ),
                       ),
                     ],
+                    body: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        RepaintBoundary(
+                          child: HomeTab(
+                            randomSongs: randomSongs,
+                            randomArtists: randomArtists,
+                            artistService: _artistService,
+                            currentSong: currentSong,
+                          ),
+                        ),
+                        const RepaintBoundary(child: LibraryTab()),
+                        RepaintBoundary(
+                          child: SearchTab(
+                            songs: songs,
+                            artists: artists,
+                            albums: albums,
+                            isInitialized: _isInitialized,
+                          ),
+                        ),
+                        RepaintBoundary(
+                          child: SettingsTab(
+                            notificationManager: _notificationManager,
+                            onUpdateCheck: () async {
+                              await launchUrl(Uri.parse(
+                                  'https://github.com/D4v31x/Aurora-Music/releases/latest'));
+                            },
+                            onResetSetup: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const OnboardingScreen()),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -870,7 +930,7 @@ class _HomeTabBar extends StatelessWidget {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
-              fontFamily: 'Outfit',
+              fontFamily: FontConstants.fontFamily,
               fontWeight: FontWeight.w500,
             ),
           ),

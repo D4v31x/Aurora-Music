@@ -248,11 +248,11 @@ class ResponsiveUtils {
 
     switch (deviceType) {
       case DeviceType.phone:
-        return shortestSide * 0.7;
+        return shortestSide * 0.6; // Reduced from 0.7
       case DeviceType.tablet:
-        return math.min(shortestSide * 0.5, 400.0);
+        return math.min(shortestSide * 0.45, 360.0); // Reduced from 0.5/400
       case DeviceType.largeTablet:
-        return math.min(shortestSide * 0.45, 450.0);
+        return math.min(shortestSide * 0.4, 400.0); // Reduced from 0.45/450
     }
   }
 

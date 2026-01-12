@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
@@ -35,7 +36,7 @@ class CommonScreenScaffold extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           slivers: [
             SliverAppBar(
               backgroundColor: Colors.transparent,
@@ -93,7 +94,7 @@ class CommonScreenScaffold extends StatelessWidget {
                       title,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         fontWeight: FontWeight.bold,
                         fontSize: 24,
                       ),

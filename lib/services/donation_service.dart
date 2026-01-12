@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/glassmorphic_container.dart';
@@ -121,7 +122,7 @@ class DonationService {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: isDark ? Colors.white : Colors.black87,
                 ),
               ),
@@ -132,7 +133,7 @@ class DonationService {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  fontFamily: 'Outfit',
+                  fontFamily: FontConstants.fontFamily,
                   color: isDark ? Colors.white60 : Colors.black54,
                   height: 1.4,
                 ),
@@ -159,7 +160,7 @@ class DonationService {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                     ),
                   ),
                 ),
@@ -172,7 +173,7 @@ class DonationService {
                   loc.translate('maybe_later'),
                   style: TextStyle(
                     fontSize: 14,
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     color: isDark ? Colors.white54 : Colors.black45,
                   ),
                 ),
@@ -187,7 +188,7 @@ class DonationService {
                   loc.translate('dont_show_again'),
                   style: TextStyle(
                     fontSize: 12,
-                    fontFamily: 'Outfit',
+                    fontFamily: FontConstants.fontFamily,
                     color: isDark ? Colors.white30 : Colors.black26,
                   ),
                 ),
@@ -227,7 +228,7 @@ class DonationService {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
@@ -240,7 +241,7 @@ class DonationService {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         color: isDark ? Colors.white60 : Colors.black54,
                         height: 1.4,
                       ),
@@ -286,7 +287,7 @@ class DonationService {
                     loc.translate('thank_you_support'),
                     style: TextStyle(
                       fontSize: 12,
-                      fontFamily: 'Outfit',
+                      fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white38 : Colors.black38,
                     ),
                   ),
@@ -347,7 +348,7 @@ class _DonationOption extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         color: isDark ? Colors.white : Colors.black87,
                       ),
                     ),
@@ -356,7 +357,7 @@ class _DonationOption extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         fontSize: 12,
-                        fontFamily: 'Outfit',
+                        fontFamily: FontConstants.fontFamily,
                         color: isDark ? Colors.white38 : Colors.black38,
                       ),
                     ),

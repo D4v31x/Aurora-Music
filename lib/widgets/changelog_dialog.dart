@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:ui';
+import '../constants/font_constants.dart';
 import '../localization/app_localizations.dart';
 import '../utils/changelog_content.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,7 @@ class ChangelogDialog extends StatelessWidget {
             color: isDarkMode ? Colors.white : Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.bold,
+            fontFamily: FontConstants.fontFamily,
           ),
         ),
         const SizedBox(height: 8),
@@ -67,6 +69,7 @@ class ChangelogDialog extends StatelessWidget {
                       style: TextStyle(
                         color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
                         height: 1.5,
+                        fontFamily: FontConstants.fontFamily,
                       ),
                     ),
                   ),
@@ -128,6 +131,7 @@ class ChangelogDialog extends StatelessWidget {
                           color: isDarkMode ? Colors.white : Colors.black,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
+                          fontFamily: FontConstants.fontFamily,
                         ),
                       ),
                     ),
@@ -157,6 +161,7 @@ class ChangelogDialog extends StatelessWidget {
                               isDarkMode ? Colors.blue[300] : Colors.blue[700],
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
+                          fontFamily: FontConstants.fontFamily,
                         ),
                       ),
                     ),
@@ -202,6 +207,7 @@ class ChangelogDialog extends StatelessWidget {
                                   .translate('privacy_notice'),
                               style: TextStyle(
                                 fontSize: 12,
+                                fontFamily: FontConstants.fontFamily,
                                 color: isDarkMode
                                     ? Colors.grey[400]
                                     : Colors.grey[600],
@@ -219,6 +225,7 @@ class ChangelogDialog extends StatelessWidget {
                                       .translate('privacy_policy_link'),
                                   style: TextStyle(
                                     fontSize: 12,
+                                    fontFamily: FontConstants.fontFamily,
                                     color: isDarkMode
                                         ? Colors.blue[300]
                                         : Colors.blue[700],
@@ -252,6 +259,7 @@ class ChangelogDialog extends StatelessWidget {
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.bold,
+                          fontFamily: FontConstants.fontFamily,
                         ),
                       ),
                     ),

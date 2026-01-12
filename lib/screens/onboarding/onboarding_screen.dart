@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import '../../services/user_preferences.dart';
@@ -163,7 +164,7 @@ class OnboardingScreen extends HookWidget {
                             AppLocalizations.of(context)
                                 .translate('onboarding_skip'),
                             style: const TextStyle(
-                              fontFamily: 'Outfit',
+                              fontFamily: FontConstants.fontFamily,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
