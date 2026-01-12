@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
+import '../../constants/app_config.dart';
 import '../../services/audio_player_service.dart';
 import '../../services/artwork_cache_service.dart';
 import '../../localization/app_localizations.dart';
@@ -71,6 +72,8 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: recentSongs.length,
+        // Performance: Pre-cache items beyond visible area for smoother scrolling
+        cacheExtent: AppConfig.horizontalListCacheExtent,
         itemBuilder: (context, index) {
           final song = recentSongs[index];
           return RepaintBoundary(

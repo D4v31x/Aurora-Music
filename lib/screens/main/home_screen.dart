@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Pull-to-refresh tracking
   double _pullProgress = 0.0;
   bool _isRefreshing = false;
-  static const double _pullThreshold = 100.0; // pixels to pull for full refresh
+  static const double _pullThreshold = 380.0; // pixels to pull for full refresh
   int _totalSongs = 0;
   List<SeparatedArtist> artists = [];
   List<AlbumModel> albums = [];
@@ -294,6 +294,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _pullProgress =
           (_pullProgress + pullAmount / _pullThreshold).clamp(0.0, 1.0);
       _notificationManager.updatePullProgress(_pullProgress);
+    }
+    return false;
+  }
+
+  // Handle scroll updates to allow pulling back (reducing progress)
+  bool _handleScrollUpdate(ScrollUpdateNotification notification) {
+    // If we have pull progress and user is scrolling down (releasing pull)
+    if (_pullProgress > 0 && !_isRefreshing && notification.scrollDelta != null) {
+      final delta = notification.scrollDelta!;
+      // Positive delta means scrolling down (releasing the pull)
+      if (delta > 0) {
+        _pullProgress = (_pullProgress - delta / _pullThreshold).clamp(0.0, 1.0);
+        _notificationManager.updatePullProgress(_pullProgress);
+      }
     }
     return false;
   }
@@ -791,6 +805,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   onNotification: (notification) {
                     if (notification is OverscrollNotification) {
                       return _handleOverscroll(notification);
+                    } else if (notification is ScrollUpdateNotification) {
+                      return _handleScrollUpdate(notification);
                     } else if (notification is ScrollEndNotification) {
                       return _handleScrollEnd(notification);
                     }
