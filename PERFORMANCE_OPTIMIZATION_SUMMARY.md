@@ -264,6 +264,38 @@ The optimizations follow Flutter best practices and are maintainable for future 
 
 ---
 
-**Last Updated**: 2026-01-08  
-**Version**: 0.1.15+4  
+## January 2026 Update - Additional Performance Optimizations
+
+### Newly Optimized Components
+
+#### Changelog Dialog (`lib/widgets/changelog_dialog.dart`)
+- **Added performance-aware blur**: Now checks `PerformanceModeProvider.shouldEnableBlur` before applying BackdropFilter
+- **Reduced blur sigma**: From 25 to 20 for marginal but still visually effective blur
+- **Added RepaintBoundary**: Isolates blur layer repaints
+- **Solid fallback**: Uses solid surface colors on low-end devices
+
+#### Feedback Reminder Dialog (`lib/widgets/feedback_reminder_dialog.dart`)
+- **Added performance-aware blur**: Now respects device performance mode
+- **Added solid fallback styling**: Provides appropriate visuals on low-end devices without GPU-intensive blur
+
+#### Recently Played Section (`lib/widgets/home/recently_played_section.dart`)
+- **Added cacheExtent: 300**: Pre-caches items beyond visible area for smoother horizontal scrolling
+
+#### Recently Added Section (`lib/widgets/home/recently_added_section.dart`)
+- **Added cacheExtent: 300**: Pre-caches items for smoother scrolling
+
+#### App Configuration (`lib/constants/app_config.dart`)
+- **Added listCacheExtent constants**: Standardized cache extent values (500.0 normal, 1000.0 large)
+- **Added blur sigma constants**: Standardized blur values (10.0 standard, 20.0 heavy, 30.0 max)
+- **Added artworkPreloadCount**: Configuration for artwork preloading (5 upcoming tracks)
+
+### Impact Summary
+- **Additional GPU savings**: All remaining dialogs now respect performance mode
+- **Smoother scrolling**: Horizontal lists pre-cache items for fluid scrolling
+- **Consistent configuration**: Centralized blur and cache values for maintainability
+
+---
+
+**Last Updated**: 2026-01-12  
+**Version**: 0.1.15+5  
 **Authors**: Performance Engineering Team

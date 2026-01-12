@@ -61,6 +61,8 @@ class RecentlyAddedSection extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             itemCount: recentSongs.length,
+            // Performance: Pre-cache items beyond visible area for smoother scrolling
+            cacheExtent: 300,
             itemBuilder: (context, index) {
               final song = recentSongs[index];
               return RepaintBoundary(

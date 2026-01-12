@@ -34,4 +34,25 @@ class AppConfig {
   static const Duration defaultAnimationDuration = Duration(milliseconds: 300);
   static const Duration fastAnimationDuration = Duration(milliseconds: 200);
   static const Duration slowAnimationDuration = Duration(milliseconds: 400);
+
+  // List Performance Configuration
+  /// Cache extent for lists - how much to preload beyond visible area
+  static const double listCacheExtent = 500.0;
+
+  /// Large list cache extent for very long scrollable content
+  static const double largeListCacheExtent = 1000.0;
+
+  // Blur Configuration for Performance
+  /// Standard blur sigma for glassmorphic effects
+  static const double standardBlurSigma = 10.0;
+
+  /// Heavy blur sigma for backgrounds (e.g., now playing)
+  static const double heavyBlurSigma = 20.0;
+
+  /// Maximum blur sigma - higher values don't provide visible benefit
+  static const double maxBlurSigma = 30.0;
+
+  // Artwork Preloading Configuration
+  /// Number of upcoming tracks to preload artwork for
+  static const int artworkPreloadCount = 5;
 }

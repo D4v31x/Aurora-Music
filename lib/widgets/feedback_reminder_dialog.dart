@@ -1,11 +1,14 @@
 import 'dart:ui';
 import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../localization/app_localizations.dart';
+import '../providers/performance_mode_provider.dart';
 import '../services/feedback_reminder_service.dart';
 
-/// A glassmorphic dialog to remind users to provide feedback
+/// A glassmorphic dialog to remind users to provide feedback.
+/// Performance-aware: Respects device performance mode for blur effects.
 class FeedbackReminderDialog extends StatelessWidget {
   const FeedbackReminderDialog({super.key});
 
@@ -41,27 +44,54 @@ class FeedbackReminderDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-      child: Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 400),
-          decoration: BoxDecoration(
-            color: Colors.grey[900]?.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+    // Check if blur should be enabled based on performance mode
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Use solid surface colors for lowend devices
+    final BoxDecoration dialogDecoration;
+    if (shouldBlur) {
+      dialogDecoration = BoxDecoration(
+        color: Colors.grey[900]?.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
+        ],
+      );
+    } else {
+      // Solid dialog styling for lowend devices
+      dialogDecoration = BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      );
+    }
+
+    final dialogContent = Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 400),
+        decoration: dialogDecoration,
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -179,6 +209,16 @@ class FeedbackReminderDialog extends StatelessWidget {
         ),
       ),
     );
+
+    // Wrap with BackdropFilter only when blur is enabled
+    if (shouldBlur) {
+      return BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: dialogContent,
+      );
+    }
+
+    return dialogContent;
   }
 }
 
