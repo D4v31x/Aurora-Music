@@ -42,6 +42,9 @@ class AppConfig {
   /// Large list cache extent for very long scrollable content
   static const double largeListCacheExtent = 1000.0;
 
+  /// Horizontal list cache extent - smaller for horizontal scrolling
+  static const double horizontalListCacheExtent = 300.0;
+
   // Blur Configuration for Performance
   /// Standard blur sigma for glassmorphic effects
   static const double standardBlurSigma = 10.0;

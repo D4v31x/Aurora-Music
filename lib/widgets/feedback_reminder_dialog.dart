@@ -50,7 +50,7 @@ class FeedbackReminderDialog extends StatelessWidget {
     final shouldBlur = performanceProvider.shouldEnableBlur;
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Use solid surface colors for lowend devices
+    // Use solid surface colors for low-end devices
     final BoxDecoration dialogDecoration;
     if (shouldBlur) {
       dialogDecoration = BoxDecoration(
@@ -69,7 +69,7 @@ class FeedbackReminderDialog extends StatelessWidget {
         ],
       );
     } else {
-      // Solid dialog styling for lowend devices
+      // Solid dialog styling for low-end devices
       dialogDecoration = BoxDecoration(
         color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(24),

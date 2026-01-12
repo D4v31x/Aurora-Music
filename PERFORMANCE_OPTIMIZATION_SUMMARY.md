@@ -279,13 +279,13 @@ The optimizations follow Flutter best practices and are maintainable for future 
 - **Added solid fallback styling**: Provides appropriate visuals on low-end devices without GPU-intensive blur
 
 #### Recently Played Section (`lib/widgets/home/recently_played_section.dart`)
-- **Added cacheExtent: 300**: Pre-caches items beyond visible area for smoother horizontal scrolling
+- **Added cacheExtent**: Uses `AppConfig.horizontalListCacheExtent` (300.0) for pre-caching items for smoother horizontal scrolling
 
 #### Recently Added Section (`lib/widgets/home/recently_added_section.dart`)
-- **Added cacheExtent: 300**: Pre-caches items for smoother scrolling
+- **Added cacheExtent**: Uses `AppConfig.horizontalListCacheExtent` (300.0) for pre-caching items for smoother scrolling
 
 #### App Configuration (`lib/constants/app_config.dart`)
-- **Added listCacheExtent constants**: Standardized cache extent values (500.0 normal, 1000.0 large)
+- **Added listCacheExtent constants**: Standardized cache extent values (500.0 normal, 1000.0 large, 300.0 horizontal)
 - **Added blur sigma constants**: Standardized blur values (10.0 standard, 20.0 heavy, 30.0 max)
 - **Added artworkPreloadCount**: Configuration for artwork preloading (5 upcoming tracks)
 
