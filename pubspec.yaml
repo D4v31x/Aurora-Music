@@ -89,46 +89,10 @@ flutter:
   generate: true
   uses-material-design: true
   fonts:
-    - family: Outfit
-      fonts:
-        - asset: assets/fonts/Outfit-Regular.ttf
-        - asset: assets/fonts/Outfit-Thin.ttf
-          weight: 100
-        - asset: assets/fonts/Outfit-ExtraLight.ttf
-          weight: 200
-        - asset: assets/fonts/Outfit-Light.ttf
-          weight: 300
-        - asset: assets/fonts/Outfit-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Outfit-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Outfit-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Outfit-ExtraBold.ttf
-          weight: 800
-        - asset: assets/fonts/Outfit-Black.ttf
-          weight: 900
-
     - family: Questrial
       fonts:
         - asset: assets/fonts/Questrial-Regular.ttf
     
-    - family: Scandia
-      fonts:
-        - asset: assets/fonts/Scandia.otf
-          weight: 500
-        - asset: assets/fonts/Scandia_Bold.otf
-          weight: 700
-        - asset: assets/fonts/Scandia_Light.otf
-          weight: 300
-
-    - family: Urbanist
-      fonts:
-        - asset: assets/fonts/Urbanist-Light.ttf
-          weight: 300
-        - asset: assets/fonts/Urbanist-Regular.ttf
-        - asset: assets/fonts/Urbanist-Bold.ttf
-          weight: 700
 
 
   assets:

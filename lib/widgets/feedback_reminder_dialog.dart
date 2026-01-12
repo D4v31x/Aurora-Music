@@ -92,119 +92,118 @@ class FeedbackReminderDialog extends StatelessWidget {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400),
         decoration: dialogDecoration,
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Icon
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    Icons.favorite_rounded,
-                    size: 32,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                const SizedBox(height: 20),
-
-                // Title
-                Text(
-                  l10n.translate('feedback_title'),
-                  style: const TextStyle(
-                    fontFamily: FontConstants.fontFamily,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
+                child: Icon(
+                  Icons.favorite_rounded,
+                  size: 32,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(height: 12),
+              ),
+              const SizedBox(height: 20),
 
-                // Description
-                Text(
-                  l10n.translate('feedback_description'),
-                  style: TextStyle(
-                    fontFamily: FontConstants.fontFamily,
-                    fontSize: 14,
-                    color: Colors.white.withOpacity(0.7),
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
+              // Title
+              Text(
+                l10n.translate('feedback_title'),
+                style: const TextStyle(
+                  fontFamily: FontConstants.fontFamily,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
-                const SizedBox(height: 24),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
 
-                // Action buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: _FeedbackButton(
-                        icon: Icons.bug_report_rounded,
-                        label: l10n.translate('report_bug'),
-                        color: Colors.orange,
-                        onTap: () {
-                          Navigator.pop(context);
-                          _openGitHubIssues();
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _FeedbackButton(
-                        icon: Icons.lightbulb_rounded,
-                        label: l10n.translate('suggest_feature'),
-                        color: Colors.blue,
-                        onTap: () {
-                          Navigator.pop(context);
-                          _openGitHubDiscussions();
-                        },
-                      ),
-                    ),
-                  ],
+              // Description
+              Text(
+                l10n.translate('feedback_description'),
+                style: TextStyle(
+                  fontFamily: FontConstants.fontFamily,
+                  fontSize: 14,
+                  color: Colors.white.withOpacity(0.7),
+                  height: 1.5,
                 ),
-                const SizedBox(height: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
 
-                // Dismiss options
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        l10n.translate('maybe_later'),
-                        style: TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          color: Colors.white.withOpacity(0.6),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    TextButton(
-                      onPressed: () async {
-                        await FeedbackReminderService.dismissPermanently();
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                        }
+              // Action buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: _FeedbackButton(
+                      icon: Icons.bug_report_rounded,
+                      label: l10n.translate('report_bug'),
+                      color: Colors.orange,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _openGitHubIssues();
                       },
-                      child: Text(
-                        l10n.translate('dont_ask_again'),
-                        style: TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          color: Colors.white.withOpacity(0.4),
-                          fontSize: 12,
-                        ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _FeedbackButton(
+                      icon: Icons.lightbulb_rounded,
+                      label: l10n.translate('suggest_feature'),
+                      color: Colors.blue,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _openGitHubDiscussions();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Dismiss options
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      l10n.translate('maybe_later'),
+                      style: TextStyle(
+                        fontFamily: FontConstants.fontFamily,
+                        color: Colors.white.withOpacity(0.6),
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                  const SizedBox(width: 16),
+                  TextButton(
+                    onPressed: () async {
+                      await FeedbackReminderService.dismissPermanently();
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Text(
+                      l10n.translate('dont_ask_again'),
+                      style: TextStyle(
+                        fontFamily: FontConstants.fontFamily,
+                        color: Colors.white.withOpacity(0.4),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

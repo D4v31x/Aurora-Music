@@ -106,8 +106,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       _initializeTimedLyrics(audioPlayerService);
     }
 
-    // Ensure background artwork is loaded when screen is shown
-    _ensureBackgroundArtwork();
+    // Ensure background artwork is loaded when screen is shown (deferred to avoid build-phase conflicts)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _ensureBackgroundArtwork();
+      }
+    });
 
     // Listen to song changes (only trigger for NEW songs)
     _songChangeSubscription =
