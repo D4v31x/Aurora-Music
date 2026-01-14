@@ -99,6 +99,13 @@ android {
         }
     }
     buildToolsVersion '35.0.0'
+    
+    // Enable 16 KB page size alignment for native libraries
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
 }
 
 flutter {
@@ -107,6 +114,7 @@ flutter {
 
 dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.core:core-ktx:1.15.0'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
 }
 

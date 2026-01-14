@@ -10,16 +10,13 @@ import '../localization/app_localizations.dart';
 class DonationService {
   // Configure your donation links here
   static const String kofiUsername =
-      'auroramusic'; // Replace with your Ko-fi username
-  static const String buyMeCoffeeUsername =
-      'auroramusic'; // Replace with your BMC username
-  static const String paypalUsername =
-      'auroramusic'; // Replace with your PayPal.me username
+      'aurorasoftwarecz'; // Replace with your Ko-fi username
+  static const String buyMeCoffeeUsername = 
+      'aurorasoftwareCZ'; // Replace with your BMC username
 
   static const String kofiUrl = 'https://ko-fi.com/$kofiUsername';
   static const String buyMeCoffeeUrl =
       'https://buymeacoffee.com/$buyMeCoffeeUsername';
-  static const String paypalUrl = 'https://paypal.me/$paypalUsername';
 
   // Reminder settings
   static const String _lastReminderKey = 'donation_last_reminder';
@@ -75,10 +72,6 @@ class DonationService {
     return _launchUrl(buyMeCoffeeUrl);
   }
 
-  /// Open PayPal donation page
-  static Future<bool> openPayPal() async {
-    return _launchUrl(paypalUrl);
-  }
 
   static Future<bool> _launchUrl(String url) async {
     final uri = Uri.parse(url);
@@ -267,17 +260,6 @@ class DonationService {
                     onTap: () {
                       Navigator.pop(context);
                       openKofi();
-                    },
-                    isDark: isDark,
-                  ),
-                  const SizedBox(height: 12),
-                  _DonationOption(
-                    title: loc.translate('paypal'),
-                    subtitle: loc.translate('direct_donation'),
-                    color: const Color(0xFF0070BA),
-                    onTap: () {
-                      Navigator.pop(context);
-                      openPayPal();
                     },
                     isDark: isDark,
                   ),

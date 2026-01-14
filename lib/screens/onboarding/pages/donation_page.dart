@@ -189,15 +189,6 @@ class _DonationPageState extends State<DonationPage>
                               isDark: isDark,
                               onTap: () => DonationService.openKofi(),
                             ),
-                            const SizedBox(height: 12),
-                            _buildDonationOption(
-                              context: context,
-                              icon: Icons.payment_rounded,
-                              title: 'PayPal',
-                              color: const Color(0xFF0070BA),
-                              isDark: isDark,
-                              onTap: () => DonationService.openPayPal(),
-                            ),
                             const SizedBox(height: 24),
                             Container(
                               padding: const EdgeInsets.all(16),
