@@ -9,7 +9,8 @@ class AppConfig {
 
   // Cache Configuration
   static const int maxCacheSize = 150; // Reduced from 200
-  static const Duration cacheCleanupInterval = Duration(minutes: 3); // More frequent cleanup
+  static const Duration cacheCleanupInterval =
+      Duration(minutes: 3); // More frequent cleanup
 
   // Audio Configuration
   static const String androidNotificationChannelId =
@@ -31,9 +32,12 @@ class AppConfig {
   static const double shaderWarmupSize = 100.0;
 
   // Timing Configuration - Optimized for smooth feel
-  static const Duration defaultAnimationDuration = Duration(milliseconds: 250); // Faster default
-  static const Duration fastAnimationDuration = Duration(milliseconds: 150); // Snappier
-  static const Duration slowAnimationDuration = Duration(milliseconds: 350); // Slightly faster
+  static const Duration defaultAnimationDuration =
+      Duration(milliseconds: 250); // Faster default
+  static const Duration fastAnimationDuration =
+      Duration(milliseconds: 150); // Snappier
+  static const Duration slowAnimationDuration =
+      Duration(milliseconds: 350); // Slightly faster
 
   // List Performance Configuration
   /// Cache extent for lists - how much to preload beyond visible area
@@ -47,7 +51,8 @@ class AppConfig {
 
   // Blur Configuration for Performance
   /// Standard blur sigma for glassmorphic effects
-  static const double standardBlurSigma = 8.0; // Reduced from 10 for performance
+  static const double standardBlurSigma =
+      8.0; // Reduced from 10 for performance
 
   /// Heavy blur sigma for backgrounds (e.g., now playing)
   static const double heavyBlurSigma = 15.0; // Reduced from 20 for performance

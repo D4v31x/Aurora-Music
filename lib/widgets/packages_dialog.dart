@@ -244,7 +244,8 @@ class PackagesDialog extends StatelessWidget {
                       Colors.white.withValues(alpha: 0.05),
                     ],
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(15)),
                 ),
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -280,7 +281,8 @@ class PackagesDialog extends StatelessWidget {
               // Package List
               Flexible(
                 child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   itemCount: packages.length,
                   separatorBuilder: (context, index) => Divider(
                     color: Colors.white.withValues(alpha: 0.1),
@@ -290,7 +292,9 @@ class PackagesDialog extends StatelessWidget {
                     final package = packages[index];
                     return _PackageTile(
                       package: package,
-                      onTap: package.url != null ? () => _launchURL(package.url!) : null,
+                      onTap: package.url != null
+                          ? () => _launchURL(package.url!)
+                          : null,
                     );
                   },
                 ),
@@ -404,7 +408,8 @@ class _PackageTile extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
