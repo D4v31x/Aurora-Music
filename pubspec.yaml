@@ -52,7 +52,6 @@ dependencies:
   animations: ^2.0.11
   device_info_plus: ^11.4.0
   pub_semver: ^2.1.4
-  just_audio_background: ^0.0.1-beta.13
   flutter_dotenv: ^5.1.0
   html: ^0.15.4
   crypto: ^3.0.6
@@ -64,7 +63,6 @@ dependencies:
   audiotags: ^1.4.5
   clarity_flutter: ^1.6.0
   flutter_hooks: ^0.21.3+1
-  interactive_slider: ^0.5.1
   
 dev_dependencies:
   flutter_test:
@@ -96,9 +94,6 @@ flutter:
 
 
   assets:
-    - assets/images/background/welcome_bg.jpg
-    - assets/images/logo/Music_logo.png
-    - assets/images/logo/App_logo.png
     - assets/images/logo/Music_full_logo.png
     - assets/images/logo/default_art.png
 
