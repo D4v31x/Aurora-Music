@@ -1,10 +1,11 @@
 class ChangelogContent {
   static const Map<String, List<Map<String, List<String>>>> versions = {
     // Latest version at the top
-    '0.1.20': [
+    '0.1.21': [
       {
         'Screens': [
           'Added all used packages',
+          'Added full screen artwork view from Now Playing screen',
           'Added donation options in settings',
         ],
       },
@@ -18,7 +19,8 @@ class ChangelogContent {
         'Under the Hood': [
           'Upgrade to AGP 9.0.0',
           'Upgrade to ndk 29',
-          'Recompiled native libraries to work with 16KB page size devices'
+          'Recompiled native libraries to work with 16KB page size devices',
+          'Fixed issues with state management for updating UI',
         ],
       },
       {
