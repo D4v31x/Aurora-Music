@@ -97,7 +97,7 @@ class SmartSuggestionsService {
     } else {
       // Update overall counts
       _trackPlayCounts[trackId] = (_trackPlayCounts[trackId] ?? 0) + 1;
-      for (var artist in artists) {
+      for (final artist in artists) {
         _artistPlayCounts[artist] = (_artistPlayCounts[artist] ?? 0) + 1;
       }
       _genrePlayCounts[genre] = (_genrePlayCounts[genre] ?? 0) + 1;
@@ -108,7 +108,7 @@ class SmartSuggestionsService {
           (_hourlyTrackCounts[hour]![trackId] ?? 0) + 1;
 
       _hourlyArtistCounts[hour] ??= {};
-      for (var artist in artists) {
+      for (final artist in artists) {
         _hourlyArtistCounts[hour]![artist] =
             (_hourlyArtistCounts[hour]![artist] ?? 0) + 1;
       }
@@ -123,7 +123,7 @@ class SmartSuggestionsService {
           (_weekdayTrackCounts[weekday]![trackId] ?? 0) + 1;
 
       _weekdayArtistCounts[weekday] ??= {};
-      for (var artist in artists) {
+      for (final artist in artists) {
         _weekdayArtistCounts[weekday]![artist] =
             (_weekdayArtistCounts[weekday]![artist] ?? 0) + 1;
       }
@@ -135,7 +135,7 @@ class SmartSuggestionsService {
         _recentlyPlayedTrackIds = _recentlyPlayedTrackIds.sublist(0, 50);
       }
 
-      for (var artist in artists) {
+      for (final artist in artists) {
         _recentlyPlayedArtists.remove(artist);
         _recentlyPlayedArtists.insert(0, artist);
       }
@@ -181,7 +181,7 @@ class SmartSuggestionsService {
     // Calculate scores for each track
     final scores = <String, double>{};
 
-    for (var song in allSongs) {
+    for (final song in allSongs) {
       final trackId = song.id.toString();
       double score = 0;
 
@@ -192,7 +192,7 @@ class SmartSuggestionsService {
       }
 
       // Check adjacent hours too (weight: 1.5x)
-      for (var adj in [(hour - 1) % 24, (hour + 1) % 24]) {
+      for (final adj in [(hour - 1) % 24, (hour + 1) % 24]) {
         final adjData = _hourlyTrackCounts[adj];
         if (adjData != null && adjData.containsKey(trackId)) {
           score += (adjData[trackId]! * 1.5);
@@ -220,7 +220,7 @@ class SmartSuggestionsService {
       final artists = splitArtists(song.artist ?? '');
       final hourlyArtists = _hourlyArtistCounts[hour];
       if (hourlyArtists != null) {
-        for (var artist in artists) {
+        for (final artist in artists) {
           if (hourlyArtists.containsKey(artist)) {
             score += (hourlyArtists[artist]! * 2);
           }
@@ -261,7 +261,7 @@ class SmartSuggestionsService {
     suggestedIds.shuffle();
 
     final result = <SongModel>[];
-    for (var id in suggestedIds.take(count)) {
+    for (final id in suggestedIds.take(count)) {
       final song = allSongs.firstWhere(
         (s) => s.id.toString() == id,
         orElse: () => allSongs.first,
@@ -279,7 +279,7 @@ class SmartSuggestionsService {
 
     // Get all unique artists
     final allArtists = <String>{};
-    for (var song in allSongs) {
+    for (final song in allSongs) {
       allArtists.addAll(splitArtists(song.artist ?? ''));
     }
 
@@ -290,7 +290,7 @@ class SmartSuggestionsService {
     // Calculate scores for each artist
     final scores = <String, double>{};
 
-    for (var artist in allArtists) {
+    for (final artist in allArtists) {
       if (artist.isEmpty || artist.toLowerCase() == 'unknown') continue;
 
       double score = 0;
@@ -302,7 +302,7 @@ class SmartSuggestionsService {
       }
 
       // Check adjacent hours (weight: 1.5x)
-      for (var adj in [(hour - 1) % 24, (hour + 1) % 24]) {
+      for (final adj in [(hour - 1) % 24, (hour + 1) % 24]) {
         final adjData = _hourlyArtistCounts[adj];
         if (adjData != null && adjData.containsKey(artist)) {
           score += (adjData[artist]! * 1.5);

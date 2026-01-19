@@ -412,7 +412,6 @@ class _LibraryTabState extends State<LibraryTab> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: colorScheme.outlineVariant.withOpacity(0.3),
-          width: 1,
         ),
       );
     }
@@ -620,7 +619,6 @@ class _LibraryTabState extends State<LibraryTab> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: colorScheme.outlineVariant.withOpacity(0.3),
-          width: 1,
         ),
       );
     }

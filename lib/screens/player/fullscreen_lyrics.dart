@@ -445,11 +445,11 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                       color: Colors.white70, fontFamily: FontConstants.fontFamily),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white24),
+                    borderSide: const BorderSide(color: Colors.white24),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: const BorderSide(color: Colors.white),
                   ),
                 ),
               ),
@@ -464,11 +464,11 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                       color: Colors.white70, fontFamily: FontConstants.fontFamily),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white24),
+                    borderSide: const BorderSide(color: Colors.white24),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: const BorderSide(color: Colors.white),
                   ),
                 ),
               ),
@@ -1016,7 +1016,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.lyrics_outlined,
             size: 64,
             color: Colors.white38,
@@ -1145,7 +1145,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.skip_previous_rounded,
                   color: Colors.white,
                   size: 36,
@@ -1169,7 +1169,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 },
               ),
               IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.skip_next_rounded,
                   color: Colors.white,
                   size: 36,

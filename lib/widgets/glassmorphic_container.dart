@@ -47,7 +47,6 @@ class GlassmorphicContainer extends StatelessWidget {
           color: isDark
               ? colorScheme.outlineVariant.withOpacity(0.3)
               : colorScheme.outline.withOpacity(0.2),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(

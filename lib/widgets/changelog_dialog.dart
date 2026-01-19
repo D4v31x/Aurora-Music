@@ -111,7 +111,6 @@ class ChangelogDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
         ),
       );
     } else {
@@ -121,7 +120,6 @@ class ChangelogDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
           color: colorScheme.outlineVariant.withOpacity(0.3),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -133,7 +131,7 @@ class ChangelogDialog extends StatelessWidget {
       );
     }
 
-    final dialogContent = Container(
+    final dialogContent = DecoratedBox(
       decoration: dialogDecoration,
       child: ConstrainedBox(
         constraints: BoxConstraints(

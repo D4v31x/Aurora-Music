@@ -115,7 +115,7 @@ Map<String, dynamic> processErrorsForStorage(List<ErrorRecord> errors) {
     return '$timestamp: ${error.error.substring(0, math.min(AppConfig.maxErrorMessageLength, error.error.length))} | $shortStack';
   }).toList();
 
-  String errorString = processedErrors.join('\n').substring(
+  final String errorString = processedErrors.join('\n').substring(
       0,
       math.min(
           AppConfig.maxErrorStringLength, processedErrors.join('\n').length));

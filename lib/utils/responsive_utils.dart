@@ -169,7 +169,7 @@ class ResponsiveUtils {
     final width = MediaQuery.of(context).size.width;
     final columns = getGridColumns(context);
     final padding = getHorizontalPadding(context);
-    final spacing = 12.0;
+    const spacing = 12.0;
     final itemWidth =
         (width - (padding * 2) - (spacing * (columns - 1))) / columns;
     return itemWidth / aspectRatio;

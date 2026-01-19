@@ -67,7 +67,6 @@ class ThemeProvider with ChangeNotifier {
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
             color: Colors.white.withValues(alpha: 0.15),
-            width: 1,
           ),
         ),
         textStyle: const TextStyle(
@@ -84,7 +83,6 @@ class ThemeProvider with ChangeNotifier {
           borderRadius: BorderRadius.circular(28),
           side: BorderSide(
             color: Colors.white.withValues(alpha: 0.15),
-            width: 1,
           ),
         ),
         titleTextStyle: const TextStyle(

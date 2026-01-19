@@ -104,7 +104,7 @@ class ListeningHistoryCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
+      child: DecoratedBox(
         // Performance: Use semi-transparent background instead of BackdropFilter
         decoration: BoxDecoration(
           color: isDark

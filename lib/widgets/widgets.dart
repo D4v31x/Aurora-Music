@@ -6,6 +6,7 @@
 /// - Home: Widgets specific to home screen tabs
 /// - Dialogs: Dialog and sheet components
 /// - Backgrounds: Background and visual effect widgets
+library;
 
 // Core widgets
 export 'common_screen_scaffold.dart';

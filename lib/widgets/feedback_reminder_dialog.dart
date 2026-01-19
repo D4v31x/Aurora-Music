@@ -20,7 +20,6 @@ class FeedbackReminderDialog extends StatelessWidget {
 
       showDialog(
         context: context,
-        barrierDismissible: true,
         builder: (context) => const FeedbackReminderDialog(),
       );
     }
@@ -58,7 +57,6 @@ class FeedbackReminderDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: Colors.white.withOpacity(0.1),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -75,7 +73,6 @@ class FeedbackReminderDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: colorScheme.outlineVariant.withOpacity(0.3),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -248,7 +245,6 @@ class _FeedbackButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: color.withOpacity(0.3),
-              width: 1,
             ),
           ),
           child: Column(

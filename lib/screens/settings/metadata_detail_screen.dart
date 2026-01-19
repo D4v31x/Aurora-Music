@@ -270,7 +270,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.2),
-                      width: 1,
                     ),
                   ),
                   child: Column(
@@ -887,7 +886,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                             type: ArtworkType.AUDIO,
                             artworkHeight: 200,
                             artworkWidth: 200,
-                            artworkFit: BoxFit.cover,
                             nullArtworkWidget: Container(
                               color: Colors.grey[800],
                               child: const Icon(Icons.music_note,
@@ -986,7 +984,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: _getQualityColor(loc).withValues(alpha: 0.3),
-          width: 1,
         ),
       ),
       child: Row(
@@ -1051,7 +1048,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
         ),
       ),
       child: Column(
@@ -1131,7 +1127,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             flex: 2,
@@ -1170,7 +1165,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(
                           color: Theme.of(context).colorScheme.primary,
-                          width: 1,
                         ),
                       ),
                     ),
@@ -1202,7 +1196,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.08),
-          width: 1,
         ),
       ),
       child: Column(

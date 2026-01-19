@@ -34,8 +34,6 @@ class AppBackground extends StatelessWidget {
         if (enableAnimation) {
           return AnimatedArtworkBackground(
             currentArtwork: currentArtwork,
-            previousArtwork: null, // Let AnimatedArtworkBackground manage this
-            isTransitioning: false,
             fallbackColor: surfaceColor,
             child: child,
           );
@@ -52,7 +50,7 @@ class AppBackground extends StatelessWidget {
         }
 
         // Fallback for non-animated mode without artwork
-        return Container(
+        return ColoredBox(
           color: surfaceColor,
           child: child,
         );

@@ -549,7 +549,7 @@ class _ForYouItemCard extends StatelessWidget {
           size: 64,
         );
       case _ForYouItemType.album:
-        return Container(
+        return DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -568,7 +568,6 @@ class _ForYouItemCard extends StatelessWidget {
         return artworkService.buildArtistImageByName(
           item.artistName!,
           size: 64,
-          circular: false,
         );
       case _ForYouItemType.playlist:
         return _buildPlaylistArtwork(item.playlist!);
@@ -589,7 +588,7 @@ class _ForYouItemCard extends StatelessWidget {
       return Image.asset(imagePath, fit: BoxFit.cover);
     }
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,

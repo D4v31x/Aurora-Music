@@ -122,8 +122,6 @@ class _AlbumCardState extends State<AlbumCard>
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
               colors: [
                 Colors.white.withOpacity(0.1),
                 Colors.white.withOpacity(0.2),
@@ -132,7 +130,6 @@ class _AlbumCardState extends State<AlbumCard>
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
               color: Colors.white.withOpacity(0.1),
-              width: 1,
             ),
             boxShadow: [
               BoxShadow(

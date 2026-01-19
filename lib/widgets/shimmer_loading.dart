@@ -54,16 +54,16 @@ class SongTileSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         children: [
-          const ShimmerLoading(width: 50, height: 50, borderRadius: 8),
-          const SizedBox(width: 12),
+          ShimmerLoading(width: 50),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 ShimmerLoading(width: 150, height: 14, borderRadius: 4),
                 SizedBox(height: 6),
                 ShimmerLoading(width: 100, height: 12, borderRadius: 4),

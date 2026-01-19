@@ -145,7 +145,6 @@ class MusicMetadataWidget extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: _getQualityColor(loc).withValues(alpha: 0.3),
-                            width: 1,
                           ),
                         ),
                         child: Row(

@@ -46,7 +46,6 @@ class ArtistAggregatorService {
 
     // Query all songs
     final songs = await _audioQuery.querySongs(
-      sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,

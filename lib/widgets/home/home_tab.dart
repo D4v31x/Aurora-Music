@@ -174,7 +174,7 @@ class _HomeTabState extends State<HomeTab> {
 
   /// Build a two-column layout for tablets in landscape
   Widget _buildTabletLayout(List<HomeSection> visibleSections, double spacing) {
-    final isTablet = true;
+    const isTablet = true;
 
     // Split sections into two columns
     final leftSections = <HomeSection>[];

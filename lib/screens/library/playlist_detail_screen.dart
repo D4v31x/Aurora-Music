@@ -189,7 +189,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     return SliverAppBar(
       backgroundColor: Colors.transparent,
       expandedHeight: 260,
-      floating: false,
       pinned: true,
       centerTitle: true,
       title: _isScrolled
@@ -821,7 +820,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   }
 
   Widget _buildDefaultArtwork() {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,

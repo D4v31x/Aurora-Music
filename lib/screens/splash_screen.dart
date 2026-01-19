@@ -292,8 +292,8 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _loadVersionInfo() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String codeName = dotenv.env['CODE_NAME'] ?? 'Unknown';
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    final String codeName = dotenv.env['CODE_NAME'] ?? 'Unknown';
 
     setState(() {
       _versionNumber = packageInfo.version;
@@ -373,7 +373,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _performActualTransition() async {
-    bool isFirstTime = await UserPreferences.isFirstTimeUser();
+    final bool isFirstTime = await UserPreferences.isFirstTimeUser();
 
     if (mounted) {
       if (isFirstTime) {
@@ -387,7 +387,6 @@ class _SplashScreenState extends State<SplashScreen>
   void _navigateToScreenWithHero(Widget screen) {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        opaque: true,
         pageBuilder: (context, animation, secondaryAnimation) => screen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           // Smooth crossfade with zoom-in effect

@@ -512,7 +512,7 @@ class _WelcomePageState extends State<WelcomePage>
                       child: AnimatedBuilder(
                         animation: _glowAnimation,
                         builder: (context, child) {
-                          return Container(
+                          return DecoratedBox(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(100),
                               boxShadow: _glowAnimation.value > 0

@@ -174,7 +174,6 @@ class _ToastWidgetState extends State<_ToastWidget>
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
           color: Colors.white.withOpacity(0.15),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -191,7 +190,6 @@ class _ToastWidgetState extends State<_ToastWidget>
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
           color: colorScheme.outlineVariant.withOpacity(0.3),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(

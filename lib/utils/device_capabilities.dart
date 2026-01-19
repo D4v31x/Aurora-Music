@@ -36,7 +36,7 @@ class DeviceCapabilities {
     // This can be enhanced with actual device detection later
     try {
       // Simple heuristic: check available memory indicators
-      final isRelease = kReleaseMode;
+      const isRelease = kReleaseMode;
 
       // In debug mode, assume development device (usually higher-end)
       // In release mode, be more conservative

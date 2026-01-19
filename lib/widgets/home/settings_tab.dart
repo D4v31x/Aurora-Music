@@ -496,7 +496,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
       final lyricsDir = Directory('${directory.path}/lyrics');
       if (await lyricsDir.exists()) {
-        await for (var file in lyricsDir.list(recursive: true)) {
+        await for (final file in lyricsDir.list(recursive: true)) {
           if (file is File) {
             lyricsSize += await file.length();
           }
@@ -505,7 +505,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
       final artworkDir = Directory('${directory.path}/artwork_cache');
       if (await artworkDir.exists()) {
-        await for (var file in artworkDir.list(recursive: true)) {
+        await for (final file in artworkDir.list(recursive: true)) {
           if (file is File) {
             artworkSize += await file.length();
           }
@@ -554,9 +554,9 @@ class _SettingsTabState extends State<SettingsTab> {
               Divider(color: Colors.white.withOpacity(0.2)),
               _buildInfoRow('Total', _formatBytes(totalSize), bold: true),
               const SizedBox(height: 16),
-              Text(
+              const Text(
                 'Memory Cache',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
                   fontWeight: FontWeight.w600,

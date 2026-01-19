@@ -177,7 +177,6 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
               icon: Icons.shuffle_rounded,
               label: AppLocalizations.of(context).translate('shuffle'),
               onTap: shuffleAllSongs,
-              isPrimary: false,
             ),
           ),
         ],

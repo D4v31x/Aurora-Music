@@ -93,9 +93,9 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
                         size: 16,
                       ),
                       const SizedBox(width: 4),
-                      Text(
+                      const Text(
                         'Debug',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -187,9 +187,9 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Performance',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -214,9 +214,9 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Device',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 12,
             fontWeight: FontWeight.bold,
@@ -243,9 +243,9 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
   Widget _buildControlButtons(PerformanceModeProvider performanceProvider) {
     return Column(
       children: [
-        Text(
+        const Text(
           'Controls',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 12,
             fontWeight: FontWeight.bold,

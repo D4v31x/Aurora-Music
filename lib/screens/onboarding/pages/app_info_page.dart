@@ -332,7 +332,6 @@ class _AppInfoPageState extends State<AppInfoPage>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: borderColor,
-          width: 1,
         ),
       ),
       child: Row(

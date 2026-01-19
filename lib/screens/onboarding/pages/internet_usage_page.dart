@@ -276,7 +276,6 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                                       .colorScheme
                                       .primary
                                       .withOpacity(0.3),
-                                  width: 1,
                                 ),
                               ),
                               child: Row(
@@ -362,7 +361,6 @@ class _InternetUsagePageState extends State<InternetUsagePage>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: borderColor,
-          width: 1,
         ),
       ),
       child: Row(

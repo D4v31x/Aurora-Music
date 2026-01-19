@@ -377,7 +377,7 @@ class TimedLyricsService {
         }
 
         // Process each time tag in the line
-        for (var match in timeMatches) {
+        for (final match in timeMatches) {
           final minutes = int.parse(match.group(1)!);
           final seconds = int.parse(match.group(2)!);
 
@@ -417,7 +417,7 @@ class TimedLyricsService {
       _log('  Cache path: $filePath');
 
       final file = File(filePath);
-      await file.writeAsString(content, encoding: utf8);
+      await file.writeAsString(content);
       _log('  ✓ Lyrics saved to cache');
 
       // Also add to memory cache for instant access
@@ -451,7 +451,7 @@ class TimedLyricsService {
       final file = File(filePath);
       if (await file.exists()) {
         _log('  ✓ Cache file exists, loading...');
-        final content = await file.readAsString(encoding: utf8);
+        final content = await file.readAsString();
         final lyrics = _parseLrc(content);
         _log('  ✓ Loaded ${lyrics.length} lines from file cache');
 
@@ -533,9 +533,9 @@ class TimedLyricsService {
     final resultWords = resultLower.split(RegExp(r'\W+'));
 
     var matchingWords = 0;
-    for (var searchWord in searchWords) {
+    for (final searchWord in searchWords) {
       if (searchWord.length < 3) continue; // Skip very short words
-      for (var resultWord in resultWords) {
+      for (final resultWord in resultWords) {
         if (resultWord.contains(searchWord) ||
             searchWord.contains(resultWord)) {
           matchingWords++;

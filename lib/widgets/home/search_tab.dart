@@ -102,8 +102,6 @@ class _SearchTabState extends State<SearchTab> {
     _filteredSongs = MusicSearchService.searchSongs(
       widget.songs,
       query,
-      limit: 50,
-      minScore: 10.0,
     );
 
     // Search artists with improved scoring
@@ -259,8 +257,8 @@ class _SearchTabState extends State<SearchTab> {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
 
-    List<SongModel> playlist = _filteredSongs;
-    int initialIndex = playlist.indexWhere((s) => s.id == song.id);
+    final List<SongModel> playlist = _filteredSongs;
+    final int initialIndex = playlist.indexWhere((s) => s.id == song.id);
 
     if (initialIndex >= 0) {
       audioPlayerService.setPlaylist(
@@ -274,16 +272,16 @@ class _SearchTabState extends State<SearchTab> {
   @override
   Widget build(BuildContext context) {
     if (!widget.isInitialized) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
             // Fake search bar
-            const ShimmerLoading(
-                width: double.infinity, height: 56, borderRadius: 28),
-            const SizedBox(height: 24),
+            ShimmerLoading(
+                height: 56, borderRadius: 28),
+            SizedBox(height: 24),
             // Fake results
-            const ListSkeleton(itemCount: 5),
+            ListSkeleton(),
           ],
         ),
       );
@@ -489,7 +487,6 @@ class _SearchTabState extends State<SearchTab> {
           MaterialPageRoute(
             builder: (context) => ArtistDetailsScreen(
               artistName: artist.name,
-              artistImagePath: null,
             ),
           ),
         );
@@ -550,7 +547,6 @@ class _SearchTabState extends State<SearchTab> {
           MaterialPageRoute(
             builder: (context) => ArtistDetailsScreen(
               artistName: artist.name,
-              artistImagePath: null,
             ),
           ),
         );
@@ -662,7 +658,7 @@ class _SearchSongTile extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(vertical: 4),
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: artworkService.buildCachedArtwork(song.id, size: 50),
+          child: artworkService.buildCachedArtwork(song.id),
         ),
         title: Text(
           song.title,
@@ -768,7 +764,6 @@ class _TopResultCardWithArtwork extends HookWidget {
           color: hasArtwork && dominantColor != null
               ? dominantColor.withOpacity(0.3)
               : Colors.white.withOpacity(0.2),
-          width: 1,
         ),
       );
     } else {
@@ -778,7 +773,6 @@ class _TopResultCardWithArtwork extends HookWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: colorScheme.outlineVariant.withOpacity(0.3),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -982,7 +976,6 @@ class _TopArtistResultCard extends HookWidget {
           color: hasArtwork && dominantColor != null
               ? dominantColor.withOpacity(0.3)
               : Colors.white.withOpacity(0.2),
-          width: 1,
         ),
       );
     } else {
@@ -992,7 +985,6 @@ class _TopArtistResultCard extends HookWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: colorScheme.outlineVariant.withOpacity(0.3),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(

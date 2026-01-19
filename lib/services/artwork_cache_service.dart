@@ -98,7 +98,7 @@ class ArtworkCacheService {
         chunks.add(songsToPreload.skip(i).take(4).toList());
       }
 
-      for (var chunk in chunks) {
+      for (final chunk in chunks) {
         await Future.wait(chunk.map((song) => _getArtwork(song.id)));
       }
     } catch (e) {}

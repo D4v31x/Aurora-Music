@@ -180,7 +180,6 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
         Container(
           decoration: BoxDecoration(
             gradient: RadialGradient(
-              center: Alignment.center,
               radius: 1.2,
               colors: [
                 Colors.transparent,
@@ -221,7 +220,6 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
         Container(
           decoration: BoxDecoration(
             gradient: RadialGradient(
-              center: Alignment.center,
               radius: 1.2,
               colors: [
                 Colors.transparent,
@@ -294,7 +292,7 @@ class SimpleBlurredBackground extends StatelessWidget {
     final surfaceColor = Theme.of(context).colorScheme.surface;
 
     if (artwork == null) {
-      return Container(
+      return ColoredBox(
         color: surfaceColor,
         child: child,
       );

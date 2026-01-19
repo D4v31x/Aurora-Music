@@ -26,7 +26,6 @@ class AuroraAboutDialog extends StatelessWidget {
     Navigator.pop(context); // Close about dialog first
     showDialog(
       context: context,
-      barrierDismissible: true,
       builder: (BuildContext context) => ChangelogDialog(
         currentVersion: version,
       ),
@@ -37,7 +36,6 @@ class AuroraAboutDialog extends StatelessWidget {
     Navigator.pop(context); // Close about dialog first
     showDialog(
       context: context,
-      barrierDismissible: true,
       builder: (BuildContext context) => const PackagesDialog(),
     );
   }

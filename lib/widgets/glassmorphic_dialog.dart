@@ -49,7 +49,6 @@ class GlassmorphicDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
         ),
       );
     } else {
@@ -59,7 +58,6 @@ class GlassmorphicDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
           color: colorScheme.outlineVariant.withOpacity(0.3),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -71,7 +69,7 @@ class GlassmorphicDialog extends StatelessWidget {
       );
     }
 
-    final dialogContent = Container(
+    final dialogContent = DecoratedBox(
       decoration: containerDecoration,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -211,8 +209,8 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius),
       ),
-      popUpAnimationStyle: AnimationStyle(
-        duration: const Duration(milliseconds: 200),
+      popUpAnimationStyle: const AnimationStyle(
+        duration: Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
       ),
       itemBuilder: (context) {
@@ -233,7 +231,6 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.2),
-              width: 1,
             ),
           );
         } else {
@@ -243,7 +240,6 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
               color: colorScheme.outlineVariant.withOpacity(0.3),
-              width: 1,
             ),
             boxShadow: [
               BoxShadow(
@@ -255,7 +251,7 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
           );
         }
 
-        final menuContent = Container(
+        final menuContent = DecoratedBox(
           decoration: menuDecoration,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -359,7 +355,6 @@ Future<T?> showGlassmorphicBottomSheet<T>({
               BorderRadius.vertical(top: Radius.circular(borderRadius)),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.2),
-            width: 1,
           ),
         );
       } else {
@@ -370,7 +365,6 @@ Future<T?> showGlassmorphicBottomSheet<T>({
               BorderRadius.vertical(top: Radius.circular(borderRadius)),
           border: Border.all(
             color: colorScheme.outlineVariant.withOpacity(0.3),
-            width: 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -382,7 +376,7 @@ Future<T?> showGlassmorphicBottomSheet<T>({
         );
       }
 
-      final sheetContent = Container(
+      final sheetContent = DecoratedBox(
         decoration: sheetDecoration,
         child: builder(context),
       );

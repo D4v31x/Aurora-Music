@@ -44,7 +44,7 @@ class VersionService {
     } catch (e) {
       debugPrint('Version check error: $e');
     }
-    return VersionCheckResult(isUpdateAvailable: false, latestVersion: null);
+    return VersionCheckResult(isUpdateAvailable: false);
   }
 
   static Future<String> getCurrentVersion() async {

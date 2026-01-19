@@ -415,7 +415,6 @@ class _PermissionsPageState extends State<PermissionsPage>
                                   onPressed: _isChecking
                                       ? null
                                       : _requestAllPermissions,
-                                  isPrimary: true,
                                   isLoading: _isChecking,
                                   icon: Icons.shield_rounded,
                                   width: double.infinity,
@@ -447,11 +446,11 @@ class _PermissionsPageState extends State<PermissionsPage>
                               Text(
                                 AppLocalizations.of(context)
                                     .translate('onboarding_audio_required'),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontFamily: FontConstants.fontFamily,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
-                                  color: const Color(0xFFEF4444),
+                                  color: Color(0xFFEF4444),
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -462,7 +461,6 @@ class _PermissionsPageState extends State<PermissionsPage>
                                 continueText: AppLocalizations.of(context)
                                     .translate('continueButton'),
                                 onBack: widget.onBack,
-                                onContinue: null, // Disabled
                               ),
                             ],
                           ),
@@ -513,7 +511,6 @@ class _PermissionsPageState extends State<PermissionsPage>
               color: isGranted
                   ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
                   : borderColor,
-              width: 1,
             ),
           ),
           child: Row(

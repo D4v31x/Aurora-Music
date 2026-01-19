@@ -144,6 +144,6 @@ mixin ArtworkMixin<T extends StatefulWidget> on State<T> {
 
   /// Get the cached image provider for a song.
   Future<ImageProvider> getCachedArtwork(int songId) async {
-    return await artworkService.getCachedImageProvider(songId);
+    return artworkService.getCachedImageProvider(songId);
   }
 }

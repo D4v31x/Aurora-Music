@@ -10,7 +10,6 @@ import '../../services/artwork_cache_service.dart';
 import '../../widgets/glassmorphic_container.dart';
 import '../../widgets/app_background.dart';
 import '../../widgets/shimmer_loading.dart';
-import '../../widgets/expanding_player.dart';
 import '../../models/utils.dart';
 import '../shared/detail_screen_mixin.dart';
 
@@ -85,7 +84,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
 
   Future<void> _loadSongs() async {
     final songs = await _audioQuery.querySongs(
-      sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
@@ -216,7 +214,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
         builder: (context, dominantColor, _) {
           if (_displayedSongs.isEmpty && _isLoading) {
             return AppBackground(
-              enableAnimation: true,
               child: SafeArea(
                 child: Column(
                   children: [
@@ -234,11 +231,11 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                     ),
                     const Expanded(
                       child: Center(
-                        child: DetailHeaderSkeleton(isArtist: false),
+                        child: DetailHeaderSkeleton(),
                       ),
                     ),
                     const SizedBox(height: 32),
-                    const ListSkeleton(itemCount: 5),
+                    const ListSkeleton(),
                   ],
                 ),
               ),
@@ -246,7 +243,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
           }
 
           return AppBackground(
-            enableAnimation: true,
             child: CustomScrollView(
               controller: _scrollController,
               slivers: [
@@ -409,11 +405,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     return SliverAppBar(
       backgroundColor: Colors.transparent,
       expandedHeight: 350,
-      floating: false,
       pinned: true,
       flexibleSpace: LayoutBuilder(
         builder: (context, constraints) {
-          var top = constraints.biggest.height;
+          final top = constraints.biggest.height;
           return FlexibleSpaceBar(
             centerTitle: true,
             title: top <= kToolbarHeight + 50
@@ -587,7 +582,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      builder: (context) => DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -611,7 +606,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child:
-                        _artworkService.buildCachedArtwork(song.id, size: 50),
+                        _artworkService.buildCachedArtwork(song.id),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

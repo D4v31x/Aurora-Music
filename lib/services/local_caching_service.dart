@@ -142,7 +142,7 @@ class LocalCachingArtistService {
         return cacheFile.path;
       }
 
-      String? imageUrl = await _getArtistImageFromSpotify(artistName);
+      final String? imageUrl = await _getArtistImageFromSpotify(artistName);
 
       if (imageUrl != null) {
         final imagePath = await _downloadAndCacheImage(imageUrl, cacheFile);
@@ -173,7 +173,7 @@ class LocalCachingArtistService {
       await _getSpotifyAccessToken();
     }
 
-    String primaryArtist = artistName
+    final String primaryArtist = artistName
         .split(RegExp(
             r'[,/]|\s+&\s+|\s+feat\.?\s+|\s+ft\.?\s+|\s+featuring\s+|\s+with\s+|\s+x\s+|\s+X\s+'))
         .first

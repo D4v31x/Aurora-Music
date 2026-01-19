@@ -45,9 +45,9 @@ class _OptimizedSongTileState extends State<OptimizedSongTile>
             decoration: widget.selected
                 ? BoxDecoration(
                     color: const Color(0xFF3B82F6).withOpacity(0.1),
-                    border: Border(
+                    border: const Border(
                       left: BorderSide(
-                        color: const Color(0xFF3B82F6),
+                        color: Color(0xFF3B82F6),
                         width: 3,
                       ),
                     ),
@@ -61,7 +61,6 @@ class _OptimizedSongTileState extends State<OptimizedSongTile>
                     borderRadius: BorderRadius.circular(8),
                     child: _artworkService.buildCachedArtwork(
                       widget.song.id,
-                      size: 50,
                     ),
                   ),
                 ),
@@ -146,7 +145,7 @@ class _OptimizedGridTileState extends State<OptimizedGridTile>
         child: InkWell(
           onTap: widget.onTap,
           borderRadius: BorderRadius.circular(12),
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.05),
               borderRadius: BorderRadius.circular(12),
@@ -165,7 +164,6 @@ class _OptimizedGridTileState extends State<OptimizedGridTile>
                           ? _artworkService.buildArtistImageByName(
                               widget.title,
                               size: double.infinity,
-                              circular: false,
                             )
                           : _artworkService.buildCachedArtwork(
                               widget.id,

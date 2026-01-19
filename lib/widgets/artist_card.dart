@@ -58,7 +58,7 @@ class _ArtistCardState extends State<ArtistCard>
   }
 
   Future<void> _fetchArtistInfo() async {
-    String primaryArtist = ArtistCard.splitArtistNames(widget.artistName).first;
+    final String primaryArtist = ArtistCard.splitArtistNames(widget.artistName).first;
 
     // Check cache first
     if (ArtistCard._artistInfoCache.containsKey(primaryArtist)) {
@@ -95,11 +95,11 @@ class _ArtistCardState extends State<ArtistCard>
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        String description = data['extract'] ?? '';
+        final String description = data['extract'] ?? '';
 
-        RegExp regExp = RegExp(
+        final RegExp regExp = RegExp(
             r'(?:is|was) (?:an?|the) ([A-Za-z\s-]+?(singer|musician|rapper|band|group|artist|producer|composer|songwriter|DJ)[A-Za-z\s-]*?)(?:\.|\,|who|from)');
-        var match = regExp.firstMatch(description);
+        final match = regExp.firstMatch(description);
 
         if (match != null) {
           artistInfo = match.group(1)?.trim() ?? 'Musical artist';
@@ -177,8 +177,6 @@ class _ArtistCardState extends State<ArtistCard>
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
               colors: [
                 Colors.white.withOpacity(0.1),
                 Colors.white.withOpacity(0.2),
@@ -187,7 +185,6 @@ class _ArtistCardState extends State<ArtistCard>
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
               color: Colors.white.withOpacity(0.1),
-              width: 1,
             ),
             boxShadow: [
               BoxShadow(

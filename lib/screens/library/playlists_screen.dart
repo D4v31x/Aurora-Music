@@ -408,7 +408,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
 
   Widget _buildPlaylistArtwork(Playlist playlist) {
     if (playlist.songs.isEmpty) {
-      return Container(
+      return ColoredBox(
         color: Colors.grey.withOpacity(0.2),
         child: Icon(
           Icons.music_note_rounded,
@@ -502,7 +502,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Container(
+                  DecoratedBox(
                     decoration: BoxDecoration(
                       color: isDark
                           ? Colors.white.withOpacity(0.08)
@@ -768,7 +768,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Container(
+                  DecoratedBox(
                     decoration: BoxDecoration(
                       color: isDark
                           ? Colors.white.withOpacity(0.08)

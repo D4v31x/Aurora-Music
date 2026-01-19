@@ -179,7 +179,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         songDuration: audioPlayerService.audioPlayer.duration,
         onMultipleResults: (results) async {
           if (!mounted) return null;
-          return await _showLyricsSelectionDialog(results);
+          return _showLyricsSelectionDialog(results);
         },
       );
     } else {
@@ -313,7 +313,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, null),
+              onPressed: () => Navigator.pop(context),
               child: const Text(
                 'Cancel',
                 style: TextStyle(color: Colors.white70),
@@ -375,7 +375,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
   // Optimized artwork display widget
   Widget _buildArtwork() {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
@@ -394,7 +394,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 fit: BoxFit.cover,
                 gaplessPlayback: true, // Prevent flickering
               )
-            : Container(
+            : ColoredBox(
                 color: Colors.white.withOpacity(0.1),
                 child: Icon(
                   Icons.music_note_rounded,
@@ -434,7 +434,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: 0),
+      padding: const EdgeInsets.only(),
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.topCenter,
@@ -557,7 +557,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                       final borderRadius = BorderRadius.circular(
                         27 + (8 - 27) * curvedValue,
                       );
-                      return Container(
+                      return DecoratedBox(
                         decoration: BoxDecoration(
                           borderRadius: borderRadius,
                           boxShadow: [
@@ -604,7 +604,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               tag: 'songArtwork',
               child: Material(
                 color: Colors.transparent,
-                child: Container(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
@@ -744,7 +744,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     child: ClipRect(
                       child: ShaderMask(
                         shaderCallback: (Rect bounds) {
-                          return LinearGradient(
+                          return const LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
@@ -753,7 +753,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                               Colors.white,
                               Colors.transparent,
                             ],
-                            stops: const [0.0, 0.15, 0.85, 1.0],
+                            stops: [0.0, 0.15, 0.85, 1.0],
                           ).createShader(bounds);
                         },
                         blendMode: BlendMode.dstIn,
@@ -1011,7 +1011,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     }
 
     return PopScope(
-      canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         // Pop already happened, just call onClose callback if provided
         if (didPop && widget.onClose != null) {
@@ -1053,7 +1052,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
                     color: Colors.white.withValues(alpha: 0.15),
-                    width: 1,
                   ),
                 ),
                 onSelected: (value) {
@@ -2401,8 +2399,8 @@ class _ProgressBarState extends State<_ProgressBar> {
   String _formatDuration(Duration? duration) {
     if (duration == null) return '--:--';
     String twoDigits(int n) => n.toString().padLeft(2, '0');
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    final String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    final String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
     return '${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds';
   }
 

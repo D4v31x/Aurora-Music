@@ -137,7 +137,6 @@ class _CompletionPageState extends State<CompletionPage>
                   text: AppLocalizations.of(context)
                       .translate('onboarding_start_listening'),
                   onPressed: widget.onComplete,
-                  isPrimary: true,
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 18),
                 ),

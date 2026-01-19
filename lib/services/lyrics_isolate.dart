@@ -40,7 +40,7 @@ class LyricsIsolate {
       final textMatch = RegExp(r'\](.*)$').firstMatch(line);
       if (textMatch == null) continue;
 
-      String text = textMatch.group(1)?.trim() ?? '';
+      final String text = textMatch.group(1)?.trim() ?? '';
       if (text.isEmpty) continue;
 
       // Parse all timestamps for this line (some lines have multiple timestamps)

@@ -7,6 +7,7 @@
 /// - Settings: Configuration and preferences
 /// - Onboarding: First-run setup screens
 /// - Shared: Reusable mixins and utilities
+library;
 
 // Main screens
 export 'main/main.dart';

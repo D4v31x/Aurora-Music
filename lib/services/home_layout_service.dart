@@ -159,7 +159,7 @@ class HomeLayoutService extends ChangeNotifier {
   Future<void> resetToDefault() async {
     _sectionOrder = HomeSection.values.toList();
     _sectionVisibility = {
-      for (var section in HomeSection.values) section: true
+      for (final section in HomeSection.values) section: true
     };
     await _save();
     notifyListeners();

@@ -76,7 +76,7 @@ class DonationService {
   static Future<bool> _launchUrl(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
-      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+      return launchUrl(uri, mode: LaunchMode.externalApplication);
     }
     return false;
   }
@@ -98,7 +98,6 @@ class DonationService {
 
     showDialog(
       context: context,
-      barrierDismissible: true,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
         child: GlassmorphicContainer(

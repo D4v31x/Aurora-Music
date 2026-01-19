@@ -358,7 +358,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
               const SizedBox(height: 10),
               // Album name
               Expanded(
-                flex: 1,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -502,7 +501,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      builder: (context) => DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -525,8 +524,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: _artworkService.buildCachedAlbumArtwork(album.id,
-                        size: 50),
+                    child: _artworkService.buildCachedAlbumArtwork(album.id),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -589,7 +587,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
     final songs = await _audioQuery.querySongs(
-      sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
@@ -611,7 +608,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
     final songs = await _audioQuery.querySongs(
-      sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
@@ -632,7 +628,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
 
   Future<void> _addAlbumToQueue(AlbumModel album) async {
     final songs = await _audioQuery.querySongs(
-      sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
@@ -1155,7 +1150,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      builder: (context) => DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),

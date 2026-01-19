@@ -287,7 +287,7 @@ class BatchDownloadService {
     try {
       final songs = await _audioQuery.querySongs();
       int cachedLyrics = 0;
-      int cachedArtwork = 0;
+      const int cachedArtwork = 0;
 
       for (final song in songs.take(100)) {
         // Sample first 100 songs

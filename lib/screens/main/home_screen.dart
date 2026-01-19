@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -155,7 +154,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (mounted) {
         _notificationManager.showNotification(
           AppLocalizations.of(context).translate('welcome_back'),
-          duration: const Duration(seconds: 3),
           onComplete: () => _notificationManager.showDefaultTitle(),
         );
       }
@@ -205,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     // Get smart suggestions based on listening patterns
     final suggestedTracks =
-        await audioPlayerService.getSuggestedTracks(count: 3);
+        await audioPlayerService.getSuggestedTracks();
     final suggestedArtists =
         await audioPlayerService.getSuggestedArtists(count: 5);
 
@@ -692,7 +690,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   return AnimatedProgressLine(
                     isAnimating: isProgress,
                     determinateProgress: pullProgress,
-                    lineColor: Colors.white,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: message.isEmpty
@@ -826,7 +823,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         // Performance: Removed BackdropFilter - blur during scroll causes dropped frames
                         // The app background already provides visual depth
                         flexibleSpace: FlexibleSpaceBar(
-                          background: Container(
+                          background: ColoredBox(
                             color: Colors.transparent,
                             child: Center(
                               child: buildAppBarTitle(),
@@ -963,13 +960,10 @@ class _HomeTabBar extends StatelessWidget {
         return TabBar(
           controller: tabController,
           dividerColor: Colors.transparent,
-          isScrollable: false,
           labelPadding:
               const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
           indicatorPadding: const EdgeInsets.symmetric(vertical: 4.0),
           indicator: OutlineIndicator(
-            color: Colors.white,
-            strokeWidth: 2,
             radius: const Radius.circular(20),
             text: [
               AppLocalizations.of(context).translate('home'),

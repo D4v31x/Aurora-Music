@@ -85,7 +85,6 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
 
   Future<void> _loadSongs() async {
     final songs = await _audioQuery.querySongs(
-      sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
@@ -93,7 +92,6 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
 
     // Load albums for this artist
     final allAlbums = await _audioQuery.queryAlbums(
-      sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
@@ -231,7 +229,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             resizeToAvoidBottomInset: false,
             body: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
+              child: ColoredBox(
                 color: _dominantColor.withOpacity(0.1),
                 child: CustomScrollView(
                   controller: _scrollController,
@@ -299,7 +297,6 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                                 AppLocalizations.of(context)
                                     .translate('shuffle'),
                                 () => _shuffleAllSongs(context),
-                                isPrimary: false,
                               ),
                             ),
                           ],
@@ -362,11 +359,10 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     return SliverAppBar(
       backgroundColor: Colors.transparent,
       expandedHeight: 350,
-      floating: false,
       pinned: true,
       flexibleSpace: LayoutBuilder(
         builder: (context, constraints) {
-          var top = constraints.biggest.height;
+          final top = constraints.biggest.height;
           return FlexibleSpaceBar(
             centerTitle: true,
             title: top <= kToolbarHeight + 50
@@ -606,7 +602,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      builder: (context) => DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -629,8 +625,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: _artworkService.buildCachedAlbumArtwork(album.id,
-                        size: 50),
+                    child: _artworkService.buildCachedAlbumArtwork(album.id),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -760,7 +755,6 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                         borderRadius: BorderRadius.circular(8),
                         child: _artworkService.buildCachedArtwork(
                           song.id,
-                          size: 50,
                         ),
                       ),
                       title: Text(song.title,

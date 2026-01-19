@@ -262,7 +262,7 @@ class _SectionTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               color: (isDark ? Colors.white : Colors.black)
                   .withOpacity(isVisible ? 0.08 : 0.03),

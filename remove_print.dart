@@ -34,7 +34,7 @@ String? findProjectRoot(String scriptPath) {
 
 Future<void> removePrints(String directory) async {
   final directoryHandle = Directory(directory);
-  await for (var entity in directoryHandle.list(recursive: true)) {
+  await for (final entity in directoryHandle.list(recursive: true)) {
     if (entity is File && entity.path.endsWith('.dart')) {
       await processFile(entity.path);
     }

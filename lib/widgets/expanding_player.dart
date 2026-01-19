@@ -92,8 +92,6 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
     navigator
         .push<void>(
       PageRouteBuilder<void>(
-        opaque: true,
-        barrierDismissible: false,
         pageBuilder: (_, animation, secondaryAnimation) {
           return MultiProvider(
             providers: [
@@ -127,7 +125,6 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
             ),
           );
         },
-        transitionDuration: const Duration(milliseconds: 300),
         reverseTransitionDuration: const Duration(milliseconds: 250),
       ),
     )
@@ -199,7 +196,6 @@ class _MiniPlayerWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
         ),
       );
     } else {
@@ -209,12 +205,11 @@ class _MiniPlayerWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: colorScheme.outlineVariant.withOpacity(0.3),
-          width: 1,
         ),
       );
     }
 
-    final playerContent = Container(
+    final playerContent = DecoratedBox(
       decoration: playerDecoration,
       child: Stack(
         children: [
@@ -276,7 +271,7 @@ class _MiniPlayerWidget extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _PlayPauseButton(size: 46),
+                    const _PlayPauseButton(size: 46),
                     if (isTablet) ...[
                       const SizedBox(width: 4),
                       _SkipButton(),

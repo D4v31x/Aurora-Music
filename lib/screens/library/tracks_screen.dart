@@ -88,7 +88,7 @@ class _TracksScreenState extends State<TracksScreen>
     });
 
     try {
-      bool permissionStatus = await _audioQuery.permissionsStatus();
+      final bool permissionStatus = await _audioQuery.permissionsStatus();
 
       if (!permissionStatus) {
         // Don't automatically request permissions - let user decide
@@ -102,7 +102,6 @@ class _TracksScreenState extends State<TracksScreen>
 
       if (permissionStatus) {
         _allSongs = await _audioQuery.querySongs(
-          sortType: null,
           orderType: OrderType.ASC_OR_SMALLER,
           uriType: UriType.EXTERNAL,
           ignoreCase: true,
@@ -350,7 +349,6 @@ class _TracksScreenState extends State<TracksScreen>
             borderRadius: BorderRadius.circular(8),
             child: _artworkService.buildCachedArtwork(
               song.id,
-              size: 50,
             ),
           ),
           title: Text(

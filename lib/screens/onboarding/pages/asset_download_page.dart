@@ -32,7 +32,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
   bool _downloadAlbumArt = true;
   bool _downloadLyrics = true;
   bool _downloadOnWifiOnly = true;
-  bool _autoDownloadNewSongs = false;
+  final bool _autoDownloadNewSongs = false;
 
   @override
   void initState() {
@@ -247,7 +247,6 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                                 border: Border.all(
                                   color: (isDark ? Colors.white : Colors.black)
                                       .withOpacity(0.1),
-                                  width: 1,
                                 ),
                               ),
                               child: Row(
@@ -313,7 +312,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
     final descriptionColor =
         isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: (isDark ? Colors.white : Colors.black).withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),

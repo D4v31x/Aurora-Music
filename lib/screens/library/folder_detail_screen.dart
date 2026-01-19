@@ -9,7 +9,6 @@ import '../../services/artwork_cache_service.dart';
 import '../../localization/app_localizations.dart';
 import '../../widgets/glassmorphic_container.dart';
 import '../../widgets/app_background.dart';
-import '../../widgets/expanding_player.dart';
 import '../shared/detail_screen_mixin.dart';
 
 class FolderDetailScreen extends StatefulWidget {
@@ -132,7 +131,6 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
     return SliverAppBar(
       backgroundColor: Colors.transparent,
       expandedHeight: 350,
-      floating: false,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
@@ -250,7 +248,6 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                             borderRadius: BorderRadius.circular(8),
                             child: _artworkService.buildCachedArtwork(
                               song.id,
-                              size: 50,
                             ),
                           ),
                           title: Text(
@@ -309,7 +306,6 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
 
     return Scaffold(
       body: AppBackground(
-        enableAnimation: true,
         child: Stack(
           children: [
             // Content Layer

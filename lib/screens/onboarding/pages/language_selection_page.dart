@@ -366,7 +366,6 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                               await _exitController.forward();
                               widget.onContinue();
                             },
-                            isPrimary: true,
                           ),
                         ),
                       ],

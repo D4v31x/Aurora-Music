@@ -24,7 +24,7 @@ class FeedbackReminderService {
     }
 
     // Increment app open count
-    int openCount = (prefs.getInt(_appOpenCountKey) ?? 0) + 1;
+    final int openCount = (prefs.getInt(_appOpenCountKey) ?? 0) + 1;
     await prefs.setInt(_appOpenCountKey, openCount);
 
     // Don't show before minimum opens
@@ -52,7 +52,7 @@ class FeedbackReminderService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_lastPromptKey, DateTime.now().millisecondsSinceEpoch);
 
-    int count = (prefs.getInt(_promptCountKey) ?? 0) + 1;
+    final int count = (prefs.getInt(_promptCountKey) ?? 0) + 1;
     await prefs.setInt(_promptCountKey, count);
   }
 

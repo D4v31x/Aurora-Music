@@ -199,7 +199,6 @@ class _DonationPageState extends State<DonationPage>
                                 border: Border.all(
                                   color: (isDark ? Colors.white : Colors.black)
                                       .withOpacity(0.1),
-                                  width: 1,
                                 ),
                               ),
                               child: Row(
@@ -268,7 +267,7 @@ class _DonationPageState extends State<DonationPage>
   }) {
     final titleColor = isDark ? Colors.white : Colors.black;
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: (isDark ? Colors.white : Colors.black).withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),

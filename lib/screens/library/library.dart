@@ -2,6 +2,7 @@
 ///
 /// This library exports all screens related to browsing and managing
 /// the music library, including albums, artists, playlists, and tracks.
+library;
 
 export 'album_detail_screen.dart';
 export 'artist_detail_screen.dart';

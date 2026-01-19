@@ -172,7 +172,6 @@ class PillNavigationButtons extends StatelessWidget {
           child: PillButton(
             text: continueText,
             onPressed: onContinue,
-            isPrimary: true,
             isLoading: isLoading,
           ),
         ),

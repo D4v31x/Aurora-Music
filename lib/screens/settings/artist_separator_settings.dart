@@ -72,7 +72,7 @@ class _ArtistSeparatorSettingsScreenState
           ),
         ],
       ),
-      body: Container(
+      body: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -284,7 +284,7 @@ class _ArtistSeparatorSettingsScreenState
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             color: isDark
                 ? Colors.white.withOpacity(0.08)

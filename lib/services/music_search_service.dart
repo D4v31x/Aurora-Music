@@ -12,7 +12,7 @@ class MusicSearchService {
 
     final len1 = s1.length;
     final len2 = s2.length;
-    List<List<int>> d =
+    final List<List<int>> d =
         List.generate(len1 + 1, (_) => List.filled(len2 + 1, 0));
 
     for (int i = 0; i <= len1; i++) {

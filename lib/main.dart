@@ -53,7 +53,7 @@ void main() async {
 
     // Start parallel initialization for faster startup
     final parallelInit = Future.wait([
-      dotenv.load(fileName: ".env"),
+      dotenv.load(),
       SharedPreferences.getInstance(),
       ArtistSeparatorService().initialize(),
       HomeLayoutService().initialize(),
@@ -75,18 +75,17 @@ void main() async {
     final player = AudioPlayer();
     audioHandler = await AudioService.init(
       builder: () => AuroraAudioHandler(player),
-      config: AudioServiceConfig(
+      config: const AudioServiceConfig(
         androidNotificationChannelId: AppConfig.androidNotificationChannelId,
         androidNotificationChannelName:
             AppConfig.androidNotificationChannelName,
         androidNotificationOngoing: true,
-        androidStopForegroundOnPause: true,
       ),
     );
 
     // Initialize Clarity
     final clarityConfig = ClarityConfig(
-      projectId: "us5vyzjpfa",
+      projectId: 'us5vyzjpfa',
       logLevel: LogLevel.None,
     );
 
@@ -246,8 +245,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             home: Builder(
               builder: (context) {
                 // Wrap the entire app with the performance debug overlay and AppBackground widget
-                return PerformanceDebugOverlay(
-                  child: const SplashScreen(),
+                return const PerformanceDebugOverlay(
+                  child: SplashScreen(),
                 );
               },
             ),

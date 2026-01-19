@@ -81,8 +81,9 @@ class AutoScrollText extends HookWidget {
 
     // Start scrolling
     void startScrolling() {
-      if (!isMounted.value || isAnimating.value || !scrollController.hasClients)
+      if (!isMounted.value || isAnimating.value || !scrollController.hasClients) {
         return;
+      }
       isAnimating.value = true;
 
       const baseDuration = 2500;

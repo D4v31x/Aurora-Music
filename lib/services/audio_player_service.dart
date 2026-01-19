@@ -295,7 +295,6 @@ class AudioPlayerService extends ChangeNotifier {
       try {
         // Query with proper parameters to get all songs from external storage
         final songs = await _audioQuery.querySongs(
-          sortType: null,
           orderType: OrderType.ASC_OR_SMALLER,
           uriType: UriType.EXTERNAL,
           ignoreCase: true,
@@ -415,7 +414,6 @@ class AudioPlayerService extends ChangeNotifier {
         contentType: AndroidAudioContentType.music,
         usage: AndroidAudioUsage.media,
       ),
-      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
       androidWillPauseWhenDucked: true,
     ));
 
@@ -574,7 +572,7 @@ class AudioPlayerService extends ChangeNotifier {
 
   void addSongsToPlaylist(String playlistId, List<SongModel> songs) {
     if (playlistId == 'liked_songs') {
-      for (var song in songs) {
+      for (final song in songs) {
         if (!_likedSongs.contains(song.id.toString())) {
           _likedSongs.add(song.id.toString());
         }
@@ -583,7 +581,7 @@ class AudioPlayerService extends ChangeNotifier {
       _updateLikedSongsPlaylist();
     } else {
       final playlist = _playlists.firstWhere((p) => p.id == playlistId);
-      for (var song in songs) {
+      for (final song in songs) {
         if (!playlist.songs.contains(song)) {
           playlist.songs.add(song);
         }
@@ -636,7 +634,7 @@ class AudioPlayerService extends ChangeNotifier {
 
     if (song.artistId != null) {
       final artistNames = splitArtists(song.artist ?? '');
-      for (var artist in artistNames) {
+      for (final artist in artistNames) {
         _artistPlayCounts[artist] = (_artistPlayCounts[artist] ?? 0) + 1;
       }
     }
@@ -646,7 +644,7 @@ class AudioPlayerService extends ChangeNotifier {
 
     if (song.artist != null) {
       final artistNames = splitArtists(song.artist!);
-      for (var artist in artistNames) {
+      for (final artist in artistNames) {
         _artistPlayCounts[artist] = (_artistPlayCounts[artist] ?? 0) + 1;
       }
     }
@@ -676,7 +674,6 @@ class AudioPlayerService extends ChangeNotifier {
   // Most Played Queries
   Future<List<SongModel>> getMostPlayedTracks() async {
     final allSongs = await _audioQuery.querySongs(
-      sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
@@ -698,9 +695,9 @@ class AudioPlayerService extends ChangeNotifier {
     final allArtists = await _audioQuery.queryArtists();
     final artistPlayCounts = <String, int>{};
 
-    for (var artist in allArtists) {
+    for (final artist in allArtists) {
       final artistNames = splitArtists(artist.artist);
-      for (var name in artistNames) {
+      for (final name in artistNames) {
         artistPlayCounts[name] = (_artistPlayCounts[name] ?? 0);
       }
     }
@@ -920,7 +917,6 @@ class AudioPlayerService extends ChangeNotifier {
 
           await _audioPlayer.setAudioSource(
             AudioSource.uri(Uri.parse(url), tag: mediaItem),
-            preload: true,
           );
           await _audioPlayer.play();
         }
@@ -1414,7 +1410,6 @@ class AudioPlayerService extends ChangeNotifier {
           contentType: AndroidAudioContentType.music,
           usage: AndroidAudioUsage.media,
         ),
-        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
         androidWillPauseWhenDucked: true,
       ));
     } else {
@@ -1425,7 +1420,6 @@ class AudioPlayerService extends ChangeNotifier {
           contentType: AndroidAudioContentType.music,
           usage: AndroidAudioUsage.media,
         ),
-        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
         androidWillPauseWhenDucked: true,
       ));
 
@@ -1481,7 +1475,7 @@ class AudioPlayerService extends ChangeNotifier {
         files.sort(
             (a, b) => a.statSync().accessed.compareTo(b.statSync().accessed));
         var currentSize = totalSize;
-        for (var file in files) {
+        for (final file in files) {
           if (currentSize <= _cacheSize * 1024 * 1024) break;
           if (file is File) {
             final fileSize = file.lengthSync();
@@ -1505,7 +1499,7 @@ class AudioPlayerService extends ChangeNotifier {
         spotifyFiles.sort(
             (a, b) => a.statSync().accessed.compareTo(b.statSync().accessed));
         var currentSize = totalSize;
-        for (var file in spotifyFiles) {
+        for (final file in spotifyFiles) {
           if (currentSize <= _cacheSize * 1024 * 1024) break;
           if (file is File) {
             final fileSize = file.lengthSync();
@@ -1581,7 +1575,6 @@ class AudioPlayerService extends ChangeNotifier {
   // Add this new method
   Future<List<SongModel>> getRecentlyPlayed() async {
     final allSongs = await _audioQuery.querySongs(
-      sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
