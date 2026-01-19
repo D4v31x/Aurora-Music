@@ -477,8 +477,8 @@ class _SplashScreenState extends State<SplashScreen>
                               'assets/animations/Splash.json',
                               controller: _fadeController,
                               fit: BoxFit.contain,
-                              width: 320,
-                              height: 320,
+                              width: 520,
+                              height: 520,
                               frameRate: FrameRate.composition,
                               onLoaded: (composition) {
                                 _fadeController.duration = composition.duration;
