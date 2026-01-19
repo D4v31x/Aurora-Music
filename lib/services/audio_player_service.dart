@@ -427,6 +427,16 @@ class AudioPlayerService extends ChangeNotifier {
       _scheduleNotify();
     });
 
+    // Also listen to playingStream specifically - this is more reliable for
+    // catching play/pause changes from external sources like lock screen controls
+    _audioPlayer.playingStream.listen((playing) {
+      if (_isPlaying != playing) {
+        _isPlaying = playing;
+        isPlayingNotifier.value = playing;
+        _scheduleNotify();
+      }
+    });
+
     // Listen to track index changes for gapless playback
     // This fires when just_audio automatically transitions to the next track
     _audioPlayer.currentIndexStream.listen((index) async {
@@ -988,6 +998,18 @@ class AudioPlayerService extends ChangeNotifier {
     _isPlaying = false;
     isPlayingNotifier.value = false;
     // No need for notifyListeners - ValueNotifier handles UI updates
+  }
+
+  /// Sync the internal playing state with the actual audio player state.
+  /// Call this when the app comes back to foreground to ensure UI reflects
+  /// any changes made via lock screen or notification controls.
+  void syncPlaybackState() {
+    final actuallyPlaying = _audioPlayer.playing;
+    if (_isPlaying != actuallyPlaying) {
+      _isPlaying = actuallyPlaying;
+      isPlayingNotifier.value = actuallyPlaying;
+      _scheduleNotify();
+    }
   }
 
   void skip() async {

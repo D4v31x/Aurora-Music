@@ -177,6 +177,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
+    // When app comes back to foreground, sync playback state
+    // This ensures UI reflects any changes made via lock screen controls
+    if (state == AppLifecycleState.resumed) {
+      try {
+        final audioService =
+            Provider.of<AudioPlayerService>(context, listen: false);
+        audioService.syncPlaybackState();
+      } catch (e) {
+        // Ignore errors if context is not available
+      }
+    }
+
     // When app is detached (swiped from recents), stop audio and clean up
     if (state == AppLifecycleState.detached) {
       _cleanupAndExit();
