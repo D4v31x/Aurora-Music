@@ -119,15 +119,9 @@ class ChangelogDialog extends StatelessWidget {
         color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: colorScheme.outlineVariant.withOpacity(0.3),
+          color: colorScheme.outlineVariant,
+          width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
       );
     }
 
@@ -164,24 +158,28 @@ class ChangelogDialog extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isDarkMode
-                      ? Colors.blue.withOpacity(0.2)
-                      : Colors.blue.withOpacity(0.1),
+                  color: shouldBlur
+                      ? (isDarkMode
+                          ? Colors.blue.withOpacity(0.2)
+                          : Colors.blue.withOpacity(0.1))
+                      : colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isDarkMode
-                        ? Colors.blue.withOpacity(0.3)
-                        : Colors.blue.withOpacity(0.2),
+                    color: shouldBlur
+                        ? (isDarkMode
+                            ? Colors.blue.withOpacity(0.3)
+                            : Colors.blue.withOpacity(0.2))
+                        : colorScheme.primary,
+                    width: 1,
                   ),
                 ),
                 child: Text(
                   'Version $currentVersion ($codename)',
                   style: TextStyle(
-                    color:
-                        isDarkMode ? Colors.blue[300] : Colors.blue[700],
+                    color: isDarkMode ? Colors.blue[300] : Colors.blue[700],
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     fontFamily: FontConstants.fontFamily,
@@ -205,8 +203,7 @@ class ChangelogDialog extends StatelessWidget {
                       // Dynamic changelog sections
                       ...changelogSections.expand((section) => [
                             ...section.entries.map((entry) => Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     _buildChangelogSection(
                                       entry.key,
@@ -220,9 +217,11 @@ class ChangelogDialog extends StatelessWidget {
 
                       // Privacy Notice Section
                       Divider(
-                        color: isDarkMode
-                            ? Colors.white.withOpacity(0.1)
-                            : Colors.black.withOpacity(0.1),
+                        color: shouldBlur
+                            ? (isDarkMode
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.black.withOpacity(0.1))
+                            : colorScheme.outlineVariant,
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -231,9 +230,8 @@ class ChangelogDialog extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontFamily: FontConstants.fontFamily,
-                          color: isDarkMode
-                              ? Colors.grey[400]
-                              : Colors.grey[600],
+                          color:
+                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -241,8 +239,7 @@ class ChangelogDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         onTap: _openPrivacyPolicy,
                         child: Padding(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 4.0),
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
                           child: Text(
                             AppLocalizations.of(context)
                                 .translate('privacy_policy_link'),
@@ -269,12 +266,14 @@ class ChangelogDialog extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               child: TextButton(
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  backgroundColor: shouldBlur
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : colorScheme.primaryContainer,
                 ),
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text(

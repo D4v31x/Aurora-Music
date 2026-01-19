@@ -44,17 +44,9 @@ class GlassmorphicContainer extends StatelessWidget {
             : colorScheme.surfaceContainerHighest,
         borderRadius: radius,
         border: Border.all(
-          color: isDark
-              ? colorScheme.outlineVariant.withOpacity(0.3)
-              : colorScheme.outline.withOpacity(0.2),
+          color: isDark ? colorScheme.outlineVariant : colorScheme.outline,
+          width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       );
 
       return RepaintBoundary(
@@ -141,10 +133,10 @@ class PerformanceBlur extends StatelessWidget {
 
 /// A utility function to build performance-aware blur effect.
 /// Returns a widget that applies blur only when device performance allows.
-/// 
+///
 /// Use this function when you need to wrap existing widgets with blur
 /// and can't use [GlassmorphicContainer].
-/// 
+///
 /// Example:
 /// ```dart
 /// buildPerformanceAwareBlur(

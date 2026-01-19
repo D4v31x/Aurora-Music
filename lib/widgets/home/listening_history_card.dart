@@ -3,6 +3,7 @@ import 'package:aurora_music_v01/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../services/audio_player_service.dart';
 import '../../services/artwork_cache_service.dart';
+import '../../services/background_manager_service.dart';
 import '../../models/utils.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -117,16 +118,18 @@ class ListeningHistoryCard extends StatelessWidget {
                 : Colors.black.withValues(alpha: 0.1),
           ),
         ),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  // Artwork
-                  Hero(
-                    tag: 'nowPlayingArtwork_home',
-                    child: Container(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    // Artwork
+                    Hero(
+                      tag: 'nowPlayingArtwork_home',
+                      child: Container(
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
@@ -233,26 +236,24 @@ class ListeningHistoryCard extends StatelessWidget {
                           .clamp(0.0, 1.0)
                       : 0.0;
 
+                  // Get light vibrant color from artwork
+                  final backgroundManager =
+                      Provider.of<BackgroundManagerService>(context);
+                  final progressColor =
+                      backgroundManager.currentColors.length > 2
+                          ? backgroundManager.currentColors[2]
+                          : (backgroundManager.currentColors.isNotEmpty
+                              ? backgroundManager.currentColors.first
+                              : theme.colorScheme.primary);
+
                   return Container(
                     height: 3,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(16),
-                        bottomRight: Radius.circular(16),
-                      ),
-                    ),
+                    color: progressColor.withValues(alpha: 0.15),
                     child: FractionallySizedBox(
                       alignment: Alignment.centerLeft,
                       widthFactor: progress,
                       child: Container(
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary,
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(16),
-                            bottomRight: Radius.circular(16),
-                          ),
-                        ),
+                        color: progressColor,
                       ),
                     ),
                   );
@@ -260,6 +261,7 @@ class ListeningHistoryCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

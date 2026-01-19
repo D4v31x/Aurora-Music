@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:mesh/mesh.dart';
+import 'package:provider/provider.dart';
 import 'dart:math' as math;
+import '../providers/performance_mode_provider.dart';
 
 class GrainyGradientBackground extends HookWidget {
   final Widget child;
@@ -9,6 +11,9 @@ class GrainyGradientBackground extends HookWidget {
   final AlignmentGeometry begin;
   final AlignmentGeometry end;
   final double noiseOpacity;
+
+  /// If true, forces simple mode regardless of device performance
+  final bool forceSimple;
 
   const GrainyGradientBackground({
     super.key,
@@ -21,10 +26,21 @@ class GrainyGradientBackground extends HookWidget {
     this.begin = Alignment.topLeft,
     this.end = Alignment.bottomRight,
     this.noiseOpacity = 0.05,
+    this.forceSimple = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Check performance mode - use simple background for low-end devices
+    final performanceProvider = context.watch<PerformanceModeProvider>();
+    final useSimpleBackground = forceSimple ||
+        performanceProvider.isLowEndDevice ||
+        !performanceProvider.shouldEnableAnimatedGradients;
+
+    if (useSimpleBackground) {
+      return _buildSimpleBackground(context);
+    }
+
     final controller = useAnimationController(
       duration: const Duration(seconds: 12),
     )..repeat();
@@ -40,6 +56,17 @@ class GrainyGradientBackground extends HookWidget {
         // Content
         child,
       ],
+    );
+  }
+
+  /// Simple solid background for low-end devices
+  /// Uses a solid Material You surface color for better performance
+  Widget _buildSimpleBackground(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      color: colorScheme.surface,
+      child: child,
     );
   }
 

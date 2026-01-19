@@ -104,10 +104,11 @@ class ArtworkCacheService {
     } catch (e) {}
   }
 
-  Future<ImageProvider<Object>> getCachedImageProvider(int id) async {
+  Future<ImageProvider<Object>> getCachedImageProvider(int id,
+      {bool highQuality = false}) async {
     try {
-      // Synchronous check - if in cache, return immediately
-      if (_imageProviderCache.containsKey(id)) {
+      // For high quality, don't use cached thumbnail-quality images
+      if (!highQuality && _imageProviderCache.containsKey(id)) {
         _updateAccessOrder(id, false);
         final cachedProvider = _imageProviderCache[id];
         if (cachedProvider != null) {
@@ -116,14 +117,17 @@ class ArtworkCacheService {
       }
 
       _evictLRUIfNeeded(false);
-      final artwork = await _getArtwork(id);
+      final artwork = await _getArtwork(id, highQuality: highQuality);
       final ImageProvider<Object> provider = artwork != null
           ? MemoryImage(artwork)
           : const AssetImage('assets/images/logo/default_art.png')
               as ImageProvider<Object>;
 
-      _imageProviderCache[id] = provider;
-      _updateAccessOrder(id, false);
+      // Only cache low-quality thumbnails to avoid memory issues
+      if (!highQuality) {
+        _imageProviderCache[id] = provider;
+        _updateAccessOrder(id, false);
+      }
       return provider;
     } catch (e) {
       return const AssetImage('assets/images/logo/default_art.png');
@@ -139,9 +143,11 @@ class ArtworkCacheService {
     return null;
   }
 
-  Future<Uint8List?> _getArtwork(int id) async {
-    // Only return cached value if it's not null
-    if (_artworkCache.containsKey(id) && _artworkCache[id] != null) {
+  Future<Uint8List?> _getArtwork(int id, {bool highQuality = false}) async {
+    // Only return cached value for low-quality requests
+    if (!highQuality &&
+        _artworkCache.containsKey(id) &&
+        _artworkCache[id] != null) {
       return _artworkCache[id];
     }
 
@@ -149,12 +155,12 @@ class ArtworkCacheService {
       final artwork = await _audioQuery.queryArtwork(
         id,
         ArtworkType.AUDIO,
-        quality: _thumbnailQuality,
-        size: _thumbnailSize,
+        quality: highQuality ? 100 : _thumbnailQuality,
+        size: highQuality ? 500 : _thumbnailSize,
       );
 
-      // Only cache if we got valid artwork
-      if (artwork != null && artwork.isNotEmpty) {
+      // Only cache low-quality thumbnails to save memory
+      if (!highQuality && artwork != null && artwork.isNotEmpty) {
         _artworkCache[id] = artwork;
         _updateAccessOrder(id, false);
       }

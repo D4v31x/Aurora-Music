@@ -1094,6 +1094,12 @@ abstract class AppLocalizations {
   /// **'Easy on the eyes in low light'**
   String get onboardingDarkModeDesc;
 
+  /// No description provided for @alwaysOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Always On'**
+  String get alwaysOn;
+
   /// No description provided for @onboardingDownloadsSubtitle.
   ///
   /// In en, this message translates to:

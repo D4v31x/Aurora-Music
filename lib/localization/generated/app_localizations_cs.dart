@@ -522,6 +522,9 @@ class AppLocalizationsCs extends AppLocalizations {
   String get onboardingDarkModeDesc => 'Šetrné pro oči při slabém osvětlení';
 
   @override
+  String get alwaysOn => 'Vždy zapnuto';
+
+  @override
   String get onboardingDownloadsSubtitle => 'Nastavte automatické stahování';
 
   @override

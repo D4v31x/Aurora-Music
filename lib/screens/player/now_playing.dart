@@ -354,8 +354,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
   Future<void> _updateArtwork(SongModel song) async {
     try {
-      // Use centralized artwork service
-      final provider = await _artworkService.getCachedImageProvider(song.id);
+      // Use centralized artwork service with high quality for now playing screen
+      final provider = await _artworkService.getCachedImageProvider(song.id,
+          highQuality: true);
 
       if (mounted) {
         setState(() {

@@ -9,7 +9,7 @@ import '../services/background_manager_service.dart';
 /// A beautiful animated background that displays heavily blurred artwork
 /// with smooth transitions.
 /// Performance-aware: Respects device performance mode for blur effects.
-/// 
+///
 /// Optimized for:
 /// - Reduced GPU load by wrapping blur layers in RepaintBoundary
 /// - Throttled artwork updates to prevent excessive rebuilds
@@ -173,22 +173,25 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
 
         // Overlay for better text readability
         Container(
-          color: Colors.black.withValues(alpha: 0.3),
+          color: shouldBlur
+              ? Colors.black.withValues(alpha: 0.3)
+              : Colors.black.withValues(alpha: 0.6),
         ),
 
-        // Vignette effect for depth
-        Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              radius: 1.2,
-              colors: [
-                Colors.transparent,
-                Colors.black.withValues(alpha: 0.3),
-              ],
-              stops: const [0.5, 1.0],
+        // Vignette effect for depth - only apply in high-end mode
+        if (shouldBlur)
+          Container(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                radius: 1.2,
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.3),
+                ],
+                stops: const [0.5, 1.0],
+              ),
             ),
           ),
-        ),
 
         // Child content
         widget.child,
@@ -211,23 +214,9 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
           fallbackColor: fallbackColor,
         ),
 
-        // Overlay for better text readability
+        // Solid dark overlay for better text readability in low-end mode
         Container(
-          color: Colors.black.withValues(alpha: 0.3),
-        ),
-
-        // Vignette effect for depth
-        Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              radius: 1.2,
-              colors: [
-                Colors.transparent,
-                Colors.black.withValues(alpha: 0.3),
-              ],
-              stops: const [0.5, 1.0],
-            ),
-          ),
+          color: Colors.black.withValues(alpha: 0.6),
         ),
 
         // Child content
@@ -261,9 +250,9 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
               ),
             )
           else
-            // Fallback: darker overlay instead of blur for low-end devices
+            // Fallback: solid darker overlay instead of blur for low-end devices
             Container(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: Colors.black.withValues(alpha: 0.6),
             ),
         ],
       ),
@@ -315,9 +304,9 @@ class SimpleBlurredBackground extends StatelessWidget {
           AnimatedColorPointsBackground(
             fallbackColor: surfaceColor,
           ),
-          // Overlay for better text readability
+          // Solid overlay for better text readability in low-end mode
           Container(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withValues(alpha: 0.6),
           ),
           child,
         ],

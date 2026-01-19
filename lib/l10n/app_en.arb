@@ -166,6 +166,7 @@
   "onboardingContinue": "Continue",
   "onboardingDarkMode": "Dark Mode",
   "onboardingDarkModeDesc": "Easy on the eyes in low light",
+  "alwaysOn": "Always On",
   "onboardingDownloadsSubtitle": "Configure automatic downloads",
   "onboardingDownloadsTitle": "Download Settings",
   "onboardingDynamicColors": "Dynamic Colors",

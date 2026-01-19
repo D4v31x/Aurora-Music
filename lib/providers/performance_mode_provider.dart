@@ -120,6 +120,16 @@ class PerformanceModeProvider extends ChangeNotifier {
   /// Check if blur effects should be enabled
   bool get shouldEnableBlur => animationSettings.enableBlur;
 
+  /// Check if this is a low-end device (performance mode is low)
+  bool get isLowEndDevice => _currentMode == PerformanceLevel.low;
+
+  /// Check if glassmorphic effects should be used
+  bool get shouldEnableGlassmorphic => _currentMode != PerformanceLevel.low;
+
+  /// Check if gradient backgrounds should be animated
+  bool get shouldEnableAnimatedGradients =>
+      _currentMode == PerformanceLevel.high;
+
   /// Get the recommended frame rate
   int get targetFrameRate => animationSettings.frameRate;
 

@@ -126,6 +126,7 @@ class OnboardingScreen extends HookWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return GrainyGradientBackground(
+      forceSimple: true, // TODO: Remove after testing low-end mode
       colors: themeProvider.currentGradientColors,
       noiseOpacity: 0.08,
       child: Scaffold(

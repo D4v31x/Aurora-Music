@@ -204,7 +204,8 @@ class _MiniPlayerWidget extends StatelessWidget {
         color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: colorScheme.outlineVariant.withOpacity(0.3),
+          color: colorScheme.outlineVariant,
+          width: 1,
         ),
       );
     }
@@ -391,6 +392,15 @@ class _ProgressBar extends StatelessWidget {
                 .clamp(0.0, 1.0)
             : 0.0;
 
+        // Get light vibrant color from artwork
+        final backgroundManager =
+            Provider.of<BackgroundManagerService>(context);
+        final progressColor = backgroundManager.currentColors.length > 2
+            ? backgroundManager.currentColors[2]
+            : (backgroundManager.currentColors.isNotEmpty
+                ? backgroundManager.currentColors.first
+                : Theme.of(context).colorScheme.primary);
+
         return SizedBox(
           height: 3,
           child: ClipRRect(
@@ -400,7 +410,7 @@ class _ProgressBar extends StatelessWidget {
               value: progress,
               backgroundColor: Colors.white.withValues(alpha: 0.1),
               valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.primary,
+                progressColor,
               ),
               minHeight: 3,
             ),

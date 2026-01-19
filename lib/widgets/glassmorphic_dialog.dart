@@ -57,15 +57,9 @@ class GlassmorphicDialog extends StatelessWidget {
         color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: colorScheme.outlineVariant.withOpacity(0.3),
+          color: colorScheme.outlineVariant,
+          width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
       );
     }
 
@@ -97,7 +91,9 @@ class GlassmorphicDialog extends StatelessWidget {
                   fontFamily: FontConstants.fontFamily,
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: shouldBlur
+                      ? Colors.white.withValues(alpha: 0.8)
+                      : colorScheme.onSurface,
                 ),
                 child: content!,
               ),

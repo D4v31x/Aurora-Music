@@ -209,19 +209,10 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                             : _contentFadeAnimation,
                         child: Column(
                           children: [
-                            // Dark mode display (app is dark mode only)
-                            _buildThemeOption(
+                            // Dark mode info card (not a toggle - app is dark mode only)
+                            _buildDarkModeInfoCard(
                               context: context,
-                              title: AppLocalizations.of(context)
-                                  .translate('onboarding_dark_mode'),
-                              description: AppLocalizations.of(context)
-                                  .translate('onboarding_dark_mode_desc'),
-                              icon: Icons.dark_mode_rounded,
-                              isSelected: true,
                               isDark: isDark,
-                              onTap: () {
-                                // Dark mode is always enabled
-                              },
                             ),
 
                             const SizedBox(height: 24),
@@ -262,7 +253,8 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                                   .translate(
                                                       'onboarding_dynamic_colors'),
                                               style: TextStyle(
-                                                fontFamily: FontConstants.fontFamily,
+                                                fontFamily:
+                                                    FontConstants.fontFamily,
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
                                                 color: textColor,
@@ -274,7 +266,8 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                                   .translate(
                                                       'onboarding_dynamic_colors_desc'),
                                               style: TextStyle(
-                                                fontFamily: FontConstants.fontFamily,
+                                                fontFamily:
+                                                    FontConstants.fontFamily,
                                                 fontSize: 14,
                                                 color: subtitleColor,
                                               ),
@@ -325,97 +318,89 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
     );
   }
 
-  Widget _buildThemeOption({
+  /// Non-interactive info card showing dark mode is always enabled
+  Widget _buildDarkModeInfoCard({
     required BuildContext context,
-    required String title,
-    required String description,
-    required IconData icon,
-    required bool isSelected,
     required bool isDark,
-    required VoidCallback onTap,
   }) {
     final textColor = isDark ? Colors.white : Colors.black;
-    final textOpacity = isDark ? 0.9 : 0.8;
-    final descriptionColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
-    final borderColor =
-        isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
-    final containerColor = isDark
-        ? Colors.white.withOpacity(0.05)
-        : Colors.black.withOpacity(0.05);
-    final iconColor =
+    final subtitleColor =
         isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withOpacity(0.03)
+            : Colors.black.withOpacity(0.03),
         borderRadius: BorderRadius.circular(16),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
-                : containerColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected
-                  ? Theme.of(context).colorScheme.primary
-                  : borderColor,
-              width: 2,
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.08)
+              : Colors.black.withOpacity(0.08),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.dark_mode_rounded,
+              size: 24,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 32,
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : iconColor,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontFamily: FontConstants.fontFamily,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: isSelected
-                            ? Theme.of(context).colorScheme.primary
-                            : textColor.withOpacity(textOpacity),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        fontFamily: FontConstants.fontFamily,
-                        fontSize: 14,
-                        color: descriptionColor,
-                      ),
-                    ),
-                  ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)
+                      .translate('onboarding_dark_mode'),
+                  style: TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
                 ),
-              ),
-              AnimatedOpacity(
-                duration: const Duration(milliseconds: 300),
-                opacity: isSelected ? 1.0 : 0.0,
-                child: Icon(
-                  Icons.check_circle,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 28,
+                const SizedBox(height: 4),
+                Text(
+                  AppLocalizations.of(context)
+                      .translate('onboarding_dark_mode_desc'),
+                  style: TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    fontSize: 14,
+                    color: subtitleColor,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              AppLocalizations.of(context).translate('always_on'),
+              style: TextStyle(
+                fontFamily: FontConstants.fontFamily,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

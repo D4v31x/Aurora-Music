@@ -411,7 +411,8 @@ class _LibraryTabState extends State<LibraryTab> {
         color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: colorScheme.outlineVariant.withOpacity(0.3),
+          color: colorScheme.outlineVariant,
+          width: 1,
         ),
       );
     }
@@ -618,7 +619,8 @@ class _LibraryTabState extends State<LibraryTab> {
         color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: colorScheme.outlineVariant.withOpacity(0.3),
+          color: colorScheme.outlineVariant,
+          width: 1,
         ),
       );
     }

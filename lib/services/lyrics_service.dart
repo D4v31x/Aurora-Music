@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 
 class TimedLyricsService {
   static const String apiBaseUrl = 'https://lrclib.net/api';
+  static const Duration _apiTimeout = Duration(seconds: 5);
 
   void Function(String)? _onLog;
 
@@ -92,7 +93,7 @@ class TimedLyricsService {
 
       _log('Searching with EXACT names (no cleaning)');
       _log('─' * 60);
-      _log('METHOD 1: Direct API Search (/get)');
+      _log('METHOD 1 & 2: Parallel API Search (Direct + Search)');
       _log('Search Artist: "$searchArtist"');
       _log('Search Title: "$searchTitle"');
 
@@ -101,23 +102,38 @@ class TimedLyricsService {
         'track_name': searchTitle,
       });
 
-      _log('Request URL: $directUrl');
+      final searchUrl =
+          Uri.parse('$apiBaseUrl/search').replace(queryParameters: {
+        'artist_name': searchArtist,
+        'track_name': searchTitle,
+      });
 
-      final directResponse = await http.get(
-        directUrl,
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'AuroraMusic v0.0.85'
-        },
-      );
+      _log('Direct URL: $directUrl');
+      _log('Search URL: $searchUrl');
 
-      _log('Response Status: ${directResponse.statusCode}');
-      if (directResponse.body.isNotEmpty) {
-        _log('Response Body Length: ${directResponse.body.length} bytes');
-      } else {
-        _log('Response Body: Empty');
-      }
+      // Run both API calls in parallel for faster results
+      final results = await Future.wait([
+        http.get(
+          directUrl,
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'AuroraMusic v0.0.85'
+          },
+        ).timeout(_apiTimeout, onTimeout: () => http.Response('', 408)),
+        http.get(
+          searchUrl,
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'AuroraMusic v0.0.85'
+          },
+        ).timeout(_apiTimeout, onTimeout: () => http.Response('', 408)),
+      ]);
 
+      final directResponse = results[0];
+      final searchResponse = results[1];
+
+      // Try direct response first
+      _log('Direct Response Status: ${directResponse.statusCode}');
       if (directResponse.statusCode == 200 && directResponse.body.isNotEmpty) {
         final directData = json.decode(utf8.decode(directResponse.bodyBytes));
         if (directData != null && directData['syncedLyrics'] != null) {
@@ -141,41 +157,13 @@ class TimedLyricsService {
           _log('✓ USING direct match result');
           _log('=' * 60);
           return lyrics;
-        } else {
-          _log('✗ Response has no synced lyrics');
         }
       }
 
-      // If direct search fails, try search API
-      _log('─' * 60);
-      _log('METHOD 2: Search API (/search)');
-      _log('Search Artist: "$searchArtist"');
-      _log('Search Title: "$searchTitle"');
+      // Process search response
+      _log('Search Response Status: ${searchResponse.statusCode}');
 
-      final searchUrl =
-          Uri.parse('$apiBaseUrl/search').replace(queryParameters: {
-        'artist_name': searchArtist,
-        'track_name': searchTitle,
-      });
-
-      _log('Request URL: $searchUrl');
-
-      final searchResponse = await http.get(
-        searchUrl,
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'AuroraMusic v0.0.85'
-        },
-      );
-
-      _log('Response Status: ${searchResponse.statusCode}');
-      if (searchResponse.body.isNotEmpty) {
-        _log('Response Body Length: ${searchResponse.body.length} bytes');
-      } else {
-        _log('Response Body: Empty');
-      }
-
-      if (searchResponse.statusCode == 200) {
+      if (searchResponse.statusCode == 200 && searchResponse.body.isNotEmpty) {
         final List searchResults =
             json.decode(utf8.decode(searchResponse.bodyBytes));
 

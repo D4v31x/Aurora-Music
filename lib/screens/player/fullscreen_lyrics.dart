@@ -104,7 +104,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     if (song == null) return;
 
     try {
-      final provider = await _artworkService.getCachedImageProvider(song.id);
+      final provider = await _artworkService.getCachedImageProvider(song.id,
+          highQuality: true);
       if (!mounted) return;
 
       setState(() {
@@ -442,7 +443,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context).translate('artists'),
                   labelStyle: const TextStyle(
-                      color: Colors.white70, fontFamily: FontConstants.fontFamily),
+                      color: Colors.white70,
+                      fontFamily: FontConstants.fontFamily),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.white24),
@@ -461,7 +463,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context).translate('title'),
                   labelStyle: const TextStyle(
-                      color: Colors.white70, fontFamily: FontConstants.fontFamily),
+                      color: Colors.white70,
+                      fontFamily: FontConstants.fontFamily),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.white24),
@@ -480,7 +483,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               child: Text(
                 AppLocalizations.of(context).translate('cancel'),
                 style: const TextStyle(
-                    color: Colors.white70, fontFamily: FontConstants.fontFamily),
+                    color: Colors.white70,
+                    fontFamily: FontConstants.fontFamily),
               ),
             ),
             TextButton(
@@ -682,7 +686,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               child: Text(
                 AppLocalizations.of(context).translate('cancel'),
                 style: const TextStyle(
-                    color: Colors.white70, fontFamily: FontConstants.fontFamily),
+                    color: Colors.white70,
+                    fontFamily: FontConstants.fontFamily),
               ),
             ),
           ],
@@ -812,7 +817,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                   child: Text(
                     AppLocalizations.of(context).translate('reset'),
                     style: const TextStyle(
-                        color: Colors.white70, fontFamily: FontConstants.fontFamily),
+                        color: Colors.white70,
+                        fontFamily: FontConstants.fontFamily),
                   ),
                 ),
               ],
@@ -823,7 +829,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 child: Text(
                   AppLocalizations.of(context).translate('cancel'),
                   style: const TextStyle(
-                      color: Colors.white70, fontFamily: FontConstants.fontFamily),
+                      color: Colors.white70,
+                      fontFamily: FontConstants.fontFamily),
                 ),
               ),
               TextButton(

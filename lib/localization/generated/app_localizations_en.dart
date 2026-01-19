@@ -522,6 +522,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingDarkModeDesc => 'Easy on the eyes in low light';
 
   @override
+  String get alwaysOn => 'Always On';
+
+  @override
   String get onboardingDownloadsSubtitle => 'Configure automatic downloads';
 
   @override

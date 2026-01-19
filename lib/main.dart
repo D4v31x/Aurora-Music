@@ -18,7 +18,6 @@ import 'services/sleep_timer_controller.dart';
 import 'services/artist_separator_service.dart';
 import 'services/home_layout_service.dart';
 import 'localization/app_localizations.dart';
-import 'localization/generated/app_localizations.dart';
 import 'screens/splash_screen.dart';
 import 'localization/locale_provider.dart';
 import 'providers/theme_provider.dart';

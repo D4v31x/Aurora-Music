@@ -524,7 +524,12 @@ class _SettingsTabState extends State<SettingsTab> {
         backgroundColor: backgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: Colors.white.withOpacity(0.1)),
+          side: BorderSide(
+            color: shouldBlur
+                ? Colors.white.withOpacity(0.1)
+                : colorScheme.outlineVariant,
+            width: 1,
+          ),
         ),
         title: Text(
           l10n.translate('settings_cache_info'),
@@ -646,7 +651,12 @@ class _SettingsTabState extends State<SettingsTab> {
       backgroundColor: Colors.grey[900]?.withOpacity(shouldBlur ? 0.9 : 0.95),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        side: BorderSide(
+          color: shouldBlur
+              ? Colors.white.withOpacity(0.1)
+              : Theme.of(context).colorScheme.outlineVariant,
+          width: 1,
+        ),
       ),
       title: Text(
         l10n.translate('restart_required'),
@@ -767,7 +777,12 @@ class _SettingsTabState extends State<SettingsTab> {
       backgroundColor: backgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        side: BorderSide(
+          color: shouldBlur
+              ? Colors.white.withOpacity(0.1)
+              : colorScheme.outlineVariant,
+          width: 1,
+        ),
       ),
       title: Text(
         l10n.translate('update_available'),

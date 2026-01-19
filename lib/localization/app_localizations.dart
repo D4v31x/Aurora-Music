@@ -548,6 +548,8 @@ extension AppLocalizationsExtension on generated.AppLocalizations {
         return onboardingDarkMode;
       case 'onboarding_dark_mode_desc':
         return onboardingDarkModeDesc;
+      case 'always_on':
+        return alwaysOn;
       case 'onboarding_dynamic_colors':
         return onboardingDynamicColors;
       case 'onboarding_dynamic_colors_desc':
