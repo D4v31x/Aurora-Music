@@ -1,6 +1,32 @@
 class ChangelogContent {
   static const Map<String, List<Map<String, List<String>>>> versions = {
     // Latest version at the top
+    '0.1.15': [
+      {
+        'Screens': [
+          'Added all used packages',
+          'Added donation options in settings',
+        ],
+      },
+      {
+        'Performance Fixes': [
+          'Improved shaders warmup on app start',
+          'Various performance optimizations',
+        ],
+      },
+      {
+        'Under the Hood': [
+          'Upgrade to AGP 9.0.0',
+          'Upgrade to ndk 29',
+          'Recompiled native libraries to work with 16KB page size devices'
+        ],
+      },
+      {
+        'Others': [
+          'Various fixes and optimizations',
+        ],
+      },
+    ],
     '0.1.5': [
       {
         'New Features': [

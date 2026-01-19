@@ -20,7 +20,7 @@ class ChangelogDialog extends StatelessWidget {
   });
 
   Future<void> _openPrivacyPolicy() async {
-    const url = 'https://d4v31x.github.io/Aurora_WEB/terms.html';
+    const url = 'https://aurorasoftware.netlify.app/terms.html';
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     }

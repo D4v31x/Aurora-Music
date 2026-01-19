@@ -47,22 +47,29 @@ void main() async {
     // Ensure Flutter bindings are initialized
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Load environment variables
-    await dotenv.load(fileName: ".env");
+    // Configure memory management early for better startup memory usage
+    ImageCache().maximumSize = AppConfig.imageCacheMaxSize;
+    ImageCache().maximumSizeBytes = AppConfig.imageCacheMaxSizeBytes;
 
-    // Initialize artist separator service
-    await ArtistSeparatorService().initialize();
+    // Start parallel initialization for faster startup
+    final parallelInit = Future.wait([
+      dotenv.load(fileName: ".env"),
+      SharedPreferences.getInstance(),
+      ArtistSeparatorService().initialize(),
+      HomeLayoutService().initialize(),
+    ]);
 
-    // Initialize home layout service
-    await HomeLayoutService().initialize();
+    // Warmup shaders in parallel with other initialization
+    final shaderWarmup = ShaderWarmupService.warmupShaders();
 
-    // Warmup shaders for better performance
-    await ShaderWarmupService.warmupShaders();
-
-    // Load user preferences
-    final prefs = await SharedPreferences.getInstance();
+    // Wait for parallel initialization
+    final results = await parallelInit;
+    final prefs = results[1] as SharedPreferences;
     final languageCode =
         prefs.getString('languageCode') ?? AppConfig.defaultLanguageCode;
+
+    // Wait for shader warmup to complete
+    await shaderWarmup;
 
     // Initialize audio service with custom handler (no stop button in notification)
     final player = AudioPlayer();
@@ -76,10 +83,6 @@ void main() async {
         androidStopForegroundOnPause: true,
       ),
     );
-
-    // Configure memory management
-    ImageCache().maximumSize = AppConfig.imageCacheMaxSize;
-    ImageCache().maximumSizeBytes = AppConfig.imageCacheMaxSizeBytes;
 
     // Initialize Clarity
     final clarityConfig = ClarityConfig(

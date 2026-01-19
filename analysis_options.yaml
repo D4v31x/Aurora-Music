@@ -9,6 +9,13 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  errors:
+    # Treat these as warnings for better code quality
+    unused_local_variable: warning
+    unused_element: warning
+    dead_code: warning
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
@@ -21,8 +28,28 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    # Performance-focused lint rules
+    avoid_print: true  # Avoid print statements in production
+    prefer_const_constructors: true  # Use const where possible for performance
+    prefer_const_declarations: true  # Prefer const for immutable values
+    prefer_const_literals_to_create_immutables: true  # Use const for immutable collections
+    prefer_final_locals: true  # Use final for non-reassigned variables
+    prefer_final_in_for_each: true  # Use final in for-each loops
+    use_build_context_synchronously: true  # Prevent async context issues
+    avoid_unnecessary_containers: true  # Reduce widget tree depth
+    sized_box_for_whitespace: true  # Use SizedBox instead of Container for spacing
+    sized_box_shrink_expand: true  # Use SizedBox.shrink() and .expand()
+    use_key_in_widget_constructors: true  # Use keys for efficient widget rebuilds
+    prefer_single_quotes: true  # Consistent quote style
+    sort_child_properties_last: true  # Keep child property last for readability
+    use_colored_box: true  # Use ColoredBox instead of Container with just color
+    use_decorated_box: true  # Use DecoratedBox instead of Container with just decoration
+    avoid_redundant_argument_values: true  # Avoid redundant default values
+    unnecessary_await_in_return: true  # Remove unnecessary await
+    unawaited_futures: true  # Ensure futures are properly awaited
+    cancel_subscriptions: true  # Ensure stream subscriptions are cancelled
+    close_sinks: true  # Ensure sinks/controllers are closed
+    prefer_spread_collections: true  # Use spread operator for collections
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

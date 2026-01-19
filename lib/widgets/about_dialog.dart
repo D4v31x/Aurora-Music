@@ -3,6 +3,7 @@ import '../constants/font_constants.dart';
 import '../localization/app_localizations.dart';
 import '../widgets/glassmorphic_container.dart';
 import '../widgets/changelog_dialog.dart';
+import '../widgets/packages_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AuroraAboutDialog extends StatelessWidget {
@@ -29,6 +30,15 @@ class AuroraAboutDialog extends StatelessWidget {
       builder: (BuildContext context) => ChangelogDialog(
         currentVersion: version,
       ),
+    );
+  }
+
+  void _showPackages(BuildContext context) {
+    Navigator.pop(context); // Close about dialog first
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) => const PackagesDialog(),
     );
   }
 
@@ -101,7 +111,7 @@ class AuroraAboutDialog extends StatelessWidget {
                       _buildInfoRow(
                         icon: Icons.copyright,
                         title: 'Copyright',
-                        value: '© ${DateTime.now().year} Aurora Software',
+                        value: '© ${DateTime.now().year} Aurora Software CZ',
                       ),
 
                       const SizedBox(height: 24),
@@ -134,6 +144,36 @@ class AuroraAboutDialog extends StatelessWidget {
                         ),
                       ),
 
+                      const SizedBox(height: 12),
+
+                      // Open Source Packages Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showPackages(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple.withOpacity(0.2),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: Colors.purple.withOpacity(0.3),
+                              ),
+                            ),
+                          ),
+                          icon: const Icon(Icons.inventory_2_outlined),
+                          label: const Text(
+                            'Open Source Packages',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: FontConstants.fontFamily,
+                            ),
+                          ),
+                        ),
+                      ),
+
                       const SizedBox(height: 24),
                       const Divider(color: Colors.white24),
                       const SizedBox(height: 24),
@@ -156,7 +196,7 @@ class AuroraAboutDialog extends StatelessWidget {
                             icon: Icons.language,
                             label: 'Website',
                             onTap: () => _launchURL(
-                                'https://d4v31x.github.io/Aurora_WEB'),
+                                'https://aurorasoftware.netlify.app'),
                           ),
                           const SizedBox(width: 16),
                           _buildSocialButton(

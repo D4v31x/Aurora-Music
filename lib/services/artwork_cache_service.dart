@@ -12,8 +12,12 @@ class ArtworkCacheService {
   ArtworkCacheService._internal();
 
   // Cache size limits to prevent memory issues
-  static const int _maxArtworkCacheSize = 100;
-  static const int _maxArtistCacheSize = 50;
+  static const int _maxArtworkCacheSize = 80; // Reduced from 100
+  static const int _maxArtistCacheSize = 40; // Reduced from 50
+
+  // Artwork quality settings for performance
+  static const int _thumbnailQuality = 80; // Lower quality for list items
+  static const int _thumbnailSize = 200; // Smaller size for thumbnails
 
   final Map<int, Uint8List?> _artworkCache = {};
   final Map<int, ImageProvider<Object>?> _imageProviderCache = {};
@@ -85,13 +89,13 @@ class ArtworkCacheService {
         orderType: OrderType.DESC_OR_GREATER,
       );
 
-      // Načteme prvních 30 skladeb
-      final songsToPreload = songs.take(30).toList();
+      // Preload fewer songs for faster startup
+      final songsToPreload = songs.take(20).toList();
 
-      // Načteme artwork paralelně, ale s omezením na 5 současných požadavků
+      // Load artwork in parallel with smaller batch size for better responsiveness
       final chunks = <List<SongModel>>[];
-      for (var i = 0; i < songsToPreload.length; i += 5) {
-        chunks.add(songsToPreload.skip(i).take(5).toList());
+      for (var i = 0; i < songsToPreload.length; i += 4) {
+        chunks.add(songsToPreload.skip(i).take(4).toList());
       }
 
       for (var chunk in chunks) {
@@ -145,8 +149,8 @@ class ArtworkCacheService {
       final artwork = await _audioQuery.queryArtwork(
         id,
         ArtworkType.AUDIO,
-        quality: 100,
-        size: 500,
+        quality: _thumbnailQuality,
+        size: _thumbnailSize,
       );
 
       // Only cache if we got valid artwork
