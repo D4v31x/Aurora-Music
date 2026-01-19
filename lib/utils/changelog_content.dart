@@ -1,7 +1,7 @@
 class ChangelogContent {
   static const Map<String, List<Map<String, List<String>>>> versions = {
     // Latest version at the top
-    '0.1.15': [
+    '0.1.20': [
       {
         'Screens': [
           'Added all used packages',
