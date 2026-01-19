@@ -277,8 +277,7 @@ class _SearchTabState extends State<SearchTab> {
         child: Column(
           children: [
             // Fake search bar
-            ShimmerLoading(
-                height: 56, borderRadius: 28),
+            ShimmerLoading(height: 56, borderRadius: 28),
             SizedBox(height: 24),
             // Fake results
             ListSkeleton(),
