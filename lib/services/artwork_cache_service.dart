@@ -156,7 +156,7 @@ class ArtworkCacheService {
         id,
         ArtworkType.AUDIO,
         quality: highQuality ? 100 : _thumbnailQuality,
-        size: highQuality ? 500 : _thumbnailSize,
+        size: highQuality ? 1500 : _thumbnailSize,
       );
 
       // Only cache low-quality thumbnails to save memory

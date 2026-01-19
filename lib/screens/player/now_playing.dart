@@ -17,6 +17,7 @@ import '../../services/artwork_cache_service.dart'; // Centralized artwork cachi
 import '../../services/artist_separator_service.dart';
 import '../../services/background_manager_service.dart'; // Background artwork management
 import 'fullscreen_lyrics.dart'; // Fullscreen lyrics viewer
+import 'fullscreen_artwork.dart'; // Fullscreen album artwork viewer
 // Importujte službu pro timed lyrics
 import '../../widgets/artist_card.dart';
 import '../../widgets/album_card.dart';
@@ -374,35 +375,64 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     }
   }
 
-  // Optimized artwork display widget
-  Widget _buildArtwork() {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
+  // Open fullscreen artwork view with hero animation
+  void _openFullscreenArtwork() {
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return ChangeNotifierProvider<AudioPlayerService>.value(
+            value: audioPlayerService,
+            child: const FullscreenArtworkScreen(),
+          );
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+        reverseTransitionDuration: const Duration(milliseconds: 250),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: _currentArtwork != null
-            ? Image(
-                image: _currentArtwork!,
-                fit: BoxFit.cover,
-                gaplessPlayback: true, // Prevent flickering
-              )
-            : ColoredBox(
-                color: Colors.white.withOpacity(0.1),
-                child: Icon(
-                  Icons.music_note_rounded,
-                  color: Colors.white.withOpacity(0.3),
-                  size: 64,
+    );
+  }
+
+  // Optimized artwork display widget - tappable to open fullscreen view
+  Widget _buildArtwork() {
+    return GestureDetector(
+      onTap: _openFullscreenArtwork,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: _currentArtwork != null
+              ? Image(
+                  image: _currentArtwork!,
+                  fit: BoxFit.cover,
+                  gaplessPlayback: true, // Prevent flickering
+                )
+              : ColoredBox(
+                  color: Colors.white.withOpacity(0.1),
+                  child: Icon(
+                    Icons.music_note_rounded,
+                    color: Colors.white.withOpacity(0.3),
+                    size: 64,
+                  ),
                 ),
-              ),
+        ),
       ),
     );
   }
