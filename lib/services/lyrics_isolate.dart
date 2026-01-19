@@ -50,14 +50,14 @@ class LyricsIsolate {
         final milliseconds = minutes * 60000 + seconds * 1000;
 
         timedLyrics.add(TimedLyric(
-          timestamp: Duration(milliseconds: milliseconds),
+          time: Duration(milliseconds: milliseconds),
           text: text,
         ));
       }
     }
 
     // Sort by timestamp
-    timedLyrics.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    timedLyrics.sort((a, b) => a.time.compareTo(b.time));
 
     return timedLyrics;
   }
