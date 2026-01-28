@@ -5,7 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
-import '../../core/constants/font_constants.dart';
+import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import '../../mixins/models/utils.dart';
 import '../../mixins/services/audio_player_service.dart';
 import '../common/scrolling_text.dart';

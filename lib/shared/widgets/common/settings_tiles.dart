@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/font_constants.dart';
+import 'package:aurora_music_v01/core/constants/font_constants.dart';
 
 /// A section header for settings screens.
 class SettingsSectionHeader extends StatelessWidget {

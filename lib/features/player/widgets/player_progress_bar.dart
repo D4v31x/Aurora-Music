@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/font_constants.dart';
+import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import '../../mixins/services/audio_player_service.dart';
 import '../../mixins/utils/formatters/duration_formatter.dart';
 

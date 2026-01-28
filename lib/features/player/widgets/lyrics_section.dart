@@ -5,7 +5,7 @@ library;
 
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../../core/constants/font_constants.dart';
+import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import '../../l10n/app_localizations.dart';
 import '../../mixins/models/timed_lyrics.dart';
 import '../../features/player/screens/fullscreen_lyrics.dart';
