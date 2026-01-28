@@ -8,22 +8,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'dart:ui' as ui;
 
-import 'constants/app_config.dart';
-import 'services/audio_player_service.dart';
-import 'services/audio_handler.dart';
-import 'services/error_tracking_service.dart';
-import 'services/shader_warmup_service.dart';
-import 'services/background_manager_service.dart';
-import 'services/sleep_timer_controller.dart';
-import 'services/artist_separator_service.dart';
-import 'services/home_layout_service.dart';
-import 'localization/app_localizations.dart';
-import 'screens/splash_screen.dart';
-import 'localization/locale_provider.dart';
-import 'providers/theme_provider.dart';
-import 'providers/performance_mode_provider.dart';
-import 'widgets/performance_debug_overlay.dart';
-import 'widgets/expanding_player.dart';
+import 'core/constants/app_config.dart';
+import 'shared/services/audio_player_service.dart';
+import 'shared/services/audio_handler.dart';
+import 'shared/services/error_tracking_service.dart';
+import 'shared/services/shader_warmup_service.dart';
+import 'shared/services/background_manager_service.dart';
+import 'shared/services/sleep_timer_controller.dart';
+import 'shared/services/artist_separator_service.dart';
+import 'shared/services/home_layout_service.dart';
+import 'l10n/app_localizations.dart';
+import 'features/splash/splash_screen.dart';
+import 'l10n/locale_provider.dart';
+import 'shared/providers/theme_provider.dart';
+import 'shared/providers/performance_mode_provider.dart';
+import 'shared/widgets/performance_debug_overlay.dart';
+import 'shared/widgets/expanding_player.dart';
 
 /// Global navigator key for accessing navigator from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
