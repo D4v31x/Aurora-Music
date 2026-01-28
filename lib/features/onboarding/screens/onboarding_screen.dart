@@ -13,9 +13,9 @@ import '../pages/language_selection_page.dart';
 import '../pages/theme_selection_page.dart';
 import '../pages/internet_usage_page.dart';
 import '../pages/asset_download_page.dart';
-import 'pages/permissions_page.dart';
-import 'pages/completion_page.dart';
-import 'pages/donation_page.dart';
+import '../pages/permissions_page.dart';
+import '../pages/completion_page.dart';
+import '../pages/donation_page.dart';
 import '../../../shared/widgets/grainy_gradient_background.dart';
 
 class OnboardingScreen extends HookWidget {

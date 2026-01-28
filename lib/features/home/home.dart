@@ -4,4 +4,4 @@
 /// including the home screen which contains the main navigation tabs.
 library;
 
-export 'home_screen.dart';
+export 'screens/home_screen.dart';

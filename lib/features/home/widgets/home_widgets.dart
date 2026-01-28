@@ -6,8 +6,6 @@ library;
 
 // Main tabs
 export 'home_tab.dart';
-export 'search_tab.dart';
-export 'settings_tab.dart';
 export 'library_tab.dart';
 
 // Home tab sections

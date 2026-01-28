@@ -1,8 +1,13 @@
-/// Player-related screens.
+/// Player-related screens and widgets.
 ///
-/// This library exports all screens related to media playback,
-/// including the now playing screen and fullscreen lyrics.
+/// This library exports all screens and widgets related to media playback,
+/// including the now playing screen, fullscreen lyrics, and player controls.
 library;
 
-export 'now_playing.dart';
-export 'fullscreen_lyrics.dart';
+// Screens
+export 'screens/now_playing.dart';
+export 'screens/fullscreen_lyrics.dart';
+export 'screens/fullscreen_artwork.dart';
+
+// Widgets
+export 'widgets/player_widgets.dart';
