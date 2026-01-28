@@ -3,6 +3,8 @@
 /// This library exports all reusable UI components in the application,
 /// organized by category:
 /// - Core: Common UI components used throughout the app
+/// - Player: Player-specific reusable widgets
+/// - Common: Shared utility widgets
 /// - Home: Widgets specific to home screen tabs
 /// - Dialogs: Dialog and sheet components
 /// - Backgrounds: Background and visual effect widgets
@@ -23,6 +25,12 @@ export 'responsive_scaffold.dart';
 export 'expanding_player.dart';
 export 'toast_notification.dart';
 export 'song_picker_sheet.dart';
+
+// Player widgets
+export 'player/player.dart';
+
+// Common widgets
+export 'common/common.dart';
 
 // Dialogs and sheets
 export 'about_dialog.dart';
