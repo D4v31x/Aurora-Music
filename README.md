@@ -1,77 +1,102 @@
-![Music_bannerV2](https://github.com/user-attachments/assets/03b7a711-3f59-4161-ae08-33bc6a5444f6)
-
 # Aurora Music
 
-Welcome to **Aurora Music** - a powerful and feature-rich music player built with [Flutter](https://flutter.dev/). Aurora Music offers a seamless and customizable music experience, whether you're playing your local music files or streaming your favorite tracks from Spotify.
+Aurora Music is an Android-focused Flutter music player that scans the local library, delivers rich playback controls, and adds intelligent enhancements like timed lyrics, smart recommendations, and dynamic UI theming based on album art.
 
-## 🎵 Key Features (some not available at the moment)
+## Project Overview
+Aurora Music targets on-device playback with a modern, animated UI. The app integrates with Android media services for background playback and notifications, supports permissions-aware library scanning, and augments the experience with synced lyrics, metadata tools, and optional Spotify-powered artist imagery.
 
-- **🎧 Local Music Playback**  
-  Enjoy your personal music library with support for a wide range of audio formats.
+## Core Features (from code)
+- Local library scanning and playback (MediaStore via `on_audio_query`)
+- Background playback with media notification controls (`audio_service` + `just_audio`)
+- Mini player + full Now Playing view with shuffle/repeat, gapless playback, playback speed, and sleep timer
+- Synced lyrics fetching and caching (LRCLIB API) with full-screen lyrics view and sync offset controls
+- Smart suggestions based on listening history (time-of-day and day-of-week patterns)
+- Search across songs, albums, artists with fuzzy scoring
+- Playlists, liked songs, and auto playlists (Most Played, Recently Added, Recently Played)
+- Metadata editor (tag reading/writing) with auto-tag suggestions (Deezer/iTunes search)
+- Artwork caching, blurred backgrounds, and dynamic color theming (Material You + palette extraction)
+- Home screen layout customization (reorder/visibility of sections)
+- Bluetooth output detection and status monitoring
+- Batch download tool for lyrics and artwork with progress notifications
+- Localization support via generated `AppLocalizations`
+- Optional analytics/error tracking (`clarity_flutter` and custom error logging)
 
-- **📱 Responsive Design**  
-  Aurora Music adapts to various screen sizes and orientations, ensuring a consistent and immersive user experience across devices.
+## Supported Android Versions
+From [android/app/build.gradle](android/app/build.gradle):
+- minSdk: 29 (Android 10)
+- targetSdk: 35 (Android 15)
+- compileSdk: 36
 
-- **🎨 Customizable UI**  
-  Tailor the app's appearance to your liking with customizable themes, color schemes, and other visual settings.
+## Tech Stack & Key Dependencies
+- Flutter + Dart (SDK >= 3.3.3)
+- `just_audio` / `audio_service` / `audio_session`: playback engine, background audio, audio focus
+- `on_audio_query`: local media library access (songs, albums, artists)
+- `permission_handler`: runtime permission handling (media, notifications, Bluetooth, storage)
+- `provider`: app-wide state management
+- `shared_preferences`: settings and user preferences
+- `dynamic_color` + `palette_generator`: dynamic theming and artwork-based palettes
+- `http`: network calls for lyrics and metadata providers
+- `flutter_dotenv`: `.env` support (Spotify API credentials)
+- `spotify`: Spotify Web API (artist imagery)
+- `audiotags`: read/write audio metadata tags
+- `lottie`: animated splash screen
+- `share_plus` / `url_launcher`: sharing and external links
+- `device_info_plus` / `package_info_plus`: device and app version info
 
-- **🌐 Offline Access**  
-  Access and play your local music library even without an internet connection.
+## Architecture & Folder Structure
+The app follows a Provider + Services architecture with UI split into screens and reusable widgets.
 
-- **🎶 Playlist Management**  
-  Create, edit, and manage your playlists effortlessly. Explore both your personal and predefined playlists.
+- [lib/main.dart](lib/main.dart): app bootstrap, providers, theme/localization setup
+- [lib/services](lib/services): business logic (audio, lyrics, caching, suggestions, metadata, bluetooth)
+- [lib/providers](lib/providers): global state (theme, performance mode)
+- [lib/screens](lib/screens): high-level UI flows (home, onboarding, player, library, settings)
+- [lib/widgets](lib/widgets): reusable UI components (player, cards, dialogs, tabs)
+- [lib/models](lib/models): data models (playlists, timed lyrics, utilities)
+- [lib/localization](lib/localization) + [lib/l10n](lib/l10n): i18n setup
+- [lib/constants](lib/constants): configuration and style constants
+- [assets](assets): fonts, UI images, and animations
 
-- **🎤 Artist Exploration**  
-  Discover in-depth information about your favorite artists, including discographies and related artists.
+## Setup & Build
+### Prerequisites
+- Flutter SDK (Dart >= 3.3.3)
+- Android SDK with build tools 35.0.0
 
-- **ℹ️ Detailed Track Information**  
-  Get comprehensive details about each track, including album artwork, metadata, and playback controls.
+### Environment Variables (Optional)
+Spotify artist imagery is enabled only if `.env` contains:
+- `SPOTIFY_CLIENT_ID`
+- `SPOTIFY_CLIENT_SECRET`
 
-- **🌍 Multi-language Support**  
-  Aurora Music supports multiple languages, making it accessible to a global audience. (Now in Czech and English)
+### Debug Build
+1. Install dependencies: `flutter pub get`
+2. Run on device/emulator: `flutter run`
 
-## 🚀 Getting Started
+### Release Build
+1. `flutter pub get`
+2. `flutter build apk --release`
 
-Follow these steps to start enjoying Aurora Music on your Android device:
+Note: [android/app/build.gradle](android/app/build.gradle) currently uses debug signing for release and includes a TODO to add a proper signing configuration.
 
+## Permissions & Why They’re Used
+From [android/app/src/main/AndroidManifest.xml](android/app/src/main/AndroidManifest.xml):
+- `INTERNET` / `ACCESS_NETWORK_STATE`: lyrics, metadata lookups, Spotify artist images, version checks
+- `READ_MEDIA_AUDIO` / `READ_EXTERNAL_STORAGE`: read local audio library (Android 13+ / 12-)
+- `WRITE_EXTERNAL_STORAGE` (maxSdk 29) / `MANAGE_EXTERNAL_STORAGE`: metadata editing and file updates
+- `POST_NOTIFICATIONS`: playback and download status notifications
+- `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_MEDIA_PLAYBACK`: background audio playback
+- `WAKE_LOCK`: keep playback active when the screen is off
+- `BLUETOOTH`, `BLUETOOTH_ADMIN`, `BLUETOOTH_CONNECT`, `BLUETOOTH_SCAN`: detect Bluetooth output devices
 
-## Requirements
+## Known Limitations (based on code)
+- Lyrics are fetched from LRCLIB; if synced lyrics aren’t available for a track, no lyrics are shown.
+- Spotify artist images are disabled unless `.env` contains valid Spotify credentials.
+- Local library remains empty until media permissions are granted.
+- Metadata editing on Android 11+ requires `MANAGE_EXTERNAL_STORAGE` permission.
+- Search results lack a song options menu (see TODO in search tab).
 
-- **Android 10 and higher**
-- For the best experience **internet connection**
+## Roadmap / Future Improvements (from TODOs)
+- Add song options menu in search results (TODO in search tab)
+- Add proper release signing configuration in Gradle
+- Review and finalize application ID and release settings in Gradle
 
-### Installation
-
-1. **Enable Installation from Unknown Sources**  
-   Navigate to your device's settings and enable "Unknown Sources" to allow installations from sources other than the Google Play Store.
-
-2. **Download the APK**  
-   Visit the [latest release page](https://github.com/D4v31x/Aurora-Music/releases/latest) on GitHub to download the Aurora Music APK.
-
-3. **Install the APK**  
-   Locate the downloaded APK file and proceed with the installation on your Android device.
-
-4. **Play Protect issues**  
-   If you encounter pop up screen with Play Protect, requesting a scan, select option "Install without scanning". You can scan the app with it, but it will just take longer to install.
-
-
-## 📢 Disclaimer
-
-**Aurora Music is currently in Alpha phase.** This means the application may contain bugs, incomplete features, or exhibit unstable behavior. We are actively working on improvements and appreciate your feedback as we continue to refine and enhance the app. We also collect anonymous data to improve the app, and quickly discover bugs. You can see the Privacy Policy [here](https://d4v31x.github.io/Aurora_WEB/terms.html).
-
----
-
-### 📝 License
-
-Aurora Music is licensed under the [GNU GPLv3](LICENSE). See the LICENSE file for more details.
-
-### 📧 Contact
-
-For any questions, suggestions, or feedback, feel free to reach out via [e-mail](mailto:info.aurorasoftware@protonmail.com).
-
----
-
-<p align="center">
-  Made with ❤️ in Czech Republic.  
-  *Parts of the code are made by LLM. The project will gradually be dependent only on person coding.
-</p>
+## License
+Aurora Music is licensed under GNU GPLv3. See [LICENSE](LICENSE).
