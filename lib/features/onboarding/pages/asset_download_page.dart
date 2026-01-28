@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
-import '../../../../shared/providers/theme_provider.dart';
-import '../../../../shared/widgets/pill_button.dart';
+import '../../../shared/providers/theme_provider.dart';
+import '../../../shared/widgets/pill_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../l10n/app_localizations.dart';
+import '../../../l10n/app_localizations.dart';
 
 class AssetDownloadPage extends StatefulWidget {
   final VoidCallback onContinue;

@@ -9,19 +9,19 @@ import '../../../shared/models/utils.dart';
 import '../../library/screens/album_detail_screen.dart';
 import '../../library/screens/artist_detail_screen.dart';
 import '../../library/screens/folder_detail_screen.dart';
-import '../../library/screens/playlist_detail_screen.dart';
-import '../../library/screens/playlists_screen.dart';
+import '../../playlists/screens/playlist_detail_screen.dart';
+import '../../playlists/screens/playlists_screen.dart';
 import '../../library/screens/categories.dart';
 import '../../library/screens/tracks_screen.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
-import '../glassmorphic_card.dart';
-import '../shimmer_loading.dart';
+import '../../../shared/widgets/glassmorphic_card.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/utils/responsive_utils.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
 
-import '../expanding_player.dart';
+import '../../../shared/widgets/expanding_player.dart';
 
 class LibraryTab extends StatefulWidget {
   const LibraryTab({super.key});

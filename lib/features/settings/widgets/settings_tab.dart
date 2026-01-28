@@ -21,11 +21,11 @@ import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/cache_manager.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/donation_service.dart';
-import '../../features/settings/screens/artist_separator_settings.dart';
-import '../../features/settings/screens/home_layout_settings.dart';
+import '../screens/artist_separator_settings.dart';
+import '../screens/home_layout_settings.dart';
 import '../../../shared/utils/responsive_utils.dart';
-import '../glassmorphic_container.dart';
-import '../expanding_player.dart';
+import '../../../shared/widgets/glassmorphic_container.dart';
+import '../../../shared/widgets/expanding_player.dart';
 
 /// A glassmorphic settings tab with translations.
 class SettingsTab extends StatefulWidget {

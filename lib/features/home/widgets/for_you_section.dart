@@ -7,7 +7,7 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/local_caching_service.dart';
 import '../../../shared/models/playlist_model.dart';
-import '../../library/screens/playlist_detail_screen.dart';
+import '../../playlists/screens/playlist_detail_screen.dart';
 import '../../library/screens/album_detail_screen.dart';
 import '../../library/screens/artist_detail_screen.dart';
 import '../../../l10n/app_localizations.dart';

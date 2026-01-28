@@ -6,10 +6,10 @@ import 'package:audiotags/audiotags.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import '../../shared/services/audio_player_service.dart';
-import '../../shared/services/metadata_service.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/metadata_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/app_background.dart';
 
 class MetadataDetailScreen extends StatefulWidget {
   final SongModel song;

@@ -6,7 +6,7 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/utils.dart';
-import '../glassmorphic_container.dart';
+import '../../../shared/widgets/glassmorphic_container.dart';
 
 class MostPlayedSection extends StatefulWidget {
   const MostPlayedSection({super.key});

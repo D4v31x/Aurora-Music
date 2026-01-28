@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../library/screens/artist_detail_screen.dart';
 import '../../../shared/services/local_caching_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
-import '../glassmorphic_card.dart';
+import '../../../shared/widgets/glassmorphic_card.dart';
 
 class SuggestedArtistsSection extends StatelessWidget {
   final List<String> randomArtists;

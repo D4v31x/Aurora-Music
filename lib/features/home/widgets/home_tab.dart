@@ -6,7 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/services/local_caching_service.dart';
 import '../../../shared/services/home_layout_service.dart';
 import '../../../shared/utils/responsive_utils.dart';
-import '../expanding_player.dart';
+import '../../../shared/widgets/expanding_player.dart';
 import 'for_you_section.dart';
 import 'suggested_artists_section.dart';
 import 'recently_played_section.dart';

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
-import '../../../../shared/providers/theme_provider.dart';
-import '../../../../shared/services/donation_service.dart';
-import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/widgets/pill_button.dart';
+import '../../../shared/providers/theme_provider.dart';
+import '../../../shared/services/donation_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/pill_button.dart';
 
 class DonationPage extends StatefulWidget {
   final VoidCallback onContinue;
