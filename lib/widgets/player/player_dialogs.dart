@@ -272,15 +272,15 @@ void showSongInfoDialog(
                 const SizedBox(height: 16),
                 MusicMetadataWidget(song: audioPlayerService.currentSong!),
                 const SizedBox(height: 16),
-                _buildInfoRow('Title', audioPlayerService.currentSong!.title),
-                _buildInfoRow(
-                    'Artist',
-                    splitArtists(
+                InfoRow(label: 'Title', value: audioPlayerService.currentSong!.title),
+                InfoRow(
+                    label: 'Artist',
+                    value: splitArtists(
                             audioPlayerService.currentSong!.artist ?? 'Unknown')
                         .join(', ')),
-                _buildInfoRow('Album',
-                    audioPlayerService.currentSong!.album ?? 'Unknown'),
-                _buildInfoRow('Path', audioPlayerService.currentSong!.data),
+                InfoRow(label: 'Album',
+                    value: audioPlayerService.currentSong!.album ?? 'Unknown'),
+                InfoRow(label: 'Path', value: audioPlayerService.currentSong!.data),
               ],
             ),
           ),
@@ -290,31 +290,46 @@ void showSongInfoDialog(
   );
 }
 
-Widget _buildInfoRow(String label, String value) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
+/// A labeled info row widget for displaying label-value pairs.
+class InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final int maxLines;
+
+  const InfoRow({
+    super.key,
+    required this.label,
+    required this.value,
+    this.maxLines = 2,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+            ),
+            maxLines: maxLines,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }

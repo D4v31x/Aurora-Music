@@ -97,6 +97,7 @@ class ScrollingTextState extends State<ScrollingText> {
 
   @override
   void dispose() {
+    _showScrolling = false; // Stop the animation loop
     _scrollController.dispose();
     super.dispose();
   }

@@ -25,8 +25,10 @@ String formatDuration(Duration? duration) {
 }
 
 /// Format a [Duration] always including hours (HH:MM:SS).
+///
+/// Returns '00:00:00' for null durations (consistent width for UI layouts).
 String formatDurationWithHours(Duration? duration) {
-  if (duration == null) return '--:--:--';
+  if (duration == null) return '00:00:00';
 
   String twoDigits(int n) => n.toString().padLeft(2, '0');
 
