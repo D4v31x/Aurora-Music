@@ -1,5 +1,6 @@
-# Aurora Music
+![banner](https://github.com/user-attachments/assets/98b65d61-c230-4452-9997-cd10c93b0a22)
 
+# Aurora Music
 Aurora Music is an Android-focused Flutter music player that scans the local library, delivers rich playback controls, and adds intelligent enhancements like timed lyrics, smart recommendations, and dynamic UI theming based on album art.
 
 ## Project Overview
@@ -86,17 +87,6 @@ From [android/app/src/main/AndroidManifest.xml](android/app/src/main/AndroidMani
 - `WAKE_LOCK`: keep playback active when the screen is off
 - `BLUETOOTH`, `BLUETOOTH_ADMIN`, `BLUETOOTH_CONNECT`, `BLUETOOTH_SCAN`: detect Bluetooth output devices
 
-## Known Limitations (based on code)
-- Lyrics are fetched from LRCLIB; if synced lyrics aren’t available for a track, no lyrics are shown.
-- Spotify artist images are disabled unless `.env` contains valid Spotify credentials.
-- Local library remains empty until media permissions are granted.
-- Metadata editing on Android 11+ requires `MANAGE_EXTERNAL_STORAGE` permission.
-- Search results lack a song options menu (see TODO in search tab).
-
-## Roadmap / Future Improvements (from TODOs)
-- Add song options menu in search results (TODO in search tab)
-- Add proper release signing configuration in Gradle
-- Review and finalize application ID and release settings in Gradle
-
 ## License
 Aurora Music is licensed under GNU GPLv3. See [LICENSE](LICENSE).
+
