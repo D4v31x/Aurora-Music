@@ -57,6 +57,10 @@ class NowPlayingArtwork extends StatelessWidget {
   /// Hero tag for animations.
   final String heroTag;
 
+  /// Optional artwork cache service for dependency injection.
+  /// If not provided, a new instance will be created.
+  final ArtworkCacheService? artworkService;
+
   const NowPlayingArtwork({
     super.key,
     this.songId,
@@ -66,6 +70,7 @@ class NowPlayingArtwork extends StatelessWidget {
     this.artworkProvider,
     this.showShadow = true,
     this.heroTag = 'songArtwork',
+    this.artworkService,
   });
 
   @override
@@ -146,8 +151,9 @@ class NowPlayingArtwork extends StatelessWidget {
   /// Loads artwork from cache.
   Future<ImageProvider?> _loadArtwork() async {
     if (songId == null) return null;
-    final artworkService = ArtworkCacheService();
-    final bytes = await artworkService.getArtwork(songId!);
+    // Use injected service or create a new one
+    final service = artworkService ?? ArtworkCacheService();
+    final bytes = await service.getArtwork(songId!);
     if (bytes != null && bytes.isNotEmpty) {
       return MemoryImage(bytes);
     }

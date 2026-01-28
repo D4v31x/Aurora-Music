@@ -33,7 +33,7 @@ bool isValidFilePath(String? path) {
   }
 
   // Check for forbidden path patterns
-  for (final forbidden in kForbiddenPathChars) {
+  for (final forbidden in kForbiddenPathPatterns) {
     if (path.contains(forbidden)) {
       return false;
     }
@@ -52,7 +52,7 @@ String sanitizeFilePath(String path) {
   sanitized = sanitized.replaceAll('\x00', '');
 
   // Remove potentially dangerous patterns
-  for (final forbidden in kForbiddenPathChars) {
+  for (final forbidden in kForbiddenPathPatterns) {
     sanitized = sanitized.replaceAll(forbidden, '');
   }
 
@@ -143,13 +143,20 @@ String sanitizeSearchInput(String input) {
 
 /// Sanitizes metadata strings (track names, artist names, etc.).
 ///
-/// Removes control characters and trims whitespace while preserving
-/// valid Unicode characters for international names.
+/// Removes control characters, normalizes newlines to spaces, and trims 
+/// whitespace while preserving valid Unicode characters for international names.
+/// 
+/// Note: Newlines are normalized to spaces to prevent log injection
+/// and display issues in single-line contexts.
 String sanitizeMetadata(String? metadata) {
   if (metadata == null) return '';
 
-  // Remove control characters except newlines/tabs for multi-line metadata
-  var sanitized = metadata.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1f]'), '');
+  // Remove all control characters including newlines/tabs
+  // to prevent log injection and display issues
+  var sanitized = metadata.replaceAll(RegExp(r'[\x00-\x1f]'), ' ');
+
+  // Normalize multiple spaces to single space
+  sanitized = sanitized.replaceAll(RegExp(r'\s+'), ' ');
 
   // Limit length
   if (sanitized.length > 512) {

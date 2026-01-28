@@ -65,8 +65,8 @@ const bool kPauseWhenDucked = true;
 
 // MARK: - Path Validation
 
-/// Characters that are not allowed in file paths to prevent traversal.
-const List<String> kForbiddenPathChars = ['..', '~', '\$'];
+/// Path patterns that are not allowed to prevent directory traversal.
+const List<String> kForbiddenPathPatterns = ['..', '~', r'$'];
 
 /// Maximum path length allowed.
 const int kMaxPathLength = 4096;

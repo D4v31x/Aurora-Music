@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 import '../../constants/font_constants.dart';
 import '../../localization/app_localizations.dart';
 import '../../services/audio_player_service.dart';
@@ -45,7 +46,7 @@ class AlbumSection extends StatelessWidget {
     final albumName = currentSong?.album;
 
     // Return empty widget if no album info
-    if (albumName == null || albumName.isEmpty) {
+    if (currentSong == null || albumName == null || albumName.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -75,7 +76,7 @@ class AlbumSection extends StatelessWidget {
   }
 
   /// Builds the album card with navigation.
-  Widget _buildAlbumCard(BuildContext context, dynamic currentSong) {
+  Widget _buildAlbumCard(BuildContext context, SongModel currentSong) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: _kHorizontalMargin),
       child: AlbumCard(
