@@ -3,14 +3,14 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../mixins/models/playlist_model.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/services/artwork_cache_service.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/widgets/expanding_player.dart';
-import '../../mixins/widgets/song_picker_sheet.dart';
-import '../../mixins/widgets/app_background.dart';
-import '../../mixins/models/utils.dart';
+import '../../../shared/models/playlist_model.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/artwork_cache_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/expanding_player.dart';
+import '../../../shared/widgets/song_picker_sheet.dart';
+import '../../../shared/widgets/app_background.dart';
+import '../../../shared/models/utils.dart';
 import 'dart:ui';
 
 class PlaylistDetailScreen extends StatefulWidget {

@@ -3,7 +3,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/glassmorphic_container.dart';
-import '../localization/app_localizations.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Service for handling donations via external platforms
 /// Uses free services like Ko-fi, Buy Me a Coffee, and PayPal

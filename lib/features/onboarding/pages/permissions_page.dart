@@ -4,9 +4,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import '../../../mixins/providers/theme_provider.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../mixins/widgets/pill_button.dart';
+import '../../../../shared/providers/theme_provider.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/pill_button.dart';
 
 class PermissionsPage extends StatefulWidget {
   final VoidCallback onContinue;

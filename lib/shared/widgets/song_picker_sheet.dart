@@ -6,7 +6,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import '../models/playlist_model.dart';
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
-import '../localization/app_localizations.dart';
+import '../../l10n/app_localizations.dart';
 import '../models/utils.dart';
 import 'dart:ui';
 

@@ -1,10 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/models/utils.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/widgets/music_metadata_widget.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/utils.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/widgets/music_metadata_widget.dart';
 
 /// Shows a dialog for adding the current song to a playlist.
 void showAddToPlaylistDialog(

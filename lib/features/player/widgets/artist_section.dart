@@ -6,11 +6,11 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/services/artist_separator_service.dart';
-import '../artist_card.dart';
-import '../../features/library/screens/artist_detail_screen.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/artist_separator_service.dart';
+import '../../../shared/widgets/artist_card.dart';
+import '../../library/screens/artist_detail_screen.dart';
 
 // MARK: - Constants
 

@@ -7,12 +7,12 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../mixins/models/timed_lyrics.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/services/lyrics_service.dart';
-import '../../mixins/services/artwork_cache_service.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/models/utils.dart';
+import '../../../shared/models/timed_lyrics.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/lyrics_service.dart';
+import '../../../shared/services/artwork_cache_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/utils.dart';
 
 class FullscreenLyricsScreen extends StatefulWidget {
   const FullscreenLyricsScreen({super.key});

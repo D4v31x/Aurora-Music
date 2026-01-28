@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/services/artwork_cache_service.dart';
-import '../../mixins/widgets/glassmorphic_container.dart';
-import '../../mixins/widgets/shimmer_loading.dart';
-import '../../mixins/widgets/common_screen_scaffold.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/models/utils.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/artwork_cache_service.dart';
+import '../../../shared/widgets/glassmorphic_container.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/common_screen_scaffold.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/utils.dart';
 import 'album_detail_screen.dart';
 
 enum AlbumSortOption { name, artist, numSongs, year }

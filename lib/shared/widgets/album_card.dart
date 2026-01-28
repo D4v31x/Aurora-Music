@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import '../constants/font_constants.dart';
+import '../../core/constants/font_constants.dart';
 import '../services/artwork_cache_service.dart';
 
 /// A card widget that displays album information with artwork

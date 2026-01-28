@@ -3,7 +3,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../localization/app_localizations.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers/performance_mode_provider.dart';
 import '../services/feedback_reminder_service.dart';
 

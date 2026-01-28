@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/services/artwork_cache_service.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/models/playlist_model.dart';
-import '../../mixins/widgets/common_screen_scaffold.dart';
-import '../../mixins/widgets/glassmorphic_card.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/artwork_cache_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/playlist_model.dart';
+import '../../../shared/widgets/common_screen_scaffold.dart';
+import '../../../shared/widgets/glassmorphic_card.dart';
 import 'playlist_detail_screen.dart';
 import 'dart:ui';
 

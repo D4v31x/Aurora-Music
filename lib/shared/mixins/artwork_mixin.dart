@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'dart:io';
-import '../../mixins/services/artwork_cache_service.dart';
+import '../services/artwork_cache_service.dart';
 
 /// A mixin that provides common artwork and color extraction functionality.
 ///

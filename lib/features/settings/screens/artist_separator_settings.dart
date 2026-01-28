@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
-import '../../mixins/services/artist_separator_service.dart';
-import '../../l10n/app_localizations.dart';
+import '../../../shared/services/artist_separator_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Settings screen for configuring artist name separation
 class ArtistSeparatorSettingsScreen extends StatefulWidget {

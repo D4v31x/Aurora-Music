@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../mixins/models/utils.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/services/artwork_cache_service.dart';
-import '../../mixins/services/local_caching_service.dart';
-import '../../mixins/models/playlist_model.dart';
-import '../../features/library/screens/playlist_detail_screen.dart';
-import '../../features/library/screens/album_detail_screen.dart';
-import '../../features/library/screens/artist_detail_screen.dart';
-import '../../l10n/app_localizations.dart';
+import '../../../shared/models/utils.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/artwork_cache_service.dart';
+import '../../../shared/services/local_caching_service.dart';
+import '../../../shared/models/playlist_model.dart';
+import '../../library/screens/playlist_detail_screen.dart';
+import '../../library/screens/album_detail_screen.dart';
+import '../../library/screens/artist_detail_screen.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// A "For You" section with a 2-row fixed grid of personalized content
 /// Based on currently playing, recently played, liked songs, and listening habits

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import '../../mixins/services/audio_player_service.dart';
+import '../../../shared/services/audio_player_service.dart';
 
 /// Playback controls for the music player.
 ///

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../mixins/services/audio_player_service.dart';
+import '../services/audio_player_service.dart';
 import '../../l10n/app_localizations.dart';
-import '../../mixins/widgets/expanding_player.dart';
+import '../widgets/expanding_player.dart';
 
 /// A mixin that provides common UI patterns for detail screens.
 ///

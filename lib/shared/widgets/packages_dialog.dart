@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../constants/font_constants.dart';
-import '../widgets/glassmorphic_container.dart';
+import '../../core/constants/font_constants.dart';
+import './glassmorphic_container.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Model class representing a package dependency

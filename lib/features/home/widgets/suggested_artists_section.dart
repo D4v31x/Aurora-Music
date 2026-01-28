@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../features/library/screens/artist_detail_screen.dart';
-import '../../mixins/services/local_caching_service.dart';
-import '../../mixins/services/artwork_cache_service.dart';
+import '../../library/screens/artist_detail_screen.dart';
+import '../../../shared/services/local_caching_service.dart';
+import '../../../shared/services/artwork_cache_service.dart';
 import '../glassmorphic_card.dart';
 
 class SuggestedArtistsSection extends StatelessWidget {

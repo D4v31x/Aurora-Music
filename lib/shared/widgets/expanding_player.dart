@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
-import '../main.dart' show navigatorKey;
+import '../../main.dart' show navigatorKey;
 import '../models/utils.dart';
-import '../screens/player/now_playing.dart';
+import '../../features/player/screens/now_playing.dart';
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/background_manager_service.dart';

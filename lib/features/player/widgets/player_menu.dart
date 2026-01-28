@@ -5,8 +5,8 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/services/sleep_timer_controller.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/services/sleep_timer_controller.dart';
 
 // MARK: - Constants
 

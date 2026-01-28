@@ -3,8 +3,8 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../mixins/services/home_layout_service.dart';
-import '../../l10n/app_localizations.dart';
+import '../../../shared/services/home_layout_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Settings screen for customizing home tab layout and section order
 class HomeLayoutSettingsScreen extends StatefulWidget {

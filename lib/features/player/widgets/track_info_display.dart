@@ -6,9 +6,9 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import '../../mixins/models/utils.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../common/scrolling_text.dart';
+import '../../../shared/models/utils.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/widgets/common/scrolling_text.dart';
 
 // MARK: - Constants
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../mixins/services/audio_player_service.dart';
+import '../../../shared/services/audio_player_service.dart';
 
 /// A like/favorite button for the current song.
 ///

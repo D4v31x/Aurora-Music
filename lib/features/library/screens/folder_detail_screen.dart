@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../mixins/models/utils.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/services/artwork_cache_service.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/widgets/glassmorphic_container.dart';
-import '../../mixins/widgets/app_background.dart';
-import '../mixins/detail_screen_mixin.dart';
+import '../../../shared/models/utils.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/artwork_cache_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/glassmorphic_container.dart';
+import '../../../shared/widgets/app_background.dart';
+import '../../../shared/mixins/detail_screen_mixin.dart';
 
 class FolderDetailScreen extends StatefulWidget {
   final String folderPath;

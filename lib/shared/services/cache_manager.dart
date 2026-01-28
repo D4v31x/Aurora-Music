@@ -1,8 +1,8 @@
 import 'dart:collection';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
-import '../constants/app_config.dart';
-import '../services/logging_service.dart';
+import '../../core/constants/app_config.dart';
+import 'logging_service.dart';
 
 /// Generic LRU cache implementation
 /// Provides efficient caching with automatic eviction based on usage

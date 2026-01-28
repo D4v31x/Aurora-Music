@@ -3,10 +3,10 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
-import '../../mixins/services/audio_player_service.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/models/utils.dart';
-import '../../mixins/providers/performance_mode_provider.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/utils.dart';
+import '../../../shared/providers/performance_mode_provider.dart';
 
 /// Holds computed library statistics
 class _LibraryStats {

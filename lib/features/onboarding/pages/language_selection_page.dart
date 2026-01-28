@@ -3,10 +3,10 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui' as ui;
-import '../../../l10n/locale_provider.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../mixins/providers/theme_provider.dart';
-import '../../../mixins/widgets/pill_button.dart';
+import '../../../../l10n/locale_provider.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/providers/theme_provider.dart';
+import '../../../../shared/widgets/pill_button.dart';
 
 class LanguageSelectionPage extends StatefulWidget {
   final VoidCallback onContinue;

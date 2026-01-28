@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../constants/font_constants.dart';
-import '../localization/app_localizations.dart';
-import '../widgets/glassmorphic_container.dart';
-import '../widgets/changelog_dialog.dart';
-import '../widgets/packages_dialog.dart';
+import '../../core/constants/font_constants.dart';
+import '../../l10n/app_localizations.dart';
+import './glassmorphic_container.dart';
+import './changelog_dialog.dart';
+import './packages_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AuroraAboutDialog extends StatelessWidget {

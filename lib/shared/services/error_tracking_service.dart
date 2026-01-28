@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../constants/app_config.dart';
+import '../../core/constants/app_config.dart';
 
 /// Service responsible for tracking and managing application errors
 /// Implements error recording, storage, and synchronization

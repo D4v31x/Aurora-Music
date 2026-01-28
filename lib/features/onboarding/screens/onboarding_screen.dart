@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
-import '../../mixins/services/user_preferences.dart';
-import '../../mixins/providers/theme_provider.dart';
-import '../../l10n/app_localizations.dart';
+import '../../../shared/services/user_preferences.dart';
+import '../../../shared/providers/theme_provider.dart';
+import '../../../l10n/app_localizations.dart';
 import '../main/home_screen.dart';
 import 'pages/welcome_page.dart';
 import 'pages/beta_welcome_page.dart';
@@ -16,7 +16,7 @@ import 'pages/asset_download_page.dart';
 import 'pages/permissions_page.dart';
 import 'pages/completion_page.dart';
 import 'pages/donation_page.dart';
-import '../../mixins/widgets/grainy_gradient_background.dart';
+import '../../../shared/widgets/grainy_gradient_background.dart';
 
 class OnboardingScreen extends HookWidget {
   const OnboardingScreen({super.key});

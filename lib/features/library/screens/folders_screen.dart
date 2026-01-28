@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import '../../mixins/widgets/glassmorphic_container.dart';
-import '../../mixins/widgets/common_screen_scaffold.dart';
+import '../../../shared/widgets/glassmorphic_container.dart';
+import '../../../shared/widgets/common_screen_scaffold.dart';
 import 'folder_detail_screen.dart';
 
 /// Screen displaying all music folders on the device.

@@ -5,7 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
-import '../../mixins/services/artwork_cache_service.dart';
+import '../../../shared/services/artwork_cache_service.dart';
 
 // MARK: - Constants
 

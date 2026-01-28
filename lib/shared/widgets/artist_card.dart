@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../constants/font_constants.dart';
+import '../../core/constants/font_constants.dart';
 import '../services/local_caching_service.dart';
 import '../services/performance/performance_manager.dart';
 import '../services/artist_separator_service.dart';

@@ -5,8 +5,8 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/services/audio_player_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/services/audio_player_service.dart';
 
 // MARK: - Constants
 

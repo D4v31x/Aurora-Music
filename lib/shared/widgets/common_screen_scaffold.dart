@@ -3,8 +3,8 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
-import '../widgets/app_background.dart';
-import '../widgets/expanding_player.dart';
+import './app_background.dart';
+import './expanding_player.dart';
 import '../providers/performance_mode_provider.dart';
 
 /// A common scaffold for screens with a glassmorphic app bar.

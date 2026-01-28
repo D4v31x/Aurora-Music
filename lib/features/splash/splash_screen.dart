@@ -3,11 +3,11 @@ import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:ui'; // Import this for ImageFilter
-import '../services/audio_player_service.dart';
-import '../services/artwork_cache_service.dart';
-import '../services/user_preferences.dart';
-import '../services/logging_service.dart';
-import '../constants/animation_constants.dart';
+import '../../shared/services/audio_player_service.dart';
+import '../../shared/services/artwork_cache_service.dart';
+import '../../shared/services/user_preferences.dart';
+import '../../shared/services/logging_service.dart';
+import '../../core/constants/animation_constants.dart';
 import 'onboarding/onboarding_screen.dart';
 import 'main/home_screen.dart';
 import 'package:provider/provider.dart';

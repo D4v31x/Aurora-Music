@@ -2,15 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import '../../mixins/models/playlist_model.dart';
-import '../../mixins/models/utils.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/services/artwork_cache_service.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/widgets/glassmorphic_container.dart';
-import '../../mixins/widgets/optimized_tiles.dart'; // Import optimized tile
-import '../../mixins/widgets/common_screen_scaffold.dart';
-import '../../mixins/utils/responsive_utils.dart';
+import '../../../shared/models/playlist_model.dart';
+import '../../../shared/models/utils.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/artwork_cache_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/glassmorphic_container.dart';
+import '../../../shared/widgets/optimized_tiles.dart'; // Import optimized tile
+import '../../../shared/widgets/common_screen_scaffold.dart';
+import '../../../shared/utils/responsive_utils.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class TracksScreen extends StatefulWidget {

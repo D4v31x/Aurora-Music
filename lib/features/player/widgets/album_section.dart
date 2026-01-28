@@ -7,10 +7,10 @@ library;
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../album_card.dart';
-import '../../features/library/screens/album_detail_screen.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/widgets/album_card.dart';
+import '../../library/screens/album_detail_screen.dart';
 
 // MARK: - Constants
 

@@ -12,7 +12,7 @@ import 'package:audio_session/audio_session.dart';
 import 'background_manager_service.dart';
 import 'artwork_cache_service.dart';
 import 'smart_suggestions_service.dart';
-import '../main.dart' show audioHandler;
+import '../../main.dart' show audioHandler;
 
 /// Enum to track where the current playback originated from
 enum PlaybackSource {

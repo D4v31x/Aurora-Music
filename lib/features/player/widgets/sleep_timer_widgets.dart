@@ -3,9 +3,9 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/services/sleep_timer_controller.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/sleep_timer_controller.dart';
 
 /// Sleep timer indicator widget for the app bar.
 ///

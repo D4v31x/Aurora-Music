@@ -8,31 +8,31 @@ import 'package:permission_handler/permission_handler.dart'
     as permissionhandler;
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../mixins/models/utils.dart';
-import '../../mixins/models/separated_artist.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/services/artist_aggregator_service.dart';
-import '../../l10n/app_localizations.dart';
-import '../../mixins/widgets/changelog_dialog.dart';
-import '../../mixins/widgets/glassmorphic_dialog.dart';
-import '../../mixins/widgets/feedback_reminder_dialog.dart';
-import '../../mixins/widgets/home/home_tab.dart';
-import '../../mixins/widgets/home/search_tab.dart';
-import '../../mixins/widgets/home/settings_tab.dart';
-import '../../mixins/widgets/outline_indicator.dart';
-import '../../mixins/widgets/expanding_player.dart'; // For back button handling
-import '../../mixins/widgets/auto_scroll_text.dart';
-import '../../mixins/widgets/animated_progress_line.dart';
-import '../../mixins/services/local_caching_service.dart';
-import '../../mixins/services/notification_manager.dart';
-import '../../mixins/services/download_progress_monitor.dart';
-import '../../mixins/services/version_service.dart';
-import '../../mixins/services/bluetooth_service.dart';
-import '../../mixins/widgets/home/library_tab.dart';
+import '../../../shared/models/utils.dart';
+import '../../../shared/models/separated_artist.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/artist_aggregator_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/changelog_dialog.dart';
+import '../../../shared/widgets/glassmorphic_dialog.dart';
+import '../../../shared/widgets/feedback_reminder_dialog.dart';
+import '../../../shared/widgets/home/home_tab.dart';
+import '../../../shared/widgets/home/search_tab.dart';
+import '../../../shared/widgets/home/settings_tab.dart';
+import '../../../shared/widgets/outline_indicator.dart';
+import '../../../shared/widgets/expanding_player.dart'; // For back button handling
+import '../../../shared/widgets/auto_scroll_text.dart';
+import '../../../shared/widgets/animated_progress_line.dart';
+import '../../../shared/services/local_caching_service.dart';
+import '../../../shared/services/notification_manager.dart';
+import '../../../shared/services/download_progress_monitor.dart';
+import '../../../shared/services/version_service.dart';
+import '../../../shared/services/bluetooth_service.dart';
+import '../../../shared/widgets/home/library_tab.dart';
 import 'package:aurora_music_v01/features/onboarding/screens/onboarding_screen.dart';
 import 'package:aurora_music_v01/shared/providers/theme_provider.dart';
-import '../../mixins/widgets/app_background.dart';
-import '../../mixins/widgets/glassmorphic_container.dart';
+import '../../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/glassmorphic_container.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

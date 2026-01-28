@@ -2,8 +2,8 @@ import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import '../localization/app_localizations.dart';
-import '../screens/settings/metadata_detail_screen.dart';
+import '../../l10n/app_localizations.dart';
+import '../../features/settings/screens/metadata_detail_screen.dart';
 
 /// Compact glassmorphic widget to display music file metadata overview
 class MusicMetadataWidget extends StatelessWidget {

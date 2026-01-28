@@ -4,7 +4,7 @@
 /// to prevent directory traversal, injection attacks, and invalid inputs.
 library;
 
-import '../../mixins/services/audio_constants.dart';
+import '../../services/audio_constants.dart';
 
 // MARK: - Path Validation
 

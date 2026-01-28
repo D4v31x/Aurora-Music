@@ -3,18 +3,18 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import '../../mixins/models/utils.dart';
-import '../../mixins/services/audio_player_service.dart';
-import '../../mixins/services/artwork_cache_service.dart';
-import '../../l10n/app_localizations.dart';
+import '../../../shared/models/utils.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/artwork_cache_service.dart';
+import '../../../l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
-import '../../mixins/services/local_caching_service.dart';
-import '../../mixins/widgets/glassmorphic_container.dart';
-import '../../mixins/widgets/shimmer_loading.dart';
-import '../../mixins/widgets/expanding_player.dart';
-import '../../mixins/utils/responsive_utils.dart';
+import '../../../shared/services/local_caching_service.dart';
+import '../../../shared/widgets/glassmorphic_container.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/expanding_player.dart';
+import '../../../shared/utils/responsive_utils.dart';
 import 'album_detail_screen.dart';
 
 class ArtistDetailsScreen extends StatefulWidget {
