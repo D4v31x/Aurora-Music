@@ -11,3 +11,6 @@ export 'screens/fullscreen_artwork.dart';
 
 // Widgets
 export 'widgets/player_widgets.dart';
+
+// Controllers
+export 'controllers/controllers.dart';
