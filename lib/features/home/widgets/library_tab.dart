@@ -30,7 +30,8 @@ class LibraryTab extends StatefulWidget {
   State<LibraryTab> createState() => _LibraryTabState();
 }
 
-class _LibraryTabState extends State<LibraryTab> with AutomaticKeepAliveClientMixin {
+class _LibraryTabState extends State<LibraryTab>
+    with AutomaticKeepAliveClientMixin {
   // Make artwork service static to prevent recreation on every build
   static final _artworkService = ArtworkCacheService();
 
