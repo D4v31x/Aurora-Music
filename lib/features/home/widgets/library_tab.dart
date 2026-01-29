@@ -30,12 +30,17 @@ class LibraryTab extends StatefulWidget {
   State<LibraryTab> createState() => _LibraryTabState();
 }
 
-class _LibraryTabState extends State<LibraryTab> {
+class _LibraryTabState extends State<LibraryTab>
+    with AutomaticKeepAliveClientMixin {
   // Make artwork service static to prevent recreation on every build
   static final _artworkService = ArtworkCacheService();
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     // Access service without listening for methods
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
