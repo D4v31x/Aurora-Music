@@ -32,6 +32,7 @@ export 'common/common.dart';
 
 // Dialogs and sheets
 export 'about_dialog.dart';
+export 'blur_dialog.dart';
 export 'changelog_dialog.dart';
 export 'glassmorphic_dialog.dart';
 export 'feedback_reminder_dialog.dart';
