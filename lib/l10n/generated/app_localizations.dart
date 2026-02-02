@@ -2647,6 +2647,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restart Now'**
   String get restartNow;
+
+  /// No description provided for @upNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Up Next'**
+  String get upNext;
+
+  /// No description provided for @clearUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear upcoming'**
+  String get clearUpcoming;
+
+  /// No description provided for @addToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to queue'**
+  String get addToQueue;
+
+  /// No description provided for @playNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Play next'**
+  String get playNext;
+
+  /// No description provided for @removeFromQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from queue'**
+  String get removeFromQueue;
 }
 
 class _AppLocalizationsDelegate

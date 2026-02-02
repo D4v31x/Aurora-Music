@@ -846,6 +846,16 @@ extension AppLocalizationsExtension on generated.AppLocalizations {
         return view_changelog;
       case 'close':
         return close;
+      case 'up_next':
+        return upNext;
+      case 'clear_upcoming':
+        return clearUpcoming;
+      case 'add_to_queue':
+        return addToQueue;
+      case 'play_next':
+        return playNext;
+      case 'remove_from_queue':
+        return removeFromQueue;
       default:
         return key; // Return the key itself if not found
     }

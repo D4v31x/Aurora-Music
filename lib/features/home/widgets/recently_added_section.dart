@@ -14,12 +14,20 @@ class RecentlyAddedSection extends StatelessWidget {
 
   static final ArtworkCacheService _artworkService = ArtworkCacheService();
 
-  /// Get recently added songs - sorted and limited
-  static List<SongModel> _getRecentSongs(List<SongModel> songs) {
+  /// Get recently added songs for display - sorted and limited to 10
+  static List<SongModel> _getDisplaySongs(List<SongModel> songs) {
     if (songs.isEmpty) return [];
     final sorted = List<SongModel>.from(songs)
       ..sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
     return sorted.take(10).toList();
+  }
+
+  /// Get full recently added playlist for playback - all songs sorted by date
+  static List<SongModel> _getFullPlaylist(List<SongModel> songs) {
+    if (songs.isEmpty) return [];
+    final sorted = List<SongModel>.from(songs)
+      ..sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
+    return sorted;
   }
 
   @override
@@ -35,9 +43,10 @@ class RecentlyAddedSection extends StatelessWidget {
               next.isNotEmpty &&
               previous.first.id != next.first.id),
       builder: (context, allSongs, _) {
-        final recentSongs = _getRecentSongs(allSongs);
+        final displaySongs = _getDisplaySongs(allSongs);
+        final fullPlaylist = _getFullPlaylist(allSongs);
 
-        if (recentSongs.isEmpty) {
+        if (displaySongs.isEmpty) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -61,11 +70,14 @@ class RecentlyAddedSection extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: recentSongs.length,
+            itemCount: displaySongs.length,
             // Performance: Pre-cache items beyond visible area for smoother scrolling
             cacheExtent: AppConfig.horizontalListCacheExtent,
             itemBuilder: (context, index) {
-              final song = recentSongs[index];
+              final song = displaySongs[index];
+              // Find the index in the full playlist
+              final fullPlaylistIndex =
+                  fullPlaylist.indexWhere((s) => s.id == song.id);
               return RepaintBoundary(
                 child: GlassmorphicCard.song(
                   key: ValueKey(song.id),
@@ -75,9 +87,10 @@ class RecentlyAddedSection extends StatelessWidget {
                   artworkService: _artworkService,
                   badge: const CardBadge(text: 'NEW'),
                   onTap: () {
+                    // Play from full playlist, starting at the correct index
                     audioPlayerService.setPlaylist(
-                      recentSongs,
-                      index,
+                      fullPlaylist,
+                      fullPlaylistIndex >= 0 ? fullPlaylistIndex : index,
                       source: const PlaybackSourceInfo(
                           source: PlaybackSource.recentlyAdded),
                     );

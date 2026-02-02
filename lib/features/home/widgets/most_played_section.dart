@@ -17,7 +17,8 @@ class MostPlayedSection extends StatefulWidget {
 
 class _MostPlayedSectionState extends State<MostPlayedSection> {
   static final ArtworkCacheService _artworkService = ArtworkCacheService();
-  List<SongModel>? _mostPlayedSongs;
+  List<SongModel>? _displaySongs; // Songs to display (top 3)
+  List<SongModel>? _fullPlaylist; // Full playlist for playback
   bool _isLoading = true;
 
   @override
@@ -29,10 +30,14 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
   Future<void> _loadData() async {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    final songs = await audioPlayerService.getMostPlayedTracks();
+    // Load display songs (top 10 for display, show top 3)
+    final displaySongs = await audioPlayerService.getMostPlayedTracks();
+    // Load full playlist for playback (all played songs sorted by play count)
+    final fullPlaylist = await audioPlayerService.getAllMostPlayedTracks();
     if (mounted) {
       setState(() {
-        _mostPlayedSongs = songs;
+        _displaySongs = displaySongs;
+        _fullPlaylist = fullPlaylist;
         _isLoading = false;
       });
     }
@@ -49,7 +54,8 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
       );
     }
 
-    final mostPlayedSongs = _mostPlayedSongs ?? [];
+    final mostPlayedSongs = _displaySongs ?? [];
+    final fullPlaylist = _fullPlaylist ?? mostPlayedSongs;
 
     if (mostPlayedSongs.isEmpty) {
       return Center(
@@ -68,13 +74,16 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
       );
     }
 
-    // Take top 3 most played songs
+    // Take top 3 most played songs for display
     final topSongs = mostPlayedSongs.take(3).toList();
 
     return Column(
       children: topSongs.asMap().entries.map((entry) {
         final index = entry.key;
         final song = entry.value;
+        // Find the index in the full playlist
+        final fullPlaylistIndex =
+            fullPlaylist.indexWhere((s) => s.id == song.id);
 
         return RepaintBoundary(
           key: ValueKey(song.id),
@@ -85,9 +94,10 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
             onTap: () {
               final audioPlayerService =
                   Provider.of<AudioPlayerService>(context, listen: false);
+              // Play from full playlist, starting at the correct index
               audioPlayerService.setPlaylist(
-                topSongs,
-                index,
+                fullPlaylist,
+                fullPlaylistIndex >= 0 ? fullPlaylistIndex : index,
                 source:
                     const PlaybackSourceInfo(source: PlaybackSource.mostPlayed),
               );

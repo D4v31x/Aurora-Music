@@ -64,8 +64,8 @@ void showAddToPlaylistDialog(
                       itemBuilder: (context, index) {
                         final playlist = audioPlayerService.playlists[index];
                         return ListTile(
-                          leading:
-                              const Icon(Icons.playlist_play, color: Colors.white),
+                          leading: const Icon(Icons.playlist_play,
+                              color: Colors.white),
                           title: Text(
                             playlist.name,
                             style: const TextStyle(color: Colors.white),
@@ -116,30 +116,66 @@ void shareSong(AudioPlayerService audioPlayerService) {
   );
 }
 
-/// Shows a dialog displaying the current playback queue.
+/// Shows a dialog displaying the current playback queue with full management capabilities.
 void showQueueDialog(
     BuildContext context, AudioPlayerService audioPlayerService) {
-  showDialog(
+  showModalBottomSheet(
     context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (BuildContext context) {
-      return BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.grey[900]?.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+      return _QueueBottomSheet(audioPlayerService: audioPlayerService);
+    },
+  );
+}
+
+/// Stateful widget for the queue bottom sheet to handle updates
+class _QueueBottomSheet extends StatefulWidget {
+  final AudioPlayerService audioPlayerService;
+
+  const _QueueBottomSheet({required this.audioPlayerService});
+
+  @override
+  State<_QueueBottomSheet> createState() => _QueueBottomSheetState();
+}
+
+class _QueueBottomSheetState extends State<_QueueBottomSheet> {
+  @override
+  Widget build(BuildContext context) {
+    final audioPlayerService = widget.audioPlayerService;
+    final playlist = audioPlayerService.playlist;
+    final currentIndex = audioPlayerService.currentIndex;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      child: Container(
+        height: screenHeight * 0.75,
+        decoration: BoxDecoration(
+          color: Colors.grey[900]?.withOpacity(0.95),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         AppLocalizations.of(context).translate('queue'),
@@ -149,76 +185,252 @@ void showQueueDialog(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      Text(
+                        '${playlist.length} ${AppLocalizations.of(context).translate('tracks')}',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      // Clear upcoming button
+                      if (audioPlayerService.hasUpcoming)
+                        IconButton(
+                          icon: const Icon(Icons.clear_all,
+                              color: Colors.white70),
+                          tooltip: AppLocalizations.of(context)
+                              .translate('clear_upcoming'),
+                          onPressed: () async {
+                            await audioPlayerService.clearUpcoming();
+                            if (context.mounted) {
+                              setState(() {});
+                            }
+                          },
+                        ),
                       IconButton(
                         icon: const Icon(Icons.close, color: Colors.white),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
                   ),
-                ),
-                const Divider(color: Colors.white24),
-                if (audioPlayerService.playlist.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      AppLocalizations.of(context).translate('queue_empty'),
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                  )
-                else
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 400),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: audioPlayerService.playlist.length,
-                      itemBuilder: (context, index) {
-                        final song = audioPlayerService.playlist[index];
-                        final isCurrentSong =
-                            audioPlayerService.currentSong?.id == song.id;
-                        return ListTile(
-                          leading: isCurrentSong
-                              ? const Icon(Icons.play_circle_filled,
-                                  color: Colors.blue)
-                              : Text(
-                                  '${index + 1}',
-                                  style: const TextStyle(color: Colors.white70),
-                                ),
-                          title: Text(
-                            song.title,
-                            style: TextStyle(
-                              color: isCurrentSong ? Colors.blue : Colors.white,
-                              fontWeight: isCurrentSong
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                          subtitle: Text(
-                            splitArtists(song.artist ?? 'Unknown Artist')
-                                .join(', '),
-                            style: TextStyle(
-                              color: isCurrentSong
-                                  ? Colors.blue.shade200
-                                  : Colors.white70,
-                            ),
-                          ),
-                          onTap: () {
-                            audioPlayerService.setPlaylist(
-                              audioPlayerService.playlist,
-                              index,
-                            );
-                            Navigator.pop(context);
-                          },
-                        );
-                      },
-                    ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
+            const Divider(color: Colors.white24, height: 1),
+
+            // Now Playing section
+            if (audioPlayerService.currentSong != null) ...[
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context).translate('now_playing'),
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _QueueSongTile(
+                      song: audioPlayerService.currentSong!,
+                      isCurrentSong: true,
+                      index: currentIndex,
+                      onTap: () {},
+                      onRemove: null, // Can't remove current song
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: Colors.white24, height: 1),
+            ],
+
+            // Up Next section
+            Expanded(
+              child: playlist.isEmpty
+                  ? Center(
+                      child: Text(
+                        AppLocalizations.of(context).translate('queue_empty'),
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (audioPlayerService.hasUpcoming)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                            child: Text(
+                              AppLocalizations.of(context).translate('up_next'),
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.6),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        Expanded(
+                          child: ReorderableListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            itemCount: playlist.length,
+                            onReorder: (oldIndex, newIndex) async {
+                              // Adjust indices for the internal reordering
+                              if (oldIndex < newIndex) {
+                                newIndex -= 1;
+                              }
+                              await audioPlayerService.moveInQueue(
+                                  oldIndex, newIndex);
+                              if (context.mounted) {
+                                setState(() {});
+                              }
+                            },
+                            itemBuilder: (context, index) {
+                              final song = playlist[index];
+                              final isCurrentSong = index == currentIndex;
+
+                              return Dismissible(
+                                key: ValueKey('${song.id}_$index'),
+                                direction: isCurrentSong
+                                    ? DismissDirection.none
+                                    : DismissDirection.endToStart,
+                                background: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(right: 20),
+                                  color: Colors.red.withOpacity(0.8),
+                                  child: const Icon(Icons.delete,
+                                      color: Colors.white),
+                                ),
+                                onDismissed: (_) async {
+                                  await audioPlayerService
+                                      .removeFromQueue(index);
+                                },
+                                child: _QueueSongTile(
+                                  key: ValueKey('tile_${song.id}_$index'),
+                                  song: song,
+                                  isCurrentSong: isCurrentSong,
+                                  index: index,
+                                  showDragHandle: true,
+                                  onTap: () {
+                                    audioPlayerService.play(index: index);
+                                    Navigator.pop(context);
+                                  },
+                                  onRemove: isCurrentSong
+                                      ? null
+                                      : () async {
+                                          await audioPlayerService
+                                              .removeFromQueue(index);
+                                          if (context.mounted) {
+                                            setState(() {});
+                                          }
+                                        },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
         ),
-      );
-    },
-  );
+      ),
+    );
+  }
+}
+
+/// Individual song tile in the queue
+class _QueueSongTile extends StatelessWidget {
+  final dynamic song; // SongModel
+  final bool isCurrentSong;
+  final int index;
+  final VoidCallback onTap;
+  final VoidCallback? onRemove;
+  final bool showDragHandle;
+
+  const _QueueSongTile({
+    super.key,
+    required this.song,
+    required this.isCurrentSong,
+    required this.index,
+    required this.onTap,
+    this.onRemove,
+    this.showDragHandle = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (showDragHandle)
+              ReorderableDragStartListener(
+                index: index,
+                child: const Icon(Icons.drag_handle,
+                    color: Colors.white38, size: 20),
+              ),
+            const SizedBox(width: 8),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: isCurrentSong
+                    ? Colors.blue.withOpacity(0.2)
+                    : Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Center(
+                child: isCurrentSong
+                    ? const Icon(Icons.play_arrow, color: Colors.blue, size: 18)
+                    : Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 12,
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ),
+        title: Text(
+          song.title,
+          style: TextStyle(
+            color: isCurrentSong ? Colors.blue : Colors.white,
+            fontWeight: isCurrentSong ? FontWeight.bold : FontWeight.normal,
+            fontSize: 14,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+          style: TextStyle(
+            color: isCurrentSong ? Colors.blue.shade200 : Colors.white60,
+            fontSize: 12,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: onRemove != null
+            ? IconButton(
+                icon: const Icon(Icons.close, size: 18),
+                color: Colors.white38,
+                onPressed: onRemove,
+              )
+            : null,
+        onTap: onTap,
+      ),
+    );
+  }
 }
 
 /// Shows a dialog displaying detailed song information.
@@ -272,15 +484,19 @@ void showSongInfoDialog(
                 const SizedBox(height: 16),
                 MusicMetadataWidget(song: audioPlayerService.currentSong!),
                 const SizedBox(height: 16),
-                InfoRow(label: 'Title', value: audioPlayerService.currentSong!.title),
+                InfoRow(
+                    label: 'Title',
+                    value: audioPlayerService.currentSong!.title),
                 InfoRow(
                     label: 'Artist',
                     value: splitArtists(
                             audioPlayerService.currentSong!.artist ?? 'Unknown')
                         .join(', ')),
-                InfoRow(label: 'Album',
+                InfoRow(
+                    label: 'Album',
                     value: audioPlayerService.currentSong!.album ?? 'Unknown'),
-                InfoRow(label: 'Path', value: audioPlayerService.currentSong!.data),
+                InfoRow(
+                    label: 'Path', value: audioPlayerService.currentSong!.data),
               ],
             ),
           ),

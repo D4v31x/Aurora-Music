@@ -98,6 +98,18 @@ class AudioPlayerService extends ChangeNotifier {
   final ValueNotifier<Uint8List?> currentArtwork = ValueNotifier(null);
   final ValueNotifier<SongModel?> currentSongNotifier = ValueNotifier(null);
 
+  /// Get the upcoming songs in the queue (songs after current)
+  List<SongModel> get upcomingQueue =>
+      _currentIndex >= 0 && _currentIndex < _playlist.length - 1
+          ? _playlist.sublist(_currentIndex + 1)
+          : [];
+
+  /// Get queue length
+  int get queueLength => _playlist.length;
+
+  /// Check if queue has upcoming songs
+  bool get hasUpcoming => _currentIndex < _playlist.length - 1;
+
   final _currentSongController = StreamController<SongModel?>.broadcast();
   Stream<SongModel?> get currentSongStream => _currentSongController.stream;
   List<SpotifySongModel> _spotifyPlaylist = [];
@@ -1000,6 +1012,246 @@ class AudioPlayerService extends ChangeNotifier {
     // No need for notifyListeners - ValueNotifier handles UI updates
   }
 
+  // MARK: - Queue Management
+
+  /// Add a single song to the end of the queue
+  Future<void> addToQueue(SongModel song) async {
+    if (_playlist.isEmpty) {
+      // If no playlist, create one with this song
+      await setPlaylist([song], 0);
+      return;
+    }
+
+    _playlist.add(song);
+
+    if (_gaplessPlayback &&
+        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+      try {
+        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
+        final mediaItem = await _createMediaItem(song);
+        final uri = song.uri ?? song.data;
+        await source.add(AudioSource.uri(Uri.parse(uri), tag: mediaItem));
+
+        // Update notification queue
+        final mediaItems =
+            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+        audioHandler.updateNotificationQueue(mediaItems);
+      } catch (e) {
+        debugPrint('Error adding song to queue: $e');
+      }
+    }
+
+    _scheduleNotify();
+  }
+
+  /// Add multiple songs to the end of the queue
+  Future<void> addMultipleToQueue(List<SongModel> songs) async {
+    if (songs.isEmpty) return;
+
+    if (_playlist.isEmpty) {
+      // If no playlist, create one with these songs
+      await setPlaylist(songs, 0);
+      return;
+    }
+
+    _playlist.addAll(songs);
+
+    if (_gaplessPlayback &&
+        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+      try {
+        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
+        final mediaItems =
+            await Future.wait(songs.map((song) => _createMediaItem(song)));
+
+        for (var i = 0; i < songs.length; i++) {
+          final song = songs[i];
+          final uri = song.uri ?? song.data;
+          await source.add(AudioSource.uri(Uri.parse(uri), tag: mediaItems[i]));
+        }
+
+        // Update notification queue
+        final allMediaItems =
+            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+        audioHandler.updateNotificationQueue(allMediaItems);
+      } catch (e) {
+        debugPrint('Error adding songs to queue: $e');
+      }
+    }
+
+    _scheduleNotify();
+  }
+
+  /// Add a song to play next (right after current song)
+  Future<void> playNext(SongModel song) async {
+    if (_playlist.isEmpty) {
+      await setPlaylist([song], 0);
+      return;
+    }
+
+    final insertIndex = _currentIndex + 1;
+    _playlist.insert(insertIndex, song);
+
+    if (_gaplessPlayback &&
+        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+      try {
+        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
+        final mediaItem = await _createMediaItem(song);
+        final uri = song.uri ?? song.data;
+        await source.insert(
+            insertIndex, AudioSource.uri(Uri.parse(uri), tag: mediaItem));
+
+        // Update notification queue
+        final mediaItems =
+            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+        audioHandler.updateNotificationQueue(mediaItems);
+      } catch (e) {
+        debugPrint('Error inserting song to play next: $e');
+      }
+    }
+
+    _scheduleNotify();
+  }
+
+  /// Remove a song from the queue by index
+  Future<void> removeFromQueue(int index) async {
+    if (index < 0 || index >= _playlist.length) return;
+
+    // Don't allow removing the currently playing song via this method
+    if (index == _currentIndex) {
+      debugPrint('Cannot remove currently playing song');
+      return;
+    }
+
+    _playlist.removeAt(index);
+
+    // Adjust current index if needed
+    if (index < _currentIndex) {
+      _currentIndex--;
+    }
+
+    if (_gaplessPlayback &&
+        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+      try {
+        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
+        await source.removeAt(index);
+
+        // Update notification queue
+        final mediaItems =
+            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+        audioHandler.updateNotificationQueue(mediaItems);
+      } catch (e) {
+        debugPrint('Error removing song from queue: $e');
+      }
+    }
+
+    _scheduleNotify();
+  }
+
+  /// Move a song within the queue
+  Future<void> moveInQueue(int oldIndex, int newIndex) async {
+    if (oldIndex < 0 || oldIndex >= _playlist.length) return;
+    if (newIndex < 0 || newIndex >= _playlist.length) return;
+    if (oldIndex == newIndex) return;
+
+    final song = _playlist.removeAt(oldIndex);
+    _playlist.insert(newIndex, song);
+
+    // Adjust current index
+    if (oldIndex == _currentIndex) {
+      _currentIndex = newIndex;
+    } else if (oldIndex < _currentIndex && newIndex >= _currentIndex) {
+      _currentIndex--;
+    } else if (oldIndex > _currentIndex && newIndex <= _currentIndex) {
+      _currentIndex++;
+    }
+
+    if (_gaplessPlayback &&
+        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+      try {
+        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
+        await source.move(oldIndex, newIndex);
+
+        // Update notification queue
+        final mediaItems =
+            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+        audioHandler.updateNotificationQueue(mediaItems);
+      } catch (e) {
+        debugPrint('Error moving song in queue: $e');
+      }
+    }
+
+    _scheduleNotify();
+  }
+
+  /// Clear the entire queue except the currently playing song
+  Future<void> clearQueue() async {
+    if (_playlist.isEmpty) return;
+
+    final currentSong = this.currentSong;
+    if (currentSong != null) {
+      // Keep only the current song
+      _playlist = [currentSong];
+      _currentIndex = 0;
+
+      if (_gaplessPlayback) {
+        try {
+          final mediaItem = await _createMediaItem(currentSong);
+          final uri = currentSong.uri ?? currentSong.data;
+          final position = _audioPlayer.position;
+
+          final newSource = ConcatenatingAudioSource(
+            children: [
+              AudioSource.uri(Uri.parse(uri), tag: mediaItem),
+            ],
+          );
+
+          await _audioPlayer.setAudioSource(
+            newSource,
+            initialIndex: 0,
+            initialPosition: position,
+          );
+
+          audioHandler.updateNotificationQueue([mediaItem]);
+        } catch (e) {
+          debugPrint('Error clearing queue: $e');
+        }
+      }
+    } else {
+      _playlist = [];
+      _currentIndex = -1;
+    }
+
+    _scheduleNotify();
+  }
+
+  /// Clear upcoming songs only (songs after current)
+  Future<void> clearUpcoming() async {
+    if (_playlist.isEmpty || _currentIndex >= _playlist.length - 1) return;
+
+    // Remove all songs after current
+    _playlist = _playlist.sublist(0, _currentIndex + 1);
+
+    if (_gaplessPlayback &&
+        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+      try {
+        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
+        // Remove from end to avoid index shifting issues
+        while (source.length > _currentIndex + 1) {
+          await source.removeAt(source.length - 1);
+        }
+
+        // Update notification queue
+        final mediaItems =
+            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+        audioHandler.updateNotificationQueue(mediaItems);
+      } catch (e) {
+        debugPrint('Error clearing upcoming queue: $e');
+      }
+    }
+
+    _scheduleNotify();
+  }
+
   /// Sync the internal playing state with the actual audio player state.
   /// Call this when the app comes back to foreground to ensure UI reflects
   /// any changes made via lock screen or notification controls.
@@ -1594,8 +1846,9 @@ class AudioPlayerService extends ChangeNotifier {
     });
   }
 
-  // Add this new method
-  Future<List<SongModel>> getRecentlyPlayed() async {
+  /// Get recently played songs sorted by play count
+  /// [count] - number of songs to return (default 3, use -1 for all)
+  Future<List<SongModel>> getRecentlyPlayed({int count = 3}) async {
     final allSongs = await _audioQuery.querySongs(
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
@@ -1608,7 +1861,42 @@ class AudioPlayerService extends ChangeNotifier {
     recentlyPlayedSongs.sort((a, b) => (_trackPlayCounts[b.id.toString()] ?? 0)
         .compareTo(_trackPlayCounts[a.id.toString()] ?? 0));
 
-    return recentlyPlayedSongs.take(3).toList();
+    if (count == -1) {
+      return recentlyPlayedSongs;
+    }
+    return recentlyPlayedSongs.take(count).toList();
+  }
+
+  /// Get all recently played songs (full list for playback)
+  Future<List<SongModel>> getAllRecentlyPlayed() async {
+    return getRecentlyPlayed(count: -1);
+  }
+
+  /// Get all recently added songs (full list for playback)
+  Future<List<SongModel>> getAllRecentlyAdded() async {
+    final allSongs = await _audioQuery.querySongs(
+      sortType: SongSortType.DATE_ADDED,
+      orderType: OrderType.DESC_OR_GREATER,
+      uriType: UriType.EXTERNAL,
+      ignoreCase: true,
+    );
+    return allSongs;
+  }
+
+  /// Get all most played tracks (full list for playback)
+  Future<List<SongModel>> getAllMostPlayedTracks() async {
+    final allSongs = await _audioQuery.querySongs(
+      orderType: OrderType.ASC_OR_SMALLER,
+      uriType: UriType.EXTERNAL,
+      ignoreCase: true,
+    );
+    final playedSongs = allSongs
+        .where((song) => (_trackPlayCounts[song.id.toString()] ?? 0) > 0)
+        .toList();
+
+    playedSongs.sort((a, b) => (_trackPlayCounts[b.id.toString()] ?? 0)
+        .compareTo(_trackPlayCounts[a.id.toString()] ?? 0));
+    return playedSongs;
   }
 
   // Sleep timer methods
