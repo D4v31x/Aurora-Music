@@ -170,8 +170,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Provider.of<AudioPlayerService>(context, listen: false);
 
     // Get smart suggestions based on listening patterns
-    final suggestedTracks =
-        await audioPlayerService.getSuggestedTracks();
+    final suggestedTracks = await audioPlayerService.getSuggestedTracks();
     final suggestedArtists =
         await audioPlayerService.getSuggestedArtists(count: 5);
 
@@ -267,11 +266,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Handle scroll updates to allow pulling back (reducing progress)
   bool _handleScrollUpdate(ScrollUpdateNotification notification) {
     // If we have pull progress and user is scrolling down (releasing pull)
-    if (_pullProgress > 0 && !_isRefreshing && notification.scrollDelta != null) {
+    if (_pullProgress > 0 &&
+        !_isRefreshing &&
+        notification.scrollDelta != null) {
       final delta = notification.scrollDelta!;
       // Positive delta means scrolling down (releasing the pull)
       if (delta > 0) {
-        _pullProgress = (_pullProgress - delta / _pullThreshold).clamp(0.0, 1.0);
+        _pullProgress =
+            (_pullProgress - delta / _pullThreshold).clamp(0.0, 1.0);
         _notificationManager.updatePullProgress(_pullProgress);
       }
     }
