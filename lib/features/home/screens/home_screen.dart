@@ -13,7 +13,6 @@ import '../../../shared/models/separated_artist.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artist_aggregator_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/widgets/changelog_dialog.dart';
 import '../../../shared/widgets/glassmorphic_dialog.dart';
 import '../../../shared/widgets/feedback_reminder_dialog.dart';
 import '../widgets/home_tab.dart';
@@ -26,7 +25,6 @@ import '../../../shared/widgets/animated_progress_line.dart';
 import '../../../shared/services/local_caching_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/download_progress_monitor.dart';
-import '../../../shared/services/version_service.dart';
 import '../../../shared/services/bluetooth_service.dart';
 import '../widgets/library_tab.dart';
 import 'package:aurora_music_v01/features/onboarding/screens/onboarding_screen.dart';
@@ -63,8 +61,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Removed expandable bottom sheet in favor of simple Hero-based navigation
   bool _isInitialized = false;
   late final ScrollController _appBarTextController;
-  bool _hasShownChangelog = false;
-  String _currentVersion = '';
   final NotificationManager _notificationManager = NotificationManager();
   final DownloadProgressMonitor _downloadMonitor = DownloadProgressMonitor();
   final BluetoothService _bluetoothService = BluetoothService();
@@ -75,7 +71,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     _initializeControllers();
     _setupListeners();
-    _loadCurrentVersion();
 
     // Initialize Bluetooth service
     _bluetoothService.initialize();
@@ -97,8 +92,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _initializeHomeScreen();
     });
 
-    _checkAndShowChangelog();
     _showWelcomeMessage();
+    _checkAndShowFeedbackReminder();
   }
 
   // Initialize the home screen and check permissions
@@ -160,39 +155,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-  Future<void> _loadCurrentVersion() async {
-    _currentVersion = await VersionService.getCurrentVersion();
-  }
-
-  Future<void> _checkAndShowChangelog() async {
-    if (_hasShownChangelog) return;
-
-    final shouldShow = await VersionService.shouldShowChangelog();
-    if (shouldShow && mounted) {
-      _showChangelogDialog();
-      _hasShownChangelog = true;
-    } else {
-      // If no changelog, check for feedback reminder after a delay
-      _checkAndShowFeedbackReminder();
-    }
-  }
-
   Future<void> _checkAndShowFeedbackReminder() async {
     // Wait a bit before showing feedback reminder
     await Future.delayed(const Duration(seconds: 10));
     if (mounted) {
       FeedbackReminderDialog.showIfNeeded(context);
     }
-  }
-
-  void _showChangelogDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => ChangelogDialog(
-        currentVersion: _currentVersion,
-      ),
-    );
   }
 
   Future<void> _loadSmartSuggestions() async {
