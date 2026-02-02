@@ -1339,4 +1339,19 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get restartNow => 'Restartovat nyní';
+
+  @override
+  String get upNext => 'Následující';
+
+  @override
+  String get clearUpcoming => 'Vymazat nadcházející';
+
+  @override
+  String get addToQueue => 'Přidat do fronty';
+
+  @override
+  String get playNext => 'Přehrát jako další';
+
+  @override
+  String get removeFromQueue => 'Odebrat z fronty';
 }

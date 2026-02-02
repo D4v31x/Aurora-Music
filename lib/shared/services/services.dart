@@ -35,6 +35,7 @@ export 'lyrics_service.dart';
 export 'metadata_service.dart';
 export 'music_search_service.dart';
 export 'notification_manager.dart';
+export 'performance_manager.dart';
 export 'play_count_service.dart';
 export 'playlist_persistence_service.dart';
 export 'shader_warmup_service.dart';

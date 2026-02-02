@@ -10,7 +10,7 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../../shared/models/utils.dart';
+import '../../../shared/models/artist_utils.dart';
 import '../../../shared/mixins/detail_screen_mixin.dart';
 
 class AlbumDetailScreen extends StatefulWidget {
@@ -605,8 +605,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child:
-                        _artworkService.buildCachedArtwork(song.id),
+                    child: _artworkService.buildCachedArtwork(song.id),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -645,16 +644,37 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
             ),
             ListTile(
               leading: const Icon(Icons.playlist_play, color: Colors.white),
-              title: const Text('Play Next',
-                  style: TextStyle(color: Colors.white)),
-              onTap: () {
+              title: Text(AppLocalizations.of(context).translate('play_next'),
+                  style: const TextStyle(color: Colors.white)),
+              onTap: () async {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${song.title} will play next'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                await audioPlayerService.playNext(song);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${song.title} will play next'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.queue_music, color: Colors.white),
+              title: Text(
+                  AppLocalizations.of(context).translate('add_to_queue'),
+                  style: const TextStyle(color: Colors.white)),
+              onTap: () async {
+                Navigator.pop(context);
+                await audioPlayerService.addToQueue(song);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${song.title} added to queue'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
               },
             ),
             const SizedBox(height: 16),

@@ -13,7 +13,7 @@ import '../../../shared/services/audio_player_service.dart';
 
 // MARK: - Constants
 
-const _kLyricsSectionHeight = 150.0;
+const _kLyricsSectionHeight = 250.0;
 const _kLyricsContainerOpacity = 0.1;
 const _kExpandButtonOpacity = 0.1;
 const _kExpandButtonBorderOpacity = 0.2;

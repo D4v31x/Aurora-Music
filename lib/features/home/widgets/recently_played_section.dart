@@ -5,7 +5,7 @@ import 'package:aurora_music_v01/core/constants/app_config.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/utils.dart';
+import '../../../shared/models/artist_utils.dart';
 import '../../../shared/widgets/glassmorphic_card.dart';
 
 class RecentlyPlayedSection extends StatefulWidget {
@@ -17,7 +17,8 @@ class RecentlyPlayedSection extends StatefulWidget {
 
 class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
   static final ArtworkCacheService _artworkService = ArtworkCacheService();
-  List<SongModel>? _recentSongs;
+  List<SongModel>? _displaySongs; // Songs to display (limited)
+  List<SongModel>? _fullPlaylist; // Full playlist for playback
   bool _isLoading = true;
 
   @override
@@ -29,10 +30,14 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
   Future<void> _loadData() async {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    final songs = await audioPlayerService.getRecentlyPlayed();
+    // Load display songs (limited to 3 for UI)
+    final displaySongs = await audioPlayerService.getRecentlyPlayed(count: 3);
+    // Load full playlist for playback
+    final fullPlaylist = await audioPlayerService.getAllRecentlyPlayed();
     if (mounted) {
       setState(() {
-        _recentSongs = songs;
+        _displaySongs = displaySongs;
+        _fullPlaylist = fullPlaylist;
         _isLoading = false;
       });
     }
@@ -49,9 +54,10 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
       );
     }
 
-    final recentSongs = _recentSongs ?? [];
+    final displaySongs = _displaySongs ?? [];
+    final fullPlaylist = _fullPlaylist ?? displaySongs;
 
-    if (recentSongs.isEmpty) {
+    if (displaySongs.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -71,11 +77,14 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        itemCount: recentSongs.length,
+        itemCount: displaySongs.length,
         // Performance: Pre-cache items beyond visible area for smoother scrolling
         cacheExtent: AppConfig.horizontalListCacheExtent,
         itemBuilder: (context, index) {
-          final song = recentSongs[index];
+          final song = displaySongs[index];
+          // Find the index in the full playlist
+          final fullPlaylistIndex =
+              fullPlaylist.indexWhere((s) => s.id == song.id);
           return RepaintBoundary(
             child: GlassmorphicCard.song(
               key: ValueKey(song.id),
@@ -86,9 +95,10 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
               onTap: () {
                 final audioPlayerService =
                     Provider.of<AudioPlayerService>(context, listen: false);
+                // Play from full playlist, starting at the correct index
                 audioPlayerService.setPlaylist(
-                  recentSongs,
-                  index,
+                  fullPlaylist,
+                  fullPlaylistIndex >= 0 ? fullPlaylistIndex : index,
                   source: const PlaybackSourceInfo(
                       source: PlaybackSource.recentlyPlayed),
                 );

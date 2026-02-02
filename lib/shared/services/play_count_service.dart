@@ -10,7 +10,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
-import '../models/utils.dart';
+import '../models/artist_utils.dart';
 import 'audio_constants.dart';
 import 'smart_suggestions_service.dart';
 

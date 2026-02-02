@@ -1335,4 +1335,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restartNow => 'Restart Now';
+
+  @override
+  String get upNext => 'Up Next';
+
+  @override
+  String get clearUpcoming => 'Clear upcoming';
+
+  @override
+  String get addToQueue => 'Add to queue';
+
+  @override
+  String get playNext => 'Play next';
+
+  @override
+  String get removeFromQueue => 'Remove from queue';
 }

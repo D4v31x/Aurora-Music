@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/metadata_service.dart';
+import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_background.dart';
 
@@ -40,6 +41,10 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   Tag? _currentTag;
   Uint8List? _pendingCoverArt;
 
+  // Cached artwork to prevent reloading
+  Uint8List? _cachedArtwork;
+  final ArtworkCacheService _artworkService = ArtworkCacheService();
+
   // OnAudioQuery instance for MediaStore operations
   final OnAudioQuery _audioQuery = OnAudioQuery();
 
@@ -48,6 +53,20 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     super.initState();
     _initControllers();
     _loadTags();
+    _loadCachedArtwork();
+  }
+
+  Future<void> _loadCachedArtwork() async {
+    try {
+      final artwork = await _artworkService.getArtwork(widget.song.id);
+      if (mounted) {
+        setState(() {
+          _cachedArtwork = artwork;
+        });
+      }
+    } catch (e) {
+      // Artwork loading failed, fallback to placeholder
+    }
   }
 
   Future<void> _loadTags() async {
@@ -880,18 +899,24 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: _pendingCoverArt != null
-                        ? Image.memory(_pendingCoverArt!, fit: BoxFit.cover)
-                        : QueryArtworkWidget(
-                            id: widget.song.id,
-                            type: ArtworkType.AUDIO,
-                            artworkHeight: 200,
-                            artworkWidth: 200,
-                            nullArtworkWidget: Container(
-                              color: Colors.grey[800],
-                              child: const Icon(Icons.music_note,
-                                  size: 80, color: Colors.white54),
-                            ),
-                          ),
+                        ? Image.memory(
+                            _pendingCoverArt!,
+                            fit: BoxFit.cover,
+                            gaplessPlayback: true,
+                          )
+                        : _cachedArtwork != null
+                            ? Image.memory(
+                                _cachedArtwork!,
+                                fit: BoxFit.cover,
+                                width: 200,
+                                height: 200,
+                                gaplessPlayback: true,
+                              )
+                            : Container(
+                                color: Colors.grey[800],
+                                child: const Icon(Icons.music_note,
+                                    size: 80, color: Colors.white54),
+                              ),
                   ),
                 ),
               ),

@@ -424,5 +424,10 @@
   "settingsHighendUiDesc": "Enable advanced visual effects and animations",
   "restartRequired": "Restart Required",
   "restartRequiredDesc": "The app needs to restart to apply the UI mode change. Restart now?",
-  "restartNow": "Restart Now"
+  "restartNow": "Restart Now",
+  "upNext": "Up Next",
+  "clearUpcoming": "Clear upcoming",
+  "addToQueue": "Add to queue",
+  "playNext": "Play next",
+  "removeFromQueue": "Remove from queue"
 }

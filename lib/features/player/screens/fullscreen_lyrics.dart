@@ -12,7 +12,7 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/lyrics_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/utils.dart';
+import '../../../shared/models/artist_utils.dart';
 
 class FullscreenLyricsScreen extends StatefulWidget {
   const FullscreenLyricsScreen({super.key});

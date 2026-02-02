@@ -8,7 +8,7 @@ import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/common_screen_scaffold.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/utils.dart';
+import '../../../shared/models/artist_utils.dart';
 import 'album_detail_screen.dart';
 
 enum AlbumSortOption { name, artist, numSongs, year }
@@ -183,7 +183,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const Icon(Icons.arrow_drop_down, color: Colors.white70),
+                        const Icon(Icons.arrow_drop_down,
+                            color: Colors.white70),
                       ],
                     ),
                   ),
@@ -613,23 +614,25 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   }
 
   Future<void> _addAlbumToQueue(AlbumModel album) async {
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     final songs = await _audioQuery.querySongs(
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
     final albumSongs = songs.where((s) => s.album == album.album).toList();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${albumSongs.length} songs ready to play'),
-          behavior: SnackBarBehavior.floating,
-          action: SnackBarAction(
-            label: 'Play Now',
-            onPressed: () => _playAlbum(album),
+
+    if (albumSongs.isNotEmpty) {
+      await audioPlayerService.addMultipleToQueue(albumSongs);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${albumSongs.length} songs added to queue'),
+            behavior: SnackBarBehavior.floating,
           ),
-        ),
-      );
+        );
+      }
     }
   }
 }

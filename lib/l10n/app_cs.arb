@@ -424,5 +424,10 @@
   "settingsHighendUiDesc": "Povolit pokročilé vizuální efekty a animace",
   "restartRequired": "Vyžadován restart",
   "restartRequiredDesc": "Aplikace musí být restartována pro aplikování změny režimu UI. Restartovat nyní?",
-  "restartNow": "Restartovat nyní"
+  "restartNow": "Restartovat nyní",
+  "upNext": "Následující",
+  "clearUpcoming": "Vymazat nadcházející",
+  "addToQueue": "Přidat do fronty",
+  "playNext": "Přehrát jako další",
+  "removeFromQueue": "Odebrat z fronty"
 }
