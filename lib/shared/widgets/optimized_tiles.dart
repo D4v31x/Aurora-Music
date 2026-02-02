@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../services/artwork_cache_service.dart';
-import '../models/utils.dart';
+import '../models/artist_utils.dart';
 
 /// Optimized song tile widget that prevents unnecessary rebuilds
 /// Uses RepaintBoundary and AutomaticKeepAliveClientMixin for performance

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/background_manager_service.dart';
-import '../../../shared/models/utils.dart';
+import '../../../shared/models/artist_utils.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 /// Glassmorphic card showing current/last played song

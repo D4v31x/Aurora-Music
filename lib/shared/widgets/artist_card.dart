@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../core/constants/font_constants.dart';
 import '../services/local_caching_service.dart';
-import '../services/performance/performance_manager.dart';
+import '../services/performance_manager.dart';
 import '../services/artist_separator_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';

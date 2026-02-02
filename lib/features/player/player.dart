@@ -13,4 +13,4 @@ export 'screens/fullscreen_artwork.dart';
 export 'widgets/player_widgets.dart';
 
 // Controllers
-export 'controllers/controllers.dart';
+export 'controllers/now_playing_controller.dart';

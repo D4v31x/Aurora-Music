@@ -10,7 +10,7 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../../shared/models/utils.dart';
+import '../../../shared/models/artist_utils.dart';
 import '../../../shared/mixins/detail_screen_mixin.dart';
 
 class AlbumDetailScreen extends StatefulWidget {

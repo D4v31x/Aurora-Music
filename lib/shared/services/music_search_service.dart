@@ -1,5 +1,5 @@
 import 'package:on_audio_query/on_audio_query.dart';
-import '../models/utils.dart';
+import '../models/artist_utils.dart';
 import '../models/separated_artist.dart';
 
 /// Improved search service with fuzzy matching and scoring

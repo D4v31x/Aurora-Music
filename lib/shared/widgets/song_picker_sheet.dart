@@ -7,7 +7,7 @@ import '../models/playlist_model.dart';
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../../l10n/app_localizations.dart';
-import '../models/utils.dart';
+import '../models/artist_utils.dart';
 import 'dart:ui';
 
 /// Glassmorphic song picker bottom sheet for adding songs to playlists

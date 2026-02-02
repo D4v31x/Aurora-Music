@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/utils.dart';
+import '../../../shared/models/artist_utils.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
 
 /// Holds computed library statistics

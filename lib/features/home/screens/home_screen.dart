@@ -8,7 +8,7 @@ import 'package:permission_handler/permission_handler.dart'
     as permissionhandler;
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../../shared/models/utils.dart';
+import '../../../shared/models/artist_utils.dart';
 import '../../../shared/models/separated_artist.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artist_aggregator_service.dart';

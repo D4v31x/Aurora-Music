@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
-import '../models/utils.dart';
+import '../models/artist_utils.dart';
 import 'dart:io';
 import 'dart:convert';
 import '../models/playlist_model.dart';

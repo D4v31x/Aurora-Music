@@ -5,7 +5,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../../../shared/models/playlist_model.dart';
-import '../../../shared/models/utils.dart';
+import '../../../shared/models/artist_utils.dart';
 import '../../library/screens/album_detail_screen.dart';
 import '../../library/screens/artist_detail_screen.dart';
 import '../../library/screens/folder_detail_screen.dart';

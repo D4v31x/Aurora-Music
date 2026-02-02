@@ -10,7 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/song_picker_sheet.dart';
 import '../../../shared/widgets/app_background.dart';
-import '../../../shared/models/utils.dart';
+import '../../../shared/models/artist_utils.dart';
 import 'dart:ui';
 
 class PlaylistDetailScreen extends StatefulWidget {

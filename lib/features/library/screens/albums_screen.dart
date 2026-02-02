@@ -8,7 +8,7 @@ import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/common_screen_scaffold.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/utils.dart';
+import '../../../shared/models/artist_utils.dart';
 import 'album_detail_screen.dart';
 
 enum AlbumSortOption { name, artist, numSongs, year }
