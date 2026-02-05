@@ -4,6 +4,7 @@
 /// settings, and other data.
 library;
 
+import 'dart:io';
 import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
@@ -239,13 +240,13 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
                                     ],
                                   ),
                                 ),
-                                const PopupMenuItem(
+                                PopupMenuItem(
                                   value: 'delete',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.delete_rounded, color: Colors.red),
-                                      SizedBox(width: 12),
-                                      Text(l10n.translate('delete'), style: TextStyle(color: Colors.red)),
+                                      const Icon(Icons.delete_rounded, color: Colors.red),
+                                      const SizedBox(width: 12),
+                                      Text(l10n.translate('delete'), style: const TextStyle(color: Colors.red)),
                                     ],
                                   ),
                                 ),

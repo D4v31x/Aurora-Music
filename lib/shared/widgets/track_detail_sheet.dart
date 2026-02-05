@@ -16,8 +16,8 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/track_settings_service.dart';
 import '../../../shared/services/crossfade_service.dart';
-import '../../library/screens/album_detail_screen.dart';
-import '../../library/screens/artist_detail_screen.dart';
+import '../../../features/library/screens/album_detail_screen.dart';
+import '../../../features/library/screens/artist_detail_screen.dart';
 
 /// Shows a bottom sheet with track details and actions.
 void showTrackDetailSheet(BuildContext context, SongModel song) {
@@ -520,7 +520,7 @@ class _TrackDetailSheetState extends State<TrackDetailSheet> {
             },
           ),
         // Go to album
-        if (widget.song.album != null && widget.song.albumId != null)
+        if (widget.song.album != null)
           ListTile(
             leading: Icon(
               Icons.album_rounded,
@@ -547,7 +547,6 @@ class _TrackDetailSheetState extends State<TrackDetailSheet> {
                 context,
                 MaterialPageRoute(
                   builder: (_) => AlbumDetailScreen(
-                    albumId: widget.song.albumId!,
                     albumName: widget.song.album!,
                   ),
                 ),

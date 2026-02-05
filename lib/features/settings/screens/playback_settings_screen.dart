@@ -13,7 +13,6 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/crossfade_service.dart';
 import '../../../shared/services/audio_tools_service.dart';
 import '../../../shared/services/offline_mode_service.dart';
-import '../../../shared/widgets/glassmorphic_container.dart';
 
 /// Settings screen for playback configuration.
 class PlaybackSettingsScreen extends StatefulWidget {

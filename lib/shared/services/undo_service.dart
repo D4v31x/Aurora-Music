@@ -6,6 +6,7 @@ library;
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 /// Types of actions that can be undone

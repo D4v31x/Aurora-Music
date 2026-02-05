@@ -29,7 +29,6 @@ class _QueueScreenState extends State<QueueScreen>
   final _artworkService = ArtworkCacheService();
   final _scrollController = ScrollController();
   late AnimationController _animationController;
-  bool _isReordering = false;
 
   @override
   void initState() {
