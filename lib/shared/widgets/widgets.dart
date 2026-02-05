@@ -26,6 +26,7 @@ export 'expanding_player.dart';
 export 'toast_notification.dart';
 export 'song_picker_sheet.dart';
 export 'album_card.dart';
+export 'track_detail_sheet.dart';
 
 // Common widgets
 export 'common/common.dart';
@@ -47,3 +48,4 @@ export 'animated_progress_line.dart';
 // Debug and performance
 export 'performance_debug_overlay.dart';
 export 'optimized_widgets.dart';
+export 'audio_debug_overlay.dart';

@@ -5,6 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/widgets/music_metadata_widget.dart';
+import '../screens/queue_screen.dart';
 
 /// Shows a dialog for adding the current song to a playlist.
 void showAddToPlaylistDialog(
@@ -116,16 +117,14 @@ void shareSong(AudioPlayerService audioPlayerService) {
   );
 }
 
-/// Shows a dialog displaying the current playback queue with full management capabilities.
+/// Shows the full Queue management screen with drag & drop, save as playlist, etc.
 void showQueueDialog(
     BuildContext context, AudioPlayerService audioPlayerService) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (BuildContext context) {
-      return _QueueBottomSheet(audioPlayerService: audioPlayerService);
-    },
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const QueueScreen(),
+    ),
   );
 }
 

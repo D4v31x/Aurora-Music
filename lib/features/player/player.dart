@@ -8,6 +8,7 @@ library;
 export 'screens/now_playing.dart';
 export 'screens/fullscreen_lyrics.dart';
 export 'screens/fullscreen_artwork.dart';
+export 'screens/queue_screen.dart';
 
 // Widgets
 export 'widgets/player_widgets.dart';

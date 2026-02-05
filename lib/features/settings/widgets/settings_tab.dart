@@ -23,6 +23,8 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/donation_service.dart';
 import '../screens/artist_separator_settings.dart';
 import '../screens/home_layout_settings.dart';
+import '../screens/playback_settings_screen.dart';
+import '../screens/backup_restore_screen.dart';
 import '../../../shared/utils/responsive_utils.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/expanding_player.dart';
@@ -1061,6 +1063,19 @@ class _SettingsTabState extends State<SettingsTab> {
                   ),
                 );
               },
+            ),
+            _buildActionTile(
+              icon: Icons.tune_rounded,
+              title: l10n.translate('advancedPlayback'),
+              subtitle: l10n.translate('advancedPlaybackDesc'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PlaybackSettingsScreen(),
+                  ),
+                );
+              },
               isLast: true,
             ),
           ],
@@ -1082,6 +1097,19 @@ class _SettingsTabState extends State<SettingsTab> {
               title: l10n.translate('settings_clear_cache'),
               subtitle: l10n.translate('settings_clear_cache_desc'),
               onTap: _showClearCacheDialog,
+            ),
+            _buildActionTile(
+              icon: Icons.backup_rounded,
+              title: l10n.translate('backupRestore'),
+              subtitle: l10n.translate('backupRestoreDesc'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const BackupRestoreScreen(),
+                  ),
+                );
+              },
               isLast: true,
             ),
           ],

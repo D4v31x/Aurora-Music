@@ -9,6 +9,7 @@ import '../../../shared/models/artist_utils.dart';
 import '../../library/screens/album_detail_screen.dart';
 import '../../library/screens/artist_detail_screen.dart';
 import '../../library/screens/folder_detail_screen.dart';
+import '../../library/screens/listening_history_screen.dart';
 import '../../playlists/screens/playlist_detail_screen.dart';
 import '../../playlists/screens/playlists_screen.dart';
 import '../../library/screens/categories.dart';
@@ -205,6 +206,20 @@ class _LibraryTabState extends State<LibraryTab>
                   );
                 }
               },
+            ),
+            const SizedBox(height: 24.0),
+            // History quick access
+            _buildQuickAccessCard(
+              context,
+              icon: Icons.history_rounded,
+              title: AppLocalizations.of(context).translate('listeningHistory'),
+              subtitle: AppLocalizations.of(context).translate('rewindToday'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ListeningHistoryScreen(),
+                ),
+              ),
             ),
           ],
         ),
@@ -768,5 +783,83 @@ class _LibraryTabState extends State<LibraryTab>
       );
     }
     return const SizedBox.shrink();
+  }
+
+  /// Build a quick access card for features like History
+  Widget _buildQuickAccessCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: (isDark ? Colors.white : Colors.black).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: (isDark ? Colors.white : Colors.black).withOpacity(0.1),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: theme.colorScheme.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontFamily: FontConstants.fontFamily,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontFamily: FontConstants.fontFamily,
+                          fontSize: 13,
+                          color: (isDark ? Colors.white : Colors.black)
+                              .withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: (isDark ? Colors.white : Colors.black).withOpacity(0.5),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
