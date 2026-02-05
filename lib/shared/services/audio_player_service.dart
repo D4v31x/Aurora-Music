@@ -52,6 +52,11 @@ class AudioPlayerService extends ChangeNotifier {
   // Background manager for mesh gradient colors
   BackgroundManagerService? _backgroundManager;
 
+  // Advanced feature services
+  dynamic _crossfadeService;
+  dynamic _audioToolsService;
+  dynamic _listeningHistoryService;
+
   // Playback source tracking
   PlaybackSourceInfo _playbackSource = PlaybackSourceInfo.unknown;
   PlaybackSourceInfo get playbackSource => _playbackSource;
@@ -376,10 +381,36 @@ class AudioPlayerService extends ChangeNotifier {
     _backgroundManager = backgroundManager;
   }
 
+  /// Set the crossfade service for smooth track transitions
+  void setCrossfadeService(dynamic crossfadeService) {
+    _crossfadeService = crossfadeService;
+  }
+
+  /// Set the audio tools service for equalizer and ReplayGain
+  void setAudioToolsService(dynamic audioToolsService) {
+    _audioToolsService = audioToolsService;
+  }
+
+  /// Set the listening history service for tracking playback
+  void setListeningHistoryService(dynamic listeningHistoryService) {
+    _listeningHistoryService = listeningHistoryService;
+  }
+
   /// Update background colors based on current song
   Future<void> _updateBackgroundColors() async {
     if (_backgroundManager != null && currentSong != null) {
       await _backgroundManager!.updateColorsFromSong(currentSong);
+    }
+  }
+
+  /// Record track play in listening history
+  Future<void> _recordTrackPlay() async {
+    if (_listeningHistoryService != null && currentSong != null) {
+      try {
+        await _listeningHistoryService.recordPlay(currentSong);
+      } catch (e) {
+        debugPrint('Error recording track play: $e');
+      }
     }
   }
 
@@ -673,6 +704,9 @@ class AudioPlayerService extends ChangeNotifier {
 
     // Record to smart suggestions service for personalized recommendations
     _smartSuggestions.recordPlay(song);
+
+    // Record to listening history service
+    _recordTrackPlay();
 
     // Use debounced save to reduce disk I/O
     _scheduleSavePlayCounts();

@@ -393,7 +393,6 @@
   "resetLayoutConfirm": "Reset layout to default?",
   "resetLayoutMessage": "This will restore the original section order and visibility.",
   "sectionVisibility": "Toggle section visibility",
-  "listeningHistory": "Listening History",
   "libraryStats": "Library Stats",
   "back": "Back",
   "continueButton": "Continue",

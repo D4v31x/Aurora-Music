@@ -856,6 +856,10 @@ extension AppLocalizationsExtension on generated.AppLocalizations {
         return playNext;
       case 'remove_from_queue':
         return removeFromQueue;
+      case 'settingsPlayback':
+        return settingsPlayback;
+      case 'listeningHistory':
+        return listeningHistory;
       case 'saveAsPlaylist':
         return saveAsPlaylist;
       case 'clearQueue':

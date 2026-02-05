@@ -17,6 +17,11 @@ import 'shared/services/background_manager_service.dart';
 import 'shared/services/sleep_timer_controller.dart';
 import 'shared/services/artist_separator_service.dart';
 import 'shared/services/home_layout_service.dart';
+import 'shared/services/crossfade_service.dart';
+import 'shared/services/audio_tools_service.dart';
+import 'shared/services/listening_history_service.dart';
+import 'shared/services/smart_playlist_service.dart';
+import 'shared/services/offline_mode_service.dart';
 import 'l10n/app_localizations.dart';
 import 'features/splash/splash_screen.dart';
 import 'l10n/locale_provider.dart';
@@ -104,6 +109,12 @@ void main() async {
             ChangeNotifierProvider(
                 create: (_) => SleepTimerController(), lazy: true),
             ChangeNotifierProvider.value(value: HomeLayoutService()),
+            // New services for advanced features
+            ChangeNotifierProvider(create: (_) => CrossfadeService()),
+            ChangeNotifierProvider(create: (_) => AudioToolsService()),
+            ChangeNotifierProvider(create: (_) => ListeningHistoryService()),
+            ChangeNotifierProvider(create: (_) => SmartPlaylistService()),
+            ChangeNotifierProvider(create: (_) => OfflineModeService()),
             Provider<ErrorTrackingService>.value(value: errorTracker),
           ],
           child: Builder(
@@ -115,13 +126,33 @@ void main() async {
                   Provider.of<BackgroundManagerService>(context, listen: false);
               final performanceProvider =
                   Provider.of<PerformanceModeProvider>(context, listen: false);
+              final crossfadeService =
+                  Provider.of<CrossfadeService>(context, listen: false);
+              final audioToolsService =
+                  Provider.of<AudioToolsService>(context, listen: false);
+              final listeningHistoryService =
+                  Provider.of<ListeningHistoryService>(context, listen: false);
+              final smartPlaylistService =
+                  Provider.of<SmartPlaylistService>(context, listen: false);
+              final offlineModeService =
+                  Provider.of<OfflineModeService>(context, listen: false);
 
               // Set the background manager in the audio player service
               audioPlayerService.setBackgroundManager(backgroundManager);
 
-              // Initialize performance provider
-              WidgetsBinding.instance.addPostFrameCallback((_) {
+              // Connect audio services to player service
+              audioPlayerService.setCrossfadeService(crossfadeService);
+              audioPlayerService.setAudioToolsService(audioToolsService);
+              audioPlayerService.setListeningHistoryService(listeningHistoryService);
+
+              // Initialize all services
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
                 performanceProvider.initialize();
+                await crossfadeService.initialize();
+                await audioToolsService.initialize();
+                await listeningHistoryService.initialize();
+                await smartPlaylistService.initialize();
+                await offlineModeService.initialize();
               });
 
               return MyApp(

@@ -618,25 +618,27 @@ class _QueueItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return ReorderableDragStartListener(
-      index: index,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          onLongPress: () => _showContextMenu(context, l10n),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                // Drag handle
-                ReorderableDragStartListener(
-                  index: index,
+    return Material(
+      key: key,
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: () => _showContextMenu(context, l10n),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              // Drag handle - only this is draggable
+              ReorderableDragStartListener(
+                index: index,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: Icon(
                     Icons.drag_handle_rounded,
                     color: (isDark ? Colors.white : Colors.black).withOpacity(0.3),
                   ),
                 ),
+              ),
                 const SizedBox(width: 12),
                 // Artwork
                 ClipRRect(

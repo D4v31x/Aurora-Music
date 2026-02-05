@@ -23,24 +23,18 @@ class PlaybackSettingsScreen extends StatefulWidget {
 }
 
 class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
-  final CrossfadeService _crossfadeService = CrossfadeService();
-  final AudioToolsService _audioToolsService = AudioToolsService();
-  final OfflineModeService _offlineModeService = OfflineModeService();
+  late CrossfadeService _crossfadeService;
+  late AudioToolsService _audioToolsService;
+  late OfflineModeService _offlineModeService;
   bool _initialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    _initializeServices();
-  }
-
-  Future<void> _initializeServices() async {
-    await Future.wait([
-      _crossfadeService.initialize(),
-      _audioToolsService.initialize(),
-      _offlineModeService.initialize(),
-    ]);
-    if (mounted) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _crossfadeService = Provider.of<CrossfadeService>(context, listen: false);
+      _audioToolsService = Provider.of<AudioToolsService>(context, listen: false);
+      _offlineModeService = Provider.of<OfflineModeService>(context, listen: false);
       setState(() => _initialized = true);
     }
   }
@@ -50,6 +44,11 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
     final audioService = Provider.of<AudioPlayerService>(context);
+    
+    // Listen to service changes to rebuild UI
+    final crossfadeService = Provider.of<CrossfadeService>(context);
+    final audioToolsService = Provider.of<AudioToolsService>(context);
+    final offlineModeService = Provider.of<OfflineModeService>(context);
 
     return Scaffold(
       backgroundColor:

@@ -26,22 +26,23 @@ class ListeningHistoryScreen extends StatefulWidget {
 
 class _ListeningHistoryScreenState extends State<ListeningHistoryScreen>
     with SingleTickerProviderStateMixin {
-  final ListeningHistoryService _historyService = ListeningHistoryService();
+  late ListeningHistoryService _historyService;
   final ArtworkCacheService _artworkService = ArtworkCacheService();
   late TabController _tabController;
-  bool _initialized = false;
+  bool _serviceReady = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _initializeService();
   }
 
-  Future<void> _initializeService() async {
-    await _historyService.initialize();
-    if (mounted) {
-      setState(() => _initialized = true);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_serviceReady) {
+      _historyService = Provider.of<ListeningHistoryService>(context, listen: false);
+      setState(() => _serviceReady = true);
     }
   }
 
@@ -55,6 +56,9 @@ class _ListeningHistoryScreenState extends State<ListeningHistoryScreen>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
+    
+    // Listen to history changes
+    final historyService = Provider.of<ListeningHistoryService>(context);
 
     return Scaffold(
       backgroundColor:

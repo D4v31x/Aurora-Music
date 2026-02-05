@@ -7,6 +7,7 @@ import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/services/smart_playlist_service.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
@@ -27,7 +28,7 @@ class SmartPlaylistBuilderScreen extends StatefulWidget {
 
 class _SmartPlaylistBuilderScreenState
     extends State<SmartPlaylistBuilderScreen> {
-  final SmartPlaylistService _service = SmartPlaylistService();
+  late SmartPlaylistService _service;
   final _nameController = TextEditingController();
   final List<SmartPlaylistRule> _rules = [];
   RuleMatch _matchType = RuleMatch.all;
@@ -39,12 +40,19 @@ class _SmartPlaylistBuilderScreenState
   @override
   void initState() {
     super.initState();
-    _initializeService();
+    // Initialize in didChangeDependencies to access Provider
   }
 
-  Future<void> _initializeService() async {
-    await _service.initialize();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _service = Provider.of<SmartPlaylistService>(context, listen: false);
+      _initializeFromExisting();
+    }
+  }
 
+  void _initializeFromExisting() {
     if (widget.existingPlaylist != null) {
       _nameController.text = widget.existingPlaylist!.name;
       _rules.addAll(widget.existingPlaylist!.rules);
@@ -54,9 +62,7 @@ class _SmartPlaylistBuilderScreenState
       _sortDescending = widget.existingPlaylist!.sortDescending;
     }
 
-    if (mounted) {
-      setState(() => _initialized = true);
-    }
+    setState(() => _initialized = true);
   }
 
   @override
