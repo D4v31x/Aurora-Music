@@ -48,5 +48,6 @@ export 'sleep_timer_controller.dart';
 export 'smart_playlist_service.dart';
 export 'smart_suggestions_service.dart';
 export 'track_settings_service.dart';
+export 'undo_service.dart';
 export 'user_preferences.dart';
 export 'version_service.dart';
