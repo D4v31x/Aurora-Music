@@ -95,7 +95,7 @@ class _ListeningHistoryScreenState extends State<ListeningHistoryScreen>
           ],
         ),
       ),
-      body: !_initialized
+      body: !_serviceReady
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [

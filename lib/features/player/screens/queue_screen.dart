@@ -639,58 +639,57 @@ class _QueueItemTile extends StatelessWidget {
                   ),
                 ),
               ),
-                const SizedBox(width: 12),
-                // Artwork
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: _artworkService.buildCachedArtwork(
-                    song.id,
-                    size: 48,
-                  ),
+              const SizedBox(width: 12),
+              // Artwork
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: _artworkService.buildCachedArtwork(
+                  song.id,
+                  size: 48,
                 ),
-                const SizedBox(width: 12),
-                // Song info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        song.title,
-                        style: TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(width: 12),
+              // Song info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      song.title,
+                      style: TextStyle(
+                        fontFamily: FontConstants.fontFamily,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white : Colors.black,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        splitArtists(song.artist ?? 'Unknown Artist').join(', '),
-                        style: TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          fontSize: 12,
-                          color: (isDark ? Colors.white : Colors.black)
-                              .withOpacity(0.6),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+                      style: TextStyle(
+                        fontFamily: FontConstants.fontFamily,
+                        fontSize: 12,
+                        color: (isDark ? Colors.white : Colors.black)
+                            .withOpacity(0.6),
                       ),
-                    ],
-                  ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                // Remove button
-                IconButton(
-                  icon: Icon(
-                    Icons.close_rounded,
-                    color: (isDark ? Colors.white : Colors.black).withOpacity(0.5),
-                    size: 20,
-                  ),
-                  onPressed: onRemove,
+              ),
+              // Remove button
+              IconButton(
+                icon: Icon(
+                  Icons.close_rounded,
+                  color: (isDark ? Colors.white : Colors.black).withOpacity(0.5),
+                  size: 20,
                 ),
-              ],
-            ),
+                onPressed: onRemove,
+              ),
+            ],
           ),
         ),
       ),
