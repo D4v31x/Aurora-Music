@@ -9,6 +9,13 @@
 5. [Data Flow](#data-flow)
 6. [Permissions & Features](#permissions--features)
 7. [Best Practices & Notes](#best-practices--notes)
+8. [Routing & Navigation Logic](#routing--navigation-logic)
+9. [Error States & Edge Cases](#error-states--edge-cases)
+10. [Persistence & Storage Schema](#persistence--storage-schema)
+11. [Lifecycle & Background Behavior](#lifecycle--background-behavior)
+12. [Accessibility & UX Decisions](#accessibility--ux-decisions)
+13. [Release & Distribution Strategy](#release--distribution-strategy)
+14. [Non-Goals](#non-goals)
 
 ---
 
@@ -1257,6 +1264,1026 @@ flutter build apk --release
 # Analyze code
 flutter analyze
 ```
+
+---
+
+## Routing & Navigation Logic
+
+### Navigation System
+
+Aurora Music uses **Navigator 1.0** (imperative navigation) exclusively. This was chosen for its simplicity and predictability in a single-screen-flow application.
+
+**Global Navigator Key:**
+```dart
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+```
+
+The global navigator key is defined in `main.dart` and used throughout the app to enable navigation from non-widget contexts (e.g., notification click handlers, services).
+
+### Route Types
+
+| Route Type | Usage | Examples |
+|------------|-------|----------|
+| **MaterialPageRoute** | Standard full-screen push navigation | Album detail, Artist detail, Folder contents |
+| **PageRouteBuilder** | Custom animated transitions | Now Playing screen (fade + slide) |
+| **pushReplacement** | Replace current route entirely | Splash → Home/Onboarding transition |
+| **showDialog** | Modal dialogs | Settings dialogs, confirmations, sleep timer |
+| **showModalBottomSheet** | Bottom sheets | Song picker, add to playlist |
+| **pop** | Standard back navigation | Close screens, dismiss dialogs |
+
+### Screen Navigation Map
+
+```
+SplashScreen
+    ├── (pushReplacement) → OnboardingScreen (first launch)
+    │                           └── (pushReplacement) → HomeScreen
+    └── (pushReplacement) → HomeScreen (returning user)
+
+HomeScreen (TabBarView with 4 tabs)
+    ├── HomeTab
+    │   ├── (push) → AlbumDetailScreen
+    │   ├── (push) → ArtistDetailScreen
+    │   └── (push) → PlaylistDetailScreen
+    ├── LibraryTab
+    │   ├── (push) → TracksScreen → (dialog) MetadataDetailScreen
+    │   ├── (push) → AlbumsScreen → (push) AlbumDetailScreen
+    │   ├── (push) → ArtistsScreen → (push) ArtistDetailScreen
+    │   ├── (push) → FoldersScreen → (push) FolderDetailScreen
+    │   └── (push) → PlaylistsScreen → (push) PlaylistDetailScreen
+    ├── SearchTab
+    │   ├── (push) → AlbumDetailScreen
+    │   ├── (push) → ArtistDetailScreen
+    │   └── (push) → FolderDetailScreen
+    └── SettingsTab
+        ├── (push) → HomeLayoutSettings
+        ├── (push) → ArtistSeparatorSettings
+        └── (dialog) → Various settings dialogs
+
+ExpandingPlayer (global overlay)
+    └── (push via PageRouteBuilder) → NowPlayingScreen
+        ├── (push) → FullscreenLyricsScreen
+        ├── (push) → FullscreenArtworkScreen
+        ├── (push) → ArtistDetailScreen
+        ├── (push) → AlbumDetailScreen
+        └── (dialog) → Queue, Song Info, Add to Playlist
+```
+
+### Special Navigation Patterns
+
+#### Mini Player → Now Playing
+
+The `ExpandingPlayer` widget manages navigation to the Now Playing screen. It uses a **static state holder** pattern to enable expanding from anywhere:
+
+```dart
+// From anywhere in the app:
+ExpandingPlayer.expand();   // Opens Now Playing
+ExpandingPlayer.minimize(); // Closes Now Playing
+
+// State tracking:
+ExpandingPlayer.isOpenNotifier  // ValueNotifier<bool> for UI updates
+```
+
+The Now Playing screen uses a **PageRouteBuilder** with a custom fade + slide-up transition:
+
+```dart
+PageRouteBuilder<void>(
+  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+    return FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.1),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        )),
+        child: child,
+      ),
+    );
+  },
+  reverseTransitionDuration: const Duration(milliseconds: 250),
+)
+```
+
+#### Notification Click Handling
+
+When a user taps the playback notification, the app expands the mini player:
+
+```dart
+// In main.dart
+AudioService.notificationClicked.listen((clicked) {
+  if (clicked) {
+    ExpandingPlayer.expand();
+  }
+});
+```
+
+### Deep Links
+
+**Current Status:** Deep linking is **not implemented**.
+
+**Implications for Future Implementation:**
+- Would require migration to Navigator 2.0 (GoRouter) or custom deep link handler
+- Current route structure (imperative) makes deep linking difficult
+- Potential deep link targets: specific albums, artists, playlists, or songs
+
+### Testing Implications
+
+- All navigation is testable via widget tests using `Navigator.push/pop`
+- No named routes means no route-name-based testing
+- PageRouteBuilder transitions can be tested via integration tests
+- Global navigator key enables service-level navigation testing
+
+### Future Refactoring Considerations
+
+1. **Named Routes Migration:** Could add named routes for better testability and potential deep linking
+2. **GoRouter Migration:** For declarative routing, deep links, and URL-based navigation
+3. **Route Guards:** Currently no authentication guards needed (offline-only app)
+
+---
+
+## Error States & Edge Cases
+
+### Error Handling Strategy
+
+Aurora Music follows a **fail-gracefully** philosophy:
+- User-facing errors show brief toast notifications
+- Technical errors are logged to `ErrorTrackingService`
+- Silent failures for non-critical operations
+- Fallback UI states for missing data
+
+### API Error Handling
+
+#### LRCLIB API (Lyrics)
+
+| Error State | Behavior | User Feedback |
+|-------------|----------|---------------|
+| Network timeout (5s) | Return `null` | No lyrics shown, silent fail |
+| HTTP 408 (timeout) | Fall back to file cache | Uses cached lyrics if available |
+| HTTP 404 (not found) | Return `null` | "No lyrics available" in UI |
+| Invalid LRC format | Parse gracefully, skip malformed lines | Partial lyrics displayed |
+| Duration mismatch >10% | Continue with best match | Lyrics may be out of sync |
+| UTF-8 decoding error | Use `allowMalformed: true` | Some characters may show as `?` |
+
+**LRC Parsing Edge Cases:**
+```dart
+// Empty lines are skipped
+// Metadata tags [ti:], [ar:], [al:] are skipped
+// Invalid timestamps are skipped
+// Multiple timestamps per line are supported
+// Non-UTF-8 characters are replaced with empty string
+```
+
+#### Spotify API (Artist Images)
+
+| Error State | Behavior | User Feedback |
+|-------------|----------|---------------|
+| Missing credentials | `_spotifyEnabled = false` | Default person icon shown |
+| HTTP 401 (auth failed) | Auto-refresh token and retry once | Silent retry |
+| HTTP 429 (rate limit) | Return `null`, use cache | Cached image or default icon |
+| Network error | Return `null` | Default person icon shown |
+| Artist not found | Cache `null` result | Default person icon shown |
+| Empty `images` array | Return `null` | Default person icon shown |
+
+**Spotify Token Management:**
+```dart
+// Token is refreshed on 401 response
+if (response.statusCode == 401) {
+  await _getSpotifyAccessToken();
+  return _getArtistImageFromSpotify(artistName);  // Retry once
+}
+```
+
+#### Deezer/iTunes API (Metadata)
+
+| Error State | Behavior | User Feedback |
+|-------------|----------|---------------|
+| Network timeout (10s) | Return empty list | "No suggestions found" |
+| HTTP error | Return empty list | Suggestions unavailable |
+| Empty results | Return empty list | User can edit manually |
+
+### MediaStore/Audio Query Errors
+
+| Error State | Behavior | User Feedback |
+|-------------|----------|---------------|
+| Permission denied | Return `false` from permission check | Permission request UI shown |
+| Empty MediaStore | Return empty song list | "No music found" message |
+| Corrupted audio file | Skip file in query | File doesn't appear in library |
+| Permission revoked at runtime | Catch error, return cached data | May show stale library |
+
+**Permission Revocation Handling:**
+```dart
+Future<bool> _checkPermissionStatus() async {
+  try {
+    return await _audioQuery.permissionsStatus();
+  } catch (e) {
+    debugPrint('Permission check error: $e');
+    return false;  // Safe fallback
+  }
+}
+```
+
+### Audio Playback Errors
+
+| Error State | Behavior | User Feedback |
+|-------------|----------|---------------|
+| Invalid file path | Skip song, try next | Brief toast "Couldn't play song" |
+| Corrupted audio file | Skip song, try next | Brief toast |
+| Audio focus lost | Pause playback | Playback pauses silently |
+| Bluetooth disconnected | Continue playing through speaker | Audio switches output |
+| Headphones unplugged | Pause playback | `becomingNoisyEventStream` triggers pause |
+
+**Audio Session Configuration:**
+```dart
+// Handles audio focus automatically
+await session.configure(const AudioSessionConfiguration(
+  avAudioSessionCategory: AVAudioSessionCategory.playback,
+  androidWillPauseWhenDucked: true,
+));
+```
+
+### UI Fallback States
+
+| Component | Empty/Error State | Fallback UI |
+|-----------|-------------------|-------------|
+| Song artwork | No embedded art | Default `default_art.png` |
+| Artist image | No Spotify image | Person icon |
+| Album artwork | No art found | Album icon |
+| Lyrics | Not available | "No lyrics available" message |
+| Search results | No matches | "No results found" |
+| Playlists | Empty list | "Create your first playlist" |
+| Recently Played | No history | Section hidden |
+| For You suggestions | No listening history | Random songs shown |
+
+### Silent Failure Scenarios
+
+These operations fail silently to avoid disrupting user experience:
+
+1. **Artwork preloading** - Missing artwork doesn't affect playback
+2. **Smart suggestions save** - Debounced, non-critical
+3. **Play count save** - Cached, retried on next opportunity
+4. **Lyrics caching** - Falls back to re-fetching
+5. **Clarity analytics** - Optional, doesn't affect app function
+
+### Error Logging
+
+All errors are captured via `ErrorTrackingService`:
+
+```dart
+FlutterError.onError = (FlutterErrorDetails details) async {
+  FlutterError.dumpErrorToConsole(details);
+  await errorTracker.recordError(details.exception, details.stack);
+};
+```
+
+Errors are stored in SharedPreferences (max 10) and can be reviewed for debugging.
+
+---
+
+## Persistence & Storage Schema
+
+### Storage Overview
+
+Aurora Music uses local storage exclusively. No cloud storage or server-side persistence.
+
+| Storage Type | Location | Format | Purpose |
+|--------------|----------|--------|---------|
+| SharedPreferences | System default | Key-value pairs | Settings, first-run flag, error logs |
+| JSON files | `getApplicationDocumentsDirectory()` | JSON | Playlists, play counts, smart suggestions |
+| LRC files | `{docs}/lyrics/` | Plain text (LRC format) | Cached synced lyrics |
+| Image files | `{docs}/artist_images/` | JPEG | Cached artist images from Spotify |
+| Temp files | `getTemporaryDirectory()` | JPEG | Notification artwork |
+
+### JSON Data Schemas
+
+#### 1. Playlists (`playlists.json`)
+
+```json
+[
+  {
+    "id": "1706745600000",
+    "name": "My Favorites",
+    "songs": [
+      {
+        "id": 12345,
+        "title": "Song Name",
+        "artist": "Artist Name",
+        "album": "Album Name",
+        "albumId": 67890,
+        "duration": 234000,
+        "uri": "content://media/external/audio/media/12345",
+        "data": "/storage/emulated/0/Music/song.mp3"
+      }
+    ]
+  }
+]
+```
+
+**Notes:**
+- `id` is generated from `DateTime.now().millisecondsSinceEpoch.toString()`
+- Special playlist IDs: `liked_songs`, `most_played`, `recently_added`
+- Songs are stored with full metadata to avoid re-querying MediaStore
+
+#### 2. Play Counts (`play_counts.json`)
+
+```json
+{
+  "tracks": {
+    "12345": 42,
+    "67890": 18
+  },
+  "albums": {
+    "album_id_1": 60,
+    "album_id_2": 25
+  },
+  "artists": {
+    "Artist Name": 78,
+    "Another Artist": 33
+  },
+  "playlists": {
+    "playlist_id_1": 15
+  },
+  "folders": {
+    "/storage/emulated/0/Music": 120
+  }
+}
+```
+
+**Notes:**
+- All keys are string-formatted IDs or names
+- Values are integer counts
+- Saved with 2-second debouncing to reduce disk I/O
+
+#### 3. Smart Suggestions (`smart_suggestions.json`)
+
+```json
+{
+  "listeningHistory": [
+    {
+      "trackId": "12345",
+      "artists": ["Artist 1", "Artist 2"],
+      "genre": "Pop",
+      "timestamp": "2024-02-01T14:30:00.000Z",
+      "wasSkipped": false,
+      "listenDurationMs": 180000,
+      "totalDurationMs": 210000
+    }
+  ],
+  "hourlyTrackCounts": {
+    "14": {
+      "12345": 5,
+      "67890": 3
+    }
+  },
+  "hourlyArtistCounts": {
+    "14": {
+      "Artist Name": 8
+    }
+  },
+  "hourlyGenreCounts": {
+    "14": {
+      "Pop": 12
+    }
+  },
+  "weekdayTrackCounts": {
+    "3": {
+      "12345": 2
+    }
+  },
+  "weekdayArtistCounts": {
+    "3": {
+      "Artist Name": 5
+    }
+  },
+  "trackPlayCounts": {
+    "12345": 42
+  },
+  "artistPlayCounts": {
+    "Artist Name": 78
+  },
+  "genrePlayCounts": {
+    "Pop": 156
+  },
+  "trackSkipCounts": {
+    "99999": 5
+  },
+  "recentlyPlayedTrackIds": ["12345", "67890"],
+  "recentlyPlayedArtists": ["Artist 1", "Artist 2"]
+}
+```
+
+**Notes:**
+- `listeningHistory` limited to 1000 events
+- `recentlyPlayedTrackIds` limited to 50 items
+- `recentlyPlayedArtists` limited to 30 items
+- Hourly keys: 0-23 (hours)
+- Weekday keys: 0-6 (Monday=0, Sunday=6)
+
+#### 4. Liked Songs (`liked_songs.json`)
+
+```json
+{
+  "liked": ["12345", "67890", "11111"]
+}
+```
+
+**Notes:**
+- Simple array of song ID strings
+- Stored separately from playlists for quick access
+
+#### 5. Library Cache (`library.json`)
+
+```json
+{
+  "songs": [
+    {
+      "id": 12345,
+      "title": "Song Name",
+      ...
+    }
+  ],
+  "lastUpdated": "2024-02-01T12:00:00.000Z"
+}
+```
+
+### SharedPreferences Keys
+
+| Key | Type | Purpose |
+|-----|------|---------|
+| `isFirstTime` | bool | First-run detection for onboarding |
+| `languageCode` | String | User's selected language ("en", "cs") |
+| `last_version` | String | For changelog display after update |
+| `use_dynamic_color` | bool | Material You color toggle |
+| `pending_errors` | String (JSON) | Cached error logs |
+| `home_section_order` | String (JSON) | Home tab section order |
+| `home_section_visibility` | String (JSON) | Which sections are visible |
+| `artist_separators` | String (JSON) | Custom artist name separators |
+| `feedbackReminderLastShown` | int | Timestamp for feedback reminder |
+| `feedbackReminderCount` | int | Number of reminders shown |
+
+### File Cache Management
+
+**Lyrics Cache:**
+- Location: `{docs}/lyrics/{md5_hash}.lrc`
+- No automatic expiration (lyrics don't change)
+- User can delete manually via system settings
+
+**Artist Images:**
+- Location: `{docs}/artist_images/{sanitized_name}.jpg`
+- No automatic expiration
+- Images downloaded once per artist
+
+**Memory Caches:**
+- Lyrics: Max 50 entries in memory (`_memoryCache`)
+- Artwork: Max 80 entries (`_maxArtworkCacheSize`)
+- Artist images: Max 40 entries (`_maxArtistCacheSize`)
+- LRU eviction when limits reached
+
+### Data Versioning Strategy
+
+**Current Strategy:** No explicit versioning.
+
+**Migration Handling:**
+- JSON parsing uses nullable types and defaults
+- Missing fields default to empty/zero values
+- Unknown fields are ignored (forward compatible)
+
+```dart
+// Example: graceful loading with defaults
+_trackPlayCounts = Map<String, int>.from(data['trackPlayCounts'] ?? {});
+_listeningHistory = (data['listeningHistory'] as List?)
+    ?.map((e) => ListeningEvent.fromJson(e))
+    .toList() ?? [];
+```
+
+### Corrupted File Handling
+
+| Scenario | Behavior |
+|----------|----------|
+| JSON parse error | Log error, return empty/default data |
+| Missing file | Return empty/default data, file created on first save |
+| Incomplete write | Will fail to parse, treated as corrupted |
+| Disk full | Save fails silently, data retained in memory |
+
+### App Update Behavior
+
+- Data files are preserved across app updates
+- No automatic migration between versions
+- Settings preserved unless explicitly cleared
+- Cache directory may be cleared by system
+
+---
+
+## Lifecycle & Background Behavior
+
+### App Lifecycle States
+
+Aurora Music responds to Flutter's `AppLifecycleState` events:
+
+```dart
+@override
+void didChangeAppLifecycleState(AppLifecycleState state) {
+  if (state == AppLifecycleState.resumed) {
+    // Sync playback state when returning to foreground
+    audioService.syncPlaybackState();
+  }
+  
+  if (state == AppLifecycleState.detached) {
+    // Clean up when app is swiped closed
+    _cleanupAndExit();
+  }
+}
+```
+
+### State Transitions
+
+| From | To | Behavior |
+|------|-----|----------|
+| Active | Paused | Audio continues playing (background) |
+| Paused | Active | UI syncs with current playback state |
+| Paused | Detached | Audio stops, resources released |
+| Active | Inactive | Brief pause (e.g., phone call incoming) - audio continues |
+
+### Background Playback
+
+**Architecture:**
+```
+AudioService + just_audio + AuroraAudioHandler
+         │
+         ▼
+┌────────────────────────────────────┐
+│ Foreground Service (Android)       │
+│ - Keeps app alive in background    │
+│ - Shows persistent notification    │
+│ - Handles media button events      │
+└────────────────────────────────────┘
+```
+
+**Notification Controls:**
+- Previous track
+- Play/Pause
+- Next track
+- **(No Stop button - intentional UX decision)**
+
+**Media Session Events:**
+- Lock screen controls work via `audio_service`
+- Bluetooth media buttons supported
+- Android Auto (headunit display) supported via MediaBrowserService
+
+### Process Kill Scenarios
+
+| Scenario | Playback State | Queue Restoration |
+|----------|----------------|-------------------|
+| User swipe-close from recents | Audio stops immediately | Not restored |
+| System kills for memory | Audio stops | Not restored |
+| Device reboot | N/A | Nothing persisted |
+| Force stop in settings | Audio stops | Nothing persisted |
+
+**Important:** Aurora Music does **not** persist playback queue across restarts. This is intentional:
+- Simplifies architecture
+- Avoids playing unexpected audio on app launch
+- Queue is session-based
+
+### Audio Focus Handling
+
+```dart
+// Configuration in audio_player_service.dart
+final session = await AudioSession.instance;
+await session.configure(const AudioSessionConfiguration(
+  avAudioSessionCategory: AVAudioSessionCategory.playback,
+  androidAudioAttributes: AndroidAudioAttributes(
+    contentType: AndroidAudioContentType.music,
+    usage: AndroidAudioUsage.media,
+  ),
+  androidWillPauseWhenDucked: true,
+));
+```
+
+| Event | Behavior |
+|-------|----------|
+| Phone call | Audio pauses, resumes after call |
+| Other app plays audio | Aurora pauses (loses focus) |
+| Navigation voice | Aurora ducks volume temporarily |
+| Notification sound | Brief duck, continues playing |
+
+### Notification ↔ UI Sync
+
+When the app is backgrounded:
+
+1. User controls via notification → `just_audio` state changes
+2. `playbackEventStream` and `playingStream` emit updates
+3. `AuroraAudioHandler._broadcastState()` updates notification
+4. UI syncs via `AudioPlayerService` listeners when resumed
+
+```dart
+// Sync when returning to foreground
+void syncPlaybackState() {
+  _isPlaying = audioHandler.player.playing;
+  isPlayingNotifier.value = _isPlaying;
+  notifyListeners();
+}
+```
+
+### Memory Pressure
+
+When system is low on memory:
+
+1. Background service may be terminated (audio stops)
+2. Image caches are cleared by system
+3. App may be fully killed
+
+**Mitigation:**
+- ImageCache limits: 100 images, 80MB max
+- LRU eviction for artwork caches
+- Periodic cache cleanup every 3 minutes
+
+### Headphone/Bluetooth Handling
+
+**Headphone Unplug (Becoming Noisy):**
+```dart
+session.becomingNoisyEventStream.listen((_) {
+  // Pause to prevent audio blasting through speaker
+  player.pause();
+});
+```
+
+**Bluetooth State Changes:**
+```dart
+session.devicesChangedEventStream.listen((_) async {
+  final devices = await session.getDevices();
+  // Update Bluetooth indicator in UI
+  updateBluetoothStatus(isConnected, deviceName);
+});
+```
+
+---
+
+## Accessibility & UX Decisions
+
+### Font & Text Scaling
+
+**Implementation:**
+- Single font family: Questrial (clean, readable sans-serif)
+- No hardcoded text sizes that ignore system scaling
+- Uses relative sizing throughout
+- Respects system font scale via `MediaQuery.textScaleFactor`
+
+**Font Sizes:**
+| Element | Size | Context |
+|---------|------|---------|
+| App bar titles | 20sp | Screen headers |
+| Section headers | 18-22sp | Home sections |
+| List item titles | 15-16sp | Songs, albums |
+| Subtitles | 13-14sp | Artists, duration |
+| Small text | 11-12sp | Metadata, version |
+
+### Color & Contrast
+
+**Dark-Only Design:**
+Aurora Music is intentionally dark-mode only. Rationale:
+- Music apps are often used in low-light environments
+- Dark backgrounds make album artwork "pop"
+- OLED battery savings
+- Consistent, focused visual identity
+
+**Color Sources:**
+1. **Material You (Dynamic Color):** System wallpaper-derived colors when enabled
+2. **Fallback Scheme:** Deep purple seed color
+3. **Artwork-Based:** Now Playing screen extracts colors from album art
+
+**Contrast Considerations:**
+- White text on semi-transparent backgrounds
+- Glassmorphic elements use blur + overlay for readability
+- Critical controls (play/pause) are always high contrast
+- Disabled states use reduced opacity (0.5-0.6)
+
+### Screen Reader Support
+
+**Current Status:** Basic support via Flutter's built-in semantics.
+
+**Implemented:**
+- All buttons have implicit accessibility labels
+- List items are navigable
+- Standard Flutter widgets provide basic TalkBack/VoiceOver support
+
+**Not Implemented:**
+- Custom `Semantics` widgets
+- Explicit accessibility labels for complex widgets
+- Live region announcements for playback changes
+
+### Touch Targets
+
+| Element | Size | Notes |
+|---------|------|-------|
+| Tab bar items | 48dp+ | Standard material size |
+| List items | 56dp+ height | Full-width tap target |
+| Icon buttons | 40dp+ | Settings, close, etc. |
+| Player controls | 56dp+ | Play/pause, skip |
+| Mini player | 72dp | Large tap area |
+
+### Key UX Decisions
+
+#### No Stop Button
+
+The playback notification shows only: Previous | Play/Pause | Next
+
+**Rationale:**
+- Stop is rarely needed (pause is sufficient)
+- Reduces accidental tap termination
+- Follows modern streaming app patterns
+- If user wants to stop: pause + swipe away notification
+
+#### Limited Notification Actions
+
+Only 3 compact actions are shown:
+```dart
+androidCompactActionIndices: const [0, 1, 2],  // All 3 visible
+```
+
+**Rationale:**
+- Android limits compact view to 3 actions
+- Most important controls are always visible
+- Expanded notification adds seek bar automatically
+
+#### Dark Mode Only
+
+**Rationale:**
+- Simplifies theming code (single theme)
+- Music apps benefit from dark UI
+- Reduces testing surface (no light mode bugs)
+- Allows artwork to be the visual focus
+
+#### Mini Player Always Visible
+
+When a song is loaded, mini player appears at bottom of all screens.
+
+**Rationale:**
+- Quick access to playback controls
+- Song context always visible
+- Tap to expand to full Now Playing
+- Follows pattern of Spotify, Apple Music
+
+#### No Swipe-to-Delete
+
+Playlists and songs require explicit delete via context menu.
+
+**Rationale:**
+- Prevents accidental data loss
+- Consistent with careful, intentional UX
+- Delete is destructive, should be deliberate
+
+### Motion & Animation
+
+**Philosophy:** Smooth, purposeful animations that enhance UX without being distracting.
+
+| Animation | Duration | Curve |
+|-----------|----------|-------|
+| Page transitions | 250-350ms | easeOutCubic |
+| Mini player expand | 300ms | easeInOutCubic |
+| Tab indicator | 200ms | linear |
+| List item stagger | 50ms offset | easeOutQuint |
+| Splash → Home | 900ms | easeOutCubic |
+
+**Reduced Motion:** Not explicitly implemented. Could be added by respecting `MediaQuery.disableAnimations`.
+
+---
+
+## Release & Distribution Strategy
+
+### Version Format
+
+Aurora Music follows a modified **SemVer** format:
+
+```
+v{MAJOR}.{MINOR}.{PATCH}+{BUILD}
+Example: v0.1.25+7
+```
+
+| Component | Meaning |
+|-----------|---------|
+| MAJOR | Breaking changes, major rewrites (currently 0 = beta) |
+| MINOR | New features, significant improvements |
+| PATCH | Bug fixes, small improvements |
+| BUILD | Android `versionCode`, increments with each release |
+
+### Beta vs Stable
+
+**Current Phase:** Beta (v0.x.x)
+
+| Aspect | Beta | Stable (Future) |
+|--------|------|-----------------|
+| Version | 0.x.x | 1.x.x+ |
+| Distribution | GitHub Releases | GitHub + potentially Play Store |
+| Stability | Some rough edges | Production-ready |
+| Features | Rapidly evolving | Feature-complete core |
+| Support | Best-effort | Committed |
+
+### Build Configuration
+
+**Debug Build:**
+```bash
+flutter run
+```
+- Enabled assertions
+- Debug banner visible
+- Hot reload available
+
+**Release Build:**
+```bash
+flutter build apk --release
+flutter build appbundle --release  # For Play Store
+```
+
+**Current Signing:** Debug keystore (development)
+
+### Release Criteria ("Release-Ready")
+
+Before tagging a release:
+
+1. **No Critical Bugs:** App doesn't crash during normal use
+2. **Playback Functional:** Play, pause, skip, repeat, shuffle all work
+3. **Library Loads:** Songs are discovered and displayed
+4. **Lyrics Work:** At least some songs get lyrics
+5. **Performance:** No major jank or memory leaks
+6. **Build Succeeds:** `flutter build apk --release` completes
+
+### Release Process
+
+1. Update version in `pubspec.yaml`:
+   ```yaml
+   version: 0.1.26+8  # Increment as appropriate
+   ```
+
+2. Update changelog (if maintained)
+
+3. Build release APK:
+   ```bash
+   flutter build apk --release
+   ```
+
+4. Test on real device
+
+5. Create GitHub Release:
+   - Tag: `v0.1.26`
+   - Title: `Aurora Music v0.1.26`
+   - Attach APK file
+   - Write release notes
+
+### Distribution Channels
+
+| Channel | Status | Notes |
+|---------|--------|-------|
+| GitHub Releases | Active | Primary distribution |
+| Google Play Store | Not yet | Would require signing setup |
+| F-Droid | Not yet | Would need open-source compliance |
+| Direct APK | Available | Via GitHub releases |
+
+### Code Name
+
+Optional code name stored in `.env`:
+```env
+CODE_NAME=Aurora
+```
+Displayed on splash screen for development/beta identification.
+
+---
+
+## Non-Goals
+
+Aurora Music is intentionally scoped to be a focused, local music player. The following features are **explicitly out of scope**:
+
+### No Cloud Storage/Sync
+
+**What's Excluded:**
+- Cloud backup of playlists
+- Syncing listening history across devices
+- Online library storage
+
+**Rationale:**
+- Keeps app simple and offline-capable
+- Avoids privacy concerns with user data
+- No ongoing server costs
+- Users own their data locally
+
+### No User Accounts
+
+**What's Excluded:**
+- Login/signup flows
+- User profiles
+- Social features (following, sharing playlists)
+
+**Rationale:**
+- Music player doesn't need accounts
+- Avoids authentication complexity
+- Protects user privacy
+- No need for backend infrastructure
+
+### No Streaming
+
+**What's Excluded:**
+- Spotify integration (playback)
+- Apple Music integration
+- YouTube Music
+- Any online audio streaming
+
+**Rationale:**
+- Focus on local files is core identity
+- Streaming requires licensing agreements
+- Existing apps handle streaming well
+- Keeps app lean and independent
+
+### No Podcast Support
+
+**What's Excluded:**
+- Podcast discovery
+- RSS feed subscription
+- Episode management
+- Variable speed playback presets for podcasts
+
+**Rationale:**
+- Different UX requirements than music
+- Dedicated podcast apps exist
+- Would dilute music focus
+- Playback speed is available if needed
+
+### No Equalizer
+
+**What's Excluded:**
+- Built-in audio equalizer
+- Bass boost, virtualizer
+- Audio effects
+
+**Rationale:**
+- Android system EQ available via other apps
+- Complexity vs. value tradeoff
+- Most users don't adjust EQ
+- Could be added in future if demand exists
+
+### No Lyrics Editing
+
+**What's Excluded:**
+- Create/edit LRC files
+- Sync lyrics manually
+- Upload to LRCLIB
+
+**Rationale:**
+- Complex feature with niche audience
+- Dedicated tools exist (e.g., LRC editors)
+- Focus on consumption, not creation
+
+### No Social/Community Features
+
+**What's Excluded:**
+- Sharing to social media
+- Public profiles
+- Listening activity feed
+- Collaborative playlists
+
+**Rationale:**
+- Privacy-focused design
+- Social features require accounts
+- Keeps app simple and personal
+
+### No Android Auto / CarPlay (Limited)
+
+**Current Status:** Basic MediaBrowserService support exists (inherited from `audio_service`), but no dedicated car UI.
+
+**What's Explicitly Not Built:**
+- Custom Android Auto UI
+- CarPlay support
+- Voice control integration
+
+**Rationale:**
+- Basic media controls work via system
+- Full car UI is significant effort
+- Could be added in future
+
+### No Wear OS / Watch Support
+
+**What's Excluded:**
+- Wear OS companion app
+- Watch face complications
+- Watch-based playback control
+
+**Rationale:**
+- Niche user base
+- Notification controls work from watch
+- Significant development effort
+
+### Summary Table
+
+| Feature | Status | Reason |
+|---------|--------|--------|
+| Cloud sync | ❌ Not planned | Privacy, simplicity |
+| User accounts | ❌ Not planned | Not needed |
+| Streaming | ❌ Not planned | Core scope |
+| Podcasts | ❌ Not planned | Different UX |
+| Equalizer | ⏸ Maybe future | System EQ exists |
+| Lyrics editing | ❌ Not planned | Niche use case |
+| Social features | ❌ Not planned | Privacy |
+| Full Android Auto UI | ⏸ Maybe future | Effort vs. value |
+| Wear OS | ❌ Not planned | Niche user base |
 
 ---
 
