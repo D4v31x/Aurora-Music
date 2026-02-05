@@ -229,7 +229,7 @@ class _TrackDetailSheetState extends State<TrackDetailSheet> {
               audioService.playNext(widget.song);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Added to play next'),
+                  content: Text(l10n.translate('addedToPlayNext')),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -244,7 +244,7 @@ class _TrackDetailSheetState extends State<TrackDetailSheet> {
               audioService.addToQueue(widget.song);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Added to queue'),
+                  content: Text(l10n.translate('addedToQueue')),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -254,7 +254,9 @@ class _TrackDetailSheetState extends State<TrackDetailSheet> {
             icon: audioService.isLiked(widget.song)
                 ? Icons.favorite_rounded
                 : Icons.favorite_border_rounded,
-            label: audioService.isLiked(widget.song) ? 'Liked' : 'Like',
+            label: audioService.isLiked(widget.song)
+                ? l10n.translate('liked')
+                : l10n.translate('like'),
             isDark: isDark,
             isActive: audioService.isLiked(widget.song),
             onTap: () {

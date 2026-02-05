@@ -7,6 +7,7 @@ library;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -413,11 +414,7 @@ class AudioToolsService extends ChangeNotifier {
   }
 
   double _dbToLinear(double dB) {
-    return pow(10, dB / 20).toDouble();
-  }
-
-  static double pow(num x, num exponent) {
-    return x.toDouble().pow(exponent.toDouble());
+    return math.pow(10, dB / 20).toDouble();
   }
 
   Future<void> _loadConfig() async {
@@ -442,11 +439,5 @@ class AudioToolsService extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error saving audio tools config: $e');
     }
-  }
-}
-
-extension DoublePow on double {
-  double pow(double exponent) {
-    return (this as num).toDouble() * (1.0 + (exponent - 1) * (this.abs() > 1 ? 1 : -1));
   }
 }

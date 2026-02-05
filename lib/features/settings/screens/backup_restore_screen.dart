@@ -245,14 +245,14 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
                                     children: [
                                       Icon(Icons.delete_rounded, color: Colors.red),
                                       SizedBox(width: 12),
-                                      Text('Delete', style: TextStyle(color: Colors.red)),
+                                      Text(l10n.translate('delete'), style: TextStyle(color: Colors.red)),
                                     ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          if (file != _backupFiles.last)
+                          if (_backupFiles.indexOf(file) != _backupFiles.length - 1)
                             const Divider(height: 1),
                         ],
                       );
@@ -293,7 +293,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Backups include playlists, settings, play counts, and history. They can be shared or transferred to another device.',
+                  l10n.translate('backupInfoMessage'),
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     fontSize: 13,

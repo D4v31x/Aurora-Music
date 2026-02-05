@@ -491,5 +491,10 @@
   "sampleRate": "Sample Rate",
   "codec": "Codec",
   "undo": "Undo",
-  "actionUndone": "Action undone"
+  "actionUndone": "Action undone",
+  "addedToPlayNext": "Added to play next",
+  "addedToQueue": "Added to queue",
+  "liked": "Liked",
+  "like": "Like",
+  "backupInfoMessage": "Backups include playlists, settings, play counts, and history. They can be shared or transferred to another device."
 }
