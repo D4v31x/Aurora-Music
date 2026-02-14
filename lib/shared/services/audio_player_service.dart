@@ -406,11 +406,14 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   /// Check if network operations should proceed (respects offline mode)
-  bool get shouldBlockNetwork => _offlineModeService?.shouldBlockNetwork() ?? false;
+  bool get shouldBlockNetwork =>
+      _offlineModeService?.shouldBlockNetwork() ?? false;
 
   /// Check if downloads should proceed based on current conditions
   bool canDownload({bool isWifi = true, bool isCharging = false}) {
-    return _offlineModeService?.canDownload(isWifi: isWifi, isCharging: isCharging) ?? true;
+    return _offlineModeService?.canDownload(
+            isWifi: isWifi, isCharging: isCharging) ??
+        true;
   }
 
   /// Set the listening history service for tracking playback
@@ -591,7 +594,8 @@ class AudioPlayerService extends ChangeNotifier {
       }
 
       // Check smart detection
-      if (nextSong != null && _crossfadeService!.shouldCrossfade(currentSong, nextSong)) {
+      if (nextSong != null &&
+          _crossfadeService!.shouldCrossfade(currentSong, nextSong)) {
         _startCrossfade(position, songDuration, crossfadeDuration);
       }
     }
@@ -602,9 +606,10 @@ class AudioPlayerService extends ChangeNotifier {
   /// With a single AudioPlayer using ConcatenatingAudioSource, true simultaneous
   /// playback of two tracks isn't possible. Instead, we fade out the current track
   /// briefly, then seek to the next track and fade it in, creating a smooth transition.
-  void _startCrossfade(Duration currentPosition, Duration songDuration, Duration crossfadeDuration) {
+  void _startCrossfade(Duration currentPosition, Duration songDuration,
+      Duration crossfadeDuration) {
     _isCrossfading = true;
-    
+
     // Use a shorter fade-out duration (40% of crossfade time), then transition + fade-in
     final totalFadeMs = crossfadeDuration.inMilliseconds;
     final fadeOutMs = (totalFadeMs * 0.4).round();
@@ -614,13 +619,15 @@ class AudioPlayerService extends ChangeNotifier {
     var currentStep = 0;
 
     _crossfadeTimer?.cancel();
-    _crossfadeTimer = Timer.periodic(const Duration(milliseconds: tickMs), (timer) {
+    _crossfadeTimer =
+        Timer.periodic(const Duration(milliseconds: tickMs), (timer) {
       currentStep++;
-      
+
       if (currentStep <= fadeOutSteps) {
         // Phase 1: Fade out current track
         final progress = currentStep / fadeOutSteps;
-        final fadeOutVolume = 1.0 - (progress * progress); // Quadratic ease-in for smooth fade
+        final fadeOutVolume =
+            1.0 - (progress * progress); // Quadratic ease-in for smooth fade
         final normalizedVolume = _calculateNormalizedVolume(fadeOutVolume);
         _audioPlayer.setVolume(normalizedVolume);
       } else if (currentStep == fadeOutSteps + 1) {
@@ -631,7 +638,7 @@ class AudioPlayerService extends ChangeNotifier {
         // Phase 3: Fade in next track
         final fadeInStep = currentStep - fadeOutSteps - 1;
         final fadeInSteps = fadeInMs ~/ tickMs;
-        
+
         if (fadeInStep >= fadeInSteps) {
           // Fade-in complete
           timer.cancel();
@@ -640,9 +647,10 @@ class AudioPlayerService extends ChangeNotifier {
           _isCrossfading = false;
           return;
         }
-        
+
         final progress = fadeInStep / fadeInSteps;
-        final fadeInVolume = progress * progress; // Quadratic ease-in for smooth fade
+        final fadeInVolume =
+            progress * progress; // Quadratic ease-in for smooth fade
         final normalizedVolume = _calculateNormalizedVolume(fadeInVolume);
         _audioPlayer.setVolume(normalizedVolume);
       }
@@ -671,7 +679,8 @@ class AudioPlayerService extends ChangeNotifier {
 
     // Apply ReplayGain if available (future: read from metadata)
     if (_audioToolsService!.isReplayGainEnabled) {
-      final replayGainVolume = _audioToolsService!.calculateReplayGainVolume(null, null);
+      final replayGainVolume =
+          _audioToolsService!.calculateReplayGainVolume(null, null);
       volume *= replayGainVolume;
     }
 
@@ -1829,25 +1838,25 @@ class AudioPlayerService extends ChangeNotifier {
   Future<void> setGaplessPlayback(bool value) async {
     _gaplessPlayback = value;
     await _saveSettings();
-    
+
     // If currently playing and the playlist is non-empty, reconfigure audio source
     if (_playlist.isNotEmpty && _currentIndex >= 0) {
       // Re-set the playlist with the new gapless mode
       // Preserve current position
       final currentPosition = _audioPlayer.position;
       final wasPlaying = _isPlaying;
-      
+
       await setPlaylist(
         _playlist,
         _currentIndex,
         source: _playbackSource,
       );
-      
+
       // Restore position if possible
       if (currentPosition > Duration.zero) {
         await _audioPlayer.seek(currentPosition);
       }
-      
+
       if (!wasPlaying) {
         await _audioPlayer.pause();
       }

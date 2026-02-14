@@ -33,8 +33,10 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _crossfadeService = Provider.of<CrossfadeService>(context, listen: false);
-      _audioToolsService = Provider.of<AudioToolsService>(context, listen: false);
-      _offlineModeService = Provider.of<OfflineModeService>(context, listen: false);
+      _audioToolsService =
+          Provider.of<AudioToolsService>(context, listen: false);
+      _offlineModeService =
+          Provider.of<OfflineModeService>(context, listen: false);
       setState(() => _initialized = true);
     }
   }
@@ -44,7 +46,7 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
     final audioService = Provider.of<AudioPlayerService>(context);
-    
+
     // Listen to service changes to rebuild UI when they notify
     // ignore: unused_local_variable
     final crossfadeService = Provider.of<CrossfadeService>(context);
@@ -519,5 +521,4 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
       ),
     );
   }
-
 }

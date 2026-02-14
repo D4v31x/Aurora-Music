@@ -730,9 +730,7 @@ class _UnifiedDetailScreenState extends State<UnifiedDetailScreen> {
         height: 44,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: isDisabled
-              ? buttonColor.withOpacity(0.3)
-              : buttonColor,
+          color: isDisabled ? buttonColor.withOpacity(0.3) : buttonColor,
           boxShadow: isDisabled
               ? null
               : [
@@ -933,7 +931,8 @@ class _UnifiedDetailScreenState extends State<UnifiedDetailScreen> {
             },
           );
         },
-        childCount: songsToShow.length + (_hasMoreSongs && !_isSearching ? 1 : 0),
+        childCount:
+            songsToShow.length + (_hasMoreSongs && !_isSearching ? 1 : 0),
       ),
     );
   }
@@ -1068,8 +1067,7 @@ class _UnifiedDetailScreenState extends State<UnifiedDetailScreen> {
             color: Colors.red.withOpacity(0.15),
             borderRadius: BorderRadius.circular(14),
           ),
-          child:
-              Icon(Icons.delete_rounded, color: Colors.red.withOpacity(0.8)),
+          child: Icon(Icons.delete_rounded, color: Colors.red.withOpacity(0.8)),
         ),
         onDismissed: (_) {
           widget.config.onSongRemoved?.call(song);
@@ -1154,12 +1152,10 @@ class _UnifiedDetailScreenState extends State<UnifiedDetailScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              splitArtists(song.artist ?? 'Unknown')
-                                  .join(', '),
+                              splitArtists(song.artist ?? 'Unknown').join(', '),
                               style: TextStyle(
                                 fontFamily: FontConstants.fontFamily,
-                                color:
-                                    isDark ? Colors.white54 : Colors.black45,
+                                color: isDark ? Colors.white54 : Colors.black45,
                                 fontSize: 13,
                               ),
                               maxLines: 1,
@@ -1247,8 +1243,7 @@ class _UnifiedDetailScreenState extends State<UnifiedDetailScreen> {
           children: [
             Icon(
               icon,
-              color: iconColor ??
-                  (isDark ? Colors.white70 : Colors.black54),
+              color: iconColor ?? (isDark ? Colors.white70 : Colors.black54),
               size: 22,
             ),
             const SizedBox(width: 14),

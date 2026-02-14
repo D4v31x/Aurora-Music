@@ -143,7 +143,8 @@ void main() async {
               // Connect audio services to player service
               audioPlayerService.setCrossfadeService(crossfadeService);
               audioPlayerService.setAudioToolsService(audioToolsService);
-              audioPlayerService.setListeningHistoryService(listeningHistoryService);
+              audioPlayerService
+                  .setListeningHistoryService(listeningHistoryService);
               audioPlayerService.setOfflineModeService(offlineModeService);
 
               // Initialize all services

@@ -198,8 +198,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.album_rounded,
-                  size: 56,
-                  color: isDark ? Colors.white24 : Colors.black12),
+                  size: 56, color: isDark ? Colors.white24 : Colors.black12),
               const SizedBox(height: 16),
               Text(
                 AppLocalizations.of(context).translate('no_albums_found'),
