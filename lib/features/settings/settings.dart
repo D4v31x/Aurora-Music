@@ -7,3 +7,5 @@ library;
 export 'screens/home_layout_settings.dart';
 export 'screens/artist_separator_settings.dart';
 export 'screens/metadata_detail_screen.dart';
+export 'screens/playback_settings_screen.dart';
+export 'screens/backup_restore_screen.dart';

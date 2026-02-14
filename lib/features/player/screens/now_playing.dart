@@ -199,23 +199,24 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService =
-        Provider.of<AudioPlayerService>(context, listen: false);
-
-    return PopScope(
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop && widget.onClose != null) {
-          // Pop happened, callback for cleanup
-        }
+    return Consumer<AudioPlayerService>(
+      builder: (context, audioPlayerService, _) {
+        return PopScope(
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop && widget.onClose != null) {
+              // Pop happened, callback for cleanup
+            }
+          },
+          child: AppBackground(
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              extendBodyBehindAppBar: true,
+              appBar: _buildAppBar(audioPlayerService),
+              body: _buildBody(audioPlayerService),
+            ),
+          ),
+        );
       },
-      child: AppBackground(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          extendBodyBehindAppBar: true,
-          appBar: _buildAppBar(audioPlayerService),
-          body: _buildBody(audioPlayerService),
-        ),
-      ),
     );
   }
 
@@ -238,7 +239,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       actions: [
         const SleepTimerIndicator(),
         PlayerMoreOptionsMenu(
-          onSelected: (value) => _handleMenuSelection(value, audioPlayerService),
+          onSelected: (value) =>
+              _handleMenuSelection(value, audioPlayerService),
         ),
       ],
     );
@@ -252,7 +254,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     }
   }
 
-  void _handleMenuSelection(String value, AudioPlayerService audioPlayerService) {
+  void _handleMenuSelection(
+      String value, AudioPlayerService audioPlayerService) {
     switch (value) {
       case 'sleep_timer':
         showSleepTimerOptions(context);
@@ -571,7 +574,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   Widget _buildArtistText(AudioPlayerService audioPlayerService,
       {required bool isTablet}) {
-    final artistString = audioPlayerService.currentSong?.artist ?? 'Unknown artist';
+    final artistString =
+        audioPlayerService.currentSong?.artist ?? 'Unknown artist';
     final artists = ArtistSeparatorService().splitArtists(artistString);
 
     return Hero(
@@ -614,7 +618,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         ),
         SizedBox(height: isTablet ? 24 : 20),
         GestureDetector(
-          onTap: hasLyrics ? () => _openFullscreenLyrics(audioPlayerService) : null,
+          onTap: hasLyrics
+              ? () => _openFullscreenLyrics(audioPlayerService)
+              : null,
           child: ValueListenableBuilder<int>(
             valueListenable: _currentLyricIndexNotifier,
             builder: (context, currentIndex, _) {

@@ -2456,12 +2456,6 @@ abstract class AppLocalizations {
   /// **'Toggle section visibility'**
   String get sectionVisibility;
 
-  /// No description provided for @listeningHistory.
-  ///
-  /// In en, this message translates to:
-  /// **'Listening History'**
-  String get listeningHistory;
-
   /// No description provided for @libraryStats.
   ///
   /// In en, this message translates to:
@@ -2677,6 +2671,546 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove from queue'**
   String get removeFromQueue;
+
+  /// No description provided for @saveAsPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as playlist'**
+  String get saveAsPlaylist;
+
+  /// No description provided for @clearQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear queue'**
+  String get clearQueue;
+
+  /// No description provided for @clearQueueConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to clear the queue? The currently playing song will continue.'**
+  String get clearQueueConfirm;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @addSongsToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Play some music to fill your queue'**
+  String get addSongsToQueue;
+
+  /// No description provided for @playlistCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist created'**
+  String get playlistCreated;
+
+  /// No description provided for @crossfade.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossfade'**
+  String get crossfade;
+
+  /// No description provided for @crossfadeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Smooth transitions between tracks'**
+  String get crossfadeDesc;
+
+  /// No description provided for @crossfadeDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossfade duration'**
+  String get crossfadeDuration;
+
+  /// No description provided for @crossfadeSmartDetection.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart detection'**
+  String get crossfadeSmartDetection;
+
+  /// No description provided for @crossfadeSmartDetectionDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable crossfade for live and continuous tracks'**
+  String get crossfadeSmartDetectionDesc;
+
+  /// No description provided for @offlineMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline mode'**
+  String get offlineMode;
+
+  /// No description provided for @offlineModeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable all network operations'**
+  String get offlineModeDesc;
+
+  /// No description provided for @offlineModeEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline mode enabled'**
+  String get offlineModeEnabled;
+
+  /// No description provided for @unavailableOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable offline'**
+  String get unavailableOffline;
+
+  /// No description provided for @downloadOnWifiOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Download on Wi-Fi only'**
+  String get downloadOnWifiOnly;
+
+  /// No description provided for @downloadWhileCharging.
+  ///
+  /// In en, this message translates to:
+  /// **'Download while charging'**
+  String get downloadWhileCharging;
+
+  /// No description provided for @trackSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Track settings'**
+  String get trackSettings;
+
+  /// No description provided for @volumeAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume adjustment'**
+  String get volumeAdjustment;
+
+  /// No description provided for @skipIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip intro'**
+  String get skipIntro;
+
+  /// No description provided for @skipOutro.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip outro'**
+  String get skipOutro;
+
+  /// No description provided for @excludeFromSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclude from suggestions'**
+  String get excludeFromSuggestions;
+
+  /// No description provided for @excludeFromStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclude from statistics'**
+  String get excludeFromStats;
+
+  /// No description provided for @seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'seconds'**
+  String get seconds;
+
+  /// No description provided for @equalizerPresets.
+  ///
+  /// In en, this message translates to:
+  /// **'Equalizer presets'**
+  String get equalizerPresets;
+
+  /// No description provided for @loudnessNormalization.
+  ///
+  /// In en, this message translates to:
+  /// **'Loudness normalization'**
+  String get loudnessNormalization;
+
+  /// No description provided for @loudnessNormalizationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Consistent volume across tracks'**
+  String get loudnessNormalizationDesc;
+
+  /// No description provided for @replayGain.
+  ///
+  /// In en, this message translates to:
+  /// **'ReplayGain'**
+  String get replayGain;
+
+  /// No description provided for @replayGainDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply volume tags from metadata'**
+  String get replayGainDesc;
+
+  /// No description provided for @backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get backup;
+
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// No description provided for @backupData.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup data'**
+  String get backupData;
+
+  /// No description provided for @backupDataDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Export playlists and settings'**
+  String get backupDataDesc;
+
+  /// No description provided for @restoreData.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore data'**
+  String get restoreData;
+
+  /// No description provided for @restoreDataDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from backup file'**
+  String get restoreDataDesc;
+
+  /// No description provided for @backupCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup created successfully'**
+  String get backupCreated;
+
+  /// No description provided for @backupRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup restored successfully'**
+  String get backupRestored;
+
+  /// No description provided for @smartPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart playlist'**
+  String get smartPlaylist;
+
+  /// No description provided for @smartPlaylists.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart playlists'**
+  String get smartPlaylists;
+
+  /// No description provided for @createSmartPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Create smart playlist'**
+  String get createSmartPlaylist;
+
+  /// No description provided for @editRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit rules'**
+  String get editRules;
+
+  /// No description provided for @addRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add rule'**
+  String get addRule;
+
+  /// No description provided for @playCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Play count'**
+  String get playCount;
+
+  /// No description provided for @lastPlayedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Last played (days)'**
+  String get lastPlayedDays;
+
+  /// No description provided for @matchAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Match all rules'**
+  String get matchAll;
+
+  /// No description provided for @matchAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Match any rule'**
+  String get matchAny;
+
+  /// No description provided for @listeningHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening history'**
+  String get listeningHistory;
+
+  /// No description provided for @rewindToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get rewindToday;
+
+  /// No description provided for @rewindYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get rewindYesterday;
+
+  /// No description provided for @rewindThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get rewindThisWeek;
+
+  /// No description provided for @resumeSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume last session'**
+  String get resumeSession;
+
+  /// No description provided for @resumeTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume where you left off'**
+  String get resumeTrack;
+
+  /// No description provided for @debugInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Debug info'**
+  String get debugInfo;
+
+  /// No description provided for @debugInfoDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show technical playback details'**
+  String get debugInfoDesc;
+
+  /// No description provided for @advancedSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced settings'**
+  String get advancedSettings;
+
+  /// No description provided for @powerUserMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Power user mode'**
+  String get powerUserMode;
+
+  /// No description provided for @audioInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio info'**
+  String get audioInfo;
+
+  /// No description provided for @codec.
+  ///
+  /// In en, this message translates to:
+  /// **'Codec'**
+  String get codec;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @actionUndone.
+  ///
+  /// In en, this message translates to:
+  /// **'Action undone'**
+  String get actionUndone;
+
+  /// No description provided for @addedToPlayNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to play next'**
+  String get addedToPlayNext;
+
+  /// No description provided for @addedToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to queue'**
+  String get addedToQueue;
+
+  /// No description provided for @liked.
+  ///
+  /// In en, this message translates to:
+  /// **'Liked'**
+  String get liked;
+
+  /// No description provided for @like.
+  ///
+  /// In en, this message translates to:
+  /// **'Like'**
+  String get like;
+
+  /// No description provided for @backupInfoMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Backups include playlists, settings, play counts, and history. They can be shared or transferred to another device.'**
+  String get backupInfoMessage;
+
+  /// No description provided for @advancedPlayback.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced Playback'**
+  String get advancedPlayback;
+
+  /// No description provided for @advancedPlaybackDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossfade, equalizer, offline mode'**
+  String get advancedPlaybackDesc;
+
+  /// No description provided for @backupRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup & Restore'**
+  String get backupRestore;
+
+  /// No description provided for @backupRestoreDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Export and import your data'**
+  String get backupRestoreDesc;
+
+  /// No description provided for @moreFromArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'More from {artist}'**
+  String moreFromArtist(Object artist);
+
+  /// No description provided for @songCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} songs'**
+  String songCount(Object count);
+
+  /// No description provided for @songCountOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1 song'**
+  String get songCountOne;
+
+  /// No description provided for @albumCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} albums'**
+  String albumCount(Object count);
+
+  /// No description provided for @albumCountOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1 album'**
+  String get albumCountOne;
+
+  /// No description provided for @noSongsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No songs found'**
+  String get noSongsFound;
+
+  /// No description provided for @playAllSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Play All'**
+  String get playAllSongs;
+
+  /// No description provided for @shufflePlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle'**
+  String get shufflePlay;
+
+  /// No description provided for @addSongsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Songs'**
+  String get addSongsButton;
+
+  /// No description provided for @folderLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder location'**
+  String get folderLocation;
+
+  /// No description provided for @trackCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tracks'**
+  String trackCount(Object count);
+
+  /// No description provided for @totalDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Total duration'**
+  String get totalDuration;
+
+  /// No description provided for @relatedAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'Related Albums'**
+  String get relatedAlbums;
+
+  /// No description provided for @crossfadeEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossfade enabled'**
+  String get crossfadeEnabled;
+
+  /// No description provided for @crossfadeDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossfade disabled'**
+  String get crossfadeDisabled;
+
+  /// No description provided for @equalizerEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Equalizer enabled'**
+  String get equalizerEnabled;
+
+  /// No description provided for @normalizationEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Normalization enabled'**
+  String get normalizationEnabled;
+
+  /// No description provided for @offlineModeActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline mode active - network operations blocked'**
+  String get offlineModeActive;
+
+  /// No description provided for @wifiRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi-Fi required for this operation'**
+  String get wifiRequired;
+
+  /// No description provided for @downloadOnWifiOnlyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Only download when connected to Wi-Fi'**
+  String get downloadOnWifiOnlyDesc;
+
+  /// No description provided for @downloadWhileChargingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Only download while device is charging'**
+  String get downloadWhileChargingDesc;
 }
 
 class _AppLocalizationsDelegate

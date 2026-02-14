@@ -1236,9 +1236,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get sectionVisibility => 'Přepnout viditelnost sekce';
 
   @override
-  String get listeningHistory => 'Historie poslechu';
-
-  @override
   String get libraryStats => 'Statistiky knihovny';
 
   @override
@@ -1354,4 +1351,288 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get removeFromQueue => 'Odebrat z fronty';
+
+  @override
+  String get saveAsPlaylist => 'Uložit jako playlist';
+
+  @override
+  String get clearQueue => 'Vymazat frontu';
+
+  @override
+  String get clearQueueConfirm =>
+      'Opravdu chcete vymazat frontu? Aktuálně přehrávaná skladba bude pokračovat.';
+
+  @override
+  String get clear => 'Vymazat';
+
+  @override
+  String get addSongsToQueue => 'Pusťte hudbu pro naplnění fronty';
+
+  @override
+  String get playlistCreated => 'Playlist vytvořen';
+
+  @override
+  String get crossfade => 'Prolínání';
+
+  @override
+  String get crossfadeDesc => 'Plynulé přechody mezi skladbami';
+
+  @override
+  String get crossfadeDuration => 'Délka prolínání';
+
+  @override
+  String get crossfadeSmartDetection => 'Chytrá detekce';
+
+  @override
+  String get crossfadeSmartDetectionDesc =>
+      'Vypnout prolínání pro živé a nepřetržité skladby';
+
+  @override
+  String get offlineMode => 'Offline režim';
+
+  @override
+  String get offlineModeDesc => 'Zakázat všechny síťové operace';
+
+  @override
+  String get offlineModeEnabled => 'Offline režim zapnut';
+
+  @override
+  String get unavailableOffline => 'Nedostupné offline';
+
+  @override
+  String get downloadOnWifiOnly => 'Stahovat pouze přes Wi-Fi';
+
+  @override
+  String get downloadWhileCharging => 'Stahovat při nabíjení';
+
+  @override
+  String get trackSettings => 'Nastavení skladby';
+
+  @override
+  String get volumeAdjustment => 'Úprava hlasitosti';
+
+  @override
+  String get skipIntro => 'Přeskočit intro';
+
+  @override
+  String get skipOutro => 'Přeskočit outro';
+
+  @override
+  String get excludeFromSuggestions => 'Vyloučit z doporučení';
+
+  @override
+  String get excludeFromStats => 'Vyloučit ze statistik';
+
+  @override
+  String get seconds => 'sekundy';
+
+  @override
+  String get equalizerPresets => 'Předvolby ekvalizéru';
+
+  @override
+  String get loudnessNormalization => 'Normalizace hlasitosti';
+
+  @override
+  String get loudnessNormalizationDesc =>
+      'Konzistentní hlasitost mezi skladbami';
+
+  @override
+  String get replayGain => 'ReplayGain';
+
+  @override
+  String get replayGainDesc => 'Použít značky hlasitosti z metadat';
+
+  @override
+  String get backup => 'Záloha';
+
+  @override
+  String get restore => 'Obnovit';
+
+  @override
+  String get backupData => 'Zálohovat data';
+
+  @override
+  String get backupDataDesc => 'Exportovat playlisty a nastavení';
+
+  @override
+  String get restoreData => 'Obnovit data';
+
+  @override
+  String get restoreDataDesc => 'Importovat ze záložního souboru';
+
+  @override
+  String get backupCreated => 'Záloha úspěšně vytvořena';
+
+  @override
+  String get backupRestored => 'Záloha úspěšně obnovena';
+
+  @override
+  String get smartPlaylist => 'Chytrý playlist';
+
+  @override
+  String get smartPlaylists => 'Chytré playlisty';
+
+  @override
+  String get createSmartPlaylist => 'Vytvořit chytrý playlist';
+
+  @override
+  String get editRules => 'Upravit pravidla';
+
+  @override
+  String get addRule => 'Přidat pravidlo';
+
+  @override
+  String get playCount => 'Počet přehrání';
+
+  @override
+  String get lastPlayedDays => 'Naposledy přehrané (dny)';
+
+  @override
+  String get matchAll => 'Splnit všechna pravidla';
+
+  @override
+  String get matchAny => 'Splnit jakékoliv pravidlo';
+
+  @override
+  String get listeningHistory => 'Historie poslechu';
+
+  @override
+  String get rewindToday => 'Dnes';
+
+  @override
+  String get rewindYesterday => 'Včera';
+
+  @override
+  String get rewindThisWeek => 'Tento týden';
+
+  @override
+  String get resumeSession => 'Obnovit poslední relaci';
+
+  @override
+  String get resumeTrack => 'Pokračovat tam, kde jste skončili';
+
+  @override
+  String get debugInfo => 'Ladicí informace';
+
+  @override
+  String get debugInfoDesc => 'Zobrazit technické detaily přehrávání';
+
+  @override
+  String get advancedSettings => 'Pokročilá nastavení';
+
+  @override
+  String get powerUserMode => 'Režim pokročilého uživatele';
+
+  @override
+  String get audioInfo => 'Informace o zvuku';
+
+  @override
+  String get codec => 'Kodek';
+
+  @override
+  String get undo => 'Zpět';
+
+  @override
+  String get actionUndone => 'Akce vrácena';
+
+  @override
+  String get addedToPlayNext => 'Přidáno jako další';
+
+  @override
+  String get addedToQueue => 'Přidáno do fronty';
+
+  @override
+  String get liked => 'Oblíbené';
+
+  @override
+  String get like => 'Líbí se mi';
+
+  @override
+  String get backupInfoMessage =>
+      'Zálohy zahrnují playlisty, nastavení, počty přehrání a historii. Lze je sdílet nebo přenést na jiné zařízení.';
+
+  @override
+  String get advancedPlayback => 'Pokročilé přehrávání';
+
+  @override
+  String get advancedPlaybackDesc => 'Prolínání, ekvalizér, offline režim';
+
+  @override
+  String get backupRestore => 'Záloha a obnovení';
+
+  @override
+  String get backupRestoreDesc => 'Export a import vašich dat';
+
+  @override
+  String moreFromArtist(Object artist) {
+    return 'Více od $artist';
+  }
+
+  @override
+  String songCount(Object count) {
+    return '$count skladeb';
+  }
+
+  @override
+  String get songCountOne => '1 skladba';
+
+  @override
+  String albumCount(Object count) {
+    return '$count alb';
+  }
+
+  @override
+  String get albumCountOne => '1 album';
+
+  @override
+  String get noSongsFound => 'Žádné skladby nenalezeny';
+
+  @override
+  String get playAllSongs => 'Přehrát vše';
+
+  @override
+  String get shufflePlay => 'Náhodně';
+
+  @override
+  String get addSongsButton => 'Přidat skladby';
+
+  @override
+  String get folderLocation => 'Umístění složky';
+
+  @override
+  String trackCount(Object count) {
+    return '$count skladeb';
+  }
+
+  @override
+  String get totalDuration => 'Celková délka';
+
+  @override
+  String get relatedAlbums => 'Podobná alba';
+
+  @override
+  String get crossfadeEnabled => 'Prolínání zapnuto';
+
+  @override
+  String get crossfadeDisabled => 'Prolínání vypnuto';
+
+  @override
+  String get equalizerEnabled => 'Ekvalizér zapnut';
+
+  @override
+  String get normalizationEnabled => 'Normalizace zapnuta';
+
+  @override
+  String get offlineModeActive =>
+      'Offline režim aktivní – síťové operace zablokovány';
+
+  @override
+  String get wifiRequired => 'Pro tuto operaci je vyžadováno Wi-Fi';
+
+  @override
+  String get downloadOnWifiOnlyDesc => 'Stahovat pouze při připojení k Wi-Fi';
+
+  @override
+  String get downloadWhileChargingDesc =>
+      'Stahovat pouze při nabíjení zařízení';
 }

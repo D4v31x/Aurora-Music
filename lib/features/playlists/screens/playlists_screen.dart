@@ -8,6 +8,7 @@ import '../../../shared/models/playlist_model.dart';
 import '../../../shared/widgets/common_screen_scaffold.dart';
 import '../../../shared/widgets/glassmorphic_card.dart';
 import 'playlist_detail_screen.dart';
+import 'smart_playlist_builder_screen.dart';
 import 'dart:ui';
 
 /// Data class to hold playlist-related state for efficient rebuilds
@@ -84,6 +85,16 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
         return CommonScreenScaffold(
           title: localizations.translate('playlists'),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.auto_awesome_rounded, color: Colors.white),
+              tooltip: localizations.translate('createSmartPlaylist'),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SmartPlaylistBuilderScreen(),
+                ),
+              ),
+            ),
             IconButton(
               icon: const Icon(Icons.add_rounded, color: Colors.white),
               onPressed: () => _showCreatePlaylistDialog(context),
