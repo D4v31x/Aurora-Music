@@ -45,9 +45,12 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
     final l10n = AppLocalizations.of(context);
     final audioService = Provider.of<AudioPlayerService>(context);
     
-    // Listen to service changes to rebuild UI
+    // Listen to service changes to rebuild UI when they notify
+    // ignore: unused_local_variable
     final crossfadeService = Provider.of<CrossfadeService>(context);
+    // ignore: unused_local_variable
     final audioToolsService = Provider.of<AudioToolsService>(context);
+    // ignore: unused_local_variable
     final offlineModeService = Provider.of<OfflineModeService>(context);
 
     return Scaffold(
@@ -210,39 +213,13 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
 
                 const SizedBox(height: 24),
 
-                // Audio tools
+                // Audio tools (normalization only)
                 _buildSectionHeader(
-                  l10n.translate('equalizerPresets'),
+                  l10n.translate('loudnessNormalization'),
                   isDark,
                 ),
                 const SizedBox(height: 8),
                 _buildSettingsCard(isDark, [
-                  ListTile(
-                    leading: Icon(
-                      Icons.equalizer_rounded,
-                      color: _audioToolsService.isEqualizerEnabled
-                          ? Theme.of(context).colorScheme.primary
-                          : (isDark ? Colors.white : Colors.black)
-                              .withOpacity(0.7),
-                    ),
-                    title: Text(
-                      l10n.translate('equalizerPresets'),
-                      style: _titleStyle(isDark),
-                    ),
-                    subtitle: Text(
-                      _audioToolsService
-                          .getPresetName(_audioToolsService.currentPreset),
-                      style: _subtitleStyle(isDark),
-                    ),
-                    trailing: Icon(
-                      Icons.chevron_right_rounded,
-                      color: (isDark ? Colors.white : Colors.black)
-                          .withOpacity(0.3),
-                    ),
-                    onTap: () =>
-                        _showEqualizerPresetSheet(context, isDark, l10n),
-                  ),
-                  const Divider(height: 1),
                   SwitchListTile(
                     secondary: Icon(
                       Icons.volume_up_rounded,
@@ -417,155 +394,130 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
     AppLocalizations l10n,
     AudioPlayerService audioService,
   ) {
-    final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+    double currentSpeed = audioService.playbackSpeed;
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  l10n.translate('playbackSpeed'),
-                  style: TextStyle(
-                    fontFamily: FontConstants.fontFamily,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
-              ...speeds.map((speed) => ListTile(
-                    title: Text(
-                      '${speed}x',
-                      style: TextStyle(
-                        fontFamily: FontConstants.fontFamily,
-                        color: isDark ? Colors.white : Colors.black,
-                        fontWeight: audioService.playbackSpeed == speed
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
-                    trailing: audioService.playbackSpeed == speed
-                        ? Icon(
-                            Icons.check_rounded,
-                            color: Theme.of(context).colorScheme.primary,
-                          )
-                        : null,
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      audioService.setPlaybackSpeed(speed);
-                      Navigator.pop(context);
-                    },
-                  )),
-              const SizedBox(height: 16),
-            ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
-        ),
-      ),
-    );
-  }
-
-  void _showEqualizerPresetSheet(
-    BuildContext context,
-    bool isDark,
-    AppLocalizations l10n,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.7,
-        ),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  l10n.translate('equalizerPresets'),
-                  style: TextStyle(
-                    fontFamily: FontConstants.fontFamily,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black,
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ),
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _audioToolsService.availablePresets.length,
-                  itemBuilder: (context, index) {
-                    final preset = _audioToolsService.availablePresets[index];
-                    final isSelected =
-                        _audioToolsService.currentPreset == preset;
-
-                    return ListTile(
-                      title: Text(
-                        _audioToolsService.getPresetName(preset),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    l10n.translate('playbackSpeed'),
+                    style: TextStyle(
+                      fontFamily: FontConstants.fontFamily,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+                // Current speed display
+                Text(
+                  '${currentSpeed.toStringAsFixed(2)}x',
+                  style: TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Speed slider
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: [
+                      Text(
+                        '0.5x',
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
-                          color: isDark ? Colors.white : Colors.black,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 12,
+                          color: (isDark ? Colors.white : Colors.black)
+                              .withOpacity(0.5),
                         ),
                       ),
-                      trailing: isSelected
-                          ? Icon(
-                              Icons.check_rounded,
-                              color: Theme.of(context).colorScheme.primary,
-                            )
-                          : null,
-                      onTap: () async {
-                        HapticFeedback.lightImpact();
-                        await _audioToolsService.setEqualizerPreset(preset);
-                        setState(() {});
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
+                      Expanded(
+                        child: Slider(
+                          value: currentSpeed,
+                          min: 0.5,
+                          max: 2.0,
+                          divisions: 30, // 0.05 increments
+                          onChanged: (value) {
+                            // Round to 2 decimal places for clean display
+                            final rounded = (value * 20).round() / 20;
+                            setSheetState(() => currentSpeed = rounded);
+                            // Update playback speed in real-time as user drags
+                            audioService.setPlaybackSpeed(rounded);
+                          },
+                        ),
+                      ),
+                      Text(
+                        '2.0x',
+                        style: TextStyle(
+                          fontFamily: FontConstants.fontFamily,
+                          fontSize: 12,
+                          color: (isDark ? Colors.white : Colors.black)
+                              .withOpacity(0.5),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                // Reset button
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      setSheetState(() => currentSpeed = 1.0);
+                      audioService.setPlaybackSpeed(1.0);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: (isDark ? Colors.white : Colors.black)
+                            .withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Reset to 1.0x',
+                        style: TextStyle(
+                          fontFamily: FontConstants.fontFamily,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
 }

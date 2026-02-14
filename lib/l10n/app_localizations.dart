@@ -1010,6 +1010,36 @@ extension AppLocalizationsExtension on generated.AppLocalizations {
         return removeFromQueue;
       case 'queueEmpty':
         return queueEmpty;
+      case 'more_from_artist':
+        return moreFromArtist('');
+      case 'no_songs_found':
+        return noSongsFound;
+      case 'play_all_songs':
+        return playAllSongs;
+      case 'shuffle_play':
+        return shufflePlay;
+      case 'add_songs_button':
+        return addSongsButton;
+      case 'folder_location':
+        return folderLocation;
+      case 'track_count':
+        return trackCount('');
+      case 'total_duration':
+        return totalDuration;
+      case 'related_albums':
+        return relatedAlbums;
+      case 'crossfade_enabled':
+        return crossfadeEnabled;
+      case 'crossfade_disabled':
+        return crossfadeDisabled;
+      case 'equalizer_enabled':
+        return equalizerEnabled;
+      case 'normalization_enabled':
+        return normalizationEnabled;
+      case 'offline_mode_active':
+        return offlineModeActive;
+      case 'wifi_required':
+        return wifiRequired;
       default:
         return key; // Return the key itself if not found
     }

@@ -1233,9 +1233,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sectionVisibility => 'Toggle section visibility';
 
   @override
-  String get listeningHistory => 'Listening History';
-
-  @override
   String get libraryStats => 'Library Stats';
 
   @override
@@ -1350,4 +1347,287 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removeFromQueue => 'Remove from queue';
+
+  @override
+  String get saveAsPlaylist => 'Save as playlist';
+
+  @override
+  String get clearQueue => 'Clear queue';
+
+  @override
+  String get clearQueueConfirm =>
+      'Are you sure you want to clear the queue? The currently playing song will continue.';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get addSongsToQueue => 'Play some music to fill your queue';
+
+  @override
+  String get playlistCreated => 'Playlist created';
+
+  @override
+  String get crossfade => 'Crossfade';
+
+  @override
+  String get crossfadeDesc => 'Smooth transitions between tracks';
+
+  @override
+  String get crossfadeDuration => 'Crossfade duration';
+
+  @override
+  String get crossfadeSmartDetection => 'Smart detection';
+
+  @override
+  String get crossfadeSmartDetectionDesc =>
+      'Disable crossfade for live and continuous tracks';
+
+  @override
+  String get offlineMode => 'Offline mode';
+
+  @override
+  String get offlineModeDesc => 'Disable all network operations';
+
+  @override
+  String get offlineModeEnabled => 'Offline mode enabled';
+
+  @override
+  String get unavailableOffline => 'Unavailable offline';
+
+  @override
+  String get downloadOnWifiOnly => 'Download on Wi-Fi only';
+
+  @override
+  String get downloadWhileCharging => 'Download while charging';
+
+  @override
+  String get trackSettings => 'Track settings';
+
+  @override
+  String get volumeAdjustment => 'Volume adjustment';
+
+  @override
+  String get skipIntro => 'Skip intro';
+
+  @override
+  String get skipOutro => 'Skip outro';
+
+  @override
+  String get excludeFromSuggestions => 'Exclude from suggestions';
+
+  @override
+  String get excludeFromStats => 'Exclude from statistics';
+
+  @override
+  String get seconds => 'seconds';
+
+  @override
+  String get equalizerPresets => 'Equalizer presets';
+
+  @override
+  String get loudnessNormalization => 'Loudness normalization';
+
+  @override
+  String get loudnessNormalizationDesc => 'Consistent volume across tracks';
+
+  @override
+  String get replayGain => 'ReplayGain';
+
+  @override
+  String get replayGainDesc => 'Apply volume tags from metadata';
+
+  @override
+  String get backup => 'Backup';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get backupData => 'Backup data';
+
+  @override
+  String get backupDataDesc => 'Export playlists and settings';
+
+  @override
+  String get restoreData => 'Restore data';
+
+  @override
+  String get restoreDataDesc => 'Import from backup file';
+
+  @override
+  String get backupCreated => 'Backup created successfully';
+
+  @override
+  String get backupRestored => 'Backup restored successfully';
+
+  @override
+  String get smartPlaylist => 'Smart playlist';
+
+  @override
+  String get smartPlaylists => 'Smart playlists';
+
+  @override
+  String get createSmartPlaylist => 'Create smart playlist';
+
+  @override
+  String get editRules => 'Edit rules';
+
+  @override
+  String get addRule => 'Add rule';
+
+  @override
+  String get playCount => 'Play count';
+
+  @override
+  String get lastPlayedDays => 'Last played (days)';
+
+  @override
+  String get matchAll => 'Match all rules';
+
+  @override
+  String get matchAny => 'Match any rule';
+
+  @override
+  String get listeningHistory => 'Listening history';
+
+  @override
+  String get rewindToday => 'Today';
+
+  @override
+  String get rewindYesterday => 'Yesterday';
+
+  @override
+  String get rewindThisWeek => 'This week';
+
+  @override
+  String get resumeSession => 'Resume last session';
+
+  @override
+  String get resumeTrack => 'Resume where you left off';
+
+  @override
+  String get debugInfo => 'Debug info';
+
+  @override
+  String get debugInfoDesc => 'Show technical playback details';
+
+  @override
+  String get advancedSettings => 'Advanced settings';
+
+  @override
+  String get powerUserMode => 'Power user mode';
+
+  @override
+  String get audioInfo => 'Audio info';
+
+  @override
+  String get codec => 'Codec';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get actionUndone => 'Action undone';
+
+  @override
+  String get addedToPlayNext => 'Added to play next';
+
+  @override
+  String get addedToQueue => 'Added to queue';
+
+  @override
+  String get liked => 'Liked';
+
+  @override
+  String get like => 'Like';
+
+  @override
+  String get backupInfoMessage =>
+      'Backups include playlists, settings, play counts, and history. They can be shared or transferred to another device.';
+
+  @override
+  String get advancedPlayback => 'Advanced Playback';
+
+  @override
+  String get advancedPlaybackDesc => 'Crossfade, equalizer, offline mode';
+
+  @override
+  String get backupRestore => 'Backup & Restore';
+
+  @override
+  String get backupRestoreDesc => 'Export and import your data';
+
+  @override
+  String moreFromArtist(Object artist) {
+    return 'More from $artist';
+  }
+
+  @override
+  String songCount(Object count) {
+    return '$count songs';
+  }
+
+  @override
+  String get songCountOne => '1 song';
+
+  @override
+  String albumCount(Object count) {
+    return '$count albums';
+  }
+
+  @override
+  String get albumCountOne => '1 album';
+
+  @override
+  String get noSongsFound => 'No songs found';
+
+  @override
+  String get playAllSongs => 'Play All';
+
+  @override
+  String get shufflePlay => 'Shuffle';
+
+  @override
+  String get addSongsButton => 'Add Songs';
+
+  @override
+  String get folderLocation => 'Folder location';
+
+  @override
+  String trackCount(Object count) {
+    return '$count tracks';
+  }
+
+  @override
+  String get totalDuration => 'Total duration';
+
+  @override
+  String get relatedAlbums => 'Related Albums';
+
+  @override
+  String get crossfadeEnabled => 'Crossfade enabled';
+
+  @override
+  String get crossfadeDisabled => 'Crossfade disabled';
+
+  @override
+  String get equalizerEnabled => 'Equalizer enabled';
+
+  @override
+  String get normalizationEnabled => 'Normalization enabled';
+
+  @override
+  String get offlineModeActive =>
+      'Offline mode active - network operations blocked';
+
+  @override
+  String get wifiRequired => 'Wi-Fi required for this operation';
+
+  @override
+  String get downloadOnWifiOnlyDesc => 'Only download when connected to Wi-Fi';
+
+  @override
+  String get downloadWhileChargingDesc =>
+      'Only download while device is charging';
 }

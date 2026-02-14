@@ -12,6 +12,9 @@ import 'package:audio_session/audio_session.dart';
 import 'background_manager_service.dart';
 import 'artwork_cache_service.dart';
 import 'smart_suggestions_service.dart';
+import 'crossfade_service.dart';
+import 'audio_tools_service.dart';
+import 'offline_mode_service.dart';
 import '../../main.dart' show audioHandler;
 
 /// Enum to track where the current playback originated from
@@ -53,9 +56,15 @@ class AudioPlayerService extends ChangeNotifier {
   BackgroundManagerService? _backgroundManager;
 
   // Advanced feature services
-  dynamic _crossfadeService;
-  dynamic _audioToolsService;
+  CrossfadeService? _crossfadeService;
+  AudioToolsService? _audioToolsService;
   dynamic _listeningHistoryService;
+  OfflineModeService? _offlineModeService;
+
+  // Crossfade state
+  bool _isCrossfading = false;
+  Timer? _crossfadeTimer;
+  StreamSubscription<Duration>? _positionSubscription;
 
   // Playback source tracking
   PlaybackSourceInfo _playbackSource = PlaybackSourceInfo.unknown;
@@ -382,13 +391,26 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   /// Set the crossfade service for smooth track transitions
-  void setCrossfadeService(dynamic crossfadeService) {
+  void setCrossfadeService(CrossfadeService crossfadeService) {
     _crossfadeService = crossfadeService;
   }
 
   /// Set the audio tools service for equalizer and ReplayGain
-  void setAudioToolsService(dynamic audioToolsService) {
+  void setAudioToolsService(AudioToolsService audioToolsService) {
     _audioToolsService = audioToolsService;
+  }
+
+  /// Set the offline mode service
+  void setOfflineModeService(OfflineModeService offlineModeService) {
+    _offlineModeService = offlineModeService;
+  }
+
+  /// Check if network operations should proceed (respects offline mode)
+  bool get shouldBlockNetwork => _offlineModeService?.shouldBlockNetwork() ?? false;
+
+  /// Check if downloads should proceed based on current conditions
+  bool canDownload({bool isWifi = true, bool isCharging = false}) {
+    return _offlineModeService?.canDownload(isWifi: isWifi, isCharging: isCharging) ?? true;
   }
 
   /// Set the listening history service for tracking playback
@@ -490,6 +512,9 @@ class AudioPlayerService extends ChangeNotifier {
         final song = _playlist[_currentIndex];
         debugPrint('🎵 [INDEX_STREAM] Playing: ${song.title}');
 
+        // Reset crossfade volume when track changes
+        _resetCrossfade();
+
         // Update all song-related state
         _currentSongController.add(song);
         currentSongNotifier.value = song;
@@ -527,6 +552,142 @@ class AudioPlayerService extends ChangeNotifier {
     });
 
     _startCacheCleanup();
+
+    // Start crossfade position monitoring
+    _startCrossfadeMonitoring();
+  }
+
+  /// Start monitoring playback position for crossfade
+  void _startCrossfadeMonitoring() {
+    _positionSubscription?.cancel();
+    _positionSubscription = _audioPlayer.positionStream.listen((position) {
+      _handleCrossfadePosition(position);
+    });
+  }
+
+  /// Handle crossfade based on current playback position
+  void _handleCrossfadePosition(Duration position) {
+    if (_crossfadeService == null || !_crossfadeService!.isEnabled) return;
+    if (_isCrossfading) return;
+    if (_playlist.isEmpty || _currentIndex < 0) return;
+
+    final currentSong = this.currentSong;
+    if (currentSong == null) return;
+
+    final songDuration = Duration(milliseconds: currentSong.duration ?? 0);
+    if (songDuration.inSeconds < 10) return; // Skip very short tracks
+
+    final crossfadeDuration = _crossfadeService!.duration;
+    final fadeStartPosition = songDuration - crossfadeDuration;
+
+    // Check if we should start crossfade
+    if (position >= fadeStartPosition && position < songDuration) {
+      // Determine next track
+      SongModel? nextSong;
+      if (_currentIndex < _playlist.length - 1) {
+        nextSong = _playlist[_currentIndex + 1];
+      } else if (_loopMode == LoopMode.all) {
+        nextSong = _playlist[0];
+      }
+
+      // Check smart detection
+      if (nextSong != null && _crossfadeService!.shouldCrossfade(currentSong, nextSong)) {
+        _startCrossfade(position, songDuration, crossfadeDuration);
+      }
+    }
+  }
+
+  /// Perform crossfade transition
+  ///
+  /// With a single AudioPlayer using ConcatenatingAudioSource, true simultaneous
+  /// playback of two tracks isn't possible. Instead, we fade out the current track
+  /// briefly, then seek to the next track and fade it in, creating a smooth transition.
+  void _startCrossfade(Duration currentPosition, Duration songDuration, Duration crossfadeDuration) {
+    _isCrossfading = true;
+    
+    // Use a shorter fade-out duration (40% of crossfade time), then transition + fade-in
+    final totalFadeMs = crossfadeDuration.inMilliseconds;
+    final fadeOutMs = (totalFadeMs * 0.4).round();
+    final fadeInMs = (totalFadeMs * 0.6).round();
+    const tickMs = 50; // Update every 50ms for smoother fading
+    final fadeOutSteps = fadeOutMs ~/ tickMs;
+    var currentStep = 0;
+
+    _crossfadeTimer?.cancel();
+    _crossfadeTimer = Timer.periodic(const Duration(milliseconds: tickMs), (timer) {
+      currentStep++;
+      
+      if (currentStep <= fadeOutSteps) {
+        // Phase 1: Fade out current track
+        final progress = currentStep / fadeOutSteps;
+        final fadeOutVolume = 1.0 - (progress * progress); // Quadratic ease-in for smooth fade
+        final normalizedVolume = _calculateNormalizedVolume(fadeOutVolume);
+        _audioPlayer.setVolume(normalizedVolume);
+      } else if (currentStep == fadeOutSteps + 1) {
+        // Phase 2: Transition to next track
+        _audioPlayer.setVolume(0.0);
+        _audioPlayer.seekToNext();
+      } else {
+        // Phase 3: Fade in next track
+        final fadeInStep = currentStep - fadeOutSteps - 1;
+        final fadeInSteps = fadeInMs ~/ tickMs;
+        
+        if (fadeInStep >= fadeInSteps) {
+          // Fade-in complete
+          timer.cancel();
+          final normalizedVolume = _calculateNormalizedVolume(1.0);
+          _audioPlayer.setVolume(normalizedVolume);
+          _isCrossfading = false;
+          return;
+        }
+        
+        final progress = fadeInStep / fadeInSteps;
+        final fadeInVolume = progress * progress; // Quadratic ease-in for smooth fade
+        final normalizedVolume = _calculateNormalizedVolume(fadeInVolume);
+        _audioPlayer.setVolume(normalizedVolume);
+      }
+    });
+  }
+
+  /// Reset crossfade state when track changes
+  void _resetCrossfade() {
+    _crossfadeTimer?.cancel();
+    _isCrossfading = false;
+    // Restore normal volume with any EQ/normalization adjustments
+    final normalizedVolume = _calculateNormalizedVolume(1.0);
+    _audioPlayer.setVolume(normalizedVolume);
+  }
+
+  /// Calculate the normalized volume considering loudness normalization and ReplayGain
+  double _calculateNormalizedVolume([double baseVolume = 1.0]) {
+    if (_audioToolsService == null) return baseVolume;
+
+    double volume = baseVolume;
+
+    // Apply loudness normalization - reduce volume slightly for consistency
+    if (_audioToolsService!.isLoudnessNormalizationEnabled) {
+      volume *= 0.85; // -1.4dB reduction for perceived loudness consistency
+    }
+
+    // Apply ReplayGain if available (future: read from metadata)
+    if (_audioToolsService!.isReplayGainEnabled) {
+      final replayGainVolume = _audioToolsService!.calculateReplayGainVolume(null, null);
+      volume *= replayGainVolume;
+    }
+
+    return volume.clamp(0.0, 1.0);
+  }
+
+  /// Apply current audio tools settings (EQ, normalization) to the player
+  void applyAudioToolsSettings() {
+    if (_audioToolsService == null) return;
+
+    // Apply volume based on normalization
+    final normalizedVolume = _calculateNormalizedVolume(1.0);
+    _audioPlayer.setVolume(normalizedVolume);
+
+    debugPrint('🔊 Applied audio settings - volume: $normalizedVolume, '
+        'Normalization: ${_audioToolsService!.isLoudnessNormalizationEnabled}');
   }
 
   void _startCacheCleanup() {
@@ -1366,7 +1527,6 @@ class AudioPlayerService extends ChangeNotifier {
         _loopMode = LoopMode.all;
         break;
       case LoopMode.all:
-      default:
         _loopMode = LoopMode.off;
         break;
     }
@@ -1377,16 +1537,6 @@ class AudioPlayerService extends ChangeNotifier {
     debugPrint(
         '🔁 [REPEAT] Applied to player, current loopMode: ${_audioPlayer.loopMode}');
     notifyListeners();
-  }
-
-  int _getRandomIndex() {
-    if (_playlist.length <= 1) return _currentIndex;
-    int newIndex;
-    do {
-      newIndex =
-          (DateTime.now().millisecondsSinceEpoch % _playlist.length).toInt();
-    } while (newIndex == _currentIndex);
-    return newIndex;
   }
 
   Future<Uint8List?> getCurrentSongArtwork() async {
@@ -1534,6 +1684,10 @@ class AudioPlayerService extends ChangeNotifier {
 
   @override
   void dispose() {
+    // Cancel crossfade resources
+    _crossfadeTimer?.cancel();
+    _positionSubscription?.cancel();
+
     // Cancel debounce timers
     _notifyDebounceTimer?.cancel();
     _saveDebounceTimer?.cancel();
@@ -1675,7 +1829,29 @@ class AudioPlayerService extends ChangeNotifier {
   Future<void> setGaplessPlayback(bool value) async {
     _gaplessPlayback = value;
     await _saveSettings();
-    // Settings changes are infrequent, direct notify is fine
+    
+    // If currently playing and the playlist is non-empty, reconfigure audio source
+    if (_playlist.isNotEmpty && _currentIndex >= 0) {
+      // Re-set the playlist with the new gapless mode
+      // Preserve current position
+      final currentPosition = _audioPlayer.position;
+      final wasPlaying = _isPlaying;
+      
+      await setPlaylist(
+        _playlist,
+        _currentIndex,
+        source: _playbackSource,
+      );
+      
+      // Restore position if possible
+      if (currentPosition > Duration.zero) {
+        await _audioPlayer.seek(currentPosition);
+      }
+      
+      if (!wasPlaying) {
+        await _audioPlayer.pause();
+      }
+    }
   }
 
   Future<void> setVolumeNormalization(bool value) async {

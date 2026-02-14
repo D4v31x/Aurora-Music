@@ -199,23 +199,24 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayerService =
-        Provider.of<AudioPlayerService>(context, listen: false);
-
-    return PopScope(
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop && widget.onClose != null) {
-          // Pop happened, callback for cleanup
-        }
+    return Consumer<AudioPlayerService>(
+      builder: (context, audioPlayerService, _) {
+        return PopScope(
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop && widget.onClose != null) {
+              // Pop happened, callback for cleanup
+            }
+          },
+          child: AppBackground(
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              extendBodyBehindAppBar: true,
+              appBar: _buildAppBar(audioPlayerService),
+              body: _buildBody(audioPlayerService),
+            ),
+          ),
+        );
       },
-      child: AppBackground(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          extendBodyBehindAppBar: true,
-          appBar: _buildAppBar(audioPlayerService),
-          body: _buildBody(audioPlayerService),
-        ),
-      ),
     );
   }
 

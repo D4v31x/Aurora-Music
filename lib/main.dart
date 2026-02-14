@@ -144,6 +144,7 @@ void main() async {
               audioPlayerService.setCrossfadeService(crossfadeService);
               audioPlayerService.setAudioToolsService(audioToolsService);
               audioPlayerService.setListeningHistoryService(listeningHistoryService);
+              audioPlayerService.setOfflineModeService(offlineModeService);
 
               // Initialize all services
               WidgetsBinding.instance.addPostFrameCallback((_) async {
