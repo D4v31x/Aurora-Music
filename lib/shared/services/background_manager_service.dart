@@ -25,6 +25,7 @@ class BackgroundManagerService extends ChangeNotifier {
   SongModel? _currentSong;
   bool _isUpdating = false; // Prevent concurrent updates
   int _updateCounter = 0; // Track update sequence
+  int? _retryScheduledForSongId;
 
   // Performance optimizations
   final Map<int, List<Color>> _colorCache = {}; // Cache colors by song ID
@@ -181,8 +182,17 @@ class BackgroundManagerService extends ChangeNotifier {
       // Update artwork for blurred background (only if valid)
       if (artworkData != null && artworkData.isNotEmpty) {
         _currentArtwork = artworkData;
+        _retryScheduledForSongId = null;
       } else {
         _currentArtwork = null;
+        if (_retryScheduledForSongId != song.id) {
+          _retryScheduledForSongId = song.id;
+          Future.delayed(const Duration(milliseconds: 450), () {
+            if (_currentSong?.id == song.id && !_isUpdating) {
+              updateColorsFromSong(song);
+            }
+          });
+        }
       }
 
       // Update colors WITHOUT notifying yet
