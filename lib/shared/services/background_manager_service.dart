@@ -161,7 +161,6 @@ class BackgroundManagerService extends ChangeNotifier {
       // Start transition animation
       _previousArtwork = _currentArtwork;
       _isTransitioning = true;
-      notifyListeners();
 
       // Try to get artwork with multiple retries and increasing delays
       Uint8List? artworkData;
