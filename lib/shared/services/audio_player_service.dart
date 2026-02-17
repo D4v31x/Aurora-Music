@@ -383,7 +383,15 @@ class AudioPlayerService extends ChangeNotifier {
   /// Update background colors based on current song
   Future<void> _updateBackgroundColors() async {
     if (_backgroundManager != null && currentSong != null) {
+      if (kDebugMode) {
+        debugPrint(
+            '🎨 [BG_SYNC] Request background update for song: "${currentSong!.title}" (id: ${currentSong!.id})');
+      }
       await _backgroundManager!.updateColorsFromSong(currentSong);
+      if (kDebugMode) {
+        debugPrint(
+            '🎨 [BG_SYNC] Background update call completed for song id: ${currentSong!.id}');
+      }
     }
   }
 
