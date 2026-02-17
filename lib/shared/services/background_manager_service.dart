@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:palette_generator/palette_generator.dart';
@@ -13,6 +14,8 @@ import '../utils/performance_optimizations.dart';
 /// - Throttled updates to prevent excessive rebuilds
 /// - Batch notifications to reduce listener calls
 class BackgroundManagerService extends ChangeNotifier {
+  static const Duration _artworkRetryDelay = Duration(milliseconds: 450);
+
   final ArtworkCacheService _artworkCache = ArtworkCacheService();
 
   List<Color> _currentColors = _getDefaultColors();
@@ -25,7 +28,9 @@ class BackgroundManagerService extends ChangeNotifier {
   SongModel? _currentSong;
   bool _isUpdating = false; // Prevent concurrent updates
   int _updateCounter = 0; // Track update sequence
+  // Prevent duplicate delayed artwork retries for the same song.
   int? _retryScheduledForSongId;
+  Timer? _artworkRetryTimer;
 
   // Performance optimizations
   final Map<int, List<Color>> _colorCache = {}; // Cache colors by song ID
@@ -183,13 +188,19 @@ class BackgroundManagerService extends ChangeNotifier {
       if (artworkData != null && artworkData.isNotEmpty) {
         _currentArtwork = artworkData;
         _retryScheduledForSongId = null;
+        _artworkRetryTimer?.cancel();
       } else {
         _currentArtwork = null;
+        _artworkRetryTimer?.cancel();
         if (_retryScheduledForSongId != song.id) {
-          _retryScheduledForSongId = song.id;
-          Future.delayed(const Duration(milliseconds: 450), () {
-            if (_currentSong?.id == song.id && !_isUpdating) {
-              updateColorsFromSong(song);
+          final songId = song.id;
+          _retryScheduledForSongId = songId;
+          _artworkRetryTimer = Timer(_artworkRetryDelay, () {
+            final currentSong = _currentSong;
+            if (_retryScheduledForSongId == songId &&
+                currentSong?.id == songId &&
+                !_isUpdating) {
+              updateColorsFromSong(currentSong!);
             }
           });
         }
@@ -348,6 +359,7 @@ class BackgroundManagerService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _artworkRetryTimer?.cancel();
     _updateThrottler.dispose();
     _colorCache.clear();
     super.dispose();
