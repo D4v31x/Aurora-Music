@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:palette_generator/palette_generator.dart';
@@ -13,6 +14,8 @@ import '../utils/performance_optimizations.dart';
 /// - Throttled updates to prevent excessive rebuilds
 /// - Batch notifications to reduce listener calls
 class BackgroundManagerService extends ChangeNotifier {
+  static const Duration _artworkRetryDelay = Duration(milliseconds: 450);
+
   final ArtworkCacheService _artworkCache = ArtworkCacheService();
 
   List<Color> _currentColors = _getDefaultColors();
@@ -25,6 +28,9 @@ class BackgroundManagerService extends ChangeNotifier {
   SongModel? _currentSong;
   bool _isUpdating = false; // Prevent concurrent updates
   int _updateCounter = 0; // Track update sequence
+  // Prevent duplicate delayed artwork retries for the same song.
+  int? _retryScheduledForSongId;
+  Timer? _artworkRetryTimer;
 
   // Performance optimizations
   final Map<int, List<Color>> _colorCache = {}; // Cache colors by song ID
@@ -132,6 +138,9 @@ class BackgroundManagerService extends ChangeNotifier {
   /// Also updates the artwork for blurred background
   Future<void> updateColorsFromSong(SongModel? song) async {
     if (song == null) {
+      if (kDebugMode) {
+        debugPrint('🎨 [BG_MGR] Song is null, clearing artwork/background');
+      }
       _clearArtwork();
       _useDefaultColors();
       return;
@@ -139,11 +148,19 @@ class BackgroundManagerService extends ChangeNotifier {
 
     // Skip if same song AND we already have artwork
     if (_currentSong?.id == song.id && _currentArtwork != null) {
+      if (kDebugMode) {
+        debugPrint(
+            '🎨 [BG_MGR] Skip update for same song id ${song.id}, artwork already available (${_currentArtwork?.length ?? 0} bytes)');
+      }
       return;
     }
 
     // Prevent concurrent updates
     if (_isUpdating) {
+      if (kDebugMode) {
+        debugPrint(
+            '🎨 [BG_MGR] Update already running, skipping song id ${song.id}');
+      }
       return;
     }
 
@@ -151,19 +168,34 @@ class BackgroundManagerService extends ChangeNotifier {
       _isUpdating = true;
       _currentSong = song;
       final currentUpdateId = ++_updateCounter;
+      if (kDebugMode) {
+        debugPrint(
+            '🎨 [BG_MGR] Start background update #$currentUpdateId for "${song.title}" (id: ${song.id})');
+      }
 
       // Start transition animation
       _previousArtwork = _currentArtwork;
       _isTransitioning = true;
-      notifyListeners();
 
       // Try to get artwork with multiple retries and increasing delays
       Uint8List? artworkData;
       for (int attempt = 1; attempt <= 3; attempt++) {
+        if (kDebugMode) {
+          debugPrint(
+              '🎨 [BG_MGR] Fetch artwork attempt $attempt/3 for song id ${song.id}');
+        }
         artworkData = await _artworkCache.getArtwork(song.id);
 
         if (artworkData != null && artworkData.isNotEmpty) {
+          if (kDebugMode) {
+            debugPrint(
+                '🎨 [BG_MGR] Artwork fetched for song id ${song.id} (${artworkData.length} bytes)');
+          }
           break;
+        }
+        if (kDebugMode) {
+          debugPrint(
+              '🎨 [BG_MGR] Artwork not available yet for song id ${song.id}');
         }
 
         if (attempt < 3) {
@@ -174,6 +206,10 @@ class BackgroundManagerService extends ChangeNotifier {
 
       // Check if this update is still current
       if (currentUpdateId != _updateCounter || _currentSong?.id != song.id) {
+        if (kDebugMode) {
+          debugPrint(
+              '🎨 [BG_MGR] Discard stale update #$currentUpdateId for song id ${song.id}');
+        }
         _isUpdating = false;
         return;
       }
@@ -181,14 +217,48 @@ class BackgroundManagerService extends ChangeNotifier {
       // Update artwork for blurred background (only if valid)
       if (artworkData != null && artworkData.isNotEmpty) {
         _currentArtwork = artworkData;
+        _retryScheduledForSongId = null;
+        _artworkRetryTimer?.cancel();
+        if (kDebugMode) {
+          debugPrint(
+              '🎨 [BG_MGR] Apply artwork to background for song id ${song.id} (${artworkData.length} bytes)');
+        }
       } else {
         _currentArtwork = null;
+        if (kDebugMode) {
+          debugPrint(
+              '🎨 [BG_MGR] No artwork resolved for song id ${song.id}, using fallback/background colors');
+        }
+        _artworkRetryTimer?.cancel();
+        if (_retryScheduledForSongId != song.id) {
+          final songId = song.id;
+          _retryScheduledForSongId = songId;
+          if (kDebugMode) {
+            debugPrint(
+                '🎨 [BG_MGR] Schedule delayed retry in ${_artworkRetryDelay.inMilliseconds}ms for song id $songId');
+          }
+          _artworkRetryTimer = Timer(_artworkRetryDelay, () {
+            final currentSong = _currentSong;
+            if (_retryScheduledForSongId == songId &&
+                currentSong?.id == songId &&
+                !_isUpdating) {
+              if (kDebugMode) {
+                debugPrint('🎨 [BG_MGR] Run delayed retry for song id $songId');
+              }
+              updateColorsFromSong(currentSong!);
+            }
+          });
+        }
       }
 
       // Update colors WITHOUT notifying yet
       await _updateColorsFromArtworkSilent(artworkData);
 
       // Single notify after everything is ready
+      if (kDebugMode) {
+        debugPrint(
+            '🎨 [BG_MGR] Notify listeners for song id ${song.id} (hasArtwork: ${_currentArtwork != null})');
+      }
       notifyListeners();
 
       // End transition after a short delay for animation
@@ -338,6 +408,7 @@ class BackgroundManagerService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _artworkRetryTimer?.cancel();
     _updateThrottler.dispose();
     _colorCache.clear();
     super.dispose();

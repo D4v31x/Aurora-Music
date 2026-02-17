@@ -29,6 +29,10 @@ class AppBackground extends StatelessWidget {
         return !identical(prev, next);
       },
       builder: (context, currentArtwork, _) {
+        if (kDebugMode) {
+          debugPrint(
+              '🎨 [APP_BG] Rebuild background (hasArtwork: ${currentArtwork != null}, bytes: ${currentArtwork?.length ?? 0}, animated: $enableAnimation)');
+        }
         // Always use AnimatedArtworkBackground - it handles null artwork internally
         // This keeps the widget tree stable and avoids remounting issues
         if (enableAnimation) {
