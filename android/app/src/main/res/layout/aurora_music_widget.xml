@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="@android:color/transparent">
+
+    <!-- Main Player Card -->
+    <LinearLayout
+        android:id="@+id/widget_main_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/widget_main_card_bg"
+        android:padding="16dp">
+
+        <!-- Aurora Music Logo -->
+        <ImageView
+            android:id="@+id/widget_logo"
+            android:layout_width="140dp"
+            android:layout_height="28dp"
+            android:src="@drawable/widget_aurora_full_logo"
+            android:scaleType="fitStart"
+            android:layout_marginBottom="12dp"
+            android:contentDescription="Aurora Music" />
+
+        <!-- Song Info -->
+        <TextView
+            android:id="@+id/widget_song_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Not Playing"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#FF000000"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/widget_artist_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tap to open Aurora Music"
+            android:textSize="14sp"
+            android:textColor="#FF000000"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Playback Controls -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/widget_btn_prev"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_widget_skip_previous"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:scaleType="fitCenter"
+                android:contentDescription="Previous" />
+
+            <ImageButton
+                android:id="@+id/widget_btn_play_pause"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:src="@drawable/ic_widget_play"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:scaleType="fitCenter"
+                android:contentDescription="Play/Pause" />
+
+            <ImageButton
+                android:id="@+id/widget_btn_next"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_widget_skip_next"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:scaleType="fitCenter"
+                android:contentDescription="Next" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

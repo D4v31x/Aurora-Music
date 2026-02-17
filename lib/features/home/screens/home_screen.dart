@@ -792,26 +792,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         expandedHeight: 250,
                         // Performance: Removed BackdropFilter - blur during scroll causes dropped frames
                         // The app background already provides visual depth
-                        flexibleSpace: FlexibleSpaceBar(
-                          background: ColoredBox(
-                            color: Colors.transparent,
-                            child: Center(
-                              child: buildAppBarTitle(),
-                            ),
-                          ),
-                          centerTitle: true,
-                          title: innerBoxIsScrolled
-                              ? Text(
-                                  AppLocalizations.of(context)
-                                      .translate('aurora_music'),
-                                  style: const TextStyle(
-                                    fontFamily: FontConstants.fontFamily,
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
+                        flexibleSpace: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Calculate how collapsed the app bar is
+                            // toolbarHeight(70) + bottom(55) + statusBar padding
+                            final statusBarHeight =
+                                MediaQuery.of(context).padding.top;
+                            final minHeight =
+                                kToolbarHeight + 55 + statusBarHeight;
+                            final maxHeight = 250 + statusBarHeight;
+                            final currentHeight = constraints.maxHeight;
+                            // 0.0 = fully collapsed, 1.0 = fully expanded
+                            final expandRatio = ((currentHeight - minHeight) /
+                                    (maxHeight - minHeight))
+                                .clamp(0.0, 1.0);
+
+                            return FlexibleSpaceBar(
+                              background: ColoredBox(
+                                color: Colors.transparent,
+                                child: Center(
+                                  child: Opacity(
+                                    opacity: expandRatio,
+                                    child: buildAppBarTitle(),
                                   ),
-                                )
-                              : null,
+                                ),
+                              ),
+                              centerTitle: true,
+                            );
+                          },
                         ),
                         bottom: PreferredSize(
                           preferredSize: const Size.fromHeight(55),

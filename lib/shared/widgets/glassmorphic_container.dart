@@ -31,60 +31,56 @@ class GlassmorphicContainer extends StatelessWidget {
     final radius = borderRadius ?? BorderRadius.circular(15);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
-
-    // Check if blur should be enabled based on performance mode
     final performanceProvider = context.watch<PerformanceModeProvider>();
-    final shouldBlur = forceBlur || performanceProvider.shouldEnableBlur;
+    final isHighEnd = !performanceProvider.isLowEndDevice;
 
-    // If blur is disabled, use solid surface colors for better performance and UX
-    if (!shouldBlur) {
-      final solidDecoration = BoxDecoration(
-        color: isDark
-            ? colorScheme.surfaceContainerHigh
-            : colorScheme.surfaceContainerHighest,
-        borderRadius: radius,
-        border: Border.all(
-          color: isDark ? colorScheme.outlineVariant : colorScheme.outline,
-          width: 1,
-        ),
-      );
-
+    if (isHighEnd) {
+      // High-end: glassmorphic blur style
       return RepaintBoundary(
-        child: Container(
-          width: width,
-          padding: padding,
-          decoration: solidDecoration,
-          child: child,
+        child: ClipRRect(
+          borderRadius: radius,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+            child: Container(
+              width: width,
+              padding: padding,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withOpacity(0.08)
+                    : Colors.white.withOpacity(0.45),
+                borderRadius: radius,
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.12)
+                      : Colors.white.withOpacity(0.5),
+                  width: 1,
+                ),
+              ),
+              child: child,
+            ),
+          ),
         ),
       );
     }
 
-    // Glassmorphic decoration for high-end devices
-    final containerDecoration = BoxDecoration(
+    // Low-end: Material You solid surface styling — no blur
+    final solidDecoration = BoxDecoration(
       color: isDark
-          ? Colors.white.withOpacity(0.1)
-          : Colors.black.withOpacity(0.1),
+          ? colorScheme.surfaceContainerHigh
+          : colorScheme.surfaceContainerHighest,
       borderRadius: radius,
       border: Border.all(
-        color: isDark
-            ? Colors.white.withOpacity(0.2)
-            : Colors.black.withOpacity(0.2),
-        width: 1.5,
+        color: isDark ? colorScheme.outlineVariant : colorScheme.outline,
+        width: 1,
       ),
     );
 
     return RepaintBoundary(
-      child: ClipRRect(
-        borderRadius: radius,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Container(
-            width: width,
-            padding: padding,
-            decoration: containerDecoration,
-            child: child,
-          ),
-        ),
+      child: Container(
+        width: width,
+        padding: padding,
+        decoration: solidDecoration,
+        child: child,
       ),
     );
   }

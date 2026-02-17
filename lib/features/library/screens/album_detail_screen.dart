@@ -6,10 +6,12 @@ import '../../../l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'dart:typed_data';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/detail_header.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/mixins/detail_screen_mixin.dart';
 
@@ -44,6 +46,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
   String? _artistName;
   Duration _totalDuration = Duration.zero;
   List<AlbumModel> _relatedAlbums = [];
+  Uint8List? _artworkBytes;
 
   // DetailScreenMixin requirements
   @override
@@ -155,58 +158,25 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     if (_allSongs.isNotEmpty) {
       final artwork = await _artworkService.getArtwork(_allSongs.first.id);
       if (artwork != null) {
+        setState(() {
+          _artworkBytes = artwork;
+        });
+
         final paletteGenerator = await PaletteGenerator.fromImageProvider(
           MemoryImage(artwork),
-          maximumColorCount: 8, // Get more colors for a richer mesh gradient
+          maximumColorCount: 8,
         );
 
-        // Set the dominant color for the UI
         _dominantColorNotifier.value =
             paletteGenerator.dominantColor?.color ?? Colors.deepPurple.shade900;
-
-        // Extract colors for the mesh background
-        final List<Color> colors = [];
-
-        // Add colors from palette in priority order
-        if (paletteGenerator.dominantColor?.color != null) {
-          colors.add(paletteGenerator.dominantColor!.color);
-        }
-        if (paletteGenerator.vibrantColor?.color != null) {
-          colors.add(paletteGenerator.vibrantColor!.color);
-        }
-        if (paletteGenerator.lightVibrantColor?.color != null) {
-          colors.add(paletteGenerator.lightVibrantColor!.color);
-        }
-        if (paletteGenerator.darkVibrantColor?.color != null) {
-          colors.add(paletteGenerator.darkVibrantColor!.color);
-        }
-        if (paletteGenerator.mutedColor?.color != null) {
-          colors.add(paletteGenerator.mutedColor!.color);
-        }
-        if (paletteGenerator.lightMutedColor?.color != null) {
-          colors.add(paletteGenerator.lightMutedColor!.color);
-        }
-        if (paletteGenerator.darkMutedColor?.color != null) {
-          colors.add(paletteGenerator.darkMutedColor!.color);
-        }
-
-        // Background colors are now only controlled by the currently playing song
-        // Previously updated background manager with extracted colors here
-        // if (colors.isNotEmpty) {
-        //   Provider.of<BackgroundManagerService>(context, listen: false).setCustomColors(colors);
-        // } else {
-        //   Provider.of<BackgroundManagerService>(context, listen: false).updateColorsFromArtwork(artwork);
-        // }
-      } else {
-        // Background colors are now only controlled by the currently playing song
-        // Previously used default colors if no artwork
-        // Provider.of<BackgroundManagerService>(context, listen: false).updateColorsFromArtwork(null);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: ValueListenableBuilder<Color>(
@@ -217,7 +187,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
               child: SafeArea(
                 child: Column(
                   children: [
-                    // Back button
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Align(
@@ -246,72 +215,29 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
             child: CustomScrollView(
               controller: _scrollController,
               slivers: [
-                _buildSliverAppBar(),
-                // Stats section
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: glassmorphicContainer(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            if (_artistName != null)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: Text(
-                                  _artistName!,
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                buildStatItem(
-                                  Icons.music_note_rounded,
-                                  '${_allSongs.length}',
-                                  AppLocalizations.of(context)
-                                      .translate('songs'),
-                                ),
-                                buildStatDivider(),
-                                buildStatItem(
-                                  Icons.timer_outlined,
-                                  formatDuration(_totalDuration),
-                                  AppLocalizations.of(context)
-                                      .translate('total'),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                // Blurred artwork header
+                DetailHeader(
+                  artworkBytes: _artworkBytes,
+                  title: widget.albumName,
+                  subtitle: _artistName,
+                  metadata: _allSongs.isNotEmpty
+                      ? '${_allSongs.length} ${localizations.translate('songs')} · ${formatDuration(_totalDuration)}'
+                      : null,
+                  badge: localizations.translate('album'),
+                  heroTag: 'album_image_${widget.albumName}',
+                  accentColor: dominantColor == Colors.deepPurple.shade900
+                      ? Colors.cyan
+                      : dominantColor,
                 ),
-                // Action buttons
+
+                // Action row (play, search, shuffle)
                 SliverToBoxAdapter(
-                  child: buildActionButtonsRow(),
+                  child: _buildActionRow(localizations),
                 ),
-                // Songs header
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: Text(
-                      AppLocalizations.of(context).translate('songs'),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
+
+                // Songs list
                 _buildSongsList(),
+
                 // Related albums section
                 if (_relatedAlbums.isNotEmpty) ...[
                   SliverToBoxAdapter(
@@ -320,6 +246,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                       child: Text(
                         'More from $_artistName',
                         style: const TextStyle(
+                          fontFamily: FontConstants.fontFamily,
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -351,7 +278,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                               },
                               child: SizedBox(
                                 width: 130,
-                                child: glassmorphicContainer(
+                                child: GlassmorphicContainer(
                                   child: Padding(
                                     padding: const EdgeInsets.all(10),
                                     child: Column(
@@ -372,6 +299,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                                         Text(
                                           album.album,
                                           style: const TextStyle(
+                                            fontFamily:
+                                                FontConstants.fontFamily,
                                             color: Colors.white,
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -391,6 +320,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                     ),
                   ),
                 ],
+
                 // Bottom padding for mini player
                 buildMiniPlayerPadding(),
               ],
@@ -401,62 +331,90 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     );
   }
 
-  Widget _buildSliverAppBar() {
-    return SliverAppBar(
-      backgroundColor: Colors.transparent,
-      expandedHeight: 350,
-      pinned: true,
-      flexibleSpace: LayoutBuilder(
-        builder: (context, constraints) {
-          final top = constraints.biggest.height;
-          return FlexibleSpaceBar(
-            centerTitle: true,
-            title: top <= kToolbarHeight + 50
-                ? Text(
-                    widget.albumName,
-                    style: const TextStyle(
-                      fontFamily: FontConstants.fontFamily,
-                      fontStyle: FontStyle.normal,
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : null,
-            background: _allSongs.isEmpty
-                ? Container()
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 70),
-                      Hero(
-                        tag: 'album_image_${widget.albumName}',
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(25),
-                          child: _artworkService.buildCachedArtwork(
-                            _allSongs.first.id,
-                            size: 200,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        widget.albumName,
-                        style: const TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          fontStyle: FontStyle.normal,
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+  Widget _buildActionRow(AppLocalizations localizations) {
+    final color = dominantColor == Colors.deepPurple.shade900
+        ? Colors.blue
+        : dominantColor;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          // Play button
+          GestureDetector(
+            onTap: playAllSongs,
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
-          );
-        },
+                ],
+              ),
+              child: const Icon(
+                Icons.play_arrow_rounded,
+                color: Colors.white,
+                size: 30,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Search field placeholder
+          Expanded(
+            child: GlassmorphicContainer(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      localizations.translate('search_tracks'),
+                      style: TextStyle(
+                        fontFamily: FontConstants.fontFamily,
+                        color: Colors.white.withOpacity(0.4),
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.search,
+                    color: Colors.white.withOpacity(0.5),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Shuffle button
+          GestureDetector(
+            onTap: shuffleAllSongs,
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.shuffle_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -496,14 +454,11 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                   ),
                   child: GestureDetector(
                     onTap: () {
-                      debugPrint(
-                          'Tapped song at index: $index, song: ${song.title}');
                       Provider.of<AudioPlayerService>(context, listen: false)
                           .setPlaylist(_allSongs, index);
-                      // Note: setPlaylist already starts playback, no need to call play()
                     },
                     onLongPress: () => _showSongOptions(song),
-                    child: glassmorphicContainer(
+                    child: GlassmorphicContainer(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 10),
@@ -515,6 +470,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                               child: Text(
                                 '${index + 1}',
                                 style: TextStyle(
+                                  fontFamily: FontConstants.fontFamily,
                                   color: Colors.white.withOpacity(0.6),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
@@ -525,40 +481,35 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                             const SizedBox(width: 12),
                             // Song info
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    song.title,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    splitArtists(
-                                            song.artist ?? 'Unknown Artist')
-                                        .join(', '),
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.6),
-                                      fontSize: 13,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
+                              child: Text(
+                                song.title,
+                                style: const TextStyle(
+                                  fontFamily: FontConstants.fontFamily,
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             // Duration
                             Text(
                               durationString,
                               style: TextStyle(
+                                fontFamily: FontConstants.fontFamily,
                                 color: Colors.white.withOpacity(0.5),
                                 fontSize: 13,
+                              ),
+                            ),
+                            // More options
+                            const SizedBox(width: 4),
+                            GestureDetector(
+                              onTap: () => _showSongOptions(song),
+                              child: Icon(
+                                Icons.more_vert,
+                                color: Colors.white.withOpacity(0.5),
+                                size: 20,
                               ),
                             ),
                           ],

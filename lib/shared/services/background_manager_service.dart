@@ -7,7 +7,7 @@ import '../utils/performance_optimizations.dart';
 
 /// Service that manages background colors and artwork
 /// Provides artwork data for blurred backgrounds across the app
-/// 
+///
 /// Performance optimizations:
 /// - Cached color extraction to avoid redundant palette generation
 /// - Throttled updates to prevent excessive rebuilds
@@ -28,7 +28,8 @@ class BackgroundManagerService extends ChangeNotifier {
 
   // Performance optimizations
   final Map<int, List<Color>> _colorCache = {}; // Cache colors by song ID
-  final Throttler _updateThrottler = Throttler(interval: const Duration(milliseconds: 300));
+  final Throttler _updateThrottler =
+      Throttler(interval: const Duration(milliseconds: 300));
   final Memoizer<List<Color>> _colorMemoizer = Memoizer<List<Color>>();
 
   static const Color _defaultDarkPrimary = Color(0xFF1A237E);
@@ -109,11 +110,12 @@ class BackgroundManagerService extends ChangeNotifier {
         _currentColors = colors;
         // Cache the extracted colors
         _colorCache[artworkHash] = colors;
-        
+
         // Limit cache size to prevent memory leaks
         if (_colorCache.length > 50) {
           // Remove oldest entries (first keys)
-          final keysToRemove = _colorCache.keys.take(_colorCache.length - 50).toList();
+          final keysToRemove =
+              _colorCache.keys.take(_colorCache.length - 50).toList();
           for (final key in keysToRemove) {
             _colorCache.remove(key);
           }

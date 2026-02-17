@@ -6,6 +6,10 @@ import 'package:just_audio/just_audio.dart';
 class AuroraAudioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer player;
 
+  /// Guard to prevent intermediate currentIndexStream events from
+  /// overriding the correct mediaItem during setAudioSource calls.
+  bool _suppressIndexUpdates = false;
+
   AuroraAudioHandler(this.player) {
     // Broadcast playback state changes
     player.playbackEventStream.listen((event) {
@@ -22,12 +26,25 @@ class AuroraAudioHandler extends BaseAudioHandler with SeekHandler {
 
     // Broadcast current media item changes based on index
     player.currentIndexStream.listen((index) {
+      if (_suppressIndexUpdates) return;
       if (index != null &&
           queue.value.isNotEmpty &&
           index < queue.value.length) {
         mediaItem.add(queue.value[index]);
       }
     });
+  }
+
+  /// Suppress automatic mediaItem updates from currentIndexStream.
+  /// Call before setAudioSource to prevent intermediate index 0 from
+  /// overriding the correct mediaItem.
+  void suppressIndexUpdates() {
+    _suppressIndexUpdates = true;
+  }
+
+  /// Resume automatic mediaItem updates from currentIndexStream.
+  void resumeIndexUpdates() {
+    _suppressIndexUpdates = false;
   }
 
   /// Broadcast current playback state to notification

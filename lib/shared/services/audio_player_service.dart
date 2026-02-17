@@ -11,6 +11,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'background_manager_service.dart';
 import 'artwork_cache_service.dart';
+import 'home_screen_widget_service.dart';
 import 'smart_suggestions_service.dart';
 import '../../main.dart' show audioHandler;
 
@@ -48,6 +49,7 @@ class AudioPlayerService extends ChangeNotifier {
   final OnAudioQuery _audioQuery = OnAudioQuery();
   final ArtworkCacheService _artworkCache = ArtworkCacheService();
   final SmartSuggestionsService _smartSuggestions = SmartSuggestionsService();
+  final HomeScreenWidgetService _homeWidgetService = HomeScreenWidgetService();
 
   // Background manager for mesh gradient colors
   BackgroundManagerService? _backgroundManager;
@@ -63,6 +65,8 @@ class AudioPlayerService extends ChangeNotifier {
   bool _isShuffle = false;
   LoopMode _loopMode = LoopMode.off; // Changed from bool to LoopMode
   bool _isLoading = false;
+  bool _isSettingPlaylist =
+      false; // Guard against currentIndexStream race condition
   Set<String> _librarySet = {};
 
   // Debounce timer for batching notifications
@@ -383,28 +387,54 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
+  // Cache for artwork file URIs to avoid redundant disk I/O
+  final Map<int, Uri?> _artworkUriCache = {};
+
   /// Get artwork URI for media notification
-  /// Saves artwork to a temp file and returns the file URI
+  /// Saves artwork to a temp file and returns the file URI.
+  /// Results are cached to avoid redundant disk writes.
   Future<Uri?> _getArtworkUri(int songId) async {
+    // Return cached URI if available
+    if (_artworkUriCache.containsKey(songId)) {
+      return _artworkUriCache[songId];
+    }
     try {
       final artwork = await _artworkCache.getArtwork(songId);
-      if (artwork == null || artwork.isEmpty) return null;
+      if (artwork == null || artwork.isEmpty) {
+        _artworkUriCache[songId] = null;
+        return null;
+      }
 
       final tempDir = await getTemporaryDirectory();
       final artworkFile = File('${tempDir.path}/notification_art_$songId.jpg');
 
-      // Always write the file to ensure it's available
-      await artworkFile.writeAsBytes(artwork);
+      // Only write if file doesn't already exist
+      if (!await artworkFile.exists()) {
+        await artworkFile.writeAsBytes(artwork);
+      }
 
-      // Return file URI - must use Uri.parse with file:// prefix for Android
-      return Uri.parse('file://${artworkFile.path}');
+      final uri = Uri.parse('file://${artworkFile.path}');
+      _artworkUriCache[songId] = uri;
+      return uri;
     } catch (e) {
       debugPrint('Error getting artwork URI: $e');
+      _artworkUriCache[songId] = null;
       return null;
     }
   }
 
-  /// Create MediaItem with artwork for a song
+  /// Create a lightweight MediaItem WITHOUT artwork (instant, no I/O)
+  MediaItem _createMediaItemSync(SongModel song) {
+    return MediaItem(
+      id: song.id.toString(),
+      album: song.album ?? 'Unknown Album',
+      title: song.title,
+      artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+      duration: Duration(milliseconds: song.duration ?? 0),
+    );
+  }
+
+  /// Create MediaItem with artwork for a song (async, involves I/O)
   Future<MediaItem> _createMediaItem(SongModel song) async {
     final artUri = await _getArtworkUri(song.id);
     return MediaItem(
@@ -415,6 +445,33 @@ class AudioPlayerService extends ChangeNotifier {
       duration: Duration(milliseconds: song.duration ?? 0),
       artUri: artUri,
     );
+  }
+
+  /// Load artwork for remaining songs in background and update notification queue
+  Future<void> _loadRemainingArtworkInBackground(List<SongModel> songs) async {
+    try {
+      // Process in small batches to avoid blocking
+      const batchSize = 5;
+      for (var i = 0; i < songs.length; i += batchSize) {
+        final end = (i + batchSize).clamp(0, songs.length);
+        final batch = songs.sublist(i, end);
+        await Future.wait(batch.map((song) => _getArtworkUri(song.id)));
+      }
+
+      // Update notification queue with full artwork after loading
+      if (_playlist.isNotEmpty && _currentIndex >= 0) {
+        final mediaItems = await Future.wait(
+          _playlist.map((song) => _createMediaItem(song)),
+        );
+        audioHandler.updateNotificationQueue(mediaItems);
+        // Update current item's notification with artwork
+        if (_currentIndex < mediaItems.length) {
+          audioHandler.updateNotificationMediaItem(mediaItems[_currentIndex]);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading background artwork: $e');
+    }
   }
 
   Future<void> _init() async {
@@ -431,6 +488,13 @@ class AudioPlayerService extends ChangeNotifier {
 
     await _loadPlayCounts();
     await _loadPlaylists();
+
+    // Initialize home screen widget
+    unawaited(_homeWidgetService.initialize());
+
+    // Listen to song changes to update home screen widget
+    currentSongNotifier.addListener(_onSongChangedForWidget);
+    isPlayingNotifier.addListener(_onPlayStateChangedForWidget);
 
     _audioPlayer.playerStateStream.listen((playerState) {
       _isPlaying = playerState.playing;
@@ -450,10 +514,25 @@ class AudioPlayerService extends ChangeNotifier {
     });
 
     // Listen to track index changes for gapless playback
-    // This fires when just_audio automatically transitions to the next track
+    // This fires when just_audio automatically transitions to the next track.
+    // IMPORTANT: Only process these events in gapless mode. In non-gapless mode,
+    // we load a single song via setAudioSource, so the player's currentIndex is
+    // always 0, which does NOT correspond to _currentIndex in _playlist.
     _audioPlayer.currentIndexStream.listen((index) async {
       debugPrint(
           '🎵 [INDEX_STREAM] Index changed: $index (previous: $_currentIndex, shuffle: ${_audioPlayer.shuffleModeEnabled}, loop: ${_audioPlayer.loopMode})');
+      // Skip index updates while setPlaylist is in progress to avoid race condition
+      // where intermediate index 0 overrides the correct startIndex
+      if (_isSettingPlaylist) {
+        debugPrint('🎵 [INDEX_STREAM] Skipping — setPlaylist in progress');
+        return;
+      }
+      // In non-gapless mode, the player only has a single song loaded, so
+      // its currentIndex (always 0) is meaningless for our _playlist tracking.
+      if (!_gaplessPlayback) {
+        debugPrint('🎵 [INDEX_STREAM] Skipping — non-gapless mode');
+        return;
+      }
       if (index != null && index != _currentIndex && index < _playlist.length) {
         _currentIndex = index;
         final song = _playlist[_currentIndex];
@@ -765,24 +844,29 @@ class AudioPlayerService extends ChangeNotifier {
 
       _playlist = songs;
       _currentIndex = startIndex;
+      _isSettingPlaylist = true; // Guard against currentIndexStream race
 
       debugPrint(
           'Setting playlist with ${songs.length} songs, starting at index $startIndex');
 
       if (_gaplessPlayback) {
         try {
-          // Pre-fetch artwork for all songs in parallel for better notification experience
-          final mediaItems = await Future.wait(
-            _playlist.map((song) => _createMediaItem(song)),
-          );
+          // Create lightweight MediaItems WITHOUT artwork for instant startup
+          final lightMediaItems =
+              _playlist.map((song) => _createMediaItemSync(song)).toList();
+
+          // Only fetch artwork for the starting song (fast, usually cached)
+          final startSong = _playlist[_currentIndex];
+          final startMediaItem = await _createMediaItem(startSong);
+          lightMediaItems[_currentIndex] = startMediaItem;
 
           // Update audio handler queue for notification
-          audioHandler.updateNotificationQueue(mediaItems);
+          audioHandler.updateNotificationQueue(lightMediaItems);
 
           final playlistSource = ConcatenatingAudioSource(
             children: _playlist.asMap().entries.map((entry) {
               final song = entry.value;
-              final mediaItem = mediaItems[entry.key];
+              final mediaItem = lightMediaItems[entry.key];
               final uri = song.uri ?? song.data;
               return AudioSource.uri(
                 Uri.parse(uri),
@@ -790,6 +874,10 @@ class AudioPlayerService extends ChangeNotifier {
               );
             }).toList(),
           );
+
+          // Suppress automatic mediaItem updates during source setup
+          // to prevent intermediate index 0 from overriding the correct item
+          audioHandler.suppressIndexUpdates();
 
           await _audioPlayer.setAudioSource(
             playlistSource,
@@ -805,10 +893,21 @@ class AudioPlayerService extends ChangeNotifier {
           debugPrint(
               '🎵 [AUDIO_SOURCE] Player state - shuffle: ${_audioPlayer.shuffleModeEnabled}, loop: ${_audioPlayer.loopMode}');
 
-          // Update current media item in notification
-          audioHandler.updateNotificationMediaItem(mediaItems[_currentIndex]);
+          // Resume automatic mediaItem updates
+          audioHandler.resumeIndexUpdates();
 
           await _audioPlayer.play();
+
+          // Sync _currentIndex with the player's actual index to prevent
+          // stale currentIndexStream events from overriding it after the
+          // guard is released.
+          final actualIndex = _audioPlayer.currentIndex ?? _currentIndex;
+          if (actualIndex >= 0 && actualIndex < _playlist.length) {
+            _currentIndex = actualIndex;
+          }
+
+          // Update current media item in notification (after index sync)
+          audioHandler.updateNotificationMediaItem(startMediaItem);
 
           // Batch all state updates
           _isPlaying = true;
@@ -821,9 +920,18 @@ class AudioPlayerService extends ChangeNotifier {
           unawaited(updateCurrentArtwork());
           unawaited(_updateBackgroundColors());
 
+          // Load remaining artwork in background (non-blocking)
+          unawaited(_loadRemainingArtworkInBackground(_playlist));
+
+          // Release guard AFTER all state is consistent — this prevents
+          // stale currentIndexStream events from overriding _currentIndex
+          _isSettingPlaylist = false;
+
           // Single debounced notification
           _scheduleNotify();
         } catch (e) {
+          _isSettingPlaylist = false; // Release guard on error
+          audioHandler.resumeIndexUpdates(); // Resume notification updates
           // "Loading interrupted" is expected when rapidly changing songs - don't treat as error
           if (e.toString().contains('Loading interrupted')) {
             debugPrint('Audio load interrupted (new song selected)');
@@ -836,10 +944,19 @@ class AudioPlayerService extends ChangeNotifier {
           rethrow;
         }
       } else {
-        // For non-gapless playback, just call play() once
-        await play();
+        // For non-gapless playback, keep the guard active during play()
+        // because play() calls setAudioSource for a single song which resets
+        // the player's currentIndex to 0, but _currentIndex refers to the
+        // position in the full _playlist.
+        try {
+          await play();
+        } finally {
+          _isSettingPlaylist = false;
+        }
       }
     } catch (e) {
+      _isSettingPlaylist = false; // Release guard on error
+      audioHandler.resumeIndexUpdates(); // Resume notification updates
       // "Loading interrupted" is expected when rapidly changing songs - don't treat as error
       if (e.toString().contains('Loading interrupted')) {
         debugPrint('Audio load interrupted (new song selected)');
@@ -858,10 +975,9 @@ class AudioPlayerService extends ChangeNotifier {
     try {
       if (_gaplessPlayback &&
           _audioPlayer.audioSource is ConcatenatingAudioSource) {
-        // Pre-fetch artwork for all songs
-        final mediaItems = await Future.wait(
-          newSongs.map((song) => _createMediaItem(song)),
-        );
+        // Use lightweight MediaItems for instant rebuild
+        final mediaItems =
+            newSongs.map((song) => _createMediaItemSync(song)).toList();
 
         final newSource = ConcatenatingAudioSource(
           children: newSongs
@@ -886,6 +1002,10 @@ class AudioPlayerService extends ChangeNotifier {
 
         _playlist = newSongs;
         _currentIndex = currentIndex;
+
+        // Load artwork in background
+        unawaited(_loadRemainingArtworkInBackground(newSongs));
+
         _scheduleNotify();
       } else {
         _playlist = newSongs;
@@ -899,6 +1019,12 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   Future<void> play({int? index}) async {
+    // If an explicit index is provided (user selected a song), allow it
+    // even if a previous load is in progress — the user's intent takes priority.
+    if (index != null) {
+      _isLoading = false;
+    }
+
     // Prevent concurrent play calls
     if (_isLoading) {
       debugPrint('Already loading, ignoring play request');
@@ -937,9 +1063,20 @@ class AudioPlayerService extends ChangeNotifier {
           // Update notification
           audioHandler.updateNotificationMediaItem(mediaItem);
 
-          await _audioPlayer.setAudioSource(
-            AudioSource.uri(Uri.parse(url), tag: mediaItem),
-          );
+          // Suppress index stream events during setAudioSource — loading a
+          // single song resets the player index to 0, but _currentIndex
+          // refers to the position in the full _playlist.
+          final wasSettingPlaylist = _isSettingPlaylist;
+          _isSettingPlaylist = true;
+          audioHandler.suppressIndexUpdates();
+          try {
+            await _audioPlayer.setAudioSource(
+              AudioSource.uri(Uri.parse(url), tag: mediaItem),
+            );
+          } finally {
+            _isSettingPlaylist = wasSettingPlaylist;
+            audioHandler.resumeIndexUpdates();
+          }
           await _audioPlayer.play();
         }
 
@@ -1028,14 +1165,17 @@ class AudioPlayerService extends ChangeNotifier {
         _audioPlayer.audioSource is ConcatenatingAudioSource) {
       try {
         final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
-        final mediaItem = await _createMediaItem(song);
+        final mediaItem = _createMediaItemSync(song);
         final uri = song.uri ?? song.data;
         await source.add(AudioSource.uri(Uri.parse(uri), tag: mediaItem));
 
-        // Update notification queue
+        // Update notification queue with lightweight items
         final mediaItems =
-            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+            _playlist.map((s) => _createMediaItemSync(s)).toList();
         audioHandler.updateNotificationQueue(mediaItems);
+
+        // Load artwork in background
+        unawaited(_loadRemainingArtworkInBackground(_playlist));
       } catch (e) {
         debugPrint('Error adding song to queue: $e');
       }
@@ -1061,7 +1201,7 @@ class AudioPlayerService extends ChangeNotifier {
       try {
         final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
         final mediaItems =
-            await Future.wait(songs.map((song) => _createMediaItem(song)));
+            songs.map((song) => _createMediaItemSync(song)).toList();
 
         for (var i = 0; i < songs.length; i++) {
           final song = songs[i];
@@ -1069,10 +1209,13 @@ class AudioPlayerService extends ChangeNotifier {
           await source.add(AudioSource.uri(Uri.parse(uri), tag: mediaItems[i]));
         }
 
-        // Update notification queue
+        // Update notification queue with lightweight items
         final allMediaItems =
-            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+            _playlist.map((s) => _createMediaItemSync(s)).toList();
         audioHandler.updateNotificationQueue(allMediaItems);
+
+        // Load artwork in background
+        unawaited(_loadRemainingArtworkInBackground(_playlist));
       } catch (e) {
         debugPrint('Error adding songs to queue: $e');
       }
@@ -1095,15 +1238,18 @@ class AudioPlayerService extends ChangeNotifier {
         _audioPlayer.audioSource is ConcatenatingAudioSource) {
       try {
         final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
-        final mediaItem = await _createMediaItem(song);
+        final mediaItem = _createMediaItemSync(song);
         final uri = song.uri ?? song.data;
         await source.insert(
             insertIndex, AudioSource.uri(Uri.parse(uri), tag: mediaItem));
 
-        // Update notification queue
+        // Update notification queue with lightweight items
         final mediaItems =
-            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+            _playlist.map((s) => _createMediaItemSync(s)).toList();
         audioHandler.updateNotificationQueue(mediaItems);
+
+        // Load artwork in background
+        unawaited(_loadRemainingArtworkInBackground(_playlist));
       } catch (e) {
         debugPrint('Error inserting song to play next: $e');
       }
@@ -1135,9 +1281,9 @@ class AudioPlayerService extends ChangeNotifier {
         final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
         await source.removeAt(index);
 
-        // Update notification queue
+        // Update notification queue with lightweight items
         final mediaItems =
-            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+            _playlist.map((s) => _createMediaItemSync(s)).toList();
         audioHandler.updateNotificationQueue(mediaItems);
       } catch (e) {
         debugPrint('Error removing song from queue: $e');
@@ -1171,9 +1317,9 @@ class AudioPlayerService extends ChangeNotifier {
         final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
         await source.move(oldIndex, newIndex);
 
-        // Update notification queue
+        // Update notification queue with lightweight items
         final mediaItems =
-            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+            _playlist.map((s) => _createMediaItemSync(s)).toList();
         audioHandler.updateNotificationQueue(mediaItems);
       } catch (e) {
         debugPrint('Error moving song in queue: $e');
@@ -1240,9 +1386,9 @@ class AudioPlayerService extends ChangeNotifier {
           await source.removeAt(source.length - 1);
         }
 
-        // Update notification queue
+        // Update notification queue with lightweight items
         final mediaItems =
-            await Future.wait(_playlist.map((s) => _createMediaItem(s)));
+            _playlist.map((s) => _createMediaItemSync(s)).toList();
         audioHandler.updateNotificationQueue(mediaItems);
       } catch (e) {
         debugPrint('Error clearing upcoming queue: $e');
@@ -1374,8 +1520,61 @@ class AudioPlayerService extends ChangeNotifier {
       // Use cached artwork service for better performance
       final artwork = await _artworkCache.getArtwork(currentSong!.id);
       currentArtwork.value = artwork;
+
+      // Also push artwork to home screen widget
+      if (artwork != null && artwork.isNotEmpty) {
+        _homeWidgetService.updateSongInfo(
+          title: currentSong!.title,
+          artist: currentSong!.artist ?? 'Unknown Artist',
+          isPlaying: isPlayingNotifier.value,
+          artworkBytes: artwork,
+        );
+      }
     } catch (e) {
       currentArtwork.value = null;
+    }
+  }
+
+  /// Called when the current song changes — pushes info to the home screen widget.
+  void _onSongChangedForWidget() {
+    final song = currentSongNotifier.value;
+    if (song != null) {
+      _homeWidgetService.updateSongInfo(
+        title: song.title,
+        artist: song.artist ?? 'Unknown Artist',
+        isPlaying: isPlayingNotifier.value,
+        songId: song.id,
+        artworkBytes: currentArtwork.value,
+        source: _playbackSource.name != null
+            ? 'Playing from ${_playbackSource.name}'
+            : 'Aurora Music',
+        currentPosition: _audioPlayer.position,
+        totalDuration: _audioPlayer.duration ?? Duration.zero,
+      );
+      // Update queue (next 4 songs)
+      _homeWidgetService.updateQueue(upcomingQueue.take(6).toList());
+      // Start progress updates when a new song starts
+      if (isPlayingNotifier.value) {
+        _homeWidgetService.startProgressUpdates(
+          getCurrentPosition: () => _audioPlayer.position,
+          getTotalDuration: () => _audioPlayer.duration ?? Duration.zero,
+        );
+      }
+    } else {
+      _homeWidgetService.clearWidget();
+    }
+  }
+
+  /// Called when play/pause state changes — updates the widget icon.
+  void _onPlayStateChangedForWidget() {
+    _homeWidgetService.updatePlayingState(isPlayingNotifier.value);
+    if (isPlayingNotifier.value) {
+      _homeWidgetService.startProgressUpdates(
+        getCurrentPosition: () => _audioPlayer.position,
+        getTotalDuration: () => _audioPlayer.duration ?? Duration.zero,
+      );
+    } else {
+      _homeWidgetService.stopProgressUpdates();
     }
   }
 
@@ -1524,6 +1723,11 @@ class AudioPlayerService extends ChangeNotifier {
       savePlaylists();
     }
 
+    // Clean up widget listeners and service
+    currentSongNotifier.removeListener(_onSongChangedForWidget);
+    isPlayingNotifier.removeListener(_onPlayStateChangedForWidget);
+    _homeWidgetService.dispose();
+
     _currentSongController.close();
     _errorController.close();
     _sleepTimer?.cancel();
@@ -1611,10 +1815,9 @@ class AudioPlayerService extends ChangeNotifier {
     if (_gaplessPlayback) {
       // Create a concatenating audio source for gapless playback
       if (_playlist.isNotEmpty) {
-        // Pre-fetch artwork for all songs
-        final mediaItems = await Future.wait(
-          _playlist.map((song) => _createMediaItem(song)),
-        );
+        // Use lightweight MediaItems for instant startup
+        final mediaItems =
+            _playlist.map((song) => _createMediaItemSync(song)).toList();
 
         final playlist = ConcatenatingAudioSource(
           children: _playlist
@@ -1633,6 +1836,9 @@ class AudioPlayerService extends ChangeNotifier {
           initialIndex: _currentIndex,
           initialPosition: _audioPlayer.position,
         );
+
+        // Load artwork in background
+        unawaited(_loadRemainingArtworkInBackground(_playlist));
       }
     }
   }

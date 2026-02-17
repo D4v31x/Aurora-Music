@@ -238,7 +238,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       actions: [
         const SleepTimerIndicator(),
         PlayerMoreOptionsMenu(
-          onSelected: (value) => _handleMenuSelection(value, audioPlayerService),
+          onSelected: (value) =>
+              _handleMenuSelection(value, audioPlayerService),
         ),
       ],
     );
@@ -252,7 +253,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     }
   }
 
-  void _handleMenuSelection(String value, AudioPlayerService audioPlayerService) {
+  void _handleMenuSelection(
+      String value, AudioPlayerService audioPlayerService) {
     switch (value) {
       case 'sleep_timer':
         showSleepTimerOptions(context);
@@ -543,6 +545,31 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Current lyric line
+        ValueListenableBuilder<int>(
+          valueListenable: _currentLyricIndexNotifier,
+          builder: (context, currentIndex, _) {
+            final hasLyrics = _timedLyrics != null && _timedLyrics!.isNotEmpty;
+            if (!hasLyrics) return const SizedBox.shrink();
+            final lyricText = _timedLyrics![currentIndex].text.trim();
+            if (lyricText.isEmpty) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                lyricText,
+                style: TextStyle(
+                  fontSize: isTablet ? 13 : 12,
+                  color: Colors.white.withOpacity(0.45),
+                  fontFamily: FontConstants.fontFamily,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            );
+          },
+        ),
         _buildTitleText(audioPlayerService, isTablet: isTablet),
         const SizedBox(height: 4),
         _buildArtistText(audioPlayerService, isTablet: isTablet),
@@ -571,7 +598,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   Widget _buildArtistText(AudioPlayerService audioPlayerService,
       {required bool isTablet}) {
-    final artistString = audioPlayerService.currentSong?.artist ?? 'Unknown artist';
+    final artistString =
+        audioPlayerService.currentSong?.artist ?? 'Unknown artist';
     final artists = ArtistSeparatorService().splitArtists(artistString);
 
     return Hero(
@@ -614,7 +642,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         ),
         SizedBox(height: isTablet ? 24 : 20),
         GestureDetector(
-          onTap: hasLyrics ? () => _openFullscreenLyrics(audioPlayerService) : null,
+          onTap: hasLyrics
+              ? () => _openFullscreenLyrics(audioPlayerService)
+              : null,
           child: ValueListenableBuilder<int>(
             valueListenable: _currentLyricIndexNotifier,
             builder: (context, currentIndex, _) {

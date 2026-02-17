@@ -7,6 +7,7 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/local_caching_service.dart';
 import '../../../shared/models/playlist_model.dart';
+import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../playlists/screens/playlist_detail_screen.dart';
 import '../../library/screens/album_detail_screen.dart';
 import '../../library/screens/artist_detail_screen.dart';
@@ -333,116 +334,116 @@ class _FavoriteSongsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
     final localizations = AppLocalizations.of(context);
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: SizedBox(
         height: 64,
-        decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.05),
+        child: GlassmorphicContainer(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.05),
-          ),
-        ),
-        child: Row(
-          children: [
-            // Liked songs artwork
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.horizontal(left: Radius.circular(12)),
-              child: SizedBox(
-                width: 64,
-                height: 64,
-                child: Image.asset(
-                  'assets/images/UI/liked.png',
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            // Title & subtitle
-            Expanded(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        localizations.translate('favorite_songs'),
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: FontConstants.fontFamily,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Flexible(
-                      child: Text(
-                        '${playlist.songs.length} ${localizations.translate('tracks')}',
-                        style: TextStyle(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.6)
-                              : Colors.black54,
-                          fontSize: 12,
-                          fontFamily: FontConstants.fontFamily,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Play button
-            Container(
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.play_arrow_rounded,
-                  color: theme.colorScheme.primary,
-                ),
-                iconSize: 24,
-                padding: const EdgeInsets.all(8),
-                constraints: const BoxConstraints(),
-                onPressed: () {
-                  if (playlist.songs.isNotEmpty) {
-                    final audioService = Provider.of<AudioPlayerService>(
-                      context,
-                      listen: false,
-                    );
-                    audioService.setPlaylist(
-                      playlist.songs,
-                      0,
-                      source: PlaybackSourceInfo(
-                        source: PlaybackSource.playlist,
-                        name: playlist.name,
-                      ),
-                    );
-                  }
-                },
-              ),
-            ),
-          ],
+          blur: 15,
+          child: _buildFavoriteContent(
+              context, isDark, localizations, colorScheme),
         ),
       ),
+    );
+  }
+
+  Widget _buildFavoriteContent(BuildContext context, bool isDark,
+      AppLocalizations localizations, ColorScheme colorScheme) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        // Liked songs artwork
+        ClipRRect(
+          borderRadius:
+              const BorderRadius.horizontal(left: Radius.circular(12)),
+          child: SizedBox(
+            width: 64,
+            height: 64,
+            child: Image.asset(
+              'assets/images/UI/liked.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        // Title & subtitle
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    localizations.translate('favorite_songs'),
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: FontConstants.fontFamily,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Flexible(
+                  child: Text(
+                    '${playlist.songs.length} ${localizations.translate('tracks')}',
+                    style: TextStyle(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.6)
+                          : Colors.black54,
+                      fontSize: 12,
+                      fontFamily: FontConstants.fontFamily,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Play button
+        Container(
+          margin: const EdgeInsets.only(right: 12),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withOpacity(0.15),
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: Icon(
+              Icons.play_arrow_rounded,
+              color: theme.colorScheme.primary,
+            ),
+            iconSize: 24,
+            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints(),
+            onPressed: () {
+              if (playlist.songs.isNotEmpty) {
+                final audioService = Provider.of<AudioPlayerService>(
+                  context,
+                  listen: false,
+                );
+                audioService.setPlaylist(
+                  playlist.songs,
+                  0,
+                  source: PlaybackSourceInfo(
+                    source: PlaybackSource.playlist,
+                    name: playlist.name,
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -466,76 +467,69 @@ class _ForYouItemCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: SizedBox(
         height: 64,
-        decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.05),
+        child: GlassmorphicContainer(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.05),
-          ),
-        ),
-        child: Row(
-          children: [
-            // Artwork
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.horizontal(left: Radius.circular(12)),
-              child: SizedBox(
-                width: 64,
-                height: 64,
-                child: _buildArtwork(),
+          blur: 15,
+          child: Row(
+            children: [
+              // Artwork
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.horizontal(left: Radius.circular(12)),
+                child: SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: _buildArtwork(),
+                ),
               ),
-            ),
-            // Title & subtitle
-            Expanded(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        item.title,
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: FontConstants.fontFamily,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (item.subtitle != null) ...[
-                      const SizedBox(height: 2),
+              // Title & subtitle
+              Expanded(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                       Flexible(
                         child: Text(
-                          item.subtitle!,
+                          item.title,
                           style: TextStyle(
-                            color: isDark
-                                ? Colors.white.withOpacity(0.6)
-                                : Colors.black54,
-                            fontSize: 11,
+                            color: isDark ? Colors.white : Colors.black87,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
                             fontFamily: FontConstants.fontFamily,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      if (item.subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Flexible(
+                          child: Text(
+                            item.subtitle!,
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.6)
+                                  : Colors.black54,
+                              fontSize: 11,
+                              fontFamily: FontConstants.fontFamily,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

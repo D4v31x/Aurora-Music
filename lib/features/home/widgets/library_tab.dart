@@ -3,7 +3,6 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui';
 import '../../../shared/models/playlist_model.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../library/screens/album_detail_screen.dart';
@@ -19,7 +18,6 @@ import '../../../shared/widgets/glassmorphic_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/utils/responsive_utils.dart';
-import '../../../shared/providers/performance_mode_provider.dart';
 
 import '../../../shared/widgets/expanding_player.dart';
 
@@ -386,41 +384,19 @@ class _LibraryTabState extends State<LibraryTab>
     bool isFullWidth = false,
   }) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
     final cardSize = isWideLayout ? 120.0 : 110.0;
     final sectionHeight = cardSize + 60; // Card size + text space
 
-    // Check if blur should be enabled based on performance mode
-    final performanceProvider =
-        Provider.of<PerformanceModeProvider>(context, listen: false);
-    final shouldBlur = performanceProvider.shouldEnableBlur;
-
-    // Use solid surface colors for lowend devices
-    final BoxDecoration detailsButtonDecoration;
-    if (shouldBlur) {
-      detailsButtonDecoration = BoxDecoration(
-        color: isDark
-            ? Colors.white.withOpacity(0.1)
-            : Colors.black.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.15)
-              : Colors.black.withOpacity(0.1),
-        ),
-      );
-    } else {
-      // Solid button styling for lowend devices
-      detailsButtonDecoration = BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-          width: 1,
-        ),
-      );
-    }
+    // Material You solid button styling — no blur
+    final detailsButtonDecoration = BoxDecoration(
+      color: colorScheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: colorScheme.outlineVariant,
+        width: 1,
+      ),
+    );
 
     final detailsButtonContent = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -452,15 +428,7 @@ class _LibraryTabState extends State<LibraryTab>
               ),
               GestureDetector(
                 onTap: onDetailsTap,
-                child: shouldBlur
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: detailsButtonContent,
-                        ),
-                      )
-                    : detailsButtonContent,
+                child: detailsButtonContent,
               ),
             ],
           ),
@@ -596,39 +564,17 @@ class _LibraryTabState extends State<LibraryTab>
     Function(dynamic)? onItemTap,
   }) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
 
-    // Check if blur should be enabled based on performance mode
-    final performanceProvider =
-        Provider.of<PerformanceModeProvider>(context, listen: false);
-    final shouldBlur = performanceProvider.shouldEnableBlur;
-
-    // Use solid surface colors for lowend devices
-    final BoxDecoration detailsButtonDecoration;
-    if (shouldBlur) {
-      detailsButtonDecoration = BoxDecoration(
-        color: isDark
-            ? Colors.white.withOpacity(0.1)
-            : Colors.black.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.15)
-              : Colors.black.withOpacity(0.1),
-        ),
-      );
-    } else {
-      // Solid button styling for lowend devices
-      detailsButtonDecoration = BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-          width: 1,
-        ),
-      );
-    }
+    // Material You solid button styling — no blur
+    final detailsButtonDecoration = BoxDecoration(
+      color: colorScheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: colorScheme.outlineVariant,
+        width: 1,
+      ),
+    );
 
     final detailsButtonContent = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -659,15 +605,7 @@ class _LibraryTabState extends State<LibraryTab>
               ),
               GestureDetector(
                 onTap: onDetailsTap,
-                child: shouldBlur
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: detailsButtonContent,
-                        ),
-                      )
-                    : detailsButtonContent,
+                child: detailsButtonContent,
               ),
             ],
           ),

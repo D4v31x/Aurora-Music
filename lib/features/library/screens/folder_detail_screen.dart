@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +11,7 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/detail_header.dart';
 import '../../../shared/mixins/detail_screen_mixin.dart';
 
 class FolderDetailScreen extends StatefulWidget {
@@ -33,6 +36,8 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
   final int _songsPerPage = 20;
   bool _isLoading = false;
   bool _hasMoreSongs = true;
+
+  Uint8List? _artworkBytes;
 
   // DetailScreenMixin requirements
   @override
@@ -66,14 +71,28 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
         Provider.of<AudioPlayerService>(context, listen: false);
     final allSongs = audioPlayerService.songs;
 
+    final folderSongs = allSongs.where((song) {
+      final songFile = File(song.data);
+      return songFile.parent.path == widget.folderPath;
+    }).toList();
+
     setState(() {
-      _allSongs = allSongs.where((song) {
-        final songFile = File(song.data);
-        return songFile.parent.path == widget.folderPath;
-      }).toList();
+      _allSongs = folderSongs;
     });
 
     _loadMoreSongs();
+    _loadArtwork();
+  }
+
+  Future<void> _loadArtwork() async {
+    if (_allSongs.isNotEmpty) {
+      final artwork = await _artworkService.getArtwork(_allSongs.first.id);
+      if (mounted && artwork != null) {
+        setState(() {
+          _artworkBytes = artwork;
+        });
+      }
+    }
   }
 
   void _scrollListener() {
@@ -112,102 +131,49 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
     }
   }
 
-  void _onSongTap(SongModel song) {
-    final audioPlayerService =
-        Provider.of<AudioPlayerService>(context, listen: false);
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+    final folderName = widget.folderPath.split(Platform.pathSeparator).last;
 
-    final songIndex = _allSongs.indexWhere((s) => s.id == song.id);
-    if (songIndex >= 0) {
-      audioPlayerService.setPlaylist(
-        _allSongs,
-        songIndex,
-        source: playbackSource,
-      );
+    // Calculate total duration
+    Duration totalDuration = Duration.zero;
+    for (final song in _allSongs) {
+      totalDuration += Duration(milliseconds: song.duration ?? 0);
     }
-  }
 
-  Widget _buildSliverAppBar(
-      Color backgroundColor, String folderName, SongModel? currentSong) {
-    return SliverAppBar(
-      backgroundColor: Colors.transparent,
-      expandedHeight: 350,
-      pinned: true,
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          folderName,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        background: Center(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 50.0),
-            child: Hero(
-              tag: 'folder_icon_${widget.folderPath}',
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(25),
-                child: Container(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade800,
-                    borderRadius: BorderRadius.circular(25),
+    return Scaffold(
+      body: AppBackground(
+        child: _displayedSongs.isEmpty && _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  // Blurred artwork header
+                  DetailHeader(
+                    artworkBytes: _artworkBytes,
+                    title: folderName,
+                    metadata: _allSongs.isNotEmpty
+                        ? '${_allSongs.length} ${localizations.translate('songs')} · ${formatDuration(totalDuration)}'
+                        : null,
+                    badge: localizations.translate('folder'),
+                    heroTag: 'folder_icon_${widget.folderPath}',
+                    accentColor: Colors.amber,
                   ),
-                  child: const Icon(
-                    Icons.folder,
-                    color: Colors.white,
-                    size: 100,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildActionPill(
-      BuildContext context, IconData icon, String label, VoidCallback onTap) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.elasticOut,
-      tween: Tween<double>(begin: 0.8, end: 1.0),
-      builder: (context, scale, child) {
-        return Transform.scale(
-          scale: scale,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(20),
-            splashColor: Colors.white.withOpacity(0.2),
-            child: glassmorphicContainer(
-              width: 150,
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, color: Colors.white),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  // Action buttons
+                  SliverToBoxAdapter(
+                    child: buildActionButtonsRow(),
                   ),
+
+                  // Songs list
+                  _buildSongsList(),
+
+                  // Bottom padding for mini player
+                  buildMiniPlayerPadding(),
                 ],
               ),
-            ),
-          ),
-        );
-      },
+      ),
     );
   }
 
@@ -229,60 +195,114 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
           if (index >= _displayedSongs.length) return null;
 
           final song = _displayedSongs[index];
+          final duration = Duration(milliseconds: song.duration ?? 0);
+          final durationString =
+              '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+
           return AnimationConfiguration.staggeredList(
             position: index,
             duration: const Duration(milliseconds: 200),
             child: SlideAnimation(
-              verticalOffset: 50.0,
+              verticalOffset: 30.0,
               child: FadeInAnimation(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => _onSongTap(song),
-                      child: glassmorphicContainer(
-                        child: ListTile(
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: _artworkService.buildCachedArtwork(
-                              song.id,
+                      horizontal: 16.0, vertical: 4.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      final songIndex =
+                          _allSongs.indexWhere((s) => s.id == song.id);
+                      if (songIndex >= 0) {
+                        Provider.of<AudioPlayerService>(context, listen: false)
+                            .setPlaylist(
+                          _allSongs,
+                          songIndex,
+                          source: playbackSource,
+                        );
+                      }
+                    },
+                    child: GlassmorphicContainer(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        child: Row(
+                          children: [
+                            // Track number
+                            SizedBox(
+                              width: 32,
+                              child: Text(
+                                '${index + 1}',
+                                style: TextStyle(
+                                  fontFamily: FontConstants.fontFamily,
+                                  color: Colors.white.withOpacity(0.6),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
-                          ),
-                          title: Text(
-                            song.title,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                            splitArtists(song.artist ??
-                                    AppLocalizations.of(context)
-                                        .translate('unknown_artist'))
-                                .join(', '),
-                            style:
-                                TextStyle(color: Colors.white.withOpacity(0.7)),
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(
-                              Provider.of<AudioPlayerService>(context,
-                                          listen: false)
-                                      .isLiked(song)
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color: Provider.of<AudioPlayerService>(context,
-                                          listen: false)
-                                      .isLiked(song)
-                                  ? Colors.pink
-                                  : Colors.white,
+                            const SizedBox(width: 12),
+                            // Artwork
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: SizedBox(
+                                width: 42,
+                                height: 42,
+                                child: _artworkService
+                                    .buildCachedArtwork(song.id, size: 42),
+                              ),
                             ),
-                            onPressed: () {
-                              Provider.of<AudioPlayerService>(context,
-                                      listen: false)
-                                  .toggleLike(song);
-                            },
-                          ),
+                            const SizedBox(width: 12),
+                            // Song info
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    song.title,
+                                    style: const TextStyle(
+                                      fontFamily: FontConstants.fontFamily,
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    splitArtists(song.artist ??
+                                            AppLocalizations.of(context)
+                                                .translate('unknown_artist'))
+                                        .join(', '),
+                                    style: TextStyle(
+                                      fontFamily: FontConstants.fontFamily,
+                                      color: Colors.white.withOpacity(0.5),
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Duration
+                            Text(
+                              durationString,
+                              style: TextStyle(
+                                fontFamily: FontConstants.fontFamily,
+                                color: Colors.white.withOpacity(0.5),
+                                fontSize: 13,
+                              ),
+                            ),
+                            // More
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.more_vert,
+                              color: Colors.white.withOpacity(0.5),
+                              size: 20,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -293,59 +313,6 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
           );
         },
         childCount: _displayedSongs.length + (_hasMoreSongs ? 1 : 0),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final audioPlayerService =
-        Provider.of<AudioPlayerService>(context, listen: false);
-    final currentSong = audioPlayerService.currentSong;
-    final folderName = widget.folderPath.split(Platform.pathSeparator).last;
-
-    return Scaffold(
-      body: AppBackground(
-        child: Stack(
-          children: [
-            // Content Layer
-            if (_displayedSongs.isEmpty && _isLoading)
-              const Center(child: CircularProgressIndicator())
-            else
-              CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  _buildSliverAppBar(_dominantColor, folderName, currentSong),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildActionPill(
-                            context,
-                            Icons.play_arrow,
-                            AppLocalizations.of(context).translate('play_all'),
-                            playAllSongs,
-                          ),
-                          _buildActionPill(
-                            context,
-                            Icons.shuffle,
-                            AppLocalizations.of(context).translate('shuffle'),
-                            shuffleAllSongs,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  _buildSongsList(),
-                  // Bottom padding for mini player
-                  buildMiniPlayerPadding(),
-                ],
-              ),
-          ],
-        ),
       ),
     );
   }
