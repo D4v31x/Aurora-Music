@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/background_manager_service.dart';
@@ -26,7 +27,12 @@ class AppBackground extends StatelessWidget {
           backgroundManager.currentArtwork,
       shouldRebuild: (prev, next) {
         // Only rebuild if artwork reference changed
-        return !identical(prev, next);
+        final shouldRebuild = !identical(prev, next);
+        if (kDebugMode && shouldRebuild) {
+          debugPrint(
+              '🎨 [APP_BG] Rebuild background (hasArtwork: ${next != null}, bytes: ${next?.length ?? 0}, animated: $enableAnimation)');
+        }
+        return shouldRebuild;
       },
       builder: (context, currentArtwork, _) {
         // Always use AnimatedArtworkBackground - it handles null artwork internally

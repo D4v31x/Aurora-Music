@@ -339,16 +339,17 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Play button
           GestureDetector(
             onTap: playAllSongs,
             child: Container(
-              width: 50,
               height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
                 color: color,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(25),
                 boxShadow: [
                   BoxShadow(
                     color: color.withOpacity(0.4),
@@ -357,33 +358,23 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.play_arrow_rounded,
-                color: Colors.white,
-                size: 30,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Search field placeholder
-          Expanded(
-            child: GlassmorphicContainer(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: Text(
-                      localizations.translate('search_tracks'),
-                      style: TextStyle(
-                        fontFamily: FontConstants.fontFamily,
-                        color: Colors.white.withOpacity(0.4),
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
                   Icon(
-                    Icons.search,
-                    color: Colors.white.withOpacity(0.5),
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Play',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: FontConstants.fontFamily,
+                    ),
                   ),
                 ],
               ),
@@ -394,23 +385,35 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
           GestureDetector(
             onTap: shuffleAllSongs,
             child: Container(
-              width: 50,
               height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withOpacity(0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.shuffle_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Shuffle',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: FontConstants.fontFamily,
+                    ),
                   ),
                 ],
-              ),
-              child: const Icon(
-                Icons.shuffle_rounded,
-                color: Colors.white,
-                size: 24,
               ),
             ),
           ),

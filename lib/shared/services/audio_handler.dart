@@ -93,14 +93,23 @@ class AuroraAudioHandler extends BaseAudioHandler with SeekHandler {
     final queueLength = queue.value.length;
     if (currentIndex < queueLength - 1) {
       await player.seek(Duration.zero, index: currentIndex + 1);
+    } else if (queueLength > 0) {
+      // Last song in queue — wrap back to the beginning.
+      await player.seek(Duration.zero, index: 0);
+      await player.play();
     }
   }
 
   @override
   Future<void> skipToPrevious() async {
     final currentIndex = player.currentIndex ?? 0;
-    if (currentIndex > 0) {
+    final position = player.position;
+    // Within 4 seconds and not the first track: go to previous.
+    // Otherwise restart the current track from the beginning.
+    if (position.inSeconds < 4 && currentIndex > 0) {
       await player.seek(Duration.zero, index: currentIndex - 1);
+    } else {
+      await player.seek(Duration.zero);
     }
   }
 
