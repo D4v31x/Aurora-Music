@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:ui'; // Import this for ImageFilter
+import 'dart:ui';
+import 'dart:math' as math;
 import '../../shared/services/audio_player_service.dart';
 import '../../shared/services/artwork_cache_service.dart';
 import '../../shared/services/user_preferences.dart';
 import '../../shared/services/logging_service.dart';
 import '../../core/constants/animation_constants.dart';
+import '../../core/constants/font_constants.dart';
 import '../onboarding/screens/onboarding_screen.dart';
 import '../home/screens/home_screen.dart';
 import 'package:provider/provider.dart';
@@ -302,30 +304,28 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _initializeAnimations() {
-    // Primary fade controller for splash animation
-    // Duration will be set by Lottie onLoaded callback
+    // Primary controller drives the Lottie animation
     _fadeController = AnimationController(
-      duration:
-          const Duration(milliseconds: 2000), // Default, will be overridden
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
 
-    // Transition controller for smooth screen transition
+    // Transition controller for exit
     _transitionController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 700),
       vsync: this,
     );
 
-    // Scale animation for logo - subtle breathing effect
+    // Logo shrinks slightly on exit
     _scaleAnimation = Tween<double>(
-      begin: 0.85,
-      end: 0.75,
+      begin: 1.0,
+      end: 0.88,
     ).animate(CurvedAnimation(
       parent: _transitionController,
       curve: Curves.easeInCubic,
     ));
 
-    // Background fade for smooth transition
+    // Whole splash fades out on exit
     _backgroundFadeAnimation = Tween<double>(
       begin: 1.0,
       end: 0.0,
@@ -336,15 +336,10 @@ class _SplashScreenState extends State<SplashScreen>
 
     _fadeController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        // Wait a brief moment after Lottie animation completes
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (mounted) {
-            setState(() {
-              _isAnimationComplete = true;
-            });
-            _checkAndTransition();
-          }
-        });
+        if (mounted) {
+          setState(() => _isAnimationComplete = true);
+          _checkAndTransition();
+        }
       }
     });
 
@@ -363,12 +358,7 @@ class _SplashScreenState extends State<SplashScreen>
       setState(() {
         _isTransitioning = true;
       });
-      // Small delay to let user appreciate the completed animation
-      Future.delayed(const Duration(milliseconds: 200), () {
-        if (mounted) {
-          _transitionController.forward();
-        }
-      });
+      _transitionController.forward();
     }
   }
 
@@ -429,141 +419,165 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E1A),
+      backgroundColor: const Color(0xFF080B14),
       body: AnimatedBuilder(
         animation: Listenable.merge([_fadeController, _transitionController]),
-        builder: (context, child) {
-          return Stack(
-            children: [
-              // Gradient background with fade
-              Positioned.fill(
-                child: AnimatedBuilder(
-                  animation: _backgroundFadeAnimation,
-                  builder: (context, _) {
-                    return Opacity(
-                      opacity: _backgroundFadeAnimation.value,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFF0A0E1A),
-                              Color(0xFF1A2332),
-                              Color(0xFF0D1B2A),
-                            ],
-                          ),
+        builder: (context, _) {
+          final fade = _backgroundFadeAnimation.value;
+          return Opacity(
+            opacity: fade,
+            child: Stack(
+              children: [
+                // ── Background ──────────────────────────────────────────────
+                Positioned.fill(child: _buildBackground(size)),
+
+                // ── Ambient orbs ────────────────────────────────────────────
+                _buildOrb(
+                  size: size,
+                  alignment: const Alignment(-0.6, -0.55),
+                  color: const Color(0xFF6C3FD4),
+                  radius: 220,
+                  blur: 80,
+                ),
+                _buildOrb(
+                  size: size,
+                  alignment: const Alignment(0.7, 0.4),
+                  color: const Color(0xFF1E3FBF),
+                  radius: 180,
+                  blur: 80,
+                ),
+                _buildOrb(
+                  size: size,
+                  alignment: const Alignment(0.1, 0.65),
+                  color: const Color(0xFF8B2FC9),
+                  radius: 120,
+                  blur: 60,
+                ),
+
+                // ── Noise / grain overlay ────────────────────────────────────
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: 0.04,
+                    child: CustomPaint(painter: _NoisePainter()),
+                  ),
+                ),
+
+                // ── Lottie animation (centre) ─────────────────────────────
+                Center(
+                  child: Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: Hero(
+                      tag: 'app_logo_hero',
+                      child: RepaintBoundary(
+                        child: Lottie.asset(
+                          'assets/animations/Splash.json',
+                          controller: _fadeController,
+                          fit: BoxFit.contain,
+                          width: 300,
+                          height: 300,
+                          frameRate: FrameRate.composition,
+                          onLoaded: (composition) {
+                            _fadeController.duration = composition.duration;
+                            _fadeController.forward();
+                          },
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
-              ),
 
-              // Animated logo with modern scaling
-              Center(
-                child: AnimatedBuilder(
-                  animation: _scaleAnimation,
-                  builder: (context, _) {
-                    return Transform.scale(
-                      scale: _scaleAnimation.value,
-                      child: Opacity(
-                        opacity: _backgroundFadeAnimation.value,
-                        child: Hero(
-                          tag: 'app_logo_hero',
-                          child: RepaintBoundary(
-                            child: Lottie.asset(
-                              'assets/animations/Splash.json',
-                              controller: _fadeController,
-                              fit: BoxFit.contain,
-                              width: 520,
-                              height: 520,
-                              frameRate: FrameRate.composition,
-                              onLoaded: (composition) {
-                                _fadeController.duration = composition.duration;
-                                _fadeController.forward();
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              // Modern progress indicator
-              if (!_isAnimationComplete || _progress < 1.0)
+                // ── Bottom area: progress + version ──────────────────────
                 Positioned(
-                  bottom: 100,
-                  left: 48,
-                  right: 48,
+                  left: 40,
+                  right: 40,
+                  bottom: 56,
                   child: AnimatedOpacity(
-                    opacity: _isTransitioning
-                        ? 0.0
-                        : (_backgroundFadeAnimation.value * 0.8),
+                    opacity: _isTransitioning ? 0.0 : 1.0,
                     duration: const Duration(milliseconds: 200),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (_currentTask.isNotEmpty)
+                        // Task label
+                        if (_currentTask.isNotEmpty && _progress < 1.0)
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 20),
+                            padding: const EdgeInsets.only(bottom: 12),
                             child: Text(
                               _currentTask,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.6),
-                                fontSize: 13,
+                              style: const TextStyle(
+                                fontFamily: FontConstants.fontFamily,
+                                color: Color(0xFF6B7080),
+                                fontSize: 12,
                                 fontWeight: FontWeight.w400,
-                                letterSpacing: 0.3,
+                                letterSpacing: 0.4,
                               ),
                               textAlign: TextAlign.center,
                             ),
                           ),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: SizedBox(
-                            height: 3,
-                            child: LinearProgressIndicator(
-                              value: _progress,
-                              backgroundColor: Colors.white.withOpacity(0.1),
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white.withOpacity(0.7),
-                              ),
-                            ),
+
+                        // Progress bar — pill shape, glassy
+                        _GlassProgressBar(progress: _progress),
+
+                        const SizedBox(height: 20),
+
+                        // Version chip
+                        if (_versionNumber.isNotEmpty)
+                          _VersionChip(
+                            version: _versionNumber,
+                            codeName: _codeName,
                           ),
-                        ),
                       ],
                     ),
                   ),
                 ),
-
-              // Minimalist version info
-              Positioned(
-                bottom: 32,
-                left: 0,
-                right: 0,
-                child: AnimatedOpacity(
-                  opacity: _isTransitioning
-                      ? 0.0
-                      : (_backgroundFadeAnimation.value * 0.5),
-                  duration: const Duration(milliseconds: 200),
-                  child: Text(
-                    '$_versionNumber • $_codeName',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.4),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w300,
-                      letterSpacing: 0.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           );
         },
+      ),
+    );
+  }
+
+  // ── Helper: full-screen gradient background ──────────────────────────────
+  Widget _buildBackground(Size size) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment(0, -0.3),
+          radius: 1.4,
+          colors: [
+            Color(0xFF12172A),
+            Color(0xFF080B14),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Helper: soft ambient orb ─────────────────────────────────────────────
+  Widget _buildOrb({
+    required Size size,
+    required Alignment alignment,
+    required Color color,
+    required double radius,
+    required double blur,
+  }) {
+    return Positioned.fill(
+      child: Align(
+        alignment: alignment,
+        child: ImageFiltered(
+          imageFilter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+          child: Container(
+            width: radius * 2,
+            height: radius * 2,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withOpacity(0.28),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -591,4 +605,108 @@ class _SplashScreenState extends State<SplashScreen>
       // If shader warmup fails, continue silently
     }
   }
+}
+
+// ── Glassmorphic progress bar ─────────────────────────────────────────────────
+class _GlassProgressBar extends StatelessWidget {
+  final double progress;
+  const _GlassProgressBar({required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(100),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          height: 3,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.07),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: progress.clamp(0.0, 1.0),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(100),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF9B73F0), Color(0xFF6C8FED)],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF7B5FDC).withOpacity(0.6),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Version chip ──────────────────────────────────────────────────────────────
+class _VersionChip extends StatelessWidget {
+  final String version;
+  final String codeName;
+  const _VersionChip({required this.version, required this.codeName});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = codeName.isNotEmpty ? 'v$version · $codeName' : 'v$version';
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(100),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.08),
+              width: 0.5,
+            ),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontFamily: FontConstants.fontFamily,
+              color: Color(0xFF5A5F74),
+              fontSize: 11,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Subtle grain/noise texture overlay ───────────────────────────────────────
+class _NoisePainter extends CustomPainter {
+  static final math.Random _rng = math.Random(42);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white;
+    // Sparse dot grid for a film-grain feel — cheap and fast
+    for (int i = 0; i < 600; i++) {
+      canvas.drawCircle(
+        Offset(
+          _rng.nextDouble() * size.width,
+          _rng.nextDouble() * size.height,
+        ),
+        0.6,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

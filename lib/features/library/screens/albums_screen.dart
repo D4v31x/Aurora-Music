@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -6,7 +7,9 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../../shared/widgets/common_screen_scaffold.dart';
+import '../../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/expanding_player.dart';
+import '../../../shared/widgets/library_screen_header.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import 'album_detail_screen.dart';
@@ -28,22 +31,62 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
 
   List<AlbumModel> _allAlbums = [];
   List<AlbumModel> _filteredAlbums = [];
+  List<AlbumModel> _displayedAlbums = [];
   AlbumSortOption _sortOption = AlbumSortOption.name;
   bool _isAscending = true;
   bool _isGridView = true;
   bool _isLoading = true;
+  bool _isLoadingMore = false;
+  bool _hasMore = false;
+  int _currentPage = 0;
+  static const int _pageSize = 40;
   String _searchQuery = '';
+  final ScrollController _scrollController = ScrollController();
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_scrollListener);
     _loadAlbums();
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
     _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.extentAfter < 500 &&
+        !_isLoadingMore &&
+        _hasMore) {
+      _loadMoreItems();
+    }
+  }
+
+  void _loadMoreItems() {
+    if (_isLoadingMore || !_hasMore) return;
+    final start = _currentPage * _pageSize;
+    final end = (start + _pageSize).clamp(0, _filteredAlbums.length);
+    if (start >= _filteredAlbums.length) return;
+    setState(() {
+      _isLoadingMore = true;
+      _displayedAlbums.addAll(_filteredAlbums.sublist(start, end));
+      _currentPage++;
+      _hasMore = end < _filteredAlbums.length;
+      _isLoadingMore = false;
+    });
+  }
+
+  void _resetPaging() {
+    final end = _pageSize.clamp(0, _filteredAlbums.length);
+    _displayedAlbums = _filteredAlbums.sublist(0, end);
+    _currentPage = 1;
+    _hasMore = end < _filteredAlbums.length;
   }
 
   Future<void> _loadAlbums() async {
@@ -59,10 +102,12 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
       _isLoading = false;
     });
     _applySorting();
+    _resetPaging();
   }
 
   void _filterAlbums(String query) {
-    setState(() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 250), () {
       _searchQuery = query;
       if (query.isEmpty) {
         _filteredAlbums = List.from(_allAlbums);
@@ -73,38 +118,36 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                   false);
         }).toList();
       }
+      _applySorting();
+      setState(() => _resetPaging());
     });
-    _applySorting();
   }
 
   void _applySorting() {
-    setState(() {
-      switch (_sortOption) {
-        case AlbumSortOption.name:
-          _filteredAlbums.sort((a, b) => a.album.compareTo(b.album));
-          break;
-        case AlbumSortOption.artist:
-          _filteredAlbums
-              .sort((a, b) => (a.artist ?? '').compareTo(b.artist ?? ''));
-          break;
-        case AlbumSortOption.numSongs:
-          _filteredAlbums
-              .sort((a, b) => (a.numOfSongs).compareTo(b.numOfSongs));
-          break;
-        case AlbumSortOption.year:
-          _filteredAlbums.sort((a, b) {
-            final yearA =
-                int.tryParse(a.getMap['first_year']?.toString() ?? '0') ?? 0;
-            final yearB =
-                int.tryParse(b.getMap['first_year']?.toString() ?? '0') ?? 0;
-            return yearA.compareTo(yearB);
-          });
-          break;
-      }
-      if (!_isAscending) {
-        _filteredAlbums = _filteredAlbums.reversed.toList();
-      }
-    });
+    switch (_sortOption) {
+      case AlbumSortOption.name:
+        _filteredAlbums.sort((a, b) => a.album.compareTo(b.album));
+        break;
+      case AlbumSortOption.artist:
+        _filteredAlbums
+            .sort((a, b) => (a.artist ?? '').compareTo(b.artist ?? ''));
+        break;
+      case AlbumSortOption.numSongs:
+        _filteredAlbums.sort((a, b) => (a.numOfSongs).compareTo(b.numOfSongs));
+        break;
+      case AlbumSortOption.year:
+        _filteredAlbums.sort((a, b) {
+          final yearA =
+              int.tryParse(a.getMap['first_year']?.toString() ?? '0') ?? 0;
+          final yearB =
+              int.tryParse(b.getMap['first_year']?.toString() ?? '0') ?? 0;
+          return yearA.compareTo(yearB);
+        });
+        break;
+    }
+    if (!_isAscending) {
+      _filteredAlbums = _filteredAlbums.reversed.toList();
+    }
   }
 
   @override
@@ -112,117 +155,117 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
     final loc = AppLocalizations.of(context);
+    final count = _filteredAlbums.length;
 
-    return CommonScreenScaffold(
-      title: loc.translate('albums'),
-      searchBar: _buildSearchAndFilterBar(loc),
-      slivers: [
-        if (_isLoading)
-          _buildLoadingSkeleton()
-        else if (_filteredAlbums.isEmpty)
-          _buildEmptyState(loc)
-        else
-          _isGridView
-              ? _buildAlbumsGrid(audioPlayerService)
-              : _buildAlbumsList(audioPlayerService),
-      ],
-    );
-  }
-
-  Widget _buildSearchAndFilterBar(AppLocalizations loc) {
-    return Column(
-      children: [
-        glassmorphicContainer(
-          child: TextField(
-            controller: _searchController,
-            onChanged: _filterAlbums,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: loc.translate('search_albums'),
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-              prefixIcon: const Icon(Icons.search, color: Colors.white70),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, color: Colors.white70),
-                      onPressed: () {
-                        _searchController.clear();
-                        _filterAlbums('');
+    return AppBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: CustomScrollView(
+          controller: _scrollController,
+          physics: const ClampingScrollPhysics(),
+          slivers: [
+            LibraryScreenHeader(
+              badge: 'Library',
+              title: loc.translate('albums'),
+              subtitle: _isLoading
+                  ? null
+                  : '$count ${count == 1 ? 'album' : 'albums'}',
+              accentColor: Colors.indigo,
+              expandedHeight: 310,
+              showBackButton: true,
+              searchField: LibrarySearchField(
+                controller: _searchController,
+                hint: loc.translate('search_albums'),
+                onChanged: _filterAlbums,
+                hasQuery: _searchQuery.isNotEmpty,
+                onClear: () {
+                  _searchController.clear();
+                  _filterAlbums('');
+                },
+              ),
+              controlsRow: Row(
+                children: [
+                  Expanded(
+                    child: PopupMenuButton<AlbumSortOption>(
+                      onSelected: (option) {
+                        setState(() => _sortOption = option);
+                        _applySorting();
+                        setState(() => _resetPaging());
                       },
-                    )
-                  : null,
-              border: InputBorder.none,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: glassmorphicContainer(
-                child: PopupMenuButton<AlbumSortOption>(
-                  onSelected: (option) {
-                    setState(() => _sortOption = option);
-                    _applySorting();
-                  },
-                  color: Colors.grey.shade900,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.sort, color: Colors.white70, size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _getSortOptionLabel(_sortOption),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 13),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                      color: Colors.grey.shade900,
+                      child: LibraryControlPill(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.sort_rounded,
+                                color: Colors.white70, size: 18),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                _getSortOptionLabel(_sortOption),
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 13),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const Icon(Icons.arrow_drop_down_rounded,
+                                color: Colors.white70),
+                          ],
                         ),
-                        const Icon(Icons.arrow_drop_down,
-                            color: Colors.white70),
+                      ),
+                      itemBuilder: (context) => [
+                        _buildSortMenuItem(AlbumSortOption.name, 'Name'),
+                        _buildSortMenuItem(AlbumSortOption.artist, 'Artist'),
+                        _buildSortMenuItem(AlbumSortOption.numSongs, 'Tracks'),
+                        _buildSortMenuItem(AlbumSortOption.year, 'Year'),
                       ],
                     ),
                   ),
-                  itemBuilder: (context) => [
-                    _buildSortMenuItem(AlbumSortOption.name, 'Name'),
-                    _buildSortMenuItem(AlbumSortOption.artist, 'Artist'),
-                    _buildSortMenuItem(AlbumSortOption.numSongs, 'Tracks'),
-                    _buildSortMenuItem(AlbumSortOption.year, 'Year'),
-                  ],
-                ),
+                  const SizedBox(width: 8),
+                  LibraryControlPill(
+                    onTap: () {
+                      setState(() => _isAscending = !_isAscending);
+                      _applySorting();
+                      setState(() => _resetPaging());
+                    },
+                    child: Icon(
+                      _isAscending
+                          ? Icons.arrow_upward_rounded
+                          : Icons.arrow_downward_rounded,
+                      color: Colors.white70,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  LibraryControlPill(
+                    onTap: () => setState(() => _isGridView = !_isGridView),
+                    child: Icon(
+                      _isGridView
+                          ? Icons.view_list_rounded
+                          : Icons.grid_view_rounded,
+                      color: Colors.white70,
+                      size: 18,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 8),
-            glassmorphicContainer(
-              child: IconButton(
-                icon: Icon(
-                  _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                  color: Colors.white70,
-                ),
-                onPressed: () {
-                  setState(() => _isAscending = !_isAscending);
-                  _applySorting();
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
-            glassmorphicContainer(
-              child: IconButton(
-                icon: Icon(
-                  _isGridView ? Icons.view_list : Icons.grid_view,
-                  color: Colors.white70,
-                ),
-                onPressed: () => setState(() => _isGridView = !_isGridView),
+            if (_isLoading)
+              _buildLoadingSkeleton()
+            else if (_filteredAlbums.isEmpty)
+              _buildEmptyState(loc)
+            else
+              _isGridView
+                  ? _buildAlbumsGrid(audioPlayerService)
+                  : _buildAlbumsList(audioPlayerService),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: ExpandingPlayer.getMiniPlayerPaddingHeight(context),
               ),
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 
@@ -303,7 +346,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
-            final album = _filteredAlbums[index];
+            final album = _displayedAlbums[index];
             return AnimationConfiguration.staggeredGrid(
               position: index,
               columnCount: 2,
@@ -315,7 +358,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
               ),
             );
           },
-          childCount: _filteredAlbums.length,
+          childCount: _displayedAlbums.length,
         ),
       ),
     );
@@ -387,7 +430,15 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
-            final album = _filteredAlbums[index];
+            if (index == _displayedAlbums.length) {
+              return _hasMore
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : const SizedBox.shrink();
+            }
+            final album = _displayedAlbums[index];
             return AnimationConfiguration.staggeredList(
               position: index,
               duration: const Duration(milliseconds: 300),
@@ -402,7 +453,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
               ),
             );
           },
-          childCount: _filteredAlbums.length,
+          childCount: _displayedAlbums.length + (_hasMore ? 1 : 0),
         ),
       ),
     );

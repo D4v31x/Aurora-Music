@@ -8,10 +8,14 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
-import '../../../shared/widgets/optimized_tiles.dart'; // Import optimized tile
-import '../../../shared/widgets/common_screen_scaffold.dart';
+import '../../../shared/widgets/optimized_tiles.dart';
+import '../../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/expanding_player.dart';
+import '../../../shared/widgets/library_screen_header.dart';
 import '../../../shared/utils/responsive_utils.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+
+enum TrackSortOption { title, artist, duration, dateAdded }
 
 class TracksScreen extends StatefulWidget {
   final bool isEditingPlaylist;
@@ -27,15 +31,14 @@ class TracksScreen extends StatefulWidget {
   _TracksScreenState createState() => _TracksScreenState();
 }
 
-class _TracksScreenState extends State<TracksScreen>
-    with SingleTickerProviderStateMixin {
+class _TracksScreenState extends State<TracksScreen> {
   final ScrollController _scrollController = ScrollController();
   final OnAudioQuery _audioQuery = OnAudioQuery();
   final _artworkService = ArtworkCacheService();
   List<SongModel> _allSongs = [];
   List<SongModel> _displayedSongs = [];
   int _currentPage = 0;
-  final int _songsPerPage = 20;
+  final int _songsPerPage = 50;
   bool _isLoading = false;
   bool _hasMoreSongs = true;
   String _searchQuery = '';
@@ -43,23 +46,17 @@ class _TracksScreenState extends State<TracksScreen>
   String _errorMessage = '';
   final Set<SongModel> _selectedSongs = {};
 
+  // Sort state
+  TrackSortOption _sortOption = TrackSortOption.title;
+  bool _isAscending = true;
+
   final TextEditingController _searchController = TextEditingController();
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
     _fetchAllSongs();
-
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
-    _fadeAnimation =
-        Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
-    _animationController.forward();
   }
 
   @override
@@ -68,16 +65,14 @@ class _TracksScreenState extends State<TracksScreen>
     _scrollController.dispose();
     _searchController.dispose();
     _debounce?.cancel();
-    _animationController.dispose();
     super.dispose();
   }
 
   void _scrollListener() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      if (!_isLoading && _hasMoreSongs) {
-        _loadMoreSongs();
-      }
+    if (_scrollController.position.extentAfter < 500 &&
+        !_isLoading &&
+        _hasMoreSongs) {
+      _loadMoreSongs();
     }
   }
 
@@ -91,7 +86,6 @@ class _TracksScreenState extends State<TracksScreen>
       final bool permissionStatus = await _audioQuery.permissionsStatus();
 
       if (!permissionStatus) {
-        // Don't automatically request permissions - let user decide
         setState(() {
           _errorMessage = 'Permission to access media library is required. '
               'Please grant permissions in the onboarding or app settings.';
@@ -107,13 +101,14 @@ class _TracksScreenState extends State<TracksScreen>
           ignoreCase: true,
         );
 
+        setState(() => _isLoading = false);
+
         if (_allSongs.isEmpty) {
           setState(() {
             _errorMessage = 'No songs found on the device.';
-            _isLoading = false;
           });
         } else {
-          _loadMoreSongs();
+          _applySorting();
         }
       }
     } catch (e) {
@@ -124,10 +119,45 @@ class _TracksScreenState extends State<TracksScreen>
     }
   }
 
-  void _loadMoreSongs() {
-    if (_isLoading && _displayedSongs.isNotEmpty) {
-      return;
+  void _applySorting() {
+    switch (_sortOption) {
+      case TrackSortOption.title:
+        _allSongs.sort((a, b) => a.title.compareTo(b.title));
+        break;
+      case TrackSortOption.artist:
+        _allSongs.sort((a, b) => (a.artist ?? '').compareTo(b.artist ?? ''));
+        break;
+      case TrackSortOption.duration:
+        _allSongs.sort((a, b) => (a.duration ?? 0).compareTo(b.duration ?? 0));
+        break;
+      case TrackSortOption.dateAdded:
+        _allSongs
+            .sort((a, b) => (a.dateAdded ?? 0).compareTo(b.dateAdded ?? 0));
+        break;
     }
+    if (!_isAscending) _allSongs = _allSongs.reversed.toList();
+    // Reset paging and load first page in one setState
+    _displayedSongs.clear();
+    _currentPage = 0;
+    _hasMoreSongs = true;
+    _loadMoreSongs();
+  }
+
+  String _getSortLabel(TrackSortOption opt) {
+    switch (opt) {
+      case TrackSortOption.title:
+        return 'Title';
+      case TrackSortOption.artist:
+        return 'Artist';
+      case TrackSortOption.duration:
+        return 'Duration';
+      case TrackSortOption.dateAdded:
+        return 'Date added';
+    }
+  }
+
+  void _loadMoreSongs() {
+    if (_isLoading) return;
 
     setState(() {
       _isLoading = true;
@@ -156,26 +186,23 @@ class _TracksScreenState extends State<TracksScreen>
 
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      setState(() {
-        _searchQuery = query.toLowerCase();
-        _currentPage = 0;
-        _displayedSongs.clear();
-        _hasMoreSongs = true;
-      });
+    _debounce = Timer(const Duration(milliseconds: 250), () {
+      _searchQuery = query.toLowerCase();
       _searchSongs();
     });
   }
 
   void _searchSongs() {
-    final filteredSongs = _allSongs
-        .where((song) =>
-            song.title.toLowerCase().contains(_searchQuery) ||
-            splitArtists(song.artist ?? '')
-                .any((artist) => artist.toLowerCase().contains(_searchQuery)))
-        .toList();
+    final filteredSongs = _searchQuery.isEmpty
+        ? List<SongModel>.from(_allSongs)
+        : _allSongs
+            .where((song) =>
+                song.title.toLowerCase().contains(_searchQuery) ||
+                splitArtists(song.artist ?? '').any(
+                    (artist) => artist.toLowerCase().contains(_searchQuery)))
+            .toList();
 
-    final int endIndex = (_songsPerPage).clamp(0, filteredSongs.length);
+    final int endIndex = _songsPerPage.clamp(0, filteredSongs.length);
 
     setState(() {
       _displayedSongs = filteredSongs.sublist(0, endIndex);
@@ -188,45 +215,121 @@ class _TracksScreenState extends State<TracksScreen>
   Widget build(BuildContext context) {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
+    final loc = AppLocalizations.of(context);
+    final totalCount = _allSongs.length;
 
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: CommonScreenScaffold(
-        title: AppLocalizations.of(context).translate('tracks'),
-        searchBar: Container(
-          height: 50,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(25),
-          ),
-          child: TextField(
-            controller: _searchController,
-            onChanged: _onSearchChanged,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: AppLocalizations.of(context).translate('search_tracks'),
-              hintStyle: const TextStyle(color: Colors.white70),
-              prefixIcon: const Icon(Icons.search, color: Colors.white70),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 15),
+    return AppBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: CustomScrollView(
+          controller: _scrollController,
+          physics: const ClampingScrollPhysics(),
+          slivers: [
+            LibraryScreenHeader(
+              badge: 'Library',
+              title: loc.translate('tracks'),
+              subtitle: totalCount > 0 ? '$totalCount songs' : null,
+              accentColor: Colors.deepPurple,
+              expandedHeight: 310,
+              showBackButton: true,
+              actions: [
+                if (widget.isEditingPlaylist)
+                  IconButton(
+                    icon: const Icon(Icons.check, color: Colors.white),
+                    onPressed: () {
+                      audioPlayerService.addSongsToPlaylist(
+                          widget.playlist!.id, _selectedSongs.toList());
+                      Navigator.pop(context);
+                    },
+                  ),
+              ],
+              searchField: LibrarySearchField(
+                controller: _searchController,
+                hint: loc.translate('search_tracks'),
+                onChanged: _onSearchChanged,
+                hasQuery: _searchQuery.isNotEmpty,
+                onClear: () {
+                  _searchController.clear();
+                  _onSearchChanged('');
+                },
+              ),
+              controlsRow: Row(
+                children: [
+                  Expanded(
+                    child: PopupMenuButton<TrackSortOption>(
+                      onSelected: (opt) {
+                        setState(() => _sortOption = opt);
+                        _applySorting();
+                      },
+                      color: Colors.grey.shade900,
+                      child: LibraryControlPill(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.sort_rounded,
+                                color: Colors.white70, size: 18),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                _getSortLabel(_sortOption),
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 13),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const Icon(Icons.arrow_drop_down_rounded,
+                                color: Colors.white70),
+                          ],
+                        ),
+                      ),
+                      itemBuilder: (context) => [
+                        _sortItem(TrackSortOption.title, 'Title'),
+                        _sortItem(TrackSortOption.artist, 'Artist'),
+                        _sortItem(TrackSortOption.duration, 'Duration'),
+                        _sortItem(TrackSortOption.dateAdded, 'Date added'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  LibraryControlPill(
+                    onTap: () {
+                      setState(() => _isAscending = !_isAscending);
+                      _applySorting();
+                    },
+                    child: Icon(
+                      _isAscending
+                          ? Icons.arrow_upward_rounded
+                          : Icons.arrow_downward_rounded,
+                      color: Colors.white70,
+                      size: 18,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            buildBody(audioPlayerService),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: ExpandingPlayer.getMiniPlayerPaddingHeight(context),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          if (widget.isEditingPlaylist)
-            IconButton(
-              icon: const Icon(Icons.check),
-              onPressed: () {
-                final audioPlayerService =
-                    Provider.of<AudioPlayerService>(context, listen: false);
-                audioPlayerService.addSongsToPlaylist(
-                    widget.playlist!.id, _selectedSongs.toList());
-                Navigator.pop(context);
-              },
-            ),
-        ],
-        slivers: [
-          buildBody(audioPlayerService),
+      ),
+    );
+  }
+
+  PopupMenuItem<TrackSortOption> _sortItem(TrackSortOption opt, String label) {
+    return PopupMenuItem(
+      value: opt,
+      child: Row(
+        children: [
+          if (_sortOption == opt)
+            const Icon(Icons.check, color: Colors.white, size: 18)
+          else
+            const SizedBox(width: 18),
+          const SizedBox(width: 8),
+          Text(label, style: const TextStyle(color: Colors.white)),
         ],
       ),
     );
@@ -397,21 +500,23 @@ class _TracksScreenState extends State<TracksScreen>
     }
 
     // Use OptimizedSongTile for better performance
-    return OptimizedSongTile(
-      key: ValueKey(song.id),
-      song: song,
-      selected: audioPlayerService.currentSong?.id == song.id,
-      onTap: () {
-        audioPlayerService.setPlaylist(
-          _displayedSongs,
-          index,
-        );
-      },
-      trailing: IconButton(
-        icon: const Icon(Icons.more_vert, color: Colors.white),
-        onPressed: () {
-          // Show options for the song
+    return glassmorphicContainer(
+      child: OptimizedSongTile(
+        key: ValueKey(song.id),
+        song: song,
+        selected: audioPlayerService.currentSong?.id == song.id,
+        onTap: () {
+          audioPlayerService.setPlaylist(
+            _displayedSongs,
+            index,
+          );
         },
+        trailing: IconButton(
+          icon: const Icon(Icons.more_vert, color: Colors.white),
+          onPressed: () {
+            // Show options for the song
+          },
+        ),
       ),
     );
   }
