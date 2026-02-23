@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' show Random;
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -9,6 +10,7 @@ import 'dart:convert';
 import '../models/playlist_model.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
+import 'audio_constants.dart';
 import 'background_manager_service.dart';
 import 'artwork_cache_service.dart';
 import 'home_screen_widget_service.dart';
@@ -59,6 +61,8 @@ class AudioPlayerService extends ChangeNotifier {
   PlaybackSourceInfo get playbackSource => _playbackSource;
 
   List<SongModel> _playlist = [];
+  /// Original (pre-shuffle) playlist order; non-empty only while shuffle is on.
+  List<SongModel> _originalPlaylist = [];
   List<Playlist> _playlists = [];
   int _currentIndex = -1;
   bool _isPlaying = false;
@@ -596,6 +600,9 @@ class AudioPlayerService extends ChangeNotifier {
     });
 
     _startCacheCleanup();
+
+    // Restore the queue from the previous session (non-blocking).
+    unawaited(loadQueueState());
   }
 
   void _startCacheCleanup() {
@@ -865,6 +872,20 @@ class AudioPlayerService extends ChangeNotifier {
 
       _playlist = songs;
       _currentIndex = startIndex;
+
+      // When shuffle is active, the new queue must also be shuffled.
+      // Reset _originalPlaylist to the freshly loaded songs, then shuffle.
+      if (_isShuffle) {
+        _originalPlaylist = List<SongModel>.from(_playlist);
+        final current = _playlist[_currentIndex];
+        final rest = List<SongModel>.from(_playlist)..removeAt(_currentIndex);
+        rest.shuffle(Random());
+        _playlist = [current, ...rest];
+        _currentIndex = 0;
+      } else {
+        _originalPlaylist = [];
+      }
+
       _isSettingPlaylist = true; // Guard against currentIndexStream race
 
       debugPrint(
@@ -906,13 +927,13 @@ class AudioPlayerService extends ChangeNotifier {
             initialPosition: Duration.zero,
           );
 
-          // Apply current shuffle and loop settings to the player
+          // Apply current shuffle and loop settings to the player.
+          // We manage shuffle ordering ourselves by reordering _playlist, so
+          // just_audio's internal shuffle mode is always kept off.
           debugPrint(
-              '🎵 [AUDIO_SOURCE] Applying shuffle: $_isShuffle, loopMode: $_loopMode');
-          await _audioPlayer.setShuffleModeEnabled(_isShuffle);
+              '🎵 [AUDIO_SOURCE] Applying loopMode: $_loopMode (shuffle managed in _playlist)');
+          await _audioPlayer.setShuffleModeEnabled(false);
           await _audioPlayer.setLoopMode(_loopMode);
-          debugPrint(
-              '🎵 [AUDIO_SOURCE] Player state - shuffle: ${_audioPlayer.shuffleModeEnabled}, loop: ${_audioPlayer.loopMode}');
 
           // Resume automatic mediaItem updates
           audioHandler.resumeIndexUpdates();
@@ -950,6 +971,7 @@ class AudioPlayerService extends ChangeNotifier {
 
           // Single debounced notification
           _scheduleNotify();
+          unawaited(saveQueueState());
         } catch (e) {
           _isSettingPlaylist = false; // Release guard on error
           audioHandler.resumeIndexUpdates(); // Resume notification updates
@@ -1203,6 +1225,7 @@ class AudioPlayerService extends ChangeNotifier {
     }
 
     _scheduleNotify();
+    unawaited(saveQueueState());
   }
 
   /// Add multiple songs to the end of the queue
@@ -1243,6 +1266,7 @@ class AudioPlayerService extends ChangeNotifier {
     }
 
     _scheduleNotify();
+    unawaited(saveQueueState());
   }
 
   /// Add a song to play next (right after current song)
@@ -1277,15 +1301,66 @@ class AudioPlayerService extends ChangeNotifier {
     }
 
     _scheduleNotify();
+    unawaited(saveQueueState());
   }
 
-  /// Remove a song from the queue by index
+  /// Remove a song from the queue by index.
+  /// If the currently playing track is removed, playback skips to the next
+  /// available track (or stops when the queue becomes empty).
   Future<void> removeFromQueue(int index) async {
     if (index < 0 || index >= _playlist.length) return;
 
-    // Don't allow removing the currently playing song via this method
     if (index == _currentIndex) {
-      debugPrint('Cannot remove currently playing song');
+      if (_playlist.length == 1) {
+        // Only song — clear the queue and stop.
+        await stop();
+        _playlist = [];
+        _currentIndex = -1;
+        _scheduleNotify();
+        unawaited(saveQueueState());
+        return;
+      }
+      // Remove from both the in-memory list and the audio source first, then
+      // determine which track to play next (calculated after removal so the
+      // index arithmetic is always based on the updated list length).
+      if (_gaplessPlayback &&
+          _audioPlayer.audioSource is ConcatenatingAudioSource) {
+        try {
+          final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
+          // Remove from the audio source before updating _playlist so that the
+          // index is still valid for the unmodified source.
+          await source.removeAt(index);
+        } catch (e) {
+          debugPrint('Error removing currently playing song from audio source: $e');
+        }
+      }
+      _playlist.removeAt(index);
+      // After removal: play the song now at `index` (the former next song),
+      // or the new last song if we removed the end of the queue.
+      _currentIndex =
+          index < _playlist.length ? index : _playlist.length - 1;
+
+      if (_gaplessPlayback &&
+          _audioPlayer.audioSource is ConcatenatingAudioSource) {
+        try {
+          await _audioPlayer.seek(Duration.zero, index: _currentIndex);
+          if (!_isPlaying) await _audioPlayer.play();
+          final mediaItems =
+              _playlist.map((s) => _createMediaItemSync(s)).toList();
+          audioHandler.updateNotificationQueue(mediaItems);
+        } catch (e) {
+          debugPrint('Error seeking after removing currently playing song: $e');
+        }
+      } else {
+        await play(index: _currentIndex);
+      }
+
+      // Update song notifiers.
+      final song = _playlist[_currentIndex];
+      _currentSongController.add(song);
+      currentSongNotifier.value = song;
+      _scheduleNotify();
+      unawaited(saveQueueState());
       return;
     }
 
@@ -1442,16 +1517,32 @@ class AudioPlayerService extends ChangeNotifier {
     debugPrint(
         '⏭️ [SKIP] Called - hasNext: ${_audioPlayer.hasNext}, currentIndex: $_currentIndex, shuffle: $_isShuffle, loopMode: $_loopMode');
 
+    if (_loopMode == LoopMode.one) {
+      // Repeat ONE: restart the current track.
+      debugPrint('⏭️ [SKIP] Repeat ONE — restarting current track');
+      await _audioPlayer.seek(Duration.zero);
+      return;
+    }
+
     if (_audioPlayer.hasNext) {
-      // Normal case: advance to the next track
+      // Normal case: advance to the next track.
       debugPrint('⏭️ [SKIP] Seeking to next track');
       await _audioPlayer.seekToNext();
     } else {
-      // Last song in the queue — always wrap back to the beginning and play.
-      // This applies regardless of loop mode.
-      debugPrint('⏭️ [SKIP] At end of queue, wrapping to start');
-      await _audioPlayer.seek(Duration.zero, index: 0);
-      await _audioPlayer.play();
+      // Last song in the queue.
+      if (_loopMode == LoopMode.all) {
+        debugPrint('⏭️ [SKIP] At end of queue, wrapping to start (repeat ALL)');
+        await _audioPlayer.seek(Duration.zero, index: 0);
+        await _audioPlayer.play();
+      } else {
+        // Repeat OFF: stop playback.
+        debugPrint('⏭️ [SKIP] At end of queue, stopping (repeat OFF)');
+        await _audioPlayer.pause();
+        await _audioPlayer.seek(Duration.zero);
+        _isPlaying = false;
+        isPlayingNotifier.value = false;
+        _scheduleNotify();
+      }
     }
   }
 
@@ -1460,17 +1551,31 @@ class AudioPlayerService extends ChangeNotifier {
 
     final currentPosition = _audioPlayer.position;
 
-    // If within the first 4 seconds, go to the previous song (if any).
-    // Beyond 4 seconds, always restart the current song.
-    if (currentPosition.inSeconds < 4 && _audioPlayer.hasPrevious) {
-      debugPrint('⏮️ [BACK] Within 4s and has previous — seeking to previous');
+    // If more than 3 seconds have elapsed, restart the current track.
+    if (currentPosition > const Duration(seconds: kPreviousThresholdSeconds)) {
+      debugPrint(
+          '⏮️ [BACK] Past 3s — restarting current song (position: ${currentPosition.inSeconds}s)');
+      await _audioPlayer.seek(Duration.zero);
+      return;
+    }
+
+    // Within 3 seconds: move to the previous track.
+    if (_audioPlayer.hasPrevious) {
+      debugPrint('⏮️ [BACK] Within 3s and has previous — seeking to previous');
       await _audioPlayer.seekToPrevious();
     } else {
-      // Either past 4 seconds, or this is the first song in the queue.
-      // In both cases just restart from the beginning of the current track.
-      debugPrint(
-          '⏮️ [BACK] Restarting current song (position: ${currentPosition.inSeconds}s, hasPrevious: ${_audioPlayer.hasPrevious})');
-      await _audioPlayer.seek(Duration.zero);
+      // At the very first track in the queue.
+      if (_loopMode == LoopMode.all && _playlist.isNotEmpty) {
+        // Repeat ALL: jump to the last track.
+        debugPrint('⏮️ [BACK] At first track, repeat ALL — jumping to last');
+        await _audioPlayer.seek(Duration.zero,
+            index: _playlist.length - 1);
+      } else {
+        // Repeat OFF / ONE at first track: restart.
+        debugPrint(
+            '⏮️ [BACK] At first track (position: ${currentPosition.inSeconds}s) — restarting');
+        await _audioPlayer.seek(Duration.zero);
+      }
     }
   }
 
@@ -1478,23 +1583,103 @@ class AudioPlayerService extends ChangeNotifier {
     _isShuffle = !_isShuffle;
     isShuffleNotifier.value = _isShuffle;
     debugPrint('🔀 [SHUFFLE] Toggled shuffle: $_isShuffle');
-    // Apply shuffle mode to the audio player
-    _audioPlayer.setShuffleModeEnabled(_isShuffle);
-    debugPrint(
-        '🔀 [SHUFFLE] Applied to player, shuffleModeEnabled: ${_audioPlayer.shuffleModeEnabled}');
+
+    if (_isShuffle) {
+      // Save the current order and shuffle the queue in-place, keeping the
+      // current track at position 0 so playback is uninterrupted.
+      _originalPlaylist = List<SongModel>.from(_playlist);
+      _shuffleQueue();
+    } else {
+      // Restore the original queue order.
+      _restoreOriginalQueue();
+    }
+
+    // We manage shuffle ourselves — always keep just_audio's internal shuffle
+    // mode disabled so the player follows our explicit _playlist order.
+    _audioPlayer.setShuffleModeEnabled(false);
+    debugPrint('🔀 [SHUFFLE] Queue reordered, playlist length: ${_playlist.length}');
+    unawaited(saveQueueState());
     notifyListeners();
   }
 
+  /// Shuffles _playlist in-place, moving the current track to index 0 so that
+  /// ongoing playback is preserved and the audio source can be rebuilt with the
+  /// same initial index (0).
+  void _shuffleQueue() {
+    if (_playlist.length <= 1) return;
+    final current = _playlist[_currentIndex];
+    final rest = List<SongModel>.from(_playlist)..removeAt(_currentIndex);
+    rest.shuffle(Random());
+    _playlist = [current, ...rest];
+    _currentIndex = 0;
+    unawaited(_rebuildAudioSourcePreservingPosition());
+  }
+
+  /// Restores the pre-shuffle queue order while keeping the current track's
+  /// position accurate.
+  void _restoreOriginalQueue() {
+    if (_originalPlaylist.isEmpty) return;
+    final current = currentSong;
+    _playlist = List<SongModel>.from(_originalPlaylist);
+    _originalPlaylist = [];
+    if (current != null) {
+      final restoredIndex = _playlist.indexWhere((s) => s.id == current.id);
+      _currentIndex = restoredIndex != -1 ? restoredIndex : 0;
+    }
+    unawaited(_rebuildAudioSourcePreservingPosition());
+  }
+
+  /// Rebuilds the gapless ConcatenatingAudioSource with the current _playlist
+  /// order, preserving the playback position of the active track.
+  Future<void> _rebuildAudioSourcePreservingPosition() async {
+    if (!_gaplessPlayback) return;
+    try {
+      final position = _audioPlayer.position;
+      final mediaItems =
+          _playlist.map((s) => _createMediaItemSync(s)).toList();
+      final newSource = ConcatenatingAudioSource(
+        children: _playlist.asMap().entries.map((entry) {
+          final song = entry.value;
+          final uri = song.uri ?? song.data;
+          return AudioSource.uri(Uri.parse(uri), tag: mediaItems[entry.key]);
+        }).toList(),
+      );
+
+      audioHandler.suppressIndexUpdates();
+      await _audioPlayer.setAudioSource(
+        newSource,
+        initialIndex: _currentIndex,
+        initialPosition: position,
+      );
+      audioHandler.resumeIndexUpdates();
+      // Re-disable just_audio's internal shuffle; we manage ordering ourselves.
+      await _audioPlayer.setShuffleModeEnabled(false);
+      await _audioPlayer.setLoopMode(_loopMode);
+
+      audioHandler.updateNotificationQueue(mediaItems);
+      if (_currentIndex < mediaItems.length) {
+        audioHandler.updateNotificationMediaItem(mediaItems[_currentIndex]);
+      }
+
+      if (_isPlaying) {
+        await _audioPlayer.play();
+      }
+    } catch (e) {
+      audioHandler.resumeIndexUpdates();
+      debugPrint('Error rebuilding audio source: $e');
+    }
+  }
+
   void toggleRepeat() {
-    // Cycle through: off → one → all → off
+    // Cycle through: off → all → one → off
     switch (_loopMode) {
       case LoopMode.off:
-        _loopMode = LoopMode.one;
-        break;
-      case LoopMode.one:
         _loopMode = LoopMode.all;
         break;
       case LoopMode.all:
+        _loopMode = LoopMode.one;
+        break;
+      case LoopMode.one:
       default:
         _loopMode = LoopMode.off;
         break;
@@ -1505,6 +1690,7 @@ class AudioPlayerService extends ChangeNotifier {
     _audioPlayer.setLoopMode(_loopMode);
     debugPrint(
         '🔁 [REPEAT] Applied to player, current loopMode: ${_audioPlayer.loopMode}');
+    unawaited(saveQueueState());
     notifyListeners();
   }
 
@@ -1739,6 +1925,9 @@ class AudioPlayerService extends ChangeNotifier {
     if (_playlistsDirty) {
       savePlaylists();
     }
+
+    // Persist queue state synchronously so it is available on next launch.
+    saveQueueState();
 
     // Clean up widget listeners and service
     currentSongNotifier.removeListener(_onSongChangedForWidget);
@@ -2161,6 +2350,98 @@ class AudioPlayerService extends ChangeNotifier {
     _sleepTimer = null;
     sleepTimerDurationNotifier.value = null;
     // ValueNotifier handles UI updates - no notifyListeners needed
+  }
+
+  // MARK: - Queue State Persistence
+
+  /// Persists the current queue (songs, index, position, shuffle/repeat state)
+  /// to disk so it can be restored on the next app launch.
+  Future<void> saveQueueState() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/$kQueueStateFileName');
+
+      final json = {
+        'queue': _playlist.map((song) => song.getMap).toList(),
+        'originalQueue':
+            _originalPlaylist.map((song) => song.getMap).toList(),
+        'currentIndex': _currentIndex,
+        'positionMs': _audioPlayer.position.inMilliseconds,
+        'isShuffle': _isShuffle,
+        'loopMode': _loopMode.name,
+      };
+
+      await file.writeAsString(jsonEncode(json));
+    } catch (e) {
+      debugPrint('Error saving queue state: $e');
+    }
+  }
+
+  /// Restores the queue state that was saved by [saveQueueState].
+  /// Only restores metadata — playback is NOT automatically started.
+  Future<void> loadQueueState() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/$kQueueStateFileName');
+
+      if (!await file.exists()) return;
+
+      final contents = await file.readAsString();
+      final json = jsonDecode(contents) as Map<String, dynamic>;
+
+      final queueMaps = json['queue'] as List? ?? [];
+      if (queueMaps.isEmpty) return;
+
+      // Reconstruct songs and filter out any that no longer exist on disk.
+      List<SongModel> buildQueueFromMaps(List maps) {
+        return maps
+            .map((m) => SongModel(Map<String, dynamic>.from(m as Map)))
+            .where((song) {
+          try {
+            return File(song.data).existsSync();
+          } catch (_) {
+            return false;
+          }
+        }).toList();
+      }
+
+      final queue = buildQueueFromMaps(queueMaps);
+      if (queue.isEmpty) return;
+
+      final originalQueueMaps = json['originalQueue'] as List? ?? [];
+      final originalQueue = buildQueueFromMaps(originalQueueMaps);
+
+      final savedIndex = (json['currentIndex'] as int? ?? 0)
+          .clamp(0, queue.length - 1);
+      final isShuffle = json['isShuffle'] as bool? ?? false;
+      final loopModeName = json['loopMode'] as String? ?? '';
+      final loopMode = LoopMode.values.firstWhere(
+        (m) => m.name == loopModeName,
+        orElse: () => LoopMode.off,
+      );
+
+      _playlist = queue;
+      _originalPlaylist = originalQueue;
+      _currentIndex = savedIndex;
+      _isShuffle = isShuffle;
+      _loopMode = loopMode;
+
+      isShuffleNotifier.value = _isShuffle;
+      loopModeNotifier.value = _loopMode;
+
+      // Update current song notifiers without starting playback.
+      final song = _playlist[_currentIndex];
+      _currentSongController.add(song);
+      currentSongNotifier.value = song;
+
+      debugPrint(
+          'Queue state restored: ${_playlist.length} songs, index: $_currentIndex, '
+          'shuffle: $_isShuffle, loopMode: $_loopMode');
+
+      _scheduleNotify();
+    } catch (e) {
+      debugPrint('Error loading queue state: $e');
+    }
   }
 }
 
