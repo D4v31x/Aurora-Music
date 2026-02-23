@@ -5,7 +5,9 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/playlist_model.dart';
-import '../../../shared/widgets/common_screen_scaffold.dart';
+import '../../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/expanding_player.dart';
+import '../../../shared/widgets/library_screen_header.dart';
 import '../../../shared/widgets/glassmorphic_card.dart';
 import 'playlist_detail_screen.dart';
 import 'dart:ui';
@@ -55,6 +57,8 @@ class _PlaylistsState {
       userPlaylists.length.hashCode;
 }
 
+enum PlaylistSortOption { name, trackCount }
+
 class PlaylistsScreenList extends StatefulWidget {
   const PlaylistsScreenList({super.key});
 
@@ -64,6 +68,45 @@ class PlaylistsScreenList extends StatefulWidget {
 
 class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
   final ArtworkCacheService _artworkService = ArtworkCacheService();
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  PlaylistSortOption _sortOption = PlaylistSortOption.name;
+  bool _isAscending = true;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Playlist> _filterAndSort(List<Playlist> playlists) {
+    var result = _searchQuery.isEmpty
+        ? List<Playlist>.from(playlists)
+        : playlists
+            .where((p) =>
+                p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+            .toList();
+
+    switch (_sortOption) {
+      case PlaylistSortOption.name:
+        result.sort((a, b) => a.name.compareTo(b.name));
+        break;
+      case PlaylistSortOption.trackCount:
+        result.sort((a, b) => a.songs.length.compareTo(b.songs.length));
+        break;
+    }
+    if (!_isAscending) result = result.reversed.toList();
+    return result;
+  }
+
+  String _getSortLabel(PlaylistSortOption opt) {
+    switch (opt) {
+      case PlaylistSortOption.name:
+        return 'Name';
+      case PlaylistSortOption.trackCount:
+        return 'Tracks';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,125 +122,220 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
         final audioService = context.read<AudioPlayerService>();
         final likedPlaylist = state.likedPlaylist;
         final autoPlaylists = state.autoPlaylists;
-        final userPlaylists = state.userPlaylists;
+        final userPlaylists = _filterAndSort(state.userPlaylists);
+        final totalCount = state.userPlaylists.length +
+            state.autoPlaylists.length +
+            (state.likedPlaylist != null ? 1 : 0);
 
-        return CommonScreenScaffold(
-          title: localizations.translate('playlists'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add_rounded, color: Colors.white),
-              onPressed: () => _showCreatePlaylistDialog(context),
-            ),
-            const SizedBox(width: 8),
-          ],
-          slivers: [
-            // Liked Songs
-            if (likedPlaylist != null && likedPlaylist.songs.isNotEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  child: _buildLikedSongsCard(
-                    context,
-                    likedPlaylist,
-                    audioService,
-                    isDark,
-                    localizations,
-                  ),
-                ),
-              ),
-
-            // Auto Playlists Header
-            if (autoPlaylists.isNotEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    localizations.translate('auto_playlists'),
-                    style: TextStyle(
-                      fontFamily: FontConstants.fontFamily,
-                      color: Colors.white.withOpacity(0.6),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
+        return AppBackground(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: CustomScrollView(
+              physics: const ClampingScrollPhysics(),
+              slivers: [
+                LibraryScreenHeader(
+                  badge: 'Library',
+                  title: localizations.translate('playlists'),
+                  subtitle:
+                      '$totalCount ${totalCount == 1 ? 'playlist' : 'playlists'}',
+                  accentColor: Colors.pink,
+                  expandedHeight: 310,
+                  showBackButton: true,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.add_rounded, color: Colors.white),
+                      onPressed: () => _showCreatePlaylistDialog(context),
                     ),
-                  ),
-                ),
-              ),
-
-            // Auto Playlists Horizontal List
-            if (autoPlaylists.isNotEmpty)
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 190,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: autoPlaylists.length,
-                    itemBuilder: (context, index) {
-                      final playlist = autoPlaylists[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: GlassmorphicCard.playlist(
-                          playlistName: playlist.name,
-                          songCount: playlist.songs.length,
-                          playlistId: playlist.id,
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  PlaylistDetailScreen(playlist: playlist),
-                            ),
-                          ),
-                        ),
-                      );
+                    const SizedBox(width: 8),
+                  ],
+                  searchField: LibrarySearchField(
+                    controller: _searchController,
+                    hint: 'Search playlists…',
+                    onChanged: (q) => setState(() => _searchQuery = q),
+                    hasQuery: _searchQuery.isNotEmpty,
+                    onClear: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = '');
                     },
                   ),
-                ),
-              ),
-
-            // Your Playlists Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-                child: Text(
-                  localizations.translate('your_playlists'),
-                  style: TextStyle(
-                    fontFamily: FontConstants.fontFamily,
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
+                  controlsRow: Row(
+                    children: [
+                      Expanded(
+                        child: PopupMenuButton<PlaylistSortOption>(
+                          onSelected: (opt) =>
+                              setState(() => _sortOption = opt),
+                          color: Colors.grey.shade900,
+                          child: LibraryControlPill(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.sort_rounded,
+                                    color: Colors.white70, size: 18),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    _getSortLabel(_sortOption),
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 13),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const Icon(Icons.arrow_drop_down_rounded,
+                                    color: Colors.white70),
+                              ],
+                            ),
+                          ),
+                          itemBuilder: (context) => [
+                            _sortItem(PlaylistSortOption.name, 'Name'),
+                            _sortItem(PlaylistSortOption.trackCount, 'Tracks'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      LibraryControlPill(
+                        onTap: () =>
+                            setState(() => _isAscending = !_isAscending),
+                        child: Icon(
+                          _isAscending
+                              ? Icons.arrow_upward_rounded
+                              : Icons.arrow_downward_rounded,
+                          color: Colors.white70,
+                          size: 18,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ),
-
-            // User Playlists List
-            userPlaylists.isEmpty
-                ? SliverToBoxAdapter(
-                    child: _buildEmptyState(context, isDark, localizations),
-                  )
-                : SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 4),
-                          child: _buildPlaylistTile(
-                            context,
-                            userPlaylists[index],
-                            audioService,
-                            isDark,
-                            localizations,
-                          ),
-                        );
-                      },
-                      childCount: userPlaylists.length,
+                if (likedPlaylist != null && likedPlaylist.songs.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                      child: _buildLikedSongsCard(
+                        context,
+                        likedPlaylist,
+                        audioService,
+                        isDark,
+                        localizations,
+                      ),
                     ),
                   ),
-          ],
+
+                // Auto Playlists Header
+                if (autoPlaylists.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: Text(
+                        localizations.translate('auto_playlists'),
+                        style: TextStyle(
+                          fontFamily: FontConstants.fontFamily,
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // Auto Playlists Horizontal List
+                if (autoPlaylists.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 190,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        itemCount: autoPlaylists.length,
+                        itemBuilder: (context, index) {
+                          final playlist = autoPlaylists[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: GlassmorphicCard.playlist(
+                              playlistName: playlist.name,
+                              songCount: playlist.songs.length,
+                              playlistId: playlist.id,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      PlaylistDetailScreen(playlist: playlist),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+
+                // Your Playlists Header
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+                    child: Text(
+                      localizations.translate('your_playlists'),
+                      style: TextStyle(
+                        fontFamily: FontConstants.fontFamily,
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // User Playlists List
+                userPlaylists.isEmpty
+                    ? SliverToBoxAdapter(
+                        child: _buildEmptyState(context, isDark, localizations),
+                      )
+                    : SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 4),
+                              child: _buildPlaylistTile(
+                                context,
+                                userPlaylists[index],
+                                audioService,
+                                isDark,
+                                localizations,
+                              ),
+                            );
+                          },
+                          childCount: userPlaylists.length,
+                        ),
+                      ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: ExpandingPlayer.getMiniPlayerPaddingHeight(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
+    );
+  }
+
+  PopupMenuItem<PlaylistSortOption> _sortItem(
+      PlaylistSortOption opt, String label) {
+    return PopupMenuItem(
+      value: opt,
+      child: Row(
+        children: [
+          if (_sortOption == opt)
+            const Icon(Icons.check, color: Colors.white, size: 18)
+          else
+            const SizedBox(width: 18),
+          const SizedBox(width: 8),
+          Text(label, style: const TextStyle(color: Colors.white)),
+        ],
+      ),
     );
   }
 

@@ -99,12 +99,8 @@ class _LibraryTabState extends State<LibraryTab>
               items: audioPlayerService.getMostPlayedTracks(),
               onDetailsTap: () => Navigator.push(
                 context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const TracksScreen(),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) =>
-                          FadeTransition(opacity: animation, child: child),
+                MaterialPageRoute(
+                  builder: (context) => const TracksScreen(),
                 ),
               ),
               onItemTap: (song) {
@@ -237,12 +233,8 @@ class _LibraryTabState extends State<LibraryTab>
                     items: audioPlayerService.getMostPlayedTracks(),
                     onDetailsTap: () => Navigator.push(
                       context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            const TracksScreen(),
-                        transitionsBuilder: (context, animation,
-                                secondaryAnimation, child) =>
-                            FadeTransition(opacity: animation, child: child),
+                      MaterialPageRoute(
+                        builder: (context) => const TracksScreen(),
                       ),
                     ),
                     onItemTap: (song) {

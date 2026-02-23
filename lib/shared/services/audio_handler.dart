@@ -1,5 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+import 'audio_constants.dart';
 
 /// Custom audio handler that provides background playback with customized notification
 /// Shows only: previous, play/pause, next (NO stop button)
@@ -91,24 +92,41 @@ class AuroraAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> skipToNext() async {
     final currentIndex = player.currentIndex ?? 0;
     final queueLength = queue.value.length;
+
+    if (player.loopMode == LoopMode.one) {
+      // Repeat ONE: restart the current track.
+      await player.seek(Duration.zero);
+      return;
+    }
+
     if (currentIndex < queueLength - 1) {
       await player.seek(Duration.zero, index: currentIndex + 1);
-    } else if (queueLength > 0) {
-      // Last song in queue — wrap back to the beginning.
+    } else if (player.loopMode == LoopMode.all && queueLength > 0) {
+      // Repeat ALL: wrap back to the beginning.
       await player.seek(Duration.zero, index: 0);
       await player.play();
     }
+    // Repeat OFF at end: do nothing — let the completion handler stop playback.
   }
 
   @override
   Future<void> skipToPrevious() async {
     final currentIndex = player.currentIndex ?? 0;
     final position = player.position;
-    // Within 4 seconds and not the first track: go to previous.
-    // Otherwise restart the current track from the beginning.
-    if (position.inSeconds < 4 && currentIndex > 0) {
+
+    // If more than the threshold has elapsed, restart the current track.
+    if (position.inSeconds > kPreviousThresholdSeconds) {
+      await player.seek(Duration.zero);
+      return;
+    }
+
+    if (currentIndex > 0) {
       await player.seek(Duration.zero, index: currentIndex - 1);
+    } else if (player.loopMode == LoopMode.all && queue.value.isNotEmpty) {
+      // Repeat ALL at the first track: jump to the last track.
+      await player.seek(Duration.zero, index: queue.value.length - 1);
     } else {
+      // Repeat OFF / ONE at the first track: restart.
       await player.seek(Duration.zero);
     }
   }

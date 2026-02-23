@@ -28,6 +28,15 @@ const String kLibraryFileName = 'library.json';
 /// Filename for storing liked songs.
 const String kLikedSongsFileName = 'liked_songs.json';
 
+/// Filename for storing queue state (current queue, index, position, shuffle/repeat).
+const String kQueueStateFileName = 'queue_state.json';
+
+// MARK: - Playback Thresholds
+
+/// How many seconds must have elapsed before the "previous" control restarts
+/// the current track instead of jumping to the previous one.
+const int kPreviousThresholdSeconds = 3;
+
 // MARK: - Debounce Timers
 
 /// Debounce delay for batch notifications (milliseconds).

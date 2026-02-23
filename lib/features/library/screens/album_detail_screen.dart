@@ -38,7 +38,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
   List<SongModel> _allSongs = [];
   final List<SongModel> _displayedSongs = [];
   int _currentPage = 0;
-  final int _songsPerPage = 20;
+  final int _songsPerPage = 50;
   bool _isLoading = false;
   bool _hasMoreSongs = true;
 
@@ -78,7 +78,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
   }
 
   void _scrollListener() {
-    if (_scrollController.position.extentAfter < 200 &&
+    if (_scrollController.position.extentAfter < 500 &&
         !_isLoading &&
         _hasMoreSongs) {
       _loadMoreSongs();
