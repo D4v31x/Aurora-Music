@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:palette_generator/palette_generator.dart';
@@ -261,15 +262,11 @@ class BackgroundManagerService extends ChangeNotifier {
       }
       notifyListeners();
 
-      // End transition after a short delay for animation
+      // Clean up transition state after animation (no notify needed - internal state only)
       Future.delayed(const Duration(milliseconds: 500), () {
         if (currentUpdateId == _updateCounter && _currentSong?.id == song.id) {
           _isTransitioning = false;
           _previousArtwork = null;
-          // Only notify if we're still on the same song
-          if (_currentSong?.id == song.id) {
-            notifyListeners();
-          }
         }
       });
     } catch (e) {
@@ -290,11 +287,11 @@ class BackgroundManagerService extends ChangeNotifier {
     final clearUpdateId = ++_updateCounter;
     notifyListeners();
 
+    // Clean up transition state after animation (no notify needed - internal state only)
     Future.delayed(const Duration(milliseconds: 500), () {
       if (clearUpdateId == _updateCounter && _currentArtwork == null) {
         _isTransitioning = false;
         _previousArtwork = null;
-        notifyListeners();
       }
     });
   }

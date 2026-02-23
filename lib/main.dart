@@ -78,7 +78,15 @@ void main() async {
         androidNotificationChannelId: AppConfig.androidNotificationChannelId,
         androidNotificationChannelName:
             AppConfig.androidNotificationChannelName,
-        androidNotificationOngoing: true,
+        // androidStopForegroundOnPause: false keeps the foreground service
+        // alive even when the user pauses playback. This is the primary fix
+        // for the app being killed by Android after ~30 minutes.
+        // NOTE: androidNotificationOngoing must be false when
+        // androidStopForegroundOnPause is false (audio_service assertion).
+        androidNotificationOngoing: false,
+        androidStopForegroundOnPause: false,
+        // Monochrome status-bar notification icon (white silhouette on transparent).
+        androidNotificationIcon: 'drawable/ic_stat_music',
       ),
     );
 

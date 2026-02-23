@@ -483,16 +483,28 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   Future<void> _init() async {
-    // Configure audio session
+    // Configure audio session for long-running music playback.
+    // Using GAIN (not GAIN_TRANSIENT) tells the system this session
+    // is meant to persist — critical for keeping the foreground service
+    // alive through the full playback session.
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration(
       avAudioSessionCategory: AVAudioSessionCategory.playback,
+      avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.allowBluetooth,
+      avAudioSessionMode: AVAudioSessionMode.defaultMode,
       androidAudioAttributes: AndroidAudioAttributes(
         contentType: AndroidAudioContentType.music,
+        flags: AndroidAudioFlags.audibilityEnforced,
         usage: AndroidAudioUsage.media,
       ),
+      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
       androidWillPauseWhenDucked: true,
     ));
+
+    // Re-activate the audio session so audio focus is explicitly requested
+    // on startup. This prevents the system from silently reclaiming focus
+    // during a long playback session.
+    await session.setActive(true);
 
     await _loadPlayCounts();
     await _loadPlaylists();
@@ -1409,13 +1421,18 @@ class AudioPlayerService extends ChangeNotifier {
   /// Sync the internal playing state with the actual audio player state.
   /// Call this when the app comes back to foreground to ensure UI reflects
   /// any changes made via lock screen or notification controls.
+  /// Always forces a UI refresh since stream events may have been missed
+  /// while the Flutter engine was paused in the background.
   void syncPlaybackState() {
     final actuallyPlaying = _audioPlayer.playing;
-    if (_isPlaying != actuallyPlaying) {
-      _isPlaying = actuallyPlaying;
-      isPlayingNotifier.value = actuallyPlaying;
-      _scheduleNotify();
-    }
+    _isPlaying = actuallyPlaying;
+    // Unconditionally assign the value. If it differs, ValueNotifier fires
+    // normally. If it is the same, we still call _scheduleNotify() below to
+    // refresh any Provider-based consumers that may be stale.
+    isPlayingNotifier.value = actuallyPlaying;
+    // Force Provider listeners (e.g. Selector, Consumer) to re-evaluate even
+    // when ValueNotifier did not fire (value unchanged).
+    notifyListeners();
   }
 
   void skip() async {
@@ -1424,43 +1441,34 @@ class AudioPlayerService extends ChangeNotifier {
     debugPrint(
         '⏭️ [SKIP] Called - hasNext: ${_audioPlayer.hasNext}, currentIndex: $_currentIndex, shuffle: $_isShuffle, loopMode: $_loopMode');
 
-    // Use just_audio's built-in seekToNext which respects shuffle mode
     if (_audioPlayer.hasNext) {
+      // Normal case: advance to the next track
       debugPrint('⏭️ [SKIP] Seeking to next track');
       await _audioPlayer.seekToNext();
-    } else if (_loopMode == LoopMode.all) {
-      // If loop all is on and we're at the end, go back to start
-      debugPrint('⏭️ [SKIP] At end with loop ALL, going to start');
+    } else {
+      // Last song in the queue — always wrap back to the beginning and play.
+      // This applies regardless of loop mode.
+      debugPrint('⏭️ [SKIP] At end of queue, wrapping to start');
       await _audioPlayer.seek(Duration.zero, index: 0);
       await _audioPlayer.play();
-    } else {
-      debugPrint(
-          '⏭️ [SKIP] At end, staying on current song (loopMode: $_loopMode)');
     }
-    // If no next and no repeat, just stay on current song
   }
 
   void back() async {
     _isLoading = false; // Reset loading flag to allow new song to play
 
-    // Check if more than 5 seconds have elapsed
     final currentPosition = _audioPlayer.position;
-    if (currentPosition.inSeconds >= 5) {
-      // Restart current song
-      await _audioPlayer.seek(Duration.zero);
-      return;
-    }
 
-    // Use just_audio's built-in seekToPrevious which respects shuffle mode
-    if (_audioPlayer.hasPrevious) {
+    // If within the first 4 seconds, go to the previous song (if any).
+    // Beyond 4 seconds, always restart the current song.
+    if (currentPosition.inSeconds < 4 && _audioPlayer.hasPrevious) {
+      debugPrint('⏮️ [BACK] Within 4s and has previous — seeking to previous');
       await _audioPlayer.seekToPrevious();
-    } else if (_loopMode == LoopMode.all) {
-      // If loop all is on and we're at the start, go to end
-      await _audioPlayer.seek(Duration.zero, index: _playlist.length - 1);
-      await _audioPlayer.play();
-    }
-    // If no previous and no repeat, just restart current song
-    else {
+    } else {
+      // Either past 4 seconds, or this is the first song in the queue.
+      // In both cases just restart from the beginning of the current track.
+      debugPrint(
+          '⏮️ [BACK] Restarting current song (position: ${currentPosition.inSeconds}s, hasPrevious: ${_audioPlayer.hasPrevious})');
       await _audioPlayer.seek(Duration.zero);
     }
   }
@@ -1888,26 +1896,36 @@ class AudioPlayerService extends ChangeNotifier {
     _mediaControls = value;
     await _saveSettings();
 
-    // Update the audio session configuration
+    // Update the audio session configuration.
+    // Both branches use the same long-running music config so that
+    // audio focus type (GAIN) is never accidentally downgraded.
     final session = await AudioSession.instance;
     if (!_mediaControls) {
-      // Disable media notifications
+      // Disable media notifications (audio focus config stays the same)
       await session.configure(const AudioSessionConfiguration(
         avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.allowBluetooth,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
         androidAudioAttributes: AndroidAudioAttributes(
           contentType: AndroidAudioContentType.music,
+          flags: AndroidAudioFlags.audibilityEnforced,
           usage: AndroidAudioUsage.media,
         ),
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
         androidWillPauseWhenDucked: true,
       ));
     } else {
       // Enable media notifications
       await session.configure(const AudioSessionConfiguration(
         avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.allowBluetooth,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
         androidAudioAttributes: AndroidAudioAttributes(
           contentType: AndroidAudioContentType.music,
+          flags: AndroidAudioFlags.audibilityEnforced,
           usage: AndroidAudioUsage.media,
         ),
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
         androidWillPauseWhenDucked: true,
       ));
 
