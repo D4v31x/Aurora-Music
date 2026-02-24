@@ -21,6 +21,7 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
   List<SongModel>? _fullPlaylist; // Full playlist for playback
   bool _isLoading = true;
   AudioPlayerService? _audioPlayerService;
+  int? _lastSongId;
 
   @override
   void initState() {
@@ -40,8 +41,12 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
   }
 
   void _onServiceChanged() {
-    if (mounted && !_isLoading) {
-      _loadData();
+    if (!mounted) return;
+    final currentId = _audioPlayerService?.currentSong?.id;
+    // Only reload when the playing song actually changes, not on play/pause/seek.
+    if (currentId != _lastSongId) {
+      _lastSongId = currentId;
+      if (!_isLoading) _loadData();
     }
   }
 

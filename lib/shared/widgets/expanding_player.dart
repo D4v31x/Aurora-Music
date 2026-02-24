@@ -382,6 +382,15 @@ class _ProgressBar extends StatelessWidget {
     final audioService =
         Provider.of<AudioPlayerService>(context, listen: false);
 
+    // Subscribe _ProgressBar (not _StreamBuilderState) to BackgroundManagerService
+    // so color updates when artwork changes without coupling it to position ticks.
+    final backgroundManager = Provider.of<BackgroundManagerService>(context);
+    final progressColor = backgroundManager.currentColors.length > 2
+        ? backgroundManager.currentColors[2]
+        : (backgroundManager.currentColors.isNotEmpty
+            ? backgroundManager.currentColors.first
+            : Theme.of(context).colorScheme.primary);
+
     return StreamBuilder<Duration>(
       stream: audioService.audioPlayer.positionStream,
       builder: (context, snapshot) {
@@ -391,15 +400,6 @@ class _ProgressBar extends StatelessWidget {
             ? (position.inMilliseconds / duration.inMilliseconds)
                 .clamp(0.0, 1.0)
             : 0.0;
-
-        // Get light vibrant color from artwork
-        final backgroundManager =
-            Provider.of<BackgroundManagerService>(context);
-        final progressColor = backgroundManager.currentColors.length > 2
-            ? backgroundManager.currentColors[2]
-            : (backgroundManager.currentColors.isNotEmpty
-                ? backgroundManager.currentColors.first
-                : Theme.of(context).colorScheme.primary);
 
         return SizedBox(
           height: 3,

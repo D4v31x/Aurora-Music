@@ -242,8 +242,8 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
           if (shouldBlur)
             BackdropFilter(
               filter: ImageFilter.blur(
-                sigmaX: 50.0,
-                sigmaY: 50.0,
+                sigmaX: 25.0,
+                sigmaY: 25.0,
               ),
               child: Container(
                 color: Colors.black.withValues(alpha: 0.2),
@@ -422,14 +422,11 @@ class _AnimatedColorPointsBackgroundState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _updateColors();
+    // Register dependency so this is called whenever BackgroundManagerService notifies
+    _updateColorsFrom(Provider.of<BackgroundManagerService>(context).currentColors);
   }
 
-  void _updateColors() {
-    final backgroundManager =
-        Provider.of<BackgroundManagerService>(context, listen: false);
-    final newColors = backgroundManager.currentColors;
-
+  void _updateColorsFrom(List<Color> newColors) {
     if (newColors.isNotEmpty && !_areColorsEqual(newColors, _targetColors)) {
       setState(() {
         _currentColors = _targetColors.isNotEmpty
@@ -465,44 +462,34 @@ class _AnimatedColorPointsBackgroundState
 
   @override
   Widget build(BuildContext context) {
-    // Listen to background manager changes
-    return Consumer<BackgroundManagerService>(
-      builder: (context, backgroundManager, _) {
-        // Update colors when they change
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _updateColors();
-        });
+    final colors = _getInterpolatedColors();
+    if (colors.isEmpty) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              widget.fallbackColor,
+              widget.fallbackColor.withValues(alpha: 0.8),
+            ],
+          ),
+        ),
+      );
+    }
 
-        final colors = _getInterpolatedColors();
-        if (colors.isEmpty) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  widget.fallbackColor,
-                  widget.fallbackColor.withValues(alpha: 0.8),
-                ],
-              ),
-            ),
-          );
-        }
+    return AnimatedBuilder(
+      animation: Listenable.merge([_positionController, _colorController]),
+      builder: (context, _) {
+        final positions = _getInterpolatedPositions();
+        final animatedColors = _getInterpolatedColors();
 
-        return AnimatedBuilder(
-          animation: Listenable.merge([_positionController, _colorController]),
-          builder: (context, _) {
-            final positions = _getInterpolatedPositions();
-            final animatedColors = _getInterpolatedColors();
-
-            return CustomPaint(
-              painter: _ColorPointsPainter(
-                positions: positions,
-                colors: animatedColors,
-              ),
-              size: Size.infinite,
-            );
-          },
+        return CustomPaint(
+          painter: _ColorPointsPainter(
+            positions: positions,
+            colors: animatedColors,
+          ),
+          size: Size.infinite,
         );
       },
     );
