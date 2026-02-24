@@ -49,7 +49,7 @@ class AppBackground extends StatelessWidget {
         if (currentArtwork != null) {
           return SimpleBlurredBackground(
             artwork: currentArtwork,
-            blurIntensity: 50.0,
+            blurIntensity: 25.0,
             overlayColor: Colors.black.withValues(alpha: 0.3),
             child: child,
           );

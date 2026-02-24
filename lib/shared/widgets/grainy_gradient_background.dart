@@ -84,7 +84,7 @@ class GrainyGradientBackground extends HookWidget {
         colors.length >= 3 ? [colors[0], colors[1], colors[2]] : colors;
 
     return OMeshGradient(
-      tessellation: 20,
+      tessellation: 10,
       size: Size.infinite,
       mesh: OMeshRect(
         width: 5,
