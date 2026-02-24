@@ -144,7 +144,17 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   /// used when naming the temporary file for metadata editing.
   String _extension() {
     final path = widget.song.data.toLowerCase();
-    for (final ext in ['.mp3', '.m4a', '.flac', '.wav', '.ogg', '.opus', '.aac', '.wma', '.alac']) {
+    for (final ext in [
+      '.mp3',
+      '.m4a',
+      '.flac',
+      '.wav',
+      '.ogg',
+      '.opus',
+      '.aac',
+      '.wma',
+      '.alac'
+    ]) {
       if (path.endsWith(ext)) return ext;
     }
     return '.audio';
@@ -581,7 +591,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
           '${tempDir.path}/aurora_meta_${widget.song.id}_${DateTime.now().millisecondsSinceEpoch}${_extension()}');
       debugPrint('[META] Step 1 – temp target: ${tempFile.path}');
       await originalFile.copy(tempFile.path);
-      debugPrint('[META] Step 1 – copy OK, temp size: ${tempFile.lengthSync()} bytes');
+      debugPrint(
+          '[META] Step 1 – copy OK, temp size: ${tempFile.lengthSync()} bytes');
 
       // 2. Build the updated tag and write it to the temp copy.
       debugPrint('[META] Step 2 – writing tags to temp file');
@@ -604,7 +615,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             : _currentTag?.pictures ?? [],
       );
       await AudioTags.write(tempFile.path, updatedTag);
-      debugPrint('[META] Step 2 – AudioTags.write OK, temp size now: ${tempFile.lengthSync()} bytes');
+      debugPrint(
+          '[META] Step 2 – AudioTags.write OK, temp size now: ${tempFile.lengthSync()} bytes');
 
       // 3. Push the modified temp file back to the original location via the
       //    MediaStore ContentResolver. On Android 11+ this shows a one-time
@@ -619,7 +631,9 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
         if (pe.code == 'PERMISSION_DENIED') {
           // User tapped "Deny" on the system write-request dialog.
           setState(() => _isSaving = false);
-          try { await tempFile.delete(); } catch (_) {}
+          try {
+            await tempFile.delete();
+          } catch (_) {}
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(loc.translate('storage_permission_needed')),
@@ -650,10 +664,11 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
 
       // 7. Update the controllers so the screen shows the saved values.
       if (_currentTag != null) {
-        _titleController.text  = _currentTag!.title        ?? _titleController.text;
-        _artistController.text = _currentTag!.trackArtist  ?? _artistController.text;
-        _albumController.text  = _currentTag!.album        ?? _albumController.text;
-        _genreController.text  = _currentTag!.genre        ?? _genreController.text;
+        _titleController.text = _currentTag!.title ?? _titleController.text;
+        _artistController.text =
+            _currentTag!.trackArtist ?? _artistController.text;
+        _albumController.text = _currentTag!.album ?? _albumController.text;
+        _genreController.text = _currentTag!.genre ?? _genreController.text;
         if (_currentTag!.year != null) {
           _yearController.text = _currentTag!.year.toString();
         }

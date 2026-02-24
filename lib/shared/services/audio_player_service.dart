@@ -61,6 +61,7 @@ class AudioPlayerService extends ChangeNotifier {
   PlaybackSourceInfo get playbackSource => _playbackSource;
 
   List<SongModel> _playlist = [];
+
   /// Original (pre-shuffle) playlist order; non-empty only while shuffle is on.
   List<SongModel> _originalPlaylist = [];
   List<Playlist> _playlists = [];
@@ -1331,14 +1332,14 @@ class AudioPlayerService extends ChangeNotifier {
           // index is still valid for the unmodified source.
           await source.removeAt(index);
         } catch (e) {
-          debugPrint('Error removing currently playing song from audio source: $e');
+          debugPrint(
+              'Error removing currently playing song from audio source: $e');
         }
       }
       _playlist.removeAt(index);
       // After removal: play the song now at `index` (the former next song),
       // or the new last song if we removed the end of the queue.
-      _currentIndex =
-          index < _playlist.length ? index : _playlist.length - 1;
+      _currentIndex = index < _playlist.length ? index : _playlist.length - 1;
 
       if (_gaplessPlayback &&
           _audioPlayer.audioSource is ConcatenatingAudioSource) {
@@ -1568,8 +1569,7 @@ class AudioPlayerService extends ChangeNotifier {
       if (_loopMode == LoopMode.all && _playlist.isNotEmpty) {
         // Repeat ALL: jump to the last track.
         debugPrint('⏮️ [BACK] At first track, repeat ALL — jumping to last');
-        await _audioPlayer.seek(Duration.zero,
-            index: _playlist.length - 1);
+        await _audioPlayer.seek(Duration.zero, index: _playlist.length - 1);
       } else {
         // Repeat OFF / ONE at first track: restart.
         debugPrint(
@@ -1597,7 +1597,8 @@ class AudioPlayerService extends ChangeNotifier {
     // We manage shuffle ourselves — always keep just_audio's internal shuffle
     // mode disabled so the player follows our explicit _playlist order.
     _audioPlayer.setShuffleModeEnabled(false);
-    debugPrint('🔀 [SHUFFLE] Queue reordered, playlist length: ${_playlist.length}');
+    debugPrint(
+        '🔀 [SHUFFLE] Queue reordered, playlist length: ${_playlist.length}');
     unawaited(saveQueueState());
     notifyListeners();
   }
@@ -1635,8 +1636,7 @@ class AudioPlayerService extends ChangeNotifier {
     if (!_gaplessPlayback) return;
     try {
       final position = _audioPlayer.position;
-      final mediaItems =
-          _playlist.map((s) => _createMediaItemSync(s)).toList();
+      final mediaItems = _playlist.map((s) => _createMediaItemSync(s)).toList();
       final newSource = ConcatenatingAudioSource(
         children: _playlist.asMap().entries.map((entry) {
           final song = entry.value;
@@ -2390,8 +2390,7 @@ class AudioPlayerService extends ChangeNotifier {
 
       final json = {
         'queue': _playlist.map((song) => song.getMap).toList(),
-        'originalQueue':
-            _originalPlaylist.map((song) => song.getMap).toList(),
+        'originalQueue': _originalPlaylist.map((song) => song.getMap).toList(),
         'currentIndex': _currentIndex,
         'positionMs': _audioPlayer.position.inMilliseconds,
         'isShuffle': _isShuffle,
@@ -2438,8 +2437,8 @@ class AudioPlayerService extends ChangeNotifier {
       final originalQueueMaps = json['originalQueue'] as List? ?? [];
       final originalQueue = buildQueueFromMaps(originalQueueMaps);
 
-      final savedIndex = (json['currentIndex'] as int? ?? 0)
-          .clamp(0, queue.length - 1);
+      final savedIndex =
+          (json['currentIndex'] as int? ?? 0).clamp(0, queue.length - 1);
       final isShuffle = json['isShuffle'] as bool? ?? false;
       final loopModeName = json['loopMode'] as String? ?? '';
       final loopMode = LoopMode.values.firstWhere(
@@ -2467,8 +2466,8 @@ class AudioPlayerService extends ChangeNotifier {
 
       // Prime the audio source so that tapping Play immediately works.
       // We load the source at the saved position but do NOT call play().
-      await _primeAudioSourceAfterRestore(savedIndex,
-          Duration(milliseconds: json['positionMs'] as int? ?? 0));
+      await _primeAudioSourceAfterRestore(
+          savedIndex, Duration(milliseconds: json['positionMs'] as int? ?? 0));
 
       _scheduleNotify();
     } catch (e) {
