@@ -133,15 +133,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _setupListeners() {
     _scrollController.addListener(_scrollListener);
-    // Only rebuild when tab index changes, not on animation frames
-    _tabController.addListener(_tabListener);
-  }
-
-  void _tabListener() {
-    // Only rebuild on actual tab change, not animation updates
-    if (_tabController.indexIsChanging && mounted) {
-      setState(() {});
-    }
   }
 
   void _showWelcomeMessage() {
@@ -241,7 +232,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _animationController?.dispose();
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
-    _tabController.removeListener(_tabListener);
     _isScrolledNotifier.dispose();
     _tabController.dispose();
     _appBarTextController.dispose();
@@ -903,10 +893,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 }
 
-class _HomeTabBar extends StatelessWidget {
+class _HomeTabBar extends StatefulWidget {
   final TabController tabController;
 
   const _HomeTabBar({required this.tabController});
+
+  @override
+  State<_HomeTabBar> createState() => _HomeTabBarState();
+}
+
+class _HomeTabBarState extends State<_HomeTabBar> {
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.tabController.index;
+    widget.tabController.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.tabController.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    final newIndex = widget.tabController.index;
+    if (newIndex != _currentIndex && mounted) {
+      setState(() {
+        _currentIndex = newIndex;
+      });
+    }
+  }
 
   Widget _buildTabItem(BuildContext context, String text) {
     return Container(
@@ -932,36 +951,31 @@ class _HomeTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: tabController,
-      builder: (context, child) {
-        return TabBar(
-          controller: tabController,
-          dividerColor: Colors.transparent,
-          labelPadding:
-              const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
-          indicatorPadding: const EdgeInsets.symmetric(vertical: 4.0),
-          indicator: OutlineIndicator(
-            radius: const Radius.circular(20),
-            text: [
-              AppLocalizations.of(context).translate('home'),
-              AppLocalizations.of(context).translate('library'),
-              AppLocalizations.of(context).translate('search'),
-              AppLocalizations.of(context).translate('settings'),
-            ][tabController.index],
-          ),
-          tabs: [
-            _buildTabItem(
-                context, AppLocalizations.of(context).translate('home')),
-            _buildTabItem(
-                context, AppLocalizations.of(context).translate('library')),
-            _buildTabItem(
-                context, AppLocalizations.of(context).translate('search')),
-            _buildTabItem(
-                context, AppLocalizations.of(context).translate('settings')),
-          ],
-        );
-      },
+    return TabBar(
+      controller: widget.tabController,
+      dividerColor: Colors.transparent,
+      labelPadding:
+          const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+      indicatorPadding: const EdgeInsets.symmetric(vertical: 4.0),
+      indicator: OutlineIndicator(
+        radius: const Radius.circular(20),
+        text: [
+          AppLocalizations.of(context).translate('home'),
+          AppLocalizations.of(context).translate('library'),
+          AppLocalizations.of(context).translate('search'),
+          AppLocalizations.of(context).translate('settings'),
+        ][_currentIndex],
+      ),
+      tabs: [
+        _buildTabItem(
+            context, AppLocalizations.of(context).translate('home')),
+        _buildTabItem(
+            context, AppLocalizations.of(context).translate('library')),
+        _buildTabItem(
+            context, AppLocalizations.of(context).translate('search')),
+        _buildTabItem(
+            context, AppLocalizations.of(context).translate('settings')),
+      ],
     );
   }
 }
