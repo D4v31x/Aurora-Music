@@ -20,11 +20,35 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
   List<SongModel>? _displaySongs; // Songs to display (top 3)
   List<SongModel>? _fullPlaylist; // Full playlist for playback
   bool _isLoading = true;
+  AudioPlayerService? _audioPlayerService;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final service = Provider.of<AudioPlayerService>(context, listen: false);
+    if (_audioPlayerService != service) {
+      _audioPlayerService?.removeListener(_onServiceChanged);
+      _audioPlayerService = service;
+      _audioPlayerService!.addListener(_onServiceChanged);
+    }
+  }
+
+  void _onServiceChanged() {
+    if (mounted && !_isLoading) {
+      _loadData();
+    }
+  }
+
+  @override
+  void dispose() {
+    _audioPlayerService?.removeListener(_onServiceChanged);
+    super.dispose();
   }
 
   Future<void> _loadData() async {

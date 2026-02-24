@@ -1,10 +1,11 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audiotags/audiotags.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/metadata_service.dart';
@@ -137,6 +138,16 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     _yearController.dispose();
     _composerController.dispose();
     super.dispose();
+  }
+
+  /// Returns the file extension (with leading dot) of the current song,
+  /// used when naming the temporary file for metadata editing.
+  String _extension() {
+    final path = widget.song.data.toLowerCase();
+    for (final ext in ['.mp3', '.m4a', '.flac', '.wav', '.ogg', '.opus', '.aac', '.wma', '.alac']) {
+      if (path.endsWith(ext)) return ext;
+    }
+    return '.audio';
   }
 
   String _getFileFormat() {
@@ -541,24 +552,15 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     });
   }
 
+  /// Platform channel to the native SAF write helper in MainActivity.
+  static const _safChannel = MethodChannel('aurora/saf_write');
+
   Future<void> _saveChanges() async {
     final loc = AppLocalizations.of(context);
 
     setState(() => _isSaving = true);
 
     try {
-      // Request storage permission for Android 11+
-      if (await Permission.manageExternalStorage.isDenied) {
-        final status = await Permission.manageExternalStorage.request();
-        if (!status.isGranted) {
-          setState(() => _isSaving = false);
-          if (mounted) {
-            _showPermissionDialog(loc);
-          }
-          return;
-        }
-      }
-
       // Parse year and track number
       int? year;
       int? trackNumber;
@@ -569,7 +571,20 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
         trackNumber = int.tryParse(_trackController.text);
       }
 
-      // Create updated tag with new values
+      // 1. Copy the original file to a temp location inside the app's cache.
+      //    AudioTags can write to any path we own without special permissions.
+      final originalFile = File(widget.song.data);
+      debugPrint('[META] Step 1 – source: ${widget.song.data}');
+      debugPrint('[META] Step 1 – file exists: ${originalFile.existsSync()}');
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File(
+          '${tempDir.path}/aurora_meta_${widget.song.id}_${DateTime.now().millisecondsSinceEpoch}${_extension()}');
+      debugPrint('[META] Step 1 – temp target: ${tempFile.path}');
+      await originalFile.copy(tempFile.path);
+      debugPrint('[META] Step 1 – copy OK, temp size: ${tempFile.lengthSync()} bytes');
+
+      // 2. Build the updated tag and write it to the temp copy.
+      debugPrint('[META] Step 2 – writing tags to temp file');
       final updatedTag = Tag(
         title: _titleController.text.isEmpty ? null : _titleController.text,
         trackArtist:
@@ -588,21 +603,85 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               ]
             : _currentTag?.pictures ?? [],
       );
+      await AudioTags.write(tempFile.path, updatedTag);
+      debugPrint('[META] Step 2 – AudioTags.write OK, temp size now: ${tempFile.lengthSync()} bytes');
 
-      // Save the changes to the file
-      await AudioTags.write(widget.song.data, updatedTag);
+      // 3. Push the modified temp file back to the original location via the
+      //    MediaStore ContentResolver. On Android 11+ this shows a one-time
+      //    system dialog asking the user to allow the edit.
+      debugPrint('[META] Step 3 – invoking writeFileViaMediaStore');
+      try {
+        await _safChannel.invokeMethod<void>('writeFileViaMediaStore', {
+          'tempPath': tempFile.path,
+          'originalPath': widget.song.data,
+        });
+      } on PlatformException catch (pe) {
+        if (pe.code == 'PERMISSION_DENIED') {
+          // User tapped "Deny" on the system write-request dialog.
+          setState(() => _isSaving = false);
+          try { await tempFile.delete(); } catch (_) {}
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(loc.translate('storage_permission_needed')),
+              backgroundColor: Colors.orange[700],
+              behavior: SnackBarBehavior.floating,
+            ));
+          }
+          return;
+        }
+        rethrow;
+      }
+      debugPrint('[META] Step 3 – writeFileViaMediaStore OK');
 
-      // Trigger MediaStore rescan so the updated metadata is reflected
+      // 4. Clean up the temp file.
+      try {
+        await tempFile.delete();
+      } catch (_) {}
+
+      // 5. Trigger MediaStore rescan and wait for it to propagate.
+      debugPrint('[META] Step 5 – scanning media');
       await _audioQuery.scanMedia(widget.song.data);
+      // Give MediaStore a moment to commit the updated index entry.
+      await Future.delayed(const Duration(milliseconds: 500));
+      debugPrint('[META] Step 5 – scan OK');
 
-      // Reload tags to confirm changes
+      // 6. Re-read the updated tag from the file (source of truth).
       _currentTag = await AudioTags.read(widget.song.data);
 
-      // Refresh the audio player service's song list to reflect changes
+      // 7. Update the controllers so the screen shows the saved values.
+      if (_currentTag != null) {
+        _titleController.text  = _currentTag!.title        ?? _titleController.text;
+        _artistController.text = _currentTag!.trackArtist  ?? _artistController.text;
+        _albumController.text  = _currentTag!.album        ?? _albumController.text;
+        _genreController.text  = _currentTag!.genre        ?? _genreController.text;
+        if (_currentTag!.year != null) {
+          _yearController.text = _currentTag!.year.toString();
+        }
+        if (_currentTag!.trackNumber != null) {
+          _trackController.text = _currentTag!.trackNumber.toString();
+        }
+      }
+
+      // 8. Re-query MediaStore for the updated SongModel and push it into
+      //    the audio player service so every screen sees the new metadata.
       if (mounted) {
         final audioPlayerService =
             Provider.of<AudioPlayerService>(context, listen: false);
-        await audioPlayerService.initializeMusicLibrary();
+        try {
+          final freshSongs = await _audioQuery.querySongs(
+            orderType: OrderType.ASC_OR_SMALLER,
+            uriType: UriType.EXTERNAL,
+            ignoreCase: true,
+          );
+          final freshSong = freshSongs.firstWhere(
+            (s) => s.id == widget.song.id,
+            orElse: () => widget.song,
+          );
+          audioPlayerService.refreshSongInPlaylist(freshSong);
+        } catch (e) {
+          debugPrint('[META] Re-query failed, falling back to full reload: $e');
+          await audioPlayerService.initializeMusicLibrary();
+        }
       }
 
       setState(() {
@@ -630,7 +709,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
       }
     } catch (e) {
       setState(() => _isSaving = false);
-      debugPrint('Error saving tags: $e');
+      debugPrint('[META] FAILED: $e');
 
       if (mounted) {
         _showSaveErrorDialog(loc, e.toString());
@@ -677,7 +756,25 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   fontFamily: FontConstants.fontFamily,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+              // Show the raw error so we can diagnose it without logcat
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black38,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SelectableText(
+                  error,
+                  style: const TextStyle(
+                    color: Colors.redAccent,
+                    fontSize: 11,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -742,67 +839,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showPermissionDialog(AppLocalizations loc) {
-    showDialog(
-      context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.folder_off, color: Colors.orange[400]),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  loc.translate('permission_required'),
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            loc.translate('storage_permission_needed'),
-            style: const TextStyle(
-              color: Colors.white70,
-              fontFamily: FontConstants.fontFamily,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                loc.translate('cancel'),
-                style: const TextStyle(
-                  fontFamily: FontConstants.fontFamily,
-                  color: Colors.white70,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                openAppSettings();
-              },
-              child: Text(
-                loc.translate('open_settings'),
-                style: const TextStyle(
-                  fontFamily: FontConstants.fontFamily,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -2209,6 +2209,33 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
+  /// Replaces a single song entry in the in-memory song list, playlist queue,
+  /// and current-song notifiers without reloading the entire library.
+  /// Called after metadata has been edited and MediaStore has been rescanned.
+  void refreshSongInPlaylist(SongModel updatedSong) {
+    // 1. Replace in the master songs list
+    final songIdx = _songs.indexWhere((s) => s.id == updatedSong.id);
+    if (songIdx != -1) {
+      final updated = List<SongModel>.from(_songs);
+      updated[songIdx] = updatedSong;
+      _updateSongs(updated);
+    }
+
+    // 2. Replace in the active playback queue
+    final queueIdx = _playlist.indexWhere((s) => s.id == updatedSong.id);
+    if (queueIdx != -1) {
+      _playlist[queueIdx] = updatedSong;
+    }
+
+    // 3. If this is the currently playing song, update all notifiers
+    if (currentSong?.id == updatedSong.id) {
+      _currentSongController.add(updatedSong);
+      currentSongNotifier.value = updatedSong;
+    }
+
+    _scheduleNotify();
+  }
+
   void _updateAutoPlaylists() {
     // Auto playlists are always enabled
 
@@ -2438,9 +2465,66 @@ class AudioPlayerService extends ChangeNotifier {
           'Queue state restored: ${_playlist.length} songs, index: $_currentIndex, '
           'shuffle: $_isShuffle, loopMode: $_loopMode');
 
+      // Prime the audio source so that tapping Play immediately works.
+      // We load the source at the saved position but do NOT call play().
+      await _primeAudioSourceAfterRestore(savedIndex,
+          Duration(milliseconds: json['positionMs'] as int? ?? 0));
+
       _scheduleNotify();
     } catch (e) {
       debugPrint('Error loading queue state: $e');
+    }
+  }
+
+  /// Loads the audio source into the player after a queue-state restore,
+  /// positioned at [savedIndex] / [savedPosition], without starting playback.
+  /// This ensures the first tap on Play works immediately.
+  Future<void> _primeAudioSourceAfterRestore(
+      int savedIndex, Duration savedPosition) async {
+    try {
+      if (_gaplessPlayback) {
+        final mediaItems =
+            _playlist.map((s) => _createMediaItemSync(s)).toList();
+        final source = ConcatenatingAudioSource(
+          children: _playlist
+              .asMap()
+              .entries
+              .map((e) => AudioSource.uri(
+                    Uri.parse(e.value.uri ?? e.value.data),
+                    tag: mediaItems[e.key],
+                  ))
+              .toList(),
+        );
+        await _audioPlayer.setAudioSource(
+          source,
+          initialIndex: savedIndex,
+          initialPosition: savedPosition,
+        );
+        // Pause immediately so we don't auto-play on restore.
+        await _audioPlayer.pause();
+        unawaited(_loadRemainingArtworkInBackground(_playlist));
+      } else {
+        // Non-gapless: prime with just the current song.
+        final song = _playlist[savedIndex];
+        final mediaItem = _createMediaItemSync(song);
+        await _audioPlayer.setAudioSource(
+          AudioSource.uri(
+            Uri.parse(song.uri ?? song.data),
+            tag: mediaItem,
+          ),
+          initialPosition: savedPosition,
+        );
+        await _audioPlayer.pause();
+      }
+      // Notify the audio handler so the lock-screen / notification
+      // shows the restored song without starting playback.
+      audioHandler.updateNotificationMediaItem(
+          _createMediaItemSync(_playlist[savedIndex]));
+      debugPrint('Audio source primed after queue restore.');
+    } catch (e) {
+      // Non-fatal: if priming fails the user will see an error when they tap
+      // Play, but the rest of the app is still usable.
+      debugPrint('Error priming audio source after queue restore: $e');
     }
   }
 }

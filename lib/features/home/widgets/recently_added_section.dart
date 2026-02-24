@@ -36,12 +36,18 @@ class RecentlyAddedSection extends StatelessWidget {
     // This is more efficient than rebuilding on every notifyListeners call
     return Selector<AudioPlayerService, List<SongModel>>(
       selector: (_, service) => service.songs,
-      // Only rebuild when songs list identity changes
-      shouldRebuild: (previous, next) =>
-          previous.length != next.length ||
-          (previous.isNotEmpty &&
-              next.isNotEmpty &&
-              previous.first.id != next.first.id),
+      // Rebuild when list length changes, ids change, or any title/artist changes
+      shouldRebuild: (previous, next) {
+        if (previous.length != next.length) return true;
+        for (int i = 0; i < previous.length; i++) {
+          if (previous[i].id != next[i].id ||
+              previous[i].title != next[i].title ||
+              previous[i].artist != next[i].artist) {
+            return true;
+          }
+        }
+        return false;
+      },
       builder: (context, allSongs, _) {
         final displaySongs = _getDisplaySongs(allSongs);
         final fullPlaylist = _getFullPlaylist(allSongs);

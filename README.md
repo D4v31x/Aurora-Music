@@ -80,8 +80,9 @@ Note: [android/app/build.gradle](android/app/build.gradle) currently uses debug 
 ## Permissions & Why They’re Used
 From [android/app/src/main/AndroidManifest.xml](android/app/src/main/AndroidManifest.xml):
 - `INTERNET` / `ACCESS_NETWORK_STATE`: lyrics, metadata lookups, Spotify artist images, version checks
-- `READ_MEDIA_AUDIO` / `READ_EXTERNAL_STORAGE`: read local audio library (Android 13+ / 12-)
-- `WRITE_EXTERNAL_STORAGE` (maxSdk 29) / `MANAGE_EXTERNAL_STORAGE`: metadata editing and file updates
+- `READ_MEDIA_AUDIO` / `READ_EXTERNAL_STORAGE` (maxSdk 32): read local audio library (Android 13+ / 12-)
+- `WRITE_EXTERNAL_STORAGE` (maxSdk 29): legacy metadata writes on Android 9 and below (via direct file copy)
+- Metadata editing on Android 10+ uses the MediaStore `ContentResolver` via a platform channel — no `MANAGE_EXTERNAL_STORAGE` required
 - `POST_NOTIFICATIONS`: playback and download status notifications
 - `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_MEDIA_PLAYBACK`: background audio playback
 - `WAKE_LOCK`: keep playback active when the screen is off
