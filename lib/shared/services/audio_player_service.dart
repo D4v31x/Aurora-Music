@@ -208,18 +208,18 @@ class AudioPlayerService extends ChangeNotifier {
     _saveDebounceTimer = Timer(const Duration(seconds: 2), () {
       if (_playcountsDirty) {
         _playcountsDirty = false;
-        this._savePlayCounts();
+        _savePlayCounts();
       }
       if (_playlistsDirty) {
         _playlistsDirty = false;
-        this.savePlaylists();
+        savePlaylists();
       }
     });
   }
 
   AudioPlayerService() {
     _init();
-    this._loadSettings();
+    _loadSettings();
 
     // Initialize with empty data first - don't try to load music yet
     _updateSongs([]);
@@ -263,15 +263,15 @@ class AudioPlayerService extends ChangeNotifier {
     // during a long playback session.
     await session.setActive(true);
 
-    await this._loadPlayCounts();
-    await this._loadPlaylists();
+    await _loadPlayCounts();
+    await _loadPlaylists();
 
     // Initialize home screen widget
     unawaited(_homeWidgetService.initialize());
 
     // Listen to song changes to update home screen widget
-    currentSongNotifier.addListener(this._onSongChangedForWidget);
-    isPlayingNotifier.addListener(this._onPlayStateChangedForWidget);
+    currentSongNotifier.addListener(_onSongChangedForWidget);
+    isPlayingNotifier.addListener(_onPlayStateChangedForWidget);
 
     _audioPlayer.playerStateStream.listen((playerState) {
       _isPlaying = playerState.playing;
@@ -318,15 +318,15 @@ class AudioPlayerService extends ChangeNotifier {
         // Update all song-related state
         _currentSongController.add(song);
         currentSongNotifier.value = song;
-        this._incrementPlayCount(song);
+        _incrementPlayCount(song);
 
         // Update notification with new media item
-        final mediaItem = await this._createMediaItem(song);
+        final mediaItem = await _createMediaItem(song);
         audioHandler.updateNotificationMediaItem(mediaItem);
 
         // Update artwork and background
-        unawaited(this.updateCurrentArtwork());
-        unawaited(this._updateBackgroundColors());
+        unawaited(updateCurrentArtwork());
+        unawaited(_updateBackgroundColors());
 
         _scheduleNotify();
       }
@@ -354,13 +354,58 @@ class AudioPlayerService extends ChangeNotifier {
     _startCacheCleanup();
 
     // Restore the queue from the previous session (non-blocking).
-    unawaited(this.loadQueueState());
+    unawaited(loadQueueState());
   }
 
   void _startCacheCleanup() {
     Timer.periodic(const Duration(hours: 24), (timer) async {
-      await this._manageCacheSize();
+      await _manageCacheSize();
     });
+  }
+
+  /// Called when the current song changes — pushes info to the home screen widget.
+  /// Kept as a class method (not an extension) so the tearoff is stable for
+  /// addListener / removeListener.
+  void _onSongChangedForWidget() {
+    final song = currentSongNotifier.value;
+    if (song != null) {
+      _homeWidgetService.updateSongInfo(
+        title: song.title,
+        artist: song.artist ?? 'Unknown Artist',
+        isPlaying: isPlayingNotifier.value,
+        songId: song.id,
+        artworkBytes: currentArtwork.value,
+        source: _playbackSource.name != null
+            ? 'Playing from ${_playbackSource.name}'
+            : 'Aurora Music',
+        currentPosition: _audioPlayer.position,
+        totalDuration: _audioPlayer.duration ?? Duration.zero,
+      );
+      _homeWidgetService.updateQueue(upcomingQueue.take(6).toList());
+      if (isPlayingNotifier.value) {
+        _homeWidgetService.startProgressUpdates(
+          getCurrentPosition: () => _audioPlayer.position,
+          getTotalDuration: () => _audioPlayer.duration ?? Duration.zero,
+        );
+      }
+    } else {
+      _homeWidgetService.clearWidget();
+    }
+  }
+
+  /// Called when play/pause state changes — updates the widget icon.
+  /// Kept as a class method (not an extension) so the tearoff is stable for
+  /// addListener / removeListener.
+  void _onPlayStateChangedForWidget() {
+    _homeWidgetService.updatePlayingState(isPlayingNotifier.value);
+    if (isPlayingNotifier.value) {
+      _homeWidgetService.startProgressUpdates(
+        getCurrentPosition: () => _audioPlayer.position,
+        getTotalDuration: () => _audioPlayer.duration ?? Duration.zero,
+      );
+    } else {
+      _homeWidgetService.stopProgressUpdates();
+    }
   }
 
   // Sleep timer methods
@@ -378,7 +423,7 @@ class AudioPlayerService extends ChangeNotifier {
     // Create a new timer
     _sleepTimer = Timer(duration, () {
       // When timer completes, stop playback
-      this.stop();
+      stop();
       // Reset the timer notification
       sleepTimerDurationNotifier.value = null;
     });
@@ -412,18 +457,18 @@ class AudioPlayerService extends ChangeNotifier {
 
     // Save any pending data synchronously before disposing
     if (_playcountsDirty) {
-      this._savePlayCounts();
+      _savePlayCounts();
     }
     if (_playlistsDirty) {
-      this.savePlaylists();
+      savePlaylists();
     }
 
     // Persist queue state synchronously so it is available on next launch.
-    this.saveQueueState();
+    saveQueueState();
 
     // Clean up widget listeners and service
-    currentSongNotifier.removeListener(this._onSongChangedForWidget);
-    isPlayingNotifier.removeListener(this._onPlayStateChangedForWidget);
+    currentSongNotifier.removeListener(_onSongChangedForWidget);
+    isPlayingNotifier.removeListener(_onPlayStateChangedForWidget);
     _homeWidgetService.dispose();
 
     _currentSongController.close();

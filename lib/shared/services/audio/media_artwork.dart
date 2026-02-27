@@ -134,46 +134,4 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
     }
   }
 
-  /// Called when the current song changes — pushes info to the home screen widget.
-  void _onSongChangedForWidget() {
-    final song = currentSongNotifier.value;
-    if (song != null) {
-      _homeWidgetService.updateSongInfo(
-        title: song.title,
-        artist: song.artist ?? 'Unknown Artist',
-        isPlaying: isPlayingNotifier.value,
-        songId: song.id,
-        artworkBytes: currentArtwork.value,
-        source: _playbackSource.name != null
-            ? 'Playing from ${_playbackSource.name}'
-            : 'Aurora Music',
-        currentPosition: _audioPlayer.position,
-        totalDuration: _audioPlayer.duration ?? Duration.zero,
-      );
-      // Update queue (next 4 songs)
-      _homeWidgetService.updateQueue(upcomingQueue.take(6).toList());
-      // Start progress updates when a new song starts
-      if (isPlayingNotifier.value) {
-        _homeWidgetService.startProgressUpdates(
-          getCurrentPosition: () => _audioPlayer.position,
-          getTotalDuration: () => _audioPlayer.duration ?? Duration.zero,
-        );
-      }
-    } else {
-      _homeWidgetService.clearWidget();
-    }
-  }
-
-  /// Called when play/pause state changes — updates the widget icon.
-  void _onPlayStateChangedForWidget() {
-    _homeWidgetService.updatePlayingState(isPlayingNotifier.value);
-    if (isPlayingNotifier.value) {
-      _homeWidgetService.startProgressUpdates(
-        getCurrentPosition: () => _audioPlayer.position,
-        getTotalDuration: () => _audioPlayer.duration ?? Duration.zero,
-      );
-    } else {
-      _homeWidgetService.stopProgressUpdates();
-    }
-  }
 }

@@ -41,8 +41,9 @@ extension AudioPlayCountsExtension on AudioPlayerService {
           (_albumPlayCounts[song.albumId.toString()] ?? 0) + 1;
     }
 
-    if (song.artistId != null) {
-      final artistNames = splitArtists(song.artist ?? '');
+    // Update artist counts (handles multi-artist tracks)
+    if (song.artist != null) {
+      final artistNames = splitArtists(song.artist!);
       for (final artist in artistNames) {
         _artistPlayCounts[artist] = (_artistPlayCounts[artist] ?? 0) + 1;
       }
@@ -50,13 +51,6 @@ extension AudioPlayCountsExtension on AudioPlayerService {
 
     final folder = File(song.data).parent.path;
     _folderAccessCounts[folder] = (_folderAccessCounts[folder] ?? 0) + 1;
-
-    if (song.artist != null) {
-      final artistNames = splitArtists(song.artist!);
-      for (final artist in artistNames) {
-        _artistPlayCounts[artist] = (_artistPlayCounts[artist] ?? 0) + 1;
-      }
-    }
 
     // Record to smart suggestions service for personalized recommendations
     _smartSuggestions.recordPlay(song);
