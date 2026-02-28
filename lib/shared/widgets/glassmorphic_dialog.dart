@@ -349,40 +349,13 @@ class GlassmorphicDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if blur should be enabled based on performance mode
-    final performanceProvider =
-        Provider.of<PerformanceModeProvider>(context, listen: false);
-    final shouldBlur = performanceProvider.shouldEnableBlur;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    // Use solid surface colors for lowend devices
-    final BoxDecoration containerDecoration;
-    if (shouldBlur) {
-      containerDecoration = BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.15),
-            Colors.white.withValues(alpha: 0.05),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
-      );
-    } else {
-      // Solid dialog styling for lowend devices
-      containerDecoration = BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-          width: 1,
-        ),
-      );
-    }
+    const containerDecoration = BoxDecoration(
+      color: Color(0x1AFFFFFF),
+      borderRadius: BorderRadius.all(Radius.circular(20)),
+      border: Border.fromBorderSide(
+        BorderSide(color: Color(0x33FFFFFF)),
+      ),
+    );
 
     final dialogContent = DecoratedBox(
       decoration: containerDecoration,
@@ -412,9 +385,7 @@ class GlassmorphicDialog extends StatelessWidget {
                   fontFamily: FontConstants.fontFamily,
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
-                  color: shouldBlur
-                      ? Colors.white.withValues(alpha: 0.8)
-                      : colorScheme.onSurface,
+                  color: Colors.white.withOpacity(0.8),
                 ),
                 child: content!,
               ),
@@ -436,18 +407,10 @@ class GlassmorphicDialog extends StatelessWidget {
       backgroundColor: Colors.transparent,
       elevation: 0,
       child: RepaintBoundary(
-        child: shouldBlur
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(borderRadius),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                  child: dialogContent,
-                ),
-              )
-            : ClipRRect(
-                borderRadius: BorderRadius.circular(borderRadius),
-                child: dialogContent,
-              ),
+        child: ClipRRect(
+            borderRadius: BorderRadius.circular(borderRadius),
+            child: dialogContent,
+          ),
       ),
     );
   }
@@ -512,12 +475,6 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if blur should be enabled based on performance mode
-    final performanceProvider =
-        Provider.of<PerformanceModeProvider>(context, listen: false);
-    final shouldBlur = performanceProvider.shouldEnableBlur;
-    final colorScheme = Theme.of(context).colorScheme;
-
     return PopupMenuButton<T>(
       onSelected: onSelected,
       offset: offset,
@@ -533,40 +490,13 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
       itemBuilder: (context) {
         final items = itemBuilder(context);
 
-        // Use solid surface colors for lowend devices
-        final BoxDecoration menuDecoration;
-        if (shouldBlur) {
-          menuDecoration = BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withValues(alpha: 0.15),
-                Colors.white.withValues(alpha: 0.05),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
-            ),
-          );
-        } else {
-          // Solid menu styling for lowend devices
-          menuDecoration = BoxDecoration(
-            color: colorScheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withOpacity(0.3),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          );
-        }
+        const menuDecoration = BoxDecoration(
+          color: Color(0x1AFFFFFF),
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+          border: Border.fromBorderSide(
+            BorderSide(color: Color(0x33FFFFFF)),
+          ),
+        );
 
         final menuContent = DecoratedBox(
           decoration: menuDecoration,
@@ -592,18 +522,10 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
             enabled: false,
             padding: EdgeInsets.zero,
             child: RepaintBoundary(
-              child: shouldBlur
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(borderRadius),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                        child: menuContent,
-                      ),
-                    )
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(borderRadius),
-                      child: menuContent,
-                    ),
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(borderRadius),
+                  child: menuContent,
+                ),
             ),
           ),
         ];
@@ -640,12 +562,6 @@ Future<T?> showGlassmorphicBottomSheet<T>({
   double borderRadius = 28,
   double blur = 25,
 }) {
-  // Check if blur should be enabled based on performance mode
-  final performanceProvider =
-      Provider.of<PerformanceModeProvider>(context, listen: false);
-  final shouldBlur = performanceProvider.shouldEnableBlur;
-  final colorScheme = Theme.of(context).colorScheme;
-
   return showModalBottomSheet<T>(
     context: context,
     isDismissible: isDismissible,
@@ -656,42 +572,21 @@ Future<T?> showGlassmorphicBottomSheet<T>({
       borderRadius: BorderRadius.vertical(top: Radius.circular(borderRadius)),
     ),
     builder: (context) {
-      // Use solid surface colors for lowend devices
-      final BoxDecoration sheetDecoration;
-      if (shouldBlur) {
-        sheetDecoration = BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.15),
-              Colors.white.withValues(alpha: 0.05),
-            ],
+      final sheetDecoration = BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(borderRadius)),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
-          borderRadius:
-              BorderRadius.vertical(top: Radius.circular(borderRadius)),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.2),
-          ),
-        );
-      } else {
-        // Solid bottom sheet styling for lowend devices
-        sheetDecoration = BoxDecoration(
-          color: colorScheme.surfaceContainerHigh,
-          borderRadius:
-              BorderRadius.vertical(top: Radius.circular(borderRadius)),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withOpacity(0.3),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.25),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        );
-      }
+        ],
+      );
 
       final sheetContent = DecoratedBox(
         decoration: sheetDecoration,
@@ -699,20 +594,11 @@ Future<T?> showGlassmorphicBottomSheet<T>({
       );
 
       return RepaintBoundary(
-        child: shouldBlur
-            ? ClipRRect(
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(borderRadius)),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                  child: sheetContent,
-                ),
-              )
-            : ClipRRect(
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(borderRadius)),
-                child: sheetContent,
-              ),
+        child: ClipRRect(
+            borderRadius:
+                BorderRadius.vertical(top: Radius.circular(borderRadius)),
+            child: sheetContent,
+          ),
       );
     },
   );

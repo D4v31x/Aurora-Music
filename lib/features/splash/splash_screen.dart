@@ -614,14 +614,10 @@ class _GlassProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(100),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: Container(
+    return Container(
           height: 3,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.07),
+            color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(100),
           ),
           child: FractionallySizedBox(
@@ -642,8 +638,6 @@ class _GlassProgressBar extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ),
     );
   }
 }
@@ -657,18 +651,13 @@ class _VersionChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = codeName.isNotEmpty ? 'v$version · $codeName' : 'v$version';
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(100),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
+    return Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
+            color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(100),
             border: Border.all(
-              color: Colors.white.withOpacity(0.08),
-              width: 0.5,
+              color: Colors.white.withOpacity(0.2),
             ),
           ),
           child: Text(
@@ -681,8 +670,6 @@ class _VersionChip extends StatelessWidget {
               letterSpacing: 0.6,
             ),
           ),
-        ),
-      ),
     );
   }
 }

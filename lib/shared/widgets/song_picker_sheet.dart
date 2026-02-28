@@ -283,7 +283,6 @@ class SongPickerSheet extends HookWidget {
                           const EdgeInsets.symmetric(vertical: 13),
                     ),
                   ),
-                  ),
                 ),
               ),
 
@@ -385,8 +384,6 @@ class SongPickerSheet extends HookWidget {
                           ),
               ),
             ],
-          ),
-        ),
       ),
     );
   }

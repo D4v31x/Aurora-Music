@@ -14,7 +14,6 @@ import '../../../shared/widgets/detail_header.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/models/artist_utils.dart';
 import 'dart:typed_data';
-import 'dart:ui';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final Playlist playlist;
@@ -186,18 +185,14 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         child: GestureDetector(
                           onTap: () =>
                               _showPlaylistOptions(context, updatedPlaylist),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Container(
+                          child: Container(
                                 width: 40,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.3),
+                                  color: Colors.white.withOpacity(0.1),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.15),
+                                    color: Colors.white.withOpacity(0.2),
                                   ),
                                 ),
                                 child: const Icon(
@@ -205,8 +200,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   color: Colors.white,
                                   size: 20,
                                 ),
-                              ),
-                            ),
                           ),
                         ),
                       ),
@@ -641,22 +634,19 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
+        child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.black.withOpacity(0.7)
-                    : Colors.white.withOpacity(0.9),
+                color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white.withOpacity(0.15)
-                      : Colors.black.withOpacity(0.08),
-                ),
+                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -718,8 +708,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
                                 ),
-                              ),
-                            ),
                           ),
                         ),
                       ),
@@ -741,23 +729,20 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
+      builder: (context) => Container(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.black.withOpacity(0.7)
-                  : Colors.white.withOpacity(0.9),
+              color: Colors.white.withOpacity(0.1),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(20)),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withOpacity(0.15)
-                    : Colors.black.withOpacity(0.08),
-              ),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 24,
+                  offset: const Offset(0, -4),
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -809,8 +794,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               ],
             ),
           ),
-        ),
-      ),
     );
   }
 
@@ -867,22 +850,19 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
+        child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.black.withOpacity(0.7)
-                    : Colors.white.withOpacity(0.9),
+                color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white.withOpacity(0.15)
-                      : Colors.black.withOpacity(0.08),
-                ),
+                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -952,8 +932,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
                                 ),
-                              ),
-                            ),
                           ),
                         ),
                       ),
