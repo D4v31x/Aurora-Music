@@ -271,13 +271,19 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Artwork blur or gradient
+        // Artwork blur or gradient.
+        // PERF: Reduced sigma from 60→30. At sigma=60 the blur covers an area
+        // of ~360 px radius, which is far beyond what's perceptibly different
+        // from sigma=30. Halving sigma reduces the Gaussian kernel area by 4×,
+        // making the initial compositing significantly cheaper.
         if (_hasArtwork && _artworkProvider != null)
-          ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
-            child: Image(
-              image: _artworkProvider!,
-              fit: BoxFit.cover,
+          RepaintBoundary(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              child: Image(
+                image: _artworkProvider!,
+                fit: BoxFit.cover,
+              ),
             ),
           )
         else
@@ -417,9 +423,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -506,7 +510,6 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -580,9 +583,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   void _showLyricsResultsDialog(List<Map<String, dynamic>> results) {
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -692,7 +693,6 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -753,9 +753,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: StatefulBuilder(
+      builder: (context) => StatefulBuilder(
           builder: (context, setDialogState) => AlertDialog(
             backgroundColor: Colors.grey[900]?.withOpacity(0.9),
             shape: RoundedRectangleBorder(
@@ -849,7 +847,6 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             ],
           ),
         ),
-      ),
     );
   }
 
@@ -879,9 +876,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   void _showFontSizeDialog() {
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -909,7 +904,6 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             ],
           ),
         ),
-      ),
     );
   }
 

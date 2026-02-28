@@ -22,7 +22,6 @@ class _CompletionPageState extends State<CompletionPage>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -46,16 +45,6 @@ class _CompletionPageState extends State<CompletionPage>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.15),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
-      ),
-    );
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.9,
-      end: 1.0,
     ).animate(
       CurvedAnimation(
         parent: _controller,

@@ -264,15 +264,7 @@ class _ToastWidgetState extends State<_ToastWidget>
             },
             child: Center(
               child: RepaintBoundary(
-                child: widget.shouldBlur
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                          child: toastContent,
-                        ),
-                      )
-                    : toastContent,
+                child: toastContent,
               ),
             ),
           ),

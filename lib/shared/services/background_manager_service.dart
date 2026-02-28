@@ -36,7 +36,6 @@ class BackgroundManagerService extends ChangeNotifier {
   final Map<int, List<Color>> _colorCache = {}; // Cache colors by song ID
   final Throttler _updateThrottler =
       Throttler(interval: const Duration(milliseconds: 300));
-  final Memoizer<List<Color>> _colorMemoizer = Memoizer<List<Color>>();
 
   static const Color _defaultDarkPrimary = Color(0xFF1A237E);
   static const Color _defaultDarkSecondary = Color(0xFF311B92);

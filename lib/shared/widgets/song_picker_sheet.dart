@@ -8,7 +8,6 @@ import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../models/artist_utils.dart';
-import 'dart:ui';
 
 /// Glassmorphic song picker bottom sheet for adding songs to playlists
 class SongPickerSheet extends HookWidget {
@@ -131,24 +130,23 @@ class SongPickerSheet extends HookWidget {
     final localizations = AppLocalizations.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          height: screenHeight * 0.85,
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.black.withOpacity(0.8)
-                : Colors.white.withOpacity(0.95),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.05),
-            ),
+    return Container(
+      height: screenHeight * 0.85,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 24,
+            offset: const Offset(0, -4),
           ),
-          child: Column(
+        ],
+      ),
+      child: Column(
             children: [
               // Handle
               Container(
@@ -238,61 +236,51 @@ class SongPickerSheet extends HookWidget {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.08)
-                            : Colors.black.withOpacity(0.04),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.1)
-                              : Colors.black.withOpacity(0.05),
-                        ),
+                child: Container(
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                    ),
+                  ),
+                  child: TextField(
+                    controller: searchController,
+                    onChanged: onSearchChanged,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontFamily: FontConstants.fontFamily,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: localizations.translate('search_tracks'),
+                      hintStyle: TextStyle(
+                        color: isDark ? Colors.white38 : Colors.black38,
+                        fontFamily: FontConstants.fontFamily,
                       ),
-                      child: TextField(
-                        controller: searchController,
-                        onChanged: onSearchChanged,
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontFamily: FontConstants.fontFamily,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: localizations.translate('search_tracks'),
-                          hintStyle: TextStyle(
-                            color: isDark ? Colors.white38 : Colors.black38,
-                            fontFamily: FontConstants.fontFamily,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search_rounded,
-                            color: isDark ? Colors.white38 : Colors.black38,
-                            size: 22,
-                          ),
-                          suffixIcon: searchQuery.value.isNotEmpty
-                              ? GestureDetector(
-                                  onTap: () {
-                                    searchController.clear();
-                                    onSearchChanged('');
-                                  },
-                                  child: Icon(
-                                    Icons.clear_rounded,
-                                    color: isDark
-                                        ? Colors.white38
-                                        : Colors.black38,
-                                    size: 20,
-                                  ),
-                                )
-                              : null,
-                          border: InputBorder.none,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 13),
-                        ),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        color: isDark ? Colors.white38 : Colors.black38,
+                        size: 22,
                       ),
+                      suffixIcon: searchQuery.value.isNotEmpty
+                          ? GestureDetector(
+                              onTap: () {
+                                searchController.clear();
+                                onSearchChanged('');
+                              },
+                              child: Icon(
+                                Icons.clear_rounded,
+                                color: isDark
+                                    ? Colors.white38
+                                    : Colors.black38,
+                                size: 20,
+                              ),
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding:
+                          const EdgeInsets.symmetric(vertical: 13),
                     ),
                   ),
                 ),
@@ -396,8 +384,6 @@ class SongPickerSheet extends HookWidget {
                           ),
               ),
             ],
-          ),
-        ),
       ),
     );
   }

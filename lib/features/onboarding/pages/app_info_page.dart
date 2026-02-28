@@ -23,8 +23,6 @@ class _AppInfoPageState extends State<AppInfoPage>
     with TickerProviderStateMixin {
   late AnimationController _controller;
   late AnimationController _exitController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
   late Animation<double> _titleFadeAnimation;
   late Animation<Offset> _titleSlideAnimation;
   late Animation<double> _subtitleFadeAnimation;
@@ -40,26 +38,6 @@ class _AppInfoPageState extends State<AppInfoPage>
     _controller = AnimationController(
       duration: const Duration(milliseconds: 900),
       vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
-      ),
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.15),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
-      ),
     );
 
     // Title animations (slightly delayed)

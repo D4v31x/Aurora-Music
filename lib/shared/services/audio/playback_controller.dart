@@ -355,7 +355,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
     isPlayingNotifier.value = actuallyPlaying;
     // Force Provider listeners (e.g. Selector, Consumer) to re-evaluate even
     // when ValueNotifier did not fire (value unchanged).
-    notifyListeners();
+    _scheduleNotify();
   }
 
   void skip() async {

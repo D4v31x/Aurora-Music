@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -176,115 +177,131 @@ class _MiniPlayerWidget extends StatelessWidget {
     final margin = isTablet ? 32.0 : 16.0;
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Check if blur should be enabled based on performance mode
     final performanceProvider =
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
 
-    // Use solid surface colors for lowend devices
     final BoxDecoration playerDecoration;
     if (shouldBlur) {
-      playerDecoration = BoxDecoration(
+      playerDecoration = const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withValues(alpha: 0.15),
-            Colors.white.withValues(alpha: 0.05),
+            Color(0x26FFFFFF), // white 0.15
+            Color(0x0DFFFFFF), // white 0.05
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.all(Radius.circular(24)),
+        border: Border.fromBorderSide(
+          BorderSide(color: Color(0x33FFFFFF)), // white 0.2
         ),
       );
     } else {
-      // Solid player styling for lowend devices
       playerDecoration = BoxDecoration(
         color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-          width: 1,
-        ),
+        borderRadius: const BorderRadius.all(Radius.circular(24)),
+        border: Border.all(color: colorScheme.outlineVariant, width: 1),
       );
     }
 
-    final playerContent = DecoratedBox(
-      decoration: playerDecoration,
-      child: Stack(
+    // The content row (song info + controls) – changes only when the song changes.
+    final contentRow = Padding(
+      padding: const EdgeInsets.fromLTRB(10, 10, 8, 10),
+      child: Row(
         children: [
-          // Progress indicator at bottom
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _ProgressBar(),
-          ),
+          // Artwork
+          _ArtworkThumbnail(songId: song.id, size: 52),
 
-          // Content
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 10, 8, 10),
-            child: Row(
+          const SizedBox(width: 14),
+
+          // Song info
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Artwork
-                _ArtworkThumbnail(songId: song.id, size: 52),
-
-                const SizedBox(width: 14),
-
-                // Song info
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        song.title,
-                        style: const TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: -0.3,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        splitArtists(song.artist ?? 'Unknown').join(', '),
-                        style: TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          color: Colors.white.withValues(alpha: 0.55),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                Text(
+                  song.title,
+                  style: const TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.3,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-
-                const SizedBox(width: 8),
-
-                // Controls - these need to block parent GestureDetector
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const _PlayPauseButton(size: 46),
-                    if (isTablet) ...[
-                      const SizedBox(width: 4),
-                      _SkipButton(),
-                    ],
-                  ],
+                const SizedBox(height: 3),
+                Text(
+                  splitArtists(song.artist ?? 'Unknown').join(', '),
+                  style: TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    color: Colors.white.withValues(alpha: 0.55),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
+
+          const SizedBox(width: 8),
+
+          // Controls - these need to block parent GestureDetector
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const _PlayPauseButton(size: 46),
+              if (isTablet) ...[
+                const SizedBox(width: 4),
+                _SkipButton(),
+              ],
+            ],
+          ),
         ],
       ),
     );
+
+    // The progress bar lives in its own RepaintBoundary so that its frequent
+    // position-stream updates (≈5 x/sec) do not invalidate the blur layer.
+    final progressBar = Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: RepaintBoundary(child: _ProgressBar()),
+    );
+
+    // The inner child — glassmorphic blur on high-end, solid on low-end.
+    final innerStack = Stack(
+      fit: StackFit.expand,
+      children: [
+        DecoratedBox(
+          decoration: playerDecoration,
+          child: const SizedBox.expand(),
+        ),
+        // Content row (rarely changes)
+        contentRow,
+        // Progress bar (frequent updates, isolated layer)
+        progressBar,
+      ],
+    );
+
+    final innerChild = shouldBlur
+        ? ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: innerStack,
+            ),
+          )
+        : ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: innerStack,
+          );
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -317,20 +334,7 @@ class _MiniPlayerWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: RepaintBoundary(
-                  child: shouldBlur
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                            child: playerContent,
-                          ),
-                        )
-                      : ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: playerContent,
-                        ),
-                ),
+                child: innerChild,
               ),
             ),
           ),
@@ -382,39 +386,44 @@ class _ProgressBar extends StatelessWidget {
     final audioService =
         Provider.of<AudioPlayerService>(context, listen: false);
 
-    // Subscribe _ProgressBar (not _StreamBuilderState) to BackgroundManagerService
-    // so color updates when artwork changes without coupling it to position ticks.
-    final backgroundManager = Provider.of<BackgroundManagerService>(context);
-    final progressColor = backgroundManager.currentColors.length > 2
-        ? backgroundManager.currentColors[2]
-        : (backgroundManager.currentColors.isNotEmpty
-            ? backgroundManager.currentColors.first
-            : Theme.of(context).colorScheme.primary);
+    // KEY PERF FIX: Use Selector so that only the color value is watched from
+    // BackgroundManagerService. When a new color arrives the Selector rebuilds,
+    // producing a new StreamBuilder widget with the updated colour captured in
+    // its builder closure. The StreamBuilder element is reused (same stream,
+    // same position in tree) and simply re-renders with the latest position
+    // snapshot – all without making _ProgressBar.build subscribe to every
+    // notifyListeners() call from BackgroundManagerService.
+    return Selector<BackgroundManagerService, Color>(
+      selector: (context, bm) => bm.currentColors.length > 2
+          ? bm.currentColors[2]
+          : (bm.currentColors.isNotEmpty
+              ? bm.currentColors.first
+              : Theme.of(context).colorScheme.primary),
+      builder: (context, progressColor, _) {
+        return StreamBuilder<Duration>(
+          stream: audioService.audioPlayer.positionStream,
+          builder: (context, snapshot) {
+            final position = snapshot.data ?? Duration.zero;
+            final duration = audioService.audioPlayer.duration ?? Duration.zero;
+            final progress = duration.inMilliseconds > 0
+                ? (position.inMilliseconds / duration.inMilliseconds)
+                    .clamp(0.0, 1.0)
+                : 0.0;
 
-    return StreamBuilder<Duration>(
-      stream: audioService.audioPlayer.positionStream,
-      builder: (context, snapshot) {
-        final position = snapshot.data ?? Duration.zero;
-        final duration = audioService.audioPlayer.duration ?? Duration.zero;
-        final progress = duration.inMilliseconds > 0
-            ? (position.inMilliseconds / duration.inMilliseconds)
-                .clamp(0.0, 1.0)
-            : 0.0;
-
-        return SizedBox(
-          height: 3,
-          child: ClipRRect(
-            borderRadius:
-                const BorderRadius.vertical(bottom: Radius.circular(24)),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                progressColor,
+            return SizedBox(
+              height: 3,
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(bottom: Radius.circular(24)),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                  minHeight: 3,
+                ),
               ),
-              minHeight: 3,
-            ),
-          ),
+            );
+          },
         );
       },
     );

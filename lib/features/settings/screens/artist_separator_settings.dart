@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import '../../../shared/services/artist_separator_service.dart';
@@ -282,9 +281,7 @@ class _ArtistSeparatorSettingsScreenState
   }) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: DecoratedBox(
+      child: DecoratedBox(
           decoration: BoxDecoration(
             color: isDark
                 ? Colors.white.withOpacity(0.08)
@@ -298,7 +295,6 @@ class _ArtistSeparatorSettingsScreenState
           ),
           child: child,
         ),
-      ),
     );
   }
 
@@ -314,9 +310,7 @@ class _ArtistSeparatorSettingsScreenState
 
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -385,7 +379,6 @@ class _ArtistSeparatorSettingsScreenState
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -395,9 +388,7 @@ class _ArtistSeparatorSettingsScreenState
 
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -466,7 +457,6 @@ class _ArtistSeparatorSettingsScreenState
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -491,9 +481,7 @@ class _ArtistSeparatorSettingsScreenState
 
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -542,7 +530,6 @@ class _ArtistSeparatorSettingsScreenState
             ),
           ],
         ),
-      ),
     );
   }
 }

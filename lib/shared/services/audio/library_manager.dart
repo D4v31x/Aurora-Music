@@ -122,7 +122,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
         // Update auto playlists (Most Played, Recently Added)
         _updateAutoPlaylists();
 
-        notifyListeners();
+        _scheduleNotify();
         return true;
       } catch (e) {
         debugPrint('Error loading songs: $e');

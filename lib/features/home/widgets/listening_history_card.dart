@@ -197,42 +197,48 @@ class ListeningHistoryCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Progress bar at bottom
+            // Progress bar at bottom.
+            // KEY PERF FIX: BackgroundManagerService color and positionStream
+            // are subscribed independently so that neither causes the other to
+            // rebuild. Selector rebuilds on color change; StreamBuilder rebuilds
+            // on position change. Provider.of with listen:true is NOT called
+            // inside the StreamBuilder builder (which ran on every tick).
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
-              child: StreamBuilder<Duration>(
-                stream: audioPlayerService.audioPlayer.positionStream,
-                builder: (context, snapshot) {
-                  final position = snapshot.data ?? Duration.zero;
-                  final duration =
-                      audioPlayerService.audioPlayer.duration ?? Duration.zero;
-                  final progress = duration.inMilliseconds > 0
-                      ? (position.inMilliseconds / duration.inMilliseconds)
-                          .clamp(0.0, 1.0)
-                      : 0.0;
+              child: Selector<BackgroundManagerService, Color>(
+                selector: (_, bm) => bm.currentColors.length > 2
+                    ? bm.currentColors[2]
+                    : (bm.currentColors.isNotEmpty
+                        ? bm.currentColors.first
+                        : theme.colorScheme.primary),
+                builder: (context, progressColor, _) {
+                  return StreamBuilder<Duration>(
+                    stream: audioPlayerService.audioPlayer.positionStream,
+                    builder: (context, snapshot) {
+                      final position = snapshot.data ?? Duration.zero;
+                      final duration =
+                          audioPlayerService.audioPlayer.duration ??
+                              Duration.zero;
+                      final progress = duration.inMilliseconds > 0
+                          ? (position.inMilliseconds /
+                                  duration.inMilliseconds)
+                              .clamp(0.0, 1.0)
+                          : 0.0;
 
-                  // Get light vibrant color from artwork
-                  final backgroundManager =
-                      Provider.of<BackgroundManagerService>(context);
-                  final progressColor =
-                      backgroundManager.currentColors.length > 2
-                          ? backgroundManager.currentColors[2]
-                          : (backgroundManager.currentColors.isNotEmpty
-                              ? backgroundManager.currentColors.first
-                              : theme.colorScheme.primary);
-
-                  return Container(
-                    height: 3,
-                    color: progressColor.withValues(alpha: 0.15),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: progress,
-                      child: Container(
-                        color: progressColor,
-                      ),
-                    ),
+                      return Container(
+                        height: 3,
+                        color: progressColor.withValues(alpha: 0.15),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: progress,
+                          child: Container(
+                            color: progressColor,
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

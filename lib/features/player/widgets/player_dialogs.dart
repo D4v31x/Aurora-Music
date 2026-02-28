@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
@@ -21,15 +20,20 @@ void showAddToPlaylistDialog(
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Dialog(
+      return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.grey[900]?.withOpacity(0.9),
+              color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             padding: const EdgeInsets.symmetric(vertical: 20),
             child: Column(
@@ -96,7 +100,6 @@ void showAddToPlaylistDialog(
               ],
             ),
           ),
-        ),
       );
     },
   );
@@ -147,14 +150,19 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
     final currentIndex = audioPlayerService.currentIndex;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-      child: Container(
+    return Container(
         height: screenHeight * 0.75,
         decoration: BoxDecoration(
-          color: Colors.grey[900]?.withOpacity(0.95),
+          color: Colors.white.withOpacity(0.1),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 24,
+              offset: const Offset(0, -4),
+            ),
+          ],
         ),
         child: Column(
           children: [
@@ -338,7 +346,6 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
             ),
           ],
         ),
-      ),
     );
   }
 }
@@ -448,15 +455,20 @@ void showSongInfoDialog(
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Dialog(
+      return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.grey[900]?.withOpacity(0.9),
+              color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -500,7 +512,6 @@ void showSongInfoDialog(
               ],
             ),
           ),
-        ),
       );
     },
   );

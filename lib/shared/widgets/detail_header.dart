@@ -226,30 +226,27 @@ class DetailHeader extends StatelessWidget {
   // ─────────────────────────── Sub-widgets ───────────────────────────
 
   Widget _buildBackButton(BuildContext context) {
+    // PERF: No BackdropFilter – the back button is a leading widget in a
+    // SliverAppBar that has scrolling content behind it, causing expensive
+    // blur recomputation on every scroll frame.
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: GestureDetector(
         onTap: () => Navigator.pop(context),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(50),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.3),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.15),
-                ),
-              ),
-              child: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-                size: 20,
-              ),
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.35),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.18),
             ),
+          ),
+          child: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+            size: 20,
           ),
         ),
       ),
