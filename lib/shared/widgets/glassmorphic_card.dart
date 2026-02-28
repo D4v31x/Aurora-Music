@@ -1,8 +1,5 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import 'package:provider/provider.dart';
-import '../providers/performance_mode_provider.dart';
 import '../services/artwork_cache_service.dart';
 
 /// A unified glassmorphic card widget used across the app for songs, albums, artists, etc.
@@ -221,174 +218,100 @@ class GlassmorphicCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
-    final performanceProvider = context.watch<PerformanceModeProvider>();
-    final isHighEnd = !performanceProvider.isLowEndDevice;
 
     final borderRadius = BorderRadius.circular(16);
 
-    Widget cardContent;
-
-    if (isHighEnd) {
-      // High-end: entire card is glassmorphic with backdrop blur
-      cardContent = ClipRRect(
-        borderRadius: borderRadius,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            width: width,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withOpacity(0.08)
-                  : Colors.white.withOpacity(0.45),
-              borderRadius: borderRadius,
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withOpacity(0.12)
-                    : Colors.white.withOpacity(0.5),
-                width: 1,
-              ),
+    // PERF: Never use BackdropFilter on cards that appear in scroll lists.
+    // BackdropFilter must read+blur all pixels behind every card on each
+    // frame, making scrolling prohibitively expensive when many cards are
+    // visible simultaneously. The app background is already a blurred
+    // artwork image, so a semi-transparent overlay achieves a very similar
+    // frosted-glass look without the GPU cost.
+    final cardDecoration = isDark
+        ? BoxDecoration(
+            color: Colors.white.withOpacity(0.10),
+            borderRadius: borderRadius,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.13),
+              width: 1,
             ),
+          )
+        : BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: borderRadius,
+            border: Border.all(
+              color: colorScheme.outlineVariant,
+              width: 1,
+            ),
+          );
+
+    final cardContent = Container(
+      width: width,
+      decoration: cardDecoration,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Artwork with optional badge
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+                child: SizedBox(
+                  width: width,
+                  height: artworkSize,
+                  child: artwork,
+                ),
+              ),
+              if (badge != null)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: badge!,
+                ),
+            ],
+          ),
+          // Title and subtitle
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Artwork with optional badge
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
-                      ),
-                      child: SizedBox(
-                        width: width,
-                        height: artworkSize,
-                        child: artwork,
-                      ),
-                    ),
-                    if (badge != null)
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: badge!,
-                      ),
-                  ],
-                ),
-                // Title and subtitle — no extra tint, inherits card's glassmorphic bg
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10.0, vertical: 8.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontFamily: FontConstants.fontFamily,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle!,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
-                            fontSize: 11,
-                            fontFamily: FontConstants.fontFamily,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ],
+                Text(
+                  title,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontFamily: FontConstants.fontFamily,
+                    color: isDark ? Colors.white : colorScheme.onSurface,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
-            ),
-          ),
-        ),
-      );
-    } else {
-      // Low-end: Material You solid card styling — no blur
-      final cardDecoration = BoxDecoration(
-        color: isDark
-            ? colorScheme.surfaceContainerHigh
-            : colorScheme.surfaceContainerHighest,
-        borderRadius: borderRadius,
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-          width: 1,
-        ),
-      );
-
-      cardContent = Container(
-        width: width,
-        decoration: cardDecoration,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Artwork with optional badge
-            Stack(
-              children: [
-                SizedBox(
-                  width: width,
-                  height: artworkSize,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
-                    ),
-                    child: artwork,
-                  ),
-                ),
-                if (badge != null)
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: badge!,
-                  ),
-              ],
-            ),
-            // Title and subtitle
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
                   Text(
-                    title,
+                    subtitle!,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? Colors.white.withOpacity(0.55)
+                          : colorScheme.onSurface.withOpacity(0.6),
+                      fontSize: 11,
                       fontFamily: FontConstants.fontFamily,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                        fontSize: 11,
-                        fontFamily: FontConstants.fontFamily,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
                 ],
-              ),
+              ],
             ),
-          ],
-        ),
-      );
-    }
+          ),
+        ],
+      ),
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6.0),

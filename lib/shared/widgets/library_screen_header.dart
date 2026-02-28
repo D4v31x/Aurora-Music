@@ -288,14 +288,21 @@ class LibraryScreenHeader extends StatelessWidget {
   }
 
   Widget _orb(Color color, double size) {
-    return ImageFiltered(
-      imageFilter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
+    // PERF: RepaintBoundary caches the blurred circle as a GPU texture.
+    // Without this, the Opacity animation in the parent would cause the
+    // blur to re-execute on every scroll frame.
+    // Sigma reduced from the original 40 to 25: still a convincing soft
+    // glow but 2.56× cheaper (Gaussian kernel area scales as σ²).
+    return RepaintBoundary(
+      child: ImageFiltered(
+        imageFilter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
         ),
       ),
     );
@@ -326,30 +333,27 @@ class LibraryScreenHeader extends StatelessWidget {
   }
 
   Widget _buildBackButton(BuildContext context) {
+    // PERF: No BackdropFilter – the back button is a leading widget in a
+    // SliverAppBar that has scrolling content behind it, causing expensive
+    // blur recomputation on every scroll frame.
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: GestureDetector(
         onTap: () => Navigator.pop(context),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(50),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.3),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.15),
-                ),
-              ),
-              child: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-                size: 20,
-              ),
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.35),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.18),
             ),
+          ),
+          child: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+            size: 20,
           ),
         ),
       ),
@@ -376,51 +380,50 @@ class LibrarySearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          height: 46,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1,
-            ),
+    // PERF: No BackdropFilter – the search field sits in a pinned SliverAppBar
+    // whose background scrolls underneath it on every frame, forcing an
+    // expensive blur recomputation on each tick. A solid semi-transparent
+    // container gives an identical frosted appearance because the app
+    // background is already a blurred artwork image.
+    return Container(
+      height: 46,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+          width: 1,
+        ),
+      ),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        style: const TextStyle(
+          color: Colors.white,
+          fontFamily: FontConstants.fontFamily,
+          fontSize: 15,
+        ),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.45),
+            fontFamily: FontConstants.fontFamily,
+            fontSize: 15,
           ),
-          child: TextField(
-            controller: controller,
-            onChanged: onChanged,
-            style: const TextStyle(
-              color: Colors.white,
-              fontFamily: FontConstants.fontFamily,
-              fontSize: 15,
-            ),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.45),
-                fontFamily: FontConstants.fontFamily,
-                fontSize: 15,
-              ),
-              prefixIcon: Icon(
-                Icons.search_rounded,
-                color: Colors.white.withOpacity(0.55),
-                size: 20,
-              ),
-              suffixIcon: hasQuery
-                  ? IconButton(
-                      icon: Icon(Icons.clear_rounded,
-                          color: Colors.white.withOpacity(0.55), size: 18),
-                      onPressed: onClear,
-                    )
-                  : null,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 13),
-            ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: Colors.white.withOpacity(0.55),
+            size: 20,
           ),
+          suffixIcon: hasQuery
+              ? IconButton(
+                  icon: Icon(Icons.clear_rounded,
+                      color: Colors.white.withOpacity(0.55), size: 18),
+                  onPressed: onClear,
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 13),
         ),
       ),
     );
@@ -436,25 +439,20 @@ class LibraryControlPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // PERF: No BackdropFilter – same reasoning as LibrarySearchField.
     return GestureDetector(
       onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: child,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.25),
+            width: 1,
           ),
         ),
+        child: child,
       ),
     );
   }

@@ -64,15 +64,21 @@ class CommonScreenScaffold extends StatelessWidget {
                           ? ((110.0 - top) / range).clamp(0.0, 1.0)
                           : 1.0;
 
-                      // Performance: Only apply blur when device supports it
+                      // Performance: Only apply blur when device supports it.
+                      // PERF: RepaintBoundary around BackdropFilter ensures
+                      // that only the opacity compositing step runs per scroll
+                      // frame; the expensive blur is cached in the GPU layer.
                       if (shouldBlur) {
                         return Opacity(
                           opacity: opacity,
-                          child: ClipRect(
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                              child: Container(
-                                color: Colors.black.withOpacity(0.4),
+                          child: RepaintBoundary(
+                            child: ClipRect(
+                              child: BackdropFilter(
+                                filter:
+                                    ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                                child: Container(
+                                  color: Colors.black.withOpacity(0.4),
+                                ),
                               ),
                             ),
                           ),
