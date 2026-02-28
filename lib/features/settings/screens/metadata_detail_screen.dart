@@ -290,27 +290,23 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
           return Dialog(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-                child: Container(
+            child: Container(
                   constraints: BoxConstraints(
                     maxHeight: MediaQuery.of(context).size.height * 0.7,
                   ),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withValues(alpha: 0.15),
-                        Colors.white.withValues(alpha: 0.05),
-                      ],
-                    ),
+                    color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity(0.2),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -442,8 +438,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                     ],
                   ),
                 ),
-              ),
-            ),
           );
         },
       ),
@@ -497,9 +491,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     final loc = AppLocalizations.of(context);
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -550,7 +542,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -735,9 +726,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   void _showSaveErrorDialog(AppLocalizations loc, String error) {
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -832,7 +821,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 

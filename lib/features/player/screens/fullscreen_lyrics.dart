@@ -423,9 +423,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -512,7 +510,6 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -586,9 +583,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   void _showLyricsResultsDialog(List<Map<String, dynamic>> results) {
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -698,7 +693,6 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -759,9 +753,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: StatefulBuilder(
+      builder: (context) => StatefulBuilder(
           builder: (context, setDialogState) => AlertDialog(
             backgroundColor: Colors.grey[900]?.withOpacity(0.9),
             shape: RoundedRectangleBorder(
@@ -855,7 +847,6 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             ],
           ),
         ),
-      ),
     );
   }
 
@@ -885,9 +876,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   void _showFontSizeDialog() {
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -915,7 +904,6 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             ],
           ),
         ),
-      ),
     );
   }
 

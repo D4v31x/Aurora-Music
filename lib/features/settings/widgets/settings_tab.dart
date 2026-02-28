@@ -4,7 +4,6 @@ import 'package:aurora_music_v01/shared/widgets/changelog_dialog.dart';
 import 'package:aurora_music_v01/shared/widgets/feedback_reminder_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -463,12 +462,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
     showDialog(
       context: context,
-      builder: (context) => shouldBlur
-          ? BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: dialogContent,
-            )
-          : dialogContent,
+      builder: (context) => dialogContent,
     );
   }
 
@@ -593,12 +587,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
       showDialog(
         context: context,
-        builder: (context) => shouldBlur
-            ? BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: dialogContent,
-              )
-            : dialogContent,
+        builder: (context) => dialogContent,
       );
     } catch (e) {
       debugPrint('Error getting cache info: $e');
@@ -712,12 +701,7 @@ class _SettingsTabState extends State<SettingsTab> {
       barrierDismissible: false, // Cannot dismiss by tapping outside
       builder: (context) => PopScope(
         canPop: false, // Cannot dismiss with back button
-        child: shouldBlur
-            ? BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: dialogContent,
-              )
-            : dialogContent,
+        child: dialogContent,
       ),
     );
   }
@@ -831,12 +815,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
     showDialog(
       context: context,
-      builder: (context) => shouldBlur
-          ? BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: dialogContent,
-            )
-          : dialogContent,
+      builder: (context) => dialogContent,
     );
   }
 

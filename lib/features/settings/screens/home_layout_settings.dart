@@ -70,9 +70,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
+                  child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: (isDark ? Colors.white : Colors.black)
@@ -163,9 +161,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: Colors.grey[900]?.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -214,7 +210,6 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 }
@@ -260,9 +255,7 @@ class _SectionTile extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: DecoratedBox(
+        child: DecoratedBox(
             decoration: BoxDecoration(
               color: (isDark ? Colors.white : Colors.black)
                   .withOpacity(isVisible ? 0.08 : 0.03),
