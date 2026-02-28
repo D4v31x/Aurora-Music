@@ -1,8 +1,9 @@
+import 'dart:ui';
+
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 
-/// Solid-glass dialog — no BackdropFilter.
-/// Uses Colors.white.withOpacity(0.1) + white border 0.2 + box shadow.
+/// Glassmorphic dialog with BackdropFilter blur.
 class GlassmorphicDialog extends StatelessWidget {
   final Widget? title;
   final Widget? content;
@@ -11,7 +12,7 @@ class GlassmorphicDialog extends StatelessWidget {
   final EdgeInsetsGeometry? actionsPadding;
   final double borderRadius;
 
-  /// Retained for API compatibility; no longer has any effect.
+  /// Sigma value for the backdrop blur filter.
   final double blur;
 
   const GlassmorphicDialog({
@@ -91,7 +92,10 @@ class GlassmorphicDialog extends StatelessWidget {
       elevation: 0,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
-        child: dialogContent,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+          child: dialogContent,
+        ),
       ),
     );
   }
@@ -128,7 +132,7 @@ Widget buildGlassmorphicPopupMenu<T>({
   );
 }
 
-/// Solid-glass popup menu — no BackdropFilter.
+/// Glassmorphic popup menu button with BackdropFilter blur.
 class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
   final List<PopupMenuEntry<T>> Function(BuildContext) itemBuilder;
   final void Function(T)? onSelected;
@@ -136,7 +140,7 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
   final Widget? icon;
   final double borderRadius;
 
-  /// Retained for API compatibility; no longer has any effect.
+  /// Sigma value for the backdrop blur filter.
   final double blur;
 
   final Offset offset;
@@ -213,7 +217,10 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(borderRadius),
-              child: menuContent,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                child: menuContent,
+              ),
             ),
           ),
         ];
@@ -240,7 +247,7 @@ Future<T?> showGlassmorphicDialog<T>({
   );
 }
 
-/// Solid-glass modal bottom sheet — no BackdropFilter.
+/// Glassmorphic modal bottom sheet with BackdropFilter blur.
 Future<T?> showGlassmorphicBottomSheet<T>({
   required BuildContext context,
   required Widget Function(BuildContext) builder,
@@ -248,7 +255,7 @@ Future<T?> showGlassmorphicBottomSheet<T>({
   bool enableDrag = true,
   double borderRadius = 28,
 
-  /// Retained for API compatibility; no longer has any effect.
+  /// Sigma value for the backdrop blur filter.
   double blur = 25,
 }) {
   return showModalBottomSheet<T>(
@@ -264,23 +271,26 @@ Future<T?> showGlassmorphicBottomSheet<T>({
       return ClipRRect(
         borderRadius:
             BorderRadius.vertical(top: Radius.circular(borderRadius)),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius:
-                BorderRadius.vertical(top: Radius.circular(borderRadius)),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 24,
-                offset: const Offset(0, -4),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius:
+                  BorderRadius.vertical(top: Radius.circular(borderRadius)),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
               ),
-            ],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 24,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
+            child: builder(context),
           ),
-          child: builder(context),
         ),
       );
     },

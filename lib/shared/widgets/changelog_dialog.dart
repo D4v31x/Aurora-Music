@@ -291,10 +291,15 @@ class ChangelogDialog extends StatelessWidget {
       ),
     );
 
-    // Return dialog content directly — no BackdropFilter
+    // Apply blur filter to popup window when performance allows
     Widget blurredContent = ClipRRect(
       borderRadius: BorderRadius.circular(28),
-      child: dialogContent,
+      child: shouldBlur
+          ? BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: dialogContent,
+            )
+          : dialogContent,
     );
 
     return Dialog(
