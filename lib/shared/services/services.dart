@@ -2,6 +2,14 @@
 ///
 /// This library exports all application services:
 /// - Audio services (player, handler, constants)
+///   The AudioPlayerService is broken into focused part files under audio/:
+///   • audio/playback_controller.dart  – play, pause, skip, queue loading
+///   • audio/queue_manager.dart        – queue add/remove/reorder, shuffle/repeat
+///   • audio/library_manager.dart      – permissions, songs, playlists, liked songs
+///   • audio/play_counts.dart          – play count tracking and queries
+///   • audio/media_artwork.dart        – MediaItem creation and artwork loading
+///   • audio/queue_persistence.dart    – save/restore queue state across sessions
+///   • audio/settings_manager.dart     – gapless, speed, normalization, cache settings
 /// - Cache services (artwork, local caching)
 /// - Background services
 /// - Lyrics services
