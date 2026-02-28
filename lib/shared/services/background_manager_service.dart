@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:palette_generator/palette_generator.dart';
-import 'dart:typed_data';
 import 'artwork_cache_service.dart';
 import '../utils/performance_optimizations.dart';
 

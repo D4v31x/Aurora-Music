@@ -103,18 +103,6 @@ class PackagesDialog extends StatelessWidget {
       url: 'https://pub.dev/packages/flutter_staggered_animations',
     ),
     PackageInfo(
-      name: 'animations',
-      version: '^2.0.11',
-      description: 'Pre-built Material animations',
-      url: 'https://pub.dev/packages/animations',
-    ),
-    PackageInfo(
-      name: 'blur',
-      version: '^4.0.0',
-      description: 'Blur effects for widgets',
-      url: 'https://pub.dev/packages/blur',
-    ),
-    PackageInfo(
       name: 'mesh',
       version: '^0.5.0',
       description: 'Mesh gradient backgrounds',
@@ -125,12 +113,6 @@ class PackagesDialog extends StatelessWidget {
       version: '^1.2.1',
       description: 'HTTP requests for API calls',
       url: 'https://pub.dev/packages/http',
-    ),
-    PackageInfo(
-      name: 'spotify',
-      version: '^0.13.7',
-      description: 'Spotify Web API integration',
-      url: 'https://pub.dev/packages/spotify',
     ),
     PackageInfo(
       name: 'url_launcher',
@@ -169,12 +151,6 @@ class PackagesDialog extends StatelessWidget {
       url: 'https://pub.dev/packages/crypto',
     ),
     PackageInfo(
-      name: 'html',
-      version: '^0.15.4',
-      description: 'HTML parsing utilities',
-      url: 'https://pub.dev/packages/html',
-    ),
-    PackageInfo(
       name: 'intl',
       version: 'any',
       description: 'Internationalization and localization',
@@ -191,12 +167,6 @@ class PackagesDialog extends StatelessWidget {
       version: '^2.1.4',
       description: 'Semantic versioning utilities',
       url: 'https://pub.dev/packages/pub_semver',
-    ),
-    PackageInfo(
-      name: 'miniplayer',
-      version: '^1.0.1',
-      description: 'Expandable mini player widget',
-      url: 'https://pub.dev/packages/miniplayer',
     ),
     PackageInfo(
       name: 'clarity_flutter',

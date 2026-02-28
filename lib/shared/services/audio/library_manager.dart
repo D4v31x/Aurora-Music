@@ -114,7 +114,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
             .toList();
 
         _likedSongsPlaylist = Playlist(
-          id: LIKED_SONGS_PLAYLIST_ID,
+          id: AudioPlayerService.LIKED_SONGS_PLAYLIST_ID,
           name: _likedPlaylistName,
           songs: likedSongs,
         );
@@ -206,7 +206,9 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
   }
 
   void addSongToPlaylist(String playlistId, SongModel song) {
-    final playlist = _playlists.firstWhere((p) => p.id == playlistId);
+    final playlistIndex = _playlists.indexWhere((p) => p.id == playlistId);
+    if (playlistIndex == -1) return;
+    final playlist = _playlists[playlistIndex];
     if (!playlist.songs.contains(song)) {
       playlist.songs.add(song);
       _playlistsDirty = true;
@@ -221,7 +223,9 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       saveLikedSongs();
       _updateLikedSongsPlaylist();
     } else {
-      final playlist = _playlists.firstWhere((p) => p.id == playlistId);
+      final playlistIndex = _playlists.indexWhere((p) => p.id == playlistId);
+      if (playlistIndex == -1) return;
+      final playlist = _playlists[playlistIndex];
       playlist.songs.remove(song);
       _playlistsDirty = true;
       _scheduleSavePlayCounts();
@@ -257,7 +261,9 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       saveLikedSongs();
       _updateLikedSongsPlaylist();
     } else {
-      final playlist = _playlists.firstWhere((p) => p.id == playlistId);
+      final playlistIndex = _playlists.indexWhere((p) => p.id == playlistId);
+      if (playlistIndex == -1) return;
+      final playlist = _playlists[playlistIndex];
       for (final song in songs) {
         if (!playlist.songs.contains(song)) {
           playlist.songs.add(song);
@@ -272,8 +278,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
   Future<void> addSongToLibrary(SongModel song) async {
     if (!_librarySet.contains(song.id.toString())) {
       _librarySet.add(song.id.toString());
-      // You might want to perform additional processing here
-      // such as extracting metadata or updating play counts
+      await saveLibrary();
     }
   }
 
@@ -311,7 +316,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     if (await file.exists()) {
       final contents = await file.readAsString();
       final json = jsonDecode(contents);
-      _likedSongs = Set<String>.from(json['liked_songs']);
+      _likedSongs = Set<String>.from(json['liked_songs'] ?? []);
       // Update notifier for reactive UI
       likedSongsNotifier.value = Set<String>.from(_likedSongs);
     }
@@ -332,7 +337,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     // Don't try to query audio directly - just use the songs we already have
     if (_songs.isEmpty) {
       _likedSongsPlaylist = Playlist(
-        id: LIKED_SONGS_PLAYLIST_ID,
+        id: AudioPlayerService.LIKED_SONGS_PLAYLIST_ID,
         name: _likedPlaylistName,
         songs: [],
       );
@@ -345,7 +350,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
           .toList();
 
       _likedSongsPlaylist = Playlist(
-        id: LIKED_SONGS_PLAYLIST_ID,
+        id: AudioPlayerService.LIKED_SONGS_PLAYLIST_ID,
         name: _likedPlaylistName,
         songs: likedSongs,
       );
@@ -354,7 +359,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     } catch (e) {
       // Handle errors by keeping the current playlist or creating an empty one
       _likedSongsPlaylist ??= Playlist(
-        id: LIKED_SONGS_PLAYLIST_ID,
+        id: AudioPlayerService.LIKED_SONGS_PLAYLIST_ID,
         name: _likedPlaylistName,
         songs: [],
       );
@@ -419,21 +424,21 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     // Auto playlists are always enabled
 
     // Create "Most Played" playlist
-    getMostPlayedTracks().then((tracks) {
+    unawaited(getMostPlayedTracks().then((tracks) {
       final existingIndex =
-          _playlists.indexWhere((p) => p.name == 'Most Played');
+          _playlists.indexWhere((p) => p.id == kMostPlayedPlaylistId);
 
       if (existingIndex != -1) {
         // Update existing playlist
         _playlists[existingIndex] = Playlist(
-          id: 'most_played',
+          id: kMostPlayedPlaylistId,
           name: 'Most Played',
           songs: tracks,
         );
       } else {
         // Create new playlist
         _playlists.add(Playlist(
-          id: 'most_played',
+          id: kMostPlayedPlaylistId,
           name: 'Most Played',
           songs: tracks,
         ));
@@ -442,29 +447,29 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       _playlistsDirty = true;
       _scheduleSavePlayCounts();
       _scheduleNotify();
-    });
+    }));
 
     // Create "Recently Added" playlist
-    _audioQuery
+    unawaited(_audioQuery
         .querySongs(
       sortType: SongSortType.DATE_ADDED,
       orderType: OrderType.DESC_OR_GREATER,
     )
         .then((tracks) {
       final existingIndex =
-          _playlists.indexWhere((p) => p.name == 'Recently Added');
+          _playlists.indexWhere((p) => p.id == kRecentlyAddedPlaylistId);
 
       if (existingIndex != -1) {
         // Update existing playlist
         _playlists[existingIndex] = Playlist(
-          id: 'recently_added',
+          id: kRecentlyAddedPlaylistId,
           name: 'Recently Added',
           songs: tracks,
         );
       } else {
         // Create new playlist
         _playlists.add(Playlist(
-          id: 'recently_added',
+          id: kRecentlyAddedPlaylistId,
           name: 'Recently Added',
           songs: tracks,
         ));
@@ -473,7 +478,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       _playlistsDirty = true;
       _scheduleSavePlayCounts();
       _scheduleNotify();
-    });
+    }));
   }
 
   // Ensure that _folderAccessCounts is correctly populated
@@ -489,7 +494,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     _incrementFolderAccessCount(folderPath);
     // Proceed to play the song
     setPlaylist([song], 0);
-    play();
+    unawaited(play());
   }
 
   // Method to update playlist name when language changes
@@ -497,7 +502,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     _likedPlaylistName = newName;
     if (_likedSongsPlaylist != null) {
       _likedSongsPlaylist = Playlist(
-        id: LIKED_SONGS_PLAYLIST_ID,
+        id: AudioPlayerService.LIKED_SONGS_PLAYLIST_ID,
         name: _likedPlaylistName,
         songs: _likedSongsPlaylist!.songs,
       );
