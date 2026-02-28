@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artist_aggregator_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_dialog.dart';
+import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/widgets/feedback_reminder_dialog.dart';
 import '../widgets/home_tab.dart';
 import '../../search/widgets/search_tab.dart';
@@ -29,7 +31,6 @@ import '../../../shared/services/bluetooth_service.dart';
 import '../widgets/library_tab.dart';
 import 'package:aurora_music_v01/features/onboarding/screens/onboarding_screen.dart';
 import '../../../shared/widgets/app_background.dart';
-import '../../../shared/widgets/glassmorphic_container.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -813,18 +814,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   child: AnimatedSwitcher(
                                     duration: const Duration(milliseconds: 300),
                                     child: isScrolled
-                                        ? GlassmorphicContainer(
+                                        ? _BlurredNavBar(
                                             key: const ValueKey('scrolled'),
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                            blur: 20,
                                             child: _HomeTabBar(
                                                 tabController: _tabController),
                                           )
-                                        : Container(
-                                            key: const ValueKey('normal'),
-                                            child: _HomeTabBar(
-                                                tabController: _tabController),
+                                        : _HomeTabBar(
+                                            tabController: _tabController,
                                           ),
                                   ),
                                 );
@@ -945,8 +941,7 @@ class _HomeTabBarState extends State<_HomeTabBar> {
     return TabBar(
       controller: widget.tabController,
       dividerColor: Colors.transparent,
-      labelPadding:
-          const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+      labelPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
       indicatorPadding: const EdgeInsets.symmetric(vertical: 4.0),
       indicator: OutlineIndicator(
         radius: const Radius.circular(20),
@@ -958,8 +953,7 @@ class _HomeTabBarState extends State<_HomeTabBar> {
         ][_currentIndex],
       ),
       tabs: [
-        _buildTabItem(
-            context, AppLocalizations.of(context).translate('home')),
+        _buildTabItem(context, AppLocalizations.of(context).translate('home')),
         _buildTabItem(
             context, AppLocalizations.of(context).translate('library')),
         _buildTabItem(
@@ -967,6 +961,66 @@ class _HomeTabBarState extends State<_HomeTabBar> {
         _buildTabItem(
             context, AppLocalizations.of(context).translate('settings')),
       ],
+    );
+  }
+}
+
+/// Glassmorphic blurred pill container for the scrolled navbar state.
+/// Respects [PerformanceModeProvider]: high-end gets BackdropFilter blur,
+/// low-end gets a solid semi-transparent surface instead.
+class _BlurredNavBar extends StatelessWidget {
+  final Widget child;
+
+  const _BlurredNavBar({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final shouldBlur = Provider.of<PerformanceModeProvider>(
+      context,
+      listen: false,
+    ).shouldEnableBlur;
+
+    const radius = BorderRadius.all(Radius.circular(30));
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final decoration = shouldBlur
+        ? const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0x26FFFFFF), // white 0.15
+                Color(0x0DFFFFFF), // white 0.05
+              ],
+            ),
+            borderRadius: radius,
+            border: Border.fromBorderSide(
+              BorderSide(color: Color(0x33FFFFFF)), // white 0.2
+            ),
+          )
+        : BoxDecoration(
+            color: colorScheme.surfaceContainerHigh.withOpacity(0.92),
+            borderRadius: radius,
+            border: Border.all(
+              color: colorScheme.outlineVariant.withOpacity(0.3),
+            ),
+          );
+
+    final inner = DecoratedBox(
+      decoration: decoration,
+      child: child,
+    );
+
+    if (!shouldBlur) {
+      return ClipRRect(borderRadius: radius, child: inner);
+    }
+
+    return ClipRRect(
+      borderRadius: radius,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: inner,
+      ),
     );
   }
 }

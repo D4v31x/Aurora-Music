@@ -32,7 +32,6 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
   bool _downloadAlbumArt = true;
   bool _downloadLyrics = true;
   bool _downloadOnWifiOnly = true;
-  final bool _autoDownloadNewSongs = false;
 
   @override
   void initState() {

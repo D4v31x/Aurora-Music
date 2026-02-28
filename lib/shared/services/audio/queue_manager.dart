@@ -324,7 +324,7 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     debugPrint(
         '🔀 [SHUFFLE] Queue reordered, playlist length: ${_playlist.length}');
     unawaited(saveQueueState());
-    notifyListeners();
+    _scheduleNotify();
   }
 
   /// Shuffles _playlist in-place, moving the current track to index 0 so that
@@ -404,7 +404,6 @@ extension AudioQueueManagerExtension on AudioPlayerService {
         _loopMode = LoopMode.one;
         break;
       case LoopMode.one:
-      default:
         _loopMode = LoopMode.off;
         break;
     }
@@ -415,16 +414,6 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     debugPrint(
         '🔁 [REPEAT] Applied to player, current loopMode: ${_audioPlayer.loopMode}');
     unawaited(saveQueueState());
-    notifyListeners();
-  }
-
-  int _getRandomIndex() {
-    if (_playlist.length <= 1) return _currentIndex;
-    int newIndex;
-    do {
-      newIndex =
-          (DateTime.now().millisecondsSinceEpoch % _playlist.length).toInt();
-    } while (newIndex == _currentIndex);
-    return newIndex;
+    _scheduleNotify();
   }
 }

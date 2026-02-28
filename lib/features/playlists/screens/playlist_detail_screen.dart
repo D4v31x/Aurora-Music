@@ -711,15 +711,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           ),
                         ),
                       ),
-                    ],
+                        )
                   ),
                 ],
               ),
-            ),
-          ),
-        ),
-      ),
-    );
+                ],
+          )
+        )));
   }
 
   void _showPlaylistOptions(BuildContext context, Playlist playlist) {
@@ -935,11 +933,11 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           ),
                         ),
                       ),
-                    ],
+                        ),
                   ),
                 ],
               ),
-            ),
+                ],
           ),
         ),
       ),

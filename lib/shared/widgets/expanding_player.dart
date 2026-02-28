@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +14,7 @@ import '../services/artwork_cache_service.dart';
 import '../services/background_manager_service.dart';
 import '../services/sleep_timer_controller.dart';
 import '../utils/responsive_utils.dart';
+import '../providers/performance_mode_provider.dart';
 
 /// A beautiful, simple mini player that opens the Now Playing screen.
 class ExpandingPlayer extends StatefulWidget {
@@ -172,15 +175,35 @@ class _MiniPlayerWidget extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = ResponsiveUtils.isTablet(context);
     final margin = isTablet ? 32.0 : 16.0;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    // Solid-glass player decoration — no BackdropFilter.
-    const playerDecoration = BoxDecoration(
-      color: Color(0x1AFFFFFF), // Colors.white.withOpacity(0.1)
-      borderRadius: BorderRadius.all(Radius.circular(24)),
-      border: Border.fromBorderSide(
-        BorderSide(color: Color(0x33FFFFFF)), // white 0.2
-      ),
-    );
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+
+    final BoxDecoration playerDecoration;
+    if (shouldBlur) {
+      playerDecoration = const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0x26FFFFFF), // white 0.15
+            Color(0x0DFFFFFF), // white 0.05
+          ],
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(24)),
+        border: Border.fromBorderSide(
+          BorderSide(color: Color(0x33FFFFFF)), // white 0.2
+        ),
+      );
+    } else {
+      playerDecoration = BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: const BorderRadius.all(Radius.circular(24)),
+        border: Border.all(color: colorScheme.outlineVariant, width: 1),
+      );
+    }
 
     // The content row (song info + controls) – changes only when the song changes.
     final contentRow = Padding(
@@ -252,23 +275,33 @@ class _MiniPlayerWidget extends StatelessWidget {
       child: RepaintBoundary(child: _ProgressBar()),
     );
 
-    // The inner child — solid glass, no BackdropFilter.
-    final innerChild = ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          const DecoratedBox(
-            decoration: playerDecoration,
-            child: SizedBox.expand(),
-          ),
-          // Content row (rarely changes)
-          contentRow,
-          // Progress bar (frequent updates, isolated layer)
-          progressBar,
-        ],
-      ),
+    // The inner child — glassmorphic blur on high-end, solid on low-end.
+    final innerStack = Stack(
+      fit: StackFit.expand,
+      children: [
+        DecoratedBox(
+          decoration: playerDecoration,
+          child: const SizedBox.expand(),
+        ),
+        // Content row (rarely changes)
+        contentRow,
+        // Progress bar (frequent updates, isolated layer)
+        progressBar,
+      ],
     );
+
+    final innerChild = shouldBlur
+        ? ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: innerStack,
+            ),
+          )
+        : ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: innerStack,
+          );
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -371,8 +404,7 @@ class _ProgressBar extends StatelessWidget {
           stream: audioService.audioPlayer.positionStream,
           builder: (context, snapshot) {
             final position = snapshot.data ?? Duration.zero;
-            final duration =
-                audioService.audioPlayer.duration ?? Duration.zero;
+            final duration = audioService.audioPlayer.duration ?? Duration.zero;
             final progress = duration.inMilliseconds > 0
                 ? (position.inMilliseconds / duration.inMilliseconds)
                     .clamp(0.0, 1.0)

@@ -51,7 +51,6 @@ class SmartSuggestionsService {
   // Performance optimizations
   final Memoizer<Future<List<SongModel>>> _suggestionsMemoizer =
       Memoizer<Future<List<SongModel>>>();
-  final Memoizer<List<String>> _artistsMemoizer = Memoizer<List<String>>();
   final Debouncer _saveDebouncer = Debouncer(delay: const Duration(seconds: 5));
   DateTime? _lastSuggestionTime;
 

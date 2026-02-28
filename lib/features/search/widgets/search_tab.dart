@@ -734,7 +734,6 @@ class _TopResultCardWithArtwork extends HookWidget {
     final hasArtwork = colorState.value.hasArtwork;
     final dominantColor = colorState.value.dominant;
     final accentColor = colorState.value.accent;
-    final colorScheme = Theme.of(context).colorScheme;
 
     final cardDecoration = BoxDecoration(
       gradient: hasArtwork && dominantColor != null
@@ -846,9 +845,9 @@ class _TopResultCardWithArtwork extends HookWidget {
       onTap: onTap,
       child: RepaintBoundary(
         child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: cardContent,
-          ),
+          borderRadius: BorderRadius.circular(20),
+          child: cardContent,
+        ),
       ),
     );
   }
@@ -920,7 +919,6 @@ class _TopArtistResultCard extends HookWidget {
     final hasArtwork = colorState.value.hasArtwork;
     final dominantColor = colorState.value.dominant;
     final accentColor = colorState.value.accent;
-    final colorScheme = Theme.of(context).colorScheme;
 
     final cardDecoration = BoxDecoration(
       gradient: hasArtwork && dominantColor != null
@@ -1026,9 +1024,9 @@ class _TopArtistResultCard extends HookWidget {
       onTap: onTap,
       child: RepaintBoundary(
         child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: cardContent,
-          ),
+          borderRadius: BorderRadius.circular(20),
+          child: cardContent,
+        ),
       ),
     );
   }
