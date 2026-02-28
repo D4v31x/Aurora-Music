@@ -1,24 +1,23 @@
-/// Blur dialog widget.
+/// Solid-glass dialog widget — no BackdropFilter.
 ///
-/// A reusable dialog with backdrop blur effect.
+/// A reusable dialog styled with Colors.white.withOpacity(0.1),
+/// a white border, and a soft box shadow.
 library;
 
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 // MARK: - Constants
 
 const double _kDefaultBlur = 10.0;
 const double _kDefaultBorderRadius = 20.0;
-const double _kDefaultBorderOpacity = 0.1;
+const double _kDefaultBorderOpacity = 0.2;
 
 // MARK: - Blur Dialog
 
-/// A dialog with a blurred background effect.
+/// A dialog with a frosted-glass appearance (no actual backdrop blur).
 ///
 /// Features:
-/// - Configurable blur intensity
-/// - Customizable content and actions
+/// - Configurable content and actions
 /// - Consistent styling across the app
 ///
 /// Usage:
@@ -44,7 +43,7 @@ class BlurDialog extends StatelessWidget {
   /// Action buttons for the dialog.
   final List<Widget>? actions;
 
-  /// Blur intensity.
+  /// Retained for API compatibility; no longer has any effect.
   final double blur;
 
   /// Background color of the dialog.
@@ -73,39 +72,43 @@ class BlurDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-      child: Dialog(
-        backgroundColor: Colors.transparent,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: maxWidth ?? MediaQuery.of(context).size.width * 0.9,
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.grey[900]?.withOpacity(0.95),
-              borderRadius: BorderRadius.circular(borderRadius),
-              border: Border.all(
-                color: Colors.white.withOpacity(_kDefaultBorderOpacity),
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: maxWidth ?? MediaQuery.of(context).size.width * 0.9,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: backgroundColor ?? Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: Border.all(
+              color: Colors.white.withOpacity(_kDefaultBorderOpacity),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
               ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (title != null) _buildTitleSection(context),
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
-                    child: content,
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (title != null) _buildTitleSection(context),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
                   ),
+                  child: content,
                 ),
-                if (actions != null && actions!.isNotEmpty)
-                  _buildActionsSection(),
-              ],
-            ),
+              ),
+              if (actions != null && actions!.isNotEmpty)
+                _buildActionsSection(),
+            ],
           ),
         ),
       ),
@@ -142,7 +145,7 @@ class BlurDialog extends StatelessWidget {
 
 // MARK: - Show Blur Dialog Helper
 
-/// Shows a blur dialog with the given configuration.
+/// Shows a solid-glass dialog with the given configuration.
 Future<T?> showBlurDialog<T>({
   required BuildContext context,
   Widget? title,

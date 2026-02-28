@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,7 +12,6 @@ import '../services/artwork_cache_service.dart';
 import '../services/background_manager_service.dart';
 import '../services/sleep_timer_controller.dart';
 import '../utils/responsive_utils.dart';
-import '../providers/performance_mode_provider.dart';
 
 /// A beautiful, simple mini player that opens the Now Playing screen.
 class ExpandingPlayer extends StatefulWidget {
@@ -174,41 +172,15 @@ class _MiniPlayerWidget extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = ResponsiveUtils.isTablet(context);
     final margin = isTablet ? 32.0 : 16.0;
-    final colorScheme = Theme.of(context).colorScheme;
 
-    // Check if blur should be enabled based on performance mode
-    final performanceProvider =
-        Provider.of<PerformanceModeProvider>(context, listen: false);
-    final shouldBlur = performanceProvider.shouldEnableBlur;
-
-    // Use solid surface colors for lowend devices
-    final BoxDecoration playerDecoration;
-    if (shouldBlur) {
-      playerDecoration = BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.15),
-            Colors.white.withValues(alpha: 0.05),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
-      );
-    } else {
-      // Solid player styling for lowend devices
-      playerDecoration = BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-          width: 1,
-        ),
-      );
-    }
+    // Solid-glass player decoration — no BackdropFilter.
+    const playerDecoration = BoxDecoration(
+      color: Color(0x1AFFFFFF), // Colors.white.withOpacity(0.1)
+      borderRadius: BorderRadius.all(Radius.circular(24)),
+      border: Border.fromBorderSide(
+        BorderSide(color: Color(0x33FFFFFF)), // white 0.2
+      ),
+    );
 
     // The content row (song info + controls) – changes only when the song changes.
     final contentRow = Padding(
@@ -280,33 +252,16 @@ class _MiniPlayerWidget extends StatelessWidget {
       child: RepaintBoundary(child: _ProgressBar()),
     );
 
-    // Build the inner child depending on whether blur is enabled.
-    // KEY PERF FIX: In high-end mode the BackdropFilter is placed in its own
-    // RepaintBoundary that is a *sibling* of the progress bar, not its
-    // ancestor. This means position-stream updates only repaint the small
-    // progress-bar layer and never trigger an expensive blur recomputation.
+    // The inner child — solid glass, no BackdropFilter.
     final innerChild = ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (shouldBlur)
-            // Blur layer – isolated repaint boundary; only repaints when the
-            // artwork background (below the mini player) changes.
-            RepaintBoundary(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                child: DecoratedBox(
-                  decoration: playerDecoration,
-                  child: const SizedBox.expand(),
-                ),
-              ),
-            )
-          else
-            DecoratedBox(
-              decoration: playerDecoration,
-              child: const SizedBox.expand(),
-            ),
+          const DecoratedBox(
+            decoration: playerDecoration,
+            child: SizedBox.expand(),
+          ),
           // Content row (rarely changes)
           contentRow,
           // Progress bar (frequent updates, isolated layer)

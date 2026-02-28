@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -119,99 +118,96 @@ class MusicMetadataWidget extends StatelessWidget {
                 ),
               );
             },
-            // PERF: RepaintBoundary isolates the BackdropFilter so it is only
-            // recomputed when the widget itself changes, not when the parent
-            // ListView scrolls and other items repaint.
-            child: RepaintBoundary(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(24),
+            child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Quality badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: _getQualityColor(loc).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        width: 1.5,
+                        color: _getQualityColor(loc).withValues(alpha: 0.3),
                       ),
                     ),
-                    child: Column(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Quality badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: _getQualityColor(loc).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: _getQualityColor(loc).withValues(alpha: 0.3),
+                        Icon(
+                          _getQualityIcon(loc),
+                          color: _getQualityColor(loc),
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _getQualityLabel(loc),
+                          style: TextStyle(
+                            color: _getQualityColor(loc),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _getQualityIcon(loc),
-                              color: _getQualityColor(loc),
-                              size: 14,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              _getQualityLabel(loc),
-                              style: TextStyle(
-                                color: _getQualityColor(loc),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Stats row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildStatItem(
+                          _getFileFormat(), loc.translate('format')),
+                      _buildDivider(),
+                      _buildStatItem('${_estimateBitrateValue()} kbps',
+                          loc.translate('bitrate')),
+                      _buildDivider(),
+                      _buildStatItem(
+                          _getFileSizeFormatted(), loc.translate('size')),
+                      _buildDivider(),
+                      _buildStatItem(
+                          _formatDuration(), loc.translate('duration')),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // "View more" hint
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        loc.translate('view_details'),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 12,
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      // Stats row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildStatItem(
-                              _getFileFormat(), loc.translate('format')),
-                          _buildDivider(),
-                          _buildStatItem('${_estimateBitrateValue()} kbps',
-                              loc.translate('bitrate')),
-                          _buildDivider(),
-                          _buildStatItem(
-                              _getFileSizeFormatted(), loc.translate('size')),
-                          _buildDivider(),
-                          _buildStatItem(
-                              _formatDuration(), loc.translate('duration')),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // "View more" hint
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            loc.translate('view_details'),
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.5),
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.white.withValues(alpha: 0.5),
-                            size: 12,
-                          ),
-                        ],
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        size: 12,
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
             ),
           ),

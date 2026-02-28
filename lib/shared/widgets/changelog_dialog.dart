@@ -291,22 +291,11 @@ class ChangelogDialog extends StatelessWidget {
       ),
     );
 
-    // Wrap with BackdropFilter only when blur is enabled
-    Widget blurredContent;
-    if (shouldBlur) {
-      blurredContent = ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: dialogContent,
-        ),
-      );
-    } else {
-      blurredContent = ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: dialogContent,
-      );
-    }
+    // Return dialog content directly — no BackdropFilter
+    Widget blurredContent = ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: dialogContent,
+    );
 
     return Dialog(
       backgroundColor: Colors.transparent,

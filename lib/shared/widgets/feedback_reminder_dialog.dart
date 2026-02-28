@@ -200,14 +200,7 @@ class FeedbackReminderDialog extends StatelessWidget {
       ),
     );
 
-    // Wrap with BackdropFilter only when blur is enabled
-    if (shouldBlur) {
-      return BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: dialogContent,
-      );
-    }
-
+    // Return dialog content directly — no BackdropFilter
     return dialogContent;
   }
 }
