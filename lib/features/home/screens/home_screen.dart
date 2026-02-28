@@ -28,7 +28,6 @@ import '../../../shared/services/download_progress_monitor.dart';
 import '../../../shared/services/bluetooth_service.dart';
 import '../widgets/library_tab.dart';
 import 'package:aurora_music_v01/features/onboarding/screens/onboarding_screen.dart';
-import 'package:aurora_music_v01/shared/providers/theme_provider.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 
@@ -40,7 +39,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  late bool isDarkMode;
   late TabController _tabController;
   late final LocalCachingArtistService _artistService =
       LocalCachingArtistService();
@@ -615,13 +613,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     }
     return shouldExit;
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    isDarkMode = themeProvider.isDarkMode;
   }
 
   // All library initialization is now handled by AudioPlayerService
