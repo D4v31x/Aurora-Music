@@ -80,7 +80,8 @@ class LocalCachingArtistService {
         return;
       }
       final raw = await file.readAsString();
-      final Map<String, dynamic> decoded = json.decode(raw) as Map<String, dynamic>;
+      final Map<String, dynamic> decoded =
+          json.decode(raw) as Map<String, dynamic>;
       _cacheTimestamps = decoded.map(
         (k, v) => MapEntry(k, DateTime.parse(v as String)),
       );
@@ -93,7 +94,8 @@ class LocalCachingArtistService {
   Future<void> _saveCacheMetadata() async {
     try {
       final encoded = json.encode(
-        _cacheTimestamps.map((k, v) => MapEntry(k, v.toUtc().toIso8601String())),
+        _cacheTimestamps
+            .map((k, v) => MapEntry(k, v.toUtc().toIso8601String())),
       );
       await _metadataFile.writeAsString(encoded);
     } catch (_) {}
@@ -247,7 +249,8 @@ class LocalCachingArtistService {
       final String? imageUrl = await _getArtistImageFromSpotify(artistName);
 
       if (imageUrl != null) {
-        final imagePath = await _downloadAndCacheImage(imageUrl, cacheFile, fileName);
+        final imagePath =
+            await _downloadAndCacheImage(imageUrl, cacheFile, fileName);
         _imageCache[artistName] = imagePath;
         completer.complete(imagePath);
         return imagePath;
