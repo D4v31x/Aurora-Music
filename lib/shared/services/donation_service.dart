@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -100,11 +102,15 @@ class DonationService {
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        child: GlassmorphicContainer(
+        child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
-          blur: 20,
-          padding: const EdgeInsets.all(24),
-          child: Column(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: GlassmorphicContainer(
+              borderRadius: BorderRadius.circular(24),
+              blur: 20,
+              padding: const EdgeInsets.all(24),
+              child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 20),
@@ -187,6 +193,8 @@ class DonationService {
               ),
             ],
           ),
+            ),
+          ),
         ),
       ),
     );
@@ -201,15 +209,19 @@ class DonationService {
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: 400,
-            maxHeight: MediaQuery.of(context).size.height * 0.8,
-          ),
-          child: GlassmorphicContainer(
-            borderRadius: BorderRadius.circular(28),
-            blur: 25,
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 400,
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+              ),
+              child: GlassmorphicContainer(
+                borderRadius: BorderRadius.circular(28),
+                blur: 25,
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -273,6 +285,8 @@ class DonationService {
                     ),
                   ),
                 ],
+              ),
+            ),
               ),
             ),
           ),

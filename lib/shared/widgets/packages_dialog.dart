@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import '../../core/constants/font_constants.dart';
 import './glassmorphic_container.dart';
@@ -198,7 +200,11 @@ class PackagesDialog extends StatelessWidget {
           maxWidth: 450,
           maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
-        child: GlassmorphicContainer(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: GlassmorphicContainer(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -318,6 +324,8 @@ class PackagesDialog extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
           ),
         ),
       ),

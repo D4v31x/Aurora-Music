@@ -78,12 +78,10 @@ class FeedbackReminderDialog extends StatelessWidget {
       );
     }
 
-    final dialogContent = Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 400),
-        decoration: dialogDecoration,
-        child: Padding(
+    final innerContent = Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      decoration: dialogDecoration,
+      child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -197,11 +195,21 @@ class FeedbackReminderDialog extends StatelessWidget {
             ],
           ),
         ),
+      );
+
+    // Return dialog with BackdropFilter blur when performance allows
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: shouldBlur
+            ? BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: innerContent,
+              )
+            : innerContent,
       ),
     );
-
-    // Return dialog content directly — no BackdropFilter
-    return dialogContent;
   }
 }
 

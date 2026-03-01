@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import '../../core/constants/font_constants.dart';
 import '../../l10n/app_localizations.dart';
@@ -49,7 +51,11 @@ class AuroraAboutDialog extends StatelessWidget {
           maxWidth: 400,
           maxHeight: MediaQuery.of(context).size.height * 0.8,
         ),
-        child: GlassmorphicContainer(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: GlassmorphicContainer(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -249,6 +255,8 @@ class AuroraAboutDialog extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    ),
       ),
     );
   }

@@ -1,8 +1,10 @@
-/// Solid-glass dialog widget — no BackdropFilter.
+/// Frosted-glass dialog widget with BackdropFilter blur.
 ///
 /// A reusable dialog styled with Colors.white.withOpacity(0.1),
-/// a white border, and a soft box shadow.
+/// a white border, and a soft box shadow — with real backdrop blur.
 library;
+
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
@@ -14,7 +16,7 @@ const double _kDefaultBorderOpacity = 0.2;
 
 // MARK: - Blur Dialog
 
-/// A dialog with a frosted-glass appearance (no actual backdrop blur).
+/// A dialog with a frosted-glass appearance backed by a real BackdropFilter blur.
 ///
 /// Features:
 /// - Configurable content and actions
@@ -43,7 +45,7 @@ class BlurDialog extends StatelessWidget {
   /// Action buttons for the dialog.
   final List<Widget>? actions;
 
-  /// Retained for API compatibility; no longer has any effect.
+  /// Sigma value for the backdrop blur filter.
   final double blur;
 
   /// Background color of the dialog.
@@ -78,37 +80,43 @@ class BlurDialog extends StatelessWidget {
         constraints: BoxConstraints(
           maxWidth: maxWidth ?? MediaQuery.of(context).size.width * 0.9,
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: backgroundColor ?? Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(
-              color: Colors.white.withOpacity(_kDefaultBorderOpacity),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (title != null) _buildTitleSection(context),
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                  child: content,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+            child: Container(
+              decoration: BoxDecoration(
+                color: backgroundColor ?? Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(borderRadius),
+                border: Border.all(
+                  color: Colors.white.withOpacity(_kDefaultBorderOpacity),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-              if (actions != null && actions!.isNotEmpty)
-                _buildActionsSection(),
-            ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (title != null) _buildTitleSection(context),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                      child: content,
+                    ),
+                  ),
+                  if (actions != null && actions!.isNotEmpty)
+                    _buildActionsSection(),
+                ],
+              ),
+            ),
           ),
         ),
       ),
