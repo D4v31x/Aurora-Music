@@ -74,6 +74,11 @@ class AudioPlayerService extends ChangeNotifier {
   List<SongModel> _originalPlaylist = [];
   List<Playlist> _playlists = [];
   int _currentIndex = -1;
+
+  /// Number of songs immediately after [_currentIndex] that were explicitly
+  /// added to the queue via [addToQueue] or [playNext]. These are displayed
+  /// separately from the "source" (album/playlist) continuation songs.
+  int _queueCount = 0;
   bool _isPlaying = false;
   bool _isShuffle = false;
   LoopMode _loopMode = LoopMode.off; // Changed from bool to LoopMode
@@ -121,6 +126,31 @@ class AudioPlayerService extends ChangeNotifier {
           ? _playlist.sublist(_currentIndex + 1)
           : [];
 
+  /// Songs explicitly queued by the user (via Add to Queue / Play Next).
+  /// These play immediately after the current track, before source songs.
+  List<SongModel> get queuedSongs {
+    if (_currentIndex < 0 || _queueCount <= 0) return [];
+    final start = _currentIndex + 1;
+    final end = (_currentIndex + 1 + _queueCount).clamp(start, _playlist.length);
+    return start < end ? _playlist.sublist(start, end) : [];
+  }
+
+  /// Songs that come after all explicitly queued songs (from the source
+  /// album / playlist / folder).
+  List<SongModel> get sourceUpcoming {
+    if (_currentIndex < 0) return [];
+    final start = (_currentIndex + 1 + _queueCount).clamp(0, _playlist.length);
+    return start < _playlist.length ? _playlist.sublist(start) : [];
+  }
+
+  /// Index into [_playlist] where source (non-queued) songs begin.
+  /// Equals [_currentIndex] + 1 + [_queueCount].
+  int get queueBoundary =>
+      (_currentIndex + 1 + _queueCount).clamp(0, _playlist.length);
+
+  /// Number of explicitly queued (user-added) songs upcoming.
+  int get queueCount => _queueCount;
+
   /// Get queue length
   int get queueLength => _playlist.length;
 
@@ -156,6 +186,9 @@ class AudioPlayerService extends ChangeNotifier {
   bool _gaplessPlayback = true;
   bool _volumeNormalization = false;
   double _playbackSpeed = 1.0;
+  /// When true, pitch shifts with speed (chipmunk effect).
+  /// When false, pitch is locked to 1.0 regardless of speed.
+  bool _pitchWithSpeed = false;
   String _defaultSortOrder = 'title';
   int _cacheSize = 100; // in MB
   bool _mediaControls = true;
@@ -164,6 +197,7 @@ class AudioPlayerService extends ChangeNotifier {
   bool get gaplessPlayback => _gaplessPlayback;
   bool get volumeNormalization => _volumeNormalization;
   double get playbackSpeed => _playbackSpeed;
+  bool get pitchWithSpeed => _pitchWithSpeed;
   String get defaultSortOrder => _defaultSortOrder;
   int get cacheSize => _cacheSize;
   bool get mediaControls => _mediaControls;
@@ -311,7 +345,9 @@ class AudioPlayerService extends ChangeNotifier {
         return;
       }
       if (index != null && index != _currentIndex && index < _playlist.length) {
+        final oldIndex = _currentIndex;
         _currentIndex = index;
+        _updateQueueCountForIndexChange(oldIndex, index);
         final song = _playlist[_currentIndex];
         debugPrint('🎵 [INDEX_STREAM] Playing: ${song.title}');
 
@@ -355,6 +391,16 @@ class AudioPlayerService extends ChangeNotifier {
 
     // Restore the queue from the previous session (non-blocking).
     unawaited(loadQueueState());
+  }
+
+  /// Adjusts [_queueCount] when [_currentIndex] transitions from [oldIndex]
+  /// to [newIndex]. Moving forward consumes queued songs; moving backward
+  /// does not restore them.
+  void _updateQueueCountForIndexChange(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex && _queueCount > 0) {
+      final consumed = newIndex - oldIndex;
+      _queueCount = (_queueCount - consumed).clamp(0, _queueCount);
+    }
   }
 
   void _startCacheCleanup() {

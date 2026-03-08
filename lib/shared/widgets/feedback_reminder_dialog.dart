@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
@@ -18,10 +19,10 @@ class FeedbackReminderDialog extends StatelessWidget {
     if (shouldShow && context.mounted) {
       await FeedbackReminderService.recordPromptShown();
 
-      showDialog(
+      unawaited(showDialog(
         context: context,
         builder: (context) => const FeedbackReminderDialog(),
-      );
+      ));
     }
   }
 
@@ -53,14 +54,14 @@ class FeedbackReminderDialog extends StatelessWidget {
     final BoxDecoration dialogDecoration;
     if (shouldBlur) {
       dialogDecoration = BoxDecoration(
-        color: Colors.grey[900]?.withOpacity(0.9),
+        color: Colors.grey[900]?.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -78,12 +79,10 @@ class FeedbackReminderDialog extends StatelessWidget {
       );
     }
 
-    final dialogContent = Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 400),
-        decoration: dialogDecoration,
-        child: Padding(
+    final innerContent = Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      decoration: dialogDecoration,
+      child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -94,7 +93,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                 height: 64,
                 decoration: BoxDecoration(
                   color:
-                      Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                      Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
@@ -124,7 +123,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                 style: TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
@@ -171,7 +170,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                       l10n.translate('maybe_later'),
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                   ),
@@ -187,7 +186,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                       l10n.translate('dont_ask_again'),
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
-                        color: Colors.white.withOpacity(0.4),
+                        color: Colors.white.withValues(alpha: 0.4),
                         fontSize: 12,
                       ),
                     ),
@@ -197,11 +196,21 @@ class FeedbackReminderDialog extends StatelessWidget {
             ],
           ),
         ),
+      );
+
+    // Return dialog with BackdropFilter blur when performance allows
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: shouldBlur
+            ? BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: innerContent,
+              )
+            : innerContent,
       ),
     );
-
-    // Return dialog content directly — no BackdropFilter
-    return dialogContent;
   }
 }
 
@@ -228,10 +237,10 @@ class _FeedbackButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: color.withOpacity(0.3),
+              color: color.withValues(alpha: 0.3),
             ),
           ),
           child: Column(

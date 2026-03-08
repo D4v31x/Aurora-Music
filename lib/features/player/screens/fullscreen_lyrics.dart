@@ -424,10 +424,10 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          backgroundColor: Colors.grey[900]?.withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
             AppLocalizations.of(context).translate('search_lyrics'),
@@ -497,7 +497,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 final artist = artistController.text.trim();
                 final title = titleController.text.trim();
                 if (artist.isNotEmpty && title.isNotEmpty) {
-                  _performLyricsSearch(artist, title);
+                  unawaited(_performLyricsSearch(artist, title));
                 }
               },
               child: Text(
@@ -584,10 +584,10 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          backgroundColor: Colors.grey[900]?.withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
             '${AppLocalizations.of(context).translate('results')} (${results.length})',
@@ -612,7 +612,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                     _parseLyricsDuration(result['syncedLyrics'] as String?);
 
                 return Card(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   margin: const EdgeInsets.only(bottom: 8),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
@@ -651,7 +651,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                             albumName,
                             style: TextStyle(
                               fontFamily: FontConstants.fontFamily,
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                               fontSize: 12,
                             ),
                             maxLines: 1,
@@ -664,7 +664,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -755,10 +755,10 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       context: context,
       builder: (context) => StatefulBuilder(
           builder: (context, setDialogState) => AlertDialog(
-            backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+            backgroundColor: Colors.grey[900]?.withValues(alpha: 0.9),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: Colors.white.withOpacity(0.1)),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
             title: Text(
               AppLocalizations.of(context).translate('adjust_sync'),
@@ -857,7 +857,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -877,10 +877,10 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          backgroundColor: Colors.grey[900]?.withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
             AppLocalizations.of(context).translate('font_size'),
@@ -1091,7 +1091,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                                       Container(
                                         width: width,
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.3),
+                                          color: Colors.white.withValues(alpha: 0.3),
                                           borderRadius:
                                               BorderRadius.circular(1.5),
                                         ),
@@ -1120,7 +1120,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                             _formatDuration(position),
                             style: TextStyle(
                               fontFamily: FontConstants.fontFamily,
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                               fontSize: 11,
                             ),
                           ),
@@ -1128,7 +1128,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                             _formatDuration(duration),
                             style: TextStyle(
                               fontFamily: FontConstants.fontFamily,
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                               fontSize: 11,
                             ),
                           ),

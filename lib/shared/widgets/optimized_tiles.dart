@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import '../../core/constants/font_constants.dart';
 import '../services/artwork_cache_service.dart';
 import '../models/artist_utils.dart';
 
@@ -8,6 +9,7 @@ import '../models/artist_utils.dart';
 class OptimizedSongTile extends StatefulWidget {
   final SongModel song;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final Widget? trailing;
   final bool selected;
 
@@ -15,6 +17,7 @@ class OptimizedSongTile extends StatefulWidget {
     required Key key,
     required this.song,
     this.onTap,
+    this.onLongPress,
     this.trailing,
     this.selected = false,
   }) : super(key: key);
@@ -39,12 +42,11 @@ class _OptimizedSongTileState extends State<OptimizedSongTile>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: widget.onTap,
-          child: Container(
+          onTap: widget.onTap,          onLongPress: widget.onLongPress,          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: widget.selected
                 ? BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.1),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                     border: const Border(
                       left: BorderSide(
                         color: Color(0xFF3B82F6),
@@ -76,6 +78,7 @@ class _OptimizedSongTileState extends State<OptimizedSongTile>
                           color: Colors.white,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
+                          fontFamily: FontConstants.fontFamily,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -85,8 +88,9 @@ class _OptimizedSongTileState extends State<OptimizedSongTile>
                         splitArtists(widget.song.artist ?? 'Unknown Artist')
                             .join(', '),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 12,
+                          fontFamily: FontConstants.fontFamily,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -147,7 +151,7 @@ class _OptimizedGridTileState extends State<OptimizedGridTile>
           borderRadius: BorderRadius.circular(12),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -184,6 +188,7 @@ class _OptimizedGridTileState extends State<OptimizedGridTile>
                           color: Colors.white,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
+                          fontFamily: FontConstants.fontFamily,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -193,8 +198,9 @@ class _OptimizedGridTileState extends State<OptimizedGridTile>
                         Text(
                           widget.subtitle!,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             fontSize: 12,
+                            fontFamily: FontConstants.fontFamily,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

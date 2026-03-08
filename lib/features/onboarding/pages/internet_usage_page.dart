@@ -131,7 +131,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
     final isDark = themeProvider.isDarkMode;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -247,13 +247,13 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                                 color: Theme.of(context)
                                     .colorScheme
                                     .primary
-                                    .withOpacity(0.1),
+                                    .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: Theme.of(context)
                                       .colorScheme
                                       .primary
-                                      .withOpacity(0.3),
+                                      .withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Row(
@@ -272,7 +272,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                                       style: TextStyle(
                                         fontFamily: FontConstants.fontFamily,
                                         fontSize: 13,
-                                        color: textColor.withOpacity(0.9),
+                                        color: textColor.withValues(alpha: 0.9),
                                       ),
                                     ),
                                   ),
@@ -320,17 +320,17 @@ class _InternetUsagePageState extends State<InternetUsagePage>
     required bool isDark,
   }) {
     final containerColor = isDark
-        ? Colors.white.withOpacity(0.05)
-        : Colors.black.withOpacity(0.05);
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
     final borderColor =
-        isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+        isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1);
     final titleColor = isDark ? Colors.white : Colors.black;
     final descriptionColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
     final tagBgColor =
-        isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+        isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1);
     final tagTextColor =
-        isDark ? Colors.white.withOpacity(0.7) : Colors.black.withOpacity(0.7);
+        isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.7);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -348,7 +348,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(

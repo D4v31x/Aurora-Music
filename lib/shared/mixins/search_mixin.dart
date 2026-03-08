@@ -79,7 +79,7 @@ mixin SearchMixin<T extends StatefulWidget> on State<T> {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white.withOpacity(0.1),
+        color: backgroundColor ?? Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: TextField(
@@ -92,18 +92,18 @@ mixin SearchMixin<T extends StatefulWidget> on State<T> {
         decoration: InputDecoration(
           hintText: hintText ?? 'Search...',
           hintStyle: TextStyle(
-            color: hintColor ?? Colors.white.withOpacity(0.5),
+            color: hintColor ?? Colors.white.withValues(alpha: 0.5),
             fontFamily: FontConstants.fontFamily,
           ),
           prefixIcon: Icon(
             Icons.search,
-            color: hintColor ?? Colors.white.withOpacity(0.5),
+            color: hintColor ?? Colors.white.withValues(alpha: 0.5),
           ),
           suffixIcon: searchQuery.isNotEmpty
               ? IconButton(
                   icon: Icon(
                     Icons.clear,
-                    color: hintColor ?? Colors.white.withOpacity(0.5),
+                    color: hintColor ?? Colors.white.withValues(alpha: 0.5),
                   ),
                   onPressed: clearSearch,
                 )

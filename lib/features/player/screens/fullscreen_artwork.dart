@@ -201,8 +201,8 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.6),
-                          Colors.black.withOpacity(0.0),
+                          Colors.black.withValues(alpha: 0.6),
+                          Colors.black.withValues(alpha: 0.0),
                         ],
                       ),
                     ),
@@ -227,9 +227,9 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        Colors.black.withOpacity(0.85),
-                        Colors.black.withOpacity(0.6),
-                        Colors.black.withOpacity(0.0),
+                        Colors.black.withValues(alpha: 0.85),
+                        Colors.black.withValues(alpha: 0.6),
+                        Colors.black.withValues(alpha: 0.0),
                       ],
                       stops: const [0.0, 0.5, 1.0],
                     ),
@@ -351,7 +351,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
                 'Playing from',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontFamily: FontConstants.fontFamily,
                 ),
               ),
@@ -408,7 +408,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.normal,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontFamily: FontConstants.fontFamily,
           ),
           maxLines: 1,
@@ -457,7 +457,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
                       _formatDuration(displayPosition),
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontFamily: FontConstants.fontFamily,
                       ),
                     ),
@@ -465,7 +465,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
                       _formatDuration(duration),
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontFamily: FontConstants.fontFamily,
                       ),
                     ),
@@ -542,7 +542,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
                             Container(
                               width: width,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(
                                     _isDragging ? 4.0 : 2.0),
                               ),
@@ -589,7 +589,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
               },
               icon: Icon(
                 Icons.shuffle_rounded,
-                color: isShuffle ? Colors.white : Colors.white.withOpacity(0.5),
+                color: isShuffle ? Colors.white : Colors.white.withValues(alpha: 0.5),
                 size: 24,
               ),
             );
@@ -661,7 +661,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
                 break;
               default:
                 icon = Icons.repeat_rounded;
-                color = Colors.white.withOpacity(0.5);
+                color = Colors.white.withValues(alpha: 0.5);
             }
 
             return IconButton(

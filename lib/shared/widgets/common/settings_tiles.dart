@@ -57,8 +57,8 @@ class SettingsSwitchTile extends StatelessWidget {
             height: 1,
             indent: 56,
             color: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.06),
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
           ),
         SwitchListTile(
           contentPadding:
@@ -66,7 +66,7 @@ class SettingsSwitchTile extends StatelessWidget {
           secondary: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -95,7 +95,7 @@ class SettingsSwitchTile extends StatelessWidget {
                           .textTheme
                           .bodySmall
                           ?.color
-                          ?.withOpacity(0.7),
+                          ?.withValues(alpha: 0.7),
                     ),
                   ),
                 )
@@ -142,8 +142,8 @@ class SettingsActionTile extends StatelessWidget {
             height: 1,
             indent: 56,
             color: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.06),
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
           ),
         ListTile(
           contentPadding:
@@ -151,7 +151,7 @@ class SettingsActionTile extends StatelessWidget {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: effectiveIconColor.withOpacity(0.15),
+              color: effectiveIconColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -180,7 +180,7 @@ class SettingsActionTile extends StatelessWidget {
                           .textTheme
                           .bodySmall
                           ?.color
-                          ?.withOpacity(0.7),
+                          ?.withValues(alpha: 0.7),
                     ),
                   ),
                 )
@@ -193,7 +193,7 @@ class SettingsActionTile extends StatelessWidget {
                     .textTheme
                     .bodySmall
                     ?.color
-                    ?.withOpacity(0.5),
+                    ?.withValues(alpha: 0.5),
               ),
           onTap: onTap,
         ),

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import '../../core/constants/font_constants.dart';
 import '../../l10n/app_localizations.dart';
@@ -49,7 +51,11 @@ class AuroraAboutDialog extends StatelessWidget {
           maxWidth: 400,
           maxHeight: MediaQuery.of(context).size.height * 0.8,
         ),
-        child: GlassmorphicContainer(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: GlassmorphicContainer(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -61,8 +67,8 @@ class AuroraAboutDialog extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.white.withOpacity(0.15),
-                      Colors.white.withOpacity(0.05),
+                      Colors.white.withValues(alpha: 0.15),
+                      Colors.white.withValues(alpha: 0.05),
                     ],
                   ),
                   borderRadius:
@@ -120,13 +126,13 @@ class AuroraAboutDialog extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed: () => _showChangelog(context),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue.withOpacity(0.2),
+                            backgroundColor: Colors.blue.withValues(alpha: 0.2),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                               side: BorderSide(
-                                color: Colors.blue.withOpacity(0.3),
+                                color: Colors.blue.withValues(alpha: 0.3),
                               ),
                             ),
                           ),
@@ -150,13 +156,13 @@ class AuroraAboutDialog extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed: () => _showPackages(context),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple.withOpacity(0.2),
+                            backgroundColor: Colors.purple.withValues(alpha: 0.2),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                               side: BorderSide(
-                                color: Colors.purple.withOpacity(0.3),
+                                color: Colors.purple.withValues(alpha: 0.3),
                               ),
                             ),
                           ),
@@ -181,7 +187,7 @@ class AuroraAboutDialog extends StatelessWidget {
                         AppLocalizations.of(context)
                             .translate('connect_with_us'),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 14,
                           fontFamily: FontConstants.fontFamily,
                         ),
@@ -223,13 +229,13 @@ class AuroraAboutDialog extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   border: Border(
-                    top: BorderSide(color: Colors.white.withOpacity(0.1)),
+                    top: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                 ),
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
                   style: TextButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -250,6 +256,8 @@ class AuroraAboutDialog extends StatelessWidget {
           ),
         ),
       ),
+    ),
+      ),
     );
   }
 
@@ -265,7 +273,7 @@ class AuroraAboutDialog extends StatelessWidget {
         Text(
           '$title:',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 14,
             fontFamily: FontConstants.fontFamily,
           ),
@@ -301,7 +309,7 @@ class AuroraAboutDialog extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
           ),
           child: Icon(
             icon,

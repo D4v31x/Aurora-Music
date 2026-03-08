@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/detail_header.dart';
+import '../../../shared/widgets/song_context_menu.dart';
 import '../../../shared/utils/responsive_utils.dart';
 import 'album_detail_screen.dart';
 
@@ -327,15 +329,15 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
           gradient: isSelected
               ? LinearGradient(
                   colors: [
-                    _dominantColor.withOpacity(0.8),
-                    _dominantColor.withOpacity(0.6),
+                    _dominantColor.withValues(alpha: 0.8),
+                    _dominantColor.withValues(alpha: 0.6),
                   ],
                 )
               : null,
-          color: isSelected ? null : Colors.white.withOpacity(0.05),
+          color: isSelected ? null : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? _dominantColor : Colors.white.withOpacity(0.1),
+            color: isSelected ? _dominantColor : Colors.white.withValues(alpha: 0.1),
             width: 1.5,
           ),
         ),
@@ -374,11 +376,11 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.album, size: 64, color: Colors.white.withOpacity(0.3)),
+              Icon(Icons.album, size: 64, color: Colors.white.withValues(alpha: 0.3)),
               const SizedBox(height: 16),
               Text(
                 AppLocalizations.of(context).translate('no_albums_found'),
-                style: TextStyle(color: Colors.white.withOpacity(0.5)),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
               ),
             ],
           ),
@@ -462,7 +464,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                               '${albumSongs.length} ${albumSongs.length == 1 ? 'song' : 'songs'}',
                               style: TextStyle(
                                 fontFamily: FontConstants.fontFamily,
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                                 fontSize: 12,
                               ),
                             ),
@@ -650,6 +652,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                         ),
                       );
                     },
+                    onLongPress: () => showSongContextMenu(context, song),
                     child: GlassmorphicContainer(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -663,7 +666,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                                 '${index + 1}',
                                 style: TextStyle(
                                   fontFamily: FontConstants.fontFamily,
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -703,7 +706,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                                     song.album ?? 'Unknown Album',
                                     style: TextStyle(
                                       fontFamily: FontConstants.fontFamily,
-                                      color: Colors.white.withOpacity(0.5),
+                                      color: Colors.white.withValues(alpha: 0.5),
                                       fontSize: 12,
                                     ),
                                     maxLines: 1,
@@ -717,16 +720,19 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                               durationString,
                               style: TextStyle(
                                 fontFamily: FontConstants.fontFamily,
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                                 fontSize: 13,
                               ),
                             ),
                             // More
                             const SizedBox(width: 4),
-                            Icon(
-                              Icons.more_vert,
-                              color: Colors.white.withOpacity(0.5),
-                              size: 20,
+                            GestureDetector(
+                              onTap: () => showSongContextMenu(context, song),
+                              child: Icon(
+                                Icons.more_vert,
+                                color: Colors.white.withValues(alpha: 0.5),
+                                size: 20,
+                              ),
                             ),
                           ],
                         ),
@@ -747,14 +753,14 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     if (_allSongs.isNotEmpty) {
       final audioPlayerService =
           Provider.of<AudioPlayerService>(context, listen: false);
-      audioPlayerService.setPlaylist(
+      unawaited(audioPlayerService.setPlaylist(
         _allSongs,
         0,
         source: PlaybackSourceInfo(
           source: PlaybackSource.artist,
           name: widget.artistName,
         ),
-      );
+      ));
     }
   }
 
@@ -763,14 +769,14 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
       final shuffledSongs = List<SongModel>.from(_allSongs)..shuffle();
       final audioPlayerService =
           Provider.of<AudioPlayerService>(context, listen: false);
-      audioPlayerService.setPlaylist(
+      unawaited(audioPlayerService.setPlaylist(
         shuffledSongs,
         0,
         source: PlaybackSourceInfo(
           source: PlaybackSource.artist,
           name: widget.artistName,
         ),
-      );
+      ));
     }
   }
 
@@ -790,15 +796,15 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
           gradient: isPrimary
               ? LinearGradient(
                   colors: [
-                    _dominantColor.withOpacity(0.8),
-                    _dominantColor.withOpacity(0.6),
+                    _dominantColor.withValues(alpha: 0.8),
+                    _dominantColor.withValues(alpha: 0.6),
                   ],
                 )
               : null,
-          color: isPrimary ? null : Colors.white.withOpacity(0.1),
+          color: isPrimary ? null : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isPrimary ? _dominantColor : Colors.white.withOpacity(0.2),
+            color: isPrimary ? _dominantColor : Colors.white.withValues(alpha: 0.2),
             width: 1.5,
           ),
         ),

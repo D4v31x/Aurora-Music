@@ -91,7 +91,7 @@ class LyricsSection extends StatelessWidget {
           height: _kLyricsSectionHeight,
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(_kLyricsContainerOpacity),
+            color: Colors.white.withValues(alpha: _kLyricsContainerOpacity),
             borderRadius: BorderRadius.circular(_kBorderRadius),
           ),
           child: hasLyrics
@@ -251,10 +251,10 @@ class LyricsSection extends StatelessWidget {
         onTap: () => _openFullscreenLyrics(context),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(_kExpandButtonOpacity),
+            color: Colors.white.withValues(alpha: _kExpandButtonOpacity),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(_kExpandButtonBorderOpacity),
+              color: Colors.white.withValues(alpha: _kExpandButtonBorderOpacity),
             ),
           ),
           child: Material(

@@ -12,6 +12,7 @@ import '../../../shared/widgets/optimized_tiles.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
+import '../../../shared/widgets/song_context_menu.dart';
 import '../../../shared/utils/responsive_utils.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
@@ -511,11 +512,10 @@ class _TracksScreenState extends State<TracksScreen> {
             index,
           );
         },
+        onLongPress: () => showSongContextMenu(context, song),
         trailing: IconButton(
           icon: const Icon(Icons.more_vert, color: Colors.white),
-          onPressed: () {
-            // Show options for the song
-          },
+          onPressed: () => showSongContextMenu(context, song),
         ),
       ),
     );

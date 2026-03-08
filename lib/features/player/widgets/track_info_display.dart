@@ -106,7 +106,7 @@ class TrackInfoDisplay extends StatelessWidget {
           displayArtist,
           style: TextStyle(
             fontSize: fontSize,
-            color: Colors.white.withOpacity(_kDefaultArtistOpacity),
+            color: Colors.white.withValues(alpha: _kDefaultArtistOpacity),
             fontFamily: FontConstants.fontFamily,
           ),
           textAlign: TextAlign.center,
@@ -150,7 +150,7 @@ class TrackInfoDisplay extends StatelessWidget {
       color: Colors.transparent,
       child: DefaultTextStyle.merge(
         style: TextStyle(
-          color: Colors.white.withOpacity(_kDefaultArtistOpacity),
+          color: Colors.white.withValues(alpha: _kDefaultArtistOpacity),
           fontFamily: FontConstants.fontFamily,
         ),
         child: (toHeroContext.widget as Hero).child,

@@ -58,7 +58,7 @@ class CommonScreenScaffold extends StatelessWidget {
                       return Opacity(
                         opacity: opacity,
                         child: Container(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                         ),
                       );
                     },

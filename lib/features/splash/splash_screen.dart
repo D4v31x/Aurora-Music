@@ -14,6 +14,7 @@ import '../onboarding/screens/onboarding_screen.dart';
 import '../home/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
+import '../../shared/widgets/expanding_player.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -43,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-
+    ExpandingPlayer.hiddenNotifier.value = true;
     _initializeAnimations();
     _loadVersionInfo();
   }
@@ -273,7 +274,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Warm up glassmorphism effects
     final glassPaint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
+      ..color = Colors.white.withValues(alpha: 0.1)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
@@ -375,6 +376,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _navigateToScreenWithHero(Widget screen) {
+    if (screen is HomeScreen) ExpandingPlayer.hiddenNotifier.value = false;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => screen,
@@ -574,7 +576,7 @@ class _SplashScreenState extends State<SplashScreen>
             height: radius * 2,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: color.withOpacity(0.28),
+              color: color.withValues(alpha: 0.28),
             ),
           ),
         ),
@@ -591,7 +593,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Simple gradient warmup - essential for UI performance
     paint.shader = LinearGradient(
-      colors: [Colors.white, Colors.white.withOpacity(0.0)],
+      colors: [Colors.white, Colors.white.withValues(alpha: 0.0)],
       stops: const [0.8, 1.0],
     ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
@@ -617,7 +619,7 @@ class _GlassProgressBar extends StatelessWidget {
     return Container(
           height: 3,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(100),
           ),
           child: FractionallySizedBox(
@@ -631,7 +633,7 @@ class _GlassProgressBar extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF7B5FDC).withOpacity(0.6),
+                    color: const Color(0xFF7B5FDC).withValues(alpha: 0.6),
                     blurRadius: 8,
                   ),
                 ],
@@ -654,10 +656,10 @@ class _VersionChip extends StatelessWidget {
     return Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(100),
             border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
             ),
           ),
           child: Text(

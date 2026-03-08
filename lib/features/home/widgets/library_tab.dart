@@ -57,9 +57,8 @@ class _LibraryTabState extends State<LibraryTab>
             top: isTablet ? 40.0 : 30.0,
             bottom: hasCurrentSong
                 ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
-                : isTablet
-                    ? 40.0
-                    : 30.0,
+                : MediaQuery.of(context).padding.bottom +
+                    (isTablet ? 40.0 : 30.0),
           ),
           child: Center(
             child: ConstrainedBox(
@@ -448,7 +447,7 @@ class _LibraryTabState extends State<LibraryTab>
                             AppLocalizations.of(context).translate('No_data'),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color:
-                                  theme.colorScheme.onSurface.withOpacity(0.6),
+                                  theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         );
@@ -625,7 +624,7 @@ class _LibraryTabState extends State<LibraryTab>
                             AppLocalizations.of(context).translate('No_data'),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color:
-                                  theme.colorScheme.onSurface.withOpacity(0.6),
+                                  theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         );

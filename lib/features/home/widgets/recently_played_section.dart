@@ -94,7 +94,7 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
             AppLocalizations.of(context).translate('No_data'),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
           ),
         ),

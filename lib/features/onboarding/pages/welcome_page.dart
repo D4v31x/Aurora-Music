@@ -303,7 +303,7 @@ class _WelcomePageState extends State<WelcomePage>
 
   void _onButtonPressed() async {
     _textCycleTimer?.cancel();
-    _glowController.forward(from: 0.0);
+    unawaited(_glowController.forward(from: 0.0));
     await _exitController.forward();
     widget.onContinue();
   }
@@ -331,7 +331,7 @@ class _WelcomePageState extends State<WelcomePage>
     final isDark = themeProvider.isDarkMode;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
-        isDark ? Colors.white.withOpacity(0.7) : Colors.black.withOpacity(0.7);
+        isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.7);
 
     return Scaffold(
         backgroundColor: Colors.transparent,
@@ -520,7 +520,7 @@ class _WelcomePageState extends State<WelcomePage>
                                       BoxShadow(
                                         color: _getRainbowColor(
                                                 _glowAnimation.value)
-                                            .withOpacity(
+                                            .withValues(alpha: 
                                                 0.4 * _glowAnimation.value),
                                         blurRadius: 20 * _glowAnimation.value,
                                         spreadRadius: 2 * _glowAnimation.value,
@@ -528,7 +528,7 @@ class _WelcomePageState extends State<WelcomePage>
                                       BoxShadow(
                                         color: _getRainbowColor(
                                                 _glowAnimation.value + 0.3)
-                                            .withOpacity(
+                                            .withValues(alpha: 
                                                 0.3 * _glowAnimation.value),
                                         blurRadius: 30 * _glowAnimation.value,
                                         spreadRadius: 1 * _glowAnimation.value,

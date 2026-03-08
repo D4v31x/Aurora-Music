@@ -66,9 +66,9 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
             maxWidth: _isExpanded ? 280 : 120,
           ),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.8),
+            color: Colors.black.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.withOpacity(0.3)),
+            border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -279,7 +279,7 @@ class _PerformanceDebugOverlayState extends State<PerformanceDebugOverlay> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.grey.withOpacity(0.3),
+          color: isSelected ? Colors.blue : Colors.grey.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(

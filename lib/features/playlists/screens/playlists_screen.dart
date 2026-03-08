@@ -228,7 +228,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                         localizations.translate('auto_playlists'),
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
@@ -276,7 +276,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                       localizations.translate('your_playlists'),
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
@@ -355,12 +355,12 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
       child: Container(
           height: 72,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -425,7 +425,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                     height: 40,
                     margin: const EdgeInsets.only(right: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -460,12 +460,12 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
       child: Container(
           height: 64,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -533,10 +533,10 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
   Widget _buildPlaylistArtwork(Playlist playlist) {
     if (playlist.songs.isEmpty) {
       return ColoredBox(
-        color: Colors.grey.withOpacity(0.2),
+        color: Colors.grey.withValues(alpha: 0.2),
         child: Icon(
           Icons.music_note_rounded,
-          color: Colors.grey.withOpacity(0.5),
+          color: Colors.grey.withValues(alpha: 0.5),
           size: 28,
         ),
       );
@@ -599,12 +599,12 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
         child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
@@ -626,13 +626,13 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                   DecoratedBox(
                     decoration: BoxDecoration(
                       color: isDark
-                          ? Colors.white.withOpacity(0.08)
-                          : Colors.black.withOpacity(0.04),
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.04),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isDark
-                            ? Colors.white.withOpacity(0.12)
-                            : Colors.black.withOpacity(0.06),
+                            ? Colors.white.withValues(alpha: 0.12)
+                            : Colors.black.withValues(alpha: 0.06),
                       ),
                     ),
                     child: TextField(
@@ -689,7 +689,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                               color: Theme.of(context)
                                   .colorScheme
                                   .primary
-                                  .withOpacity(0.8),
+                                  .withValues(alpha: 0.8),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(
@@ -728,13 +728,13 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
       builder: (context) => Container(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(20)),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 24,
                   offset: const Offset(0, -4),
                 ),
@@ -809,8 +809,8 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
         margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
           color: isDark
-              ? Colors.white.withOpacity(0.06)
-              : Colors.black.withOpacity(0.03),
+              ? Colors.white.withValues(alpha: 0.06)
+              : Colors.black.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -855,12 +855,12 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
         child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
@@ -882,13 +882,13 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                   DecoratedBox(
                     decoration: BoxDecoration(
                       color: isDark
-                          ? Colors.white.withOpacity(0.08)
-                          : Colors.black.withOpacity(0.04),
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.04),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isDark
-                            ? Colors.white.withOpacity(0.12)
-                            : Colors.black.withOpacity(0.06),
+                            ? Colors.white.withValues(alpha: 0.12)
+                            : Colors.black.withValues(alpha: 0.06),
                       ),
                     ),
                     child: TextField(
@@ -943,7 +943,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                               color: Theme.of(context)
                                   .colorScheme
                                   .primary
-                                  .withOpacity(0.8),
+                                  .withValues(alpha: 0.8),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(
@@ -983,12 +983,12 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
         child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
@@ -999,7 +999,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                 children: [
                   Icon(
                     Icons.delete_outline_rounded,
-                    color: Colors.red.withOpacity(0.8),
+                    color: Colors.red.withValues(alpha: 0.8),
                     size: 48,
                   ),
                   const SizedBox(height: 16),
@@ -1047,7 +1047,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.8),
+                              color: Colors.red.withValues(alpha: 0.8),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(

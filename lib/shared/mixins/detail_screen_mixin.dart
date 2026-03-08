@@ -69,6 +69,23 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
     audioService.setPlaylist(shuffledSongs, 0, source: playbackSource);
   }
 
+  /// Add all songs in this collection to the playback queue.
+  Future<void> addAllToQueue() async {
+    if (allSongs.isEmpty) return;
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+    await audioService.addMultipleToQueue(allSongs);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              '${allSongs.length} song${allSongs.length == 1 ? '' : 's'} added to queue'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   /// Build a stat item widget for displaying counts and labels.
   Widget buildStatItem(IconData icon, String value, String label) {
     return Column(
@@ -88,7 +105,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontSize: 12,
           ),
         ),
@@ -101,7 +118,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
     return Container(
       height: 40,
       width: 1,
-      color: Colors.white.withOpacity(0.2),
+      color: Colors.white.withValues(alpha: 0.2),
     );
   }
 
@@ -121,15 +138,15 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
           gradient: isPrimary
               ? LinearGradient(
                   colors: [
-                    dominantColor.withOpacity(0.8),
-                    dominantColor.withOpacity(0.6),
+                    dominantColor.withValues(alpha: 0.8),
+                    dominantColor.withValues(alpha: 0.6),
                   ],
                 )
               : null,
-          color: isPrimary ? null : Colors.white.withOpacity(0.1),
+          color: isPrimary ? null : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isPrimary ? dominantColor : Colors.white.withOpacity(0.2),
+            color: isPrimary ? dominantColor : Colors.white.withValues(alpha: 0.2),
             width: 1.5,
           ),
         ),
@@ -157,7 +174,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
     );
   }
 
-  /// Build the action buttons row with Play All and Shuffle.
+  /// Build the action buttons row with Play All, Shuffle, and Add to Queue.
   Widget buildActionButtonsRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -171,13 +188,17 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
               isPrimary: true,
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: buildActionButton(
-              icon: Icons.shuffle_rounded,
-              label: AppLocalizations.of(context).translate('shuffle'),
-              onTap: shuffleAllSongs,
-            ),
+          const SizedBox(width: 8),
+          buildActionButton(
+            icon: Icons.shuffle_rounded,
+            label: AppLocalizations.of(context).translate('shuffle'),
+            onTap: shuffleAllSongs,
+          ),
+          const SizedBox(width: 8),
+          buildActionButton(
+            icon: Icons.queue_music_rounded,
+            label: 'Queue',
+            onTap: addAllToQueue,
           ),
         ],
       ),
@@ -193,7 +214,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
           return SizedBox(
             height: hasCurrentSong
                 ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
-                : 16,
+                : MediaQuery.of(context).padding.bottom + 16,
           );
         },
       ),

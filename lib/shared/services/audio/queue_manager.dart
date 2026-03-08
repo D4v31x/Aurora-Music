@@ -3,7 +3,12 @@ part of '../audio_player_service.dart';
 extension AudioQueueManagerExtension on AudioPlayerService {
   // MARK: - Queue Management
 
-  /// Add a single song to the end of the queue
+  /// Add a single song to the queue.
+  ///
+  /// The song is inserted right after any already-queued songs (i.e., songs
+  /// previously added via [addToQueue] or [playNext]) but BEFORE the
+  /// remaining source songs.  This ensures repeated "Add to queue" calls
+  /// build a FIFO queue that finishes before the source continues.
   Future<void> addToQueue(SongModel song) async {
     if (_playlist.isEmpty) {
       // If no playlist, create one with this song
@@ -11,7 +16,10 @@ extension AudioQueueManagerExtension on AudioPlayerService {
       return;
     }
 
-    _playlist.add(song);
+    // Insert after any already-queued songs, before source continuation.
+    final insertIndex = (_currentIndex + 1 + _queueCount).clamp(0, _playlist.length);
+    _playlist.insert(insertIndex, song);
+    _queueCount++;
 
     if (_gaplessPlayback &&
         _audioPlayer.audioSource is ConcatenatingAudioSource) {
@@ -19,7 +27,7 @@ extension AudioQueueManagerExtension on AudioPlayerService {
         final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
         final mediaItem = _createMediaItemSync(song);
         final uri = song.uri ?? song.data;
-        await source.add(AudioSource.uri(Uri.parse(uri), tag: mediaItem));
+        await source.insert(insertIndex, AudioSource.uri(Uri.parse(uri), tag: mediaItem));
 
         // Update notification queue with lightweight items
         final mediaItems =
@@ -37,7 +45,10 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     unawaited(saveQueueState());
   }
 
-  /// Add multiple songs to the end of the queue
+  /// Add multiple songs to the queue at once.
+  ///
+  /// The songs are inserted after all existing queued songs, before source
+  /// continuation. Equivalent to calling [addToQueue] for each song.
   Future<void> addMultipleToQueue(List<SongModel> songs) async {
     if (songs.isEmpty) return;
 
@@ -47,7 +58,9 @@ extension AudioQueueManagerExtension on AudioPlayerService {
       return;
     }
 
-    _playlist.addAll(songs);
+    final insertStart = (_currentIndex + 1 + _queueCount).clamp(0, _playlist.length);
+    _playlist.insertAll(insertStart, songs);
+    _queueCount += songs.length;
 
     if (_gaplessPlayback &&
         _audioPlayer.audioSource is ConcatenatingAudioSource) {
@@ -59,7 +72,7 @@ extension AudioQueueManagerExtension on AudioPlayerService {
         for (var i = 0; i < songs.length; i++) {
           final song = songs[i];
           final uri = song.uri ?? song.data;
-          await source.add(AudioSource.uri(Uri.parse(uri), tag: mediaItems[i]));
+          await source.insert(insertStart + i, AudioSource.uri(Uri.parse(uri), tag: mediaItems[i]));
         }
 
         // Update notification queue with lightweight items
@@ -78,7 +91,10 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     unawaited(saveQueueState());
   }
 
-  /// Add a song to play next (right after current song)
+  /// Add a song to play immediately after the current track.
+  ///
+  /// Unlike [addToQueue], which appends after all queued songs, this inserts
+  /// the song at the very front of the queue (position _currentIndex + 1).
   Future<void> playNext(SongModel song) async {
     if (_playlist.isEmpty) {
       await setPlaylist([song], 0);
@@ -87,6 +103,7 @@ extension AudioQueueManagerExtension on AudioPlayerService {
 
     final insertIndex = _currentIndex + 1;
     _playlist.insert(insertIndex, song);
+    _queueCount++; // This song is part of the user-queued zone
 
     if (_gaplessPlayback &&
         _audioPlayer.audioSource is ConcatenatingAudioSource) {
@@ -145,8 +162,10 @@ extension AudioQueueManagerExtension on AudioPlayerService {
         }
       }
       _playlist.removeAt(index);
-      // After removal: play the song now at `index` (the former next song),
-      // or the new last song if we removed the end of the queue.
+      // After removal: the next song (at the same index) becomes current.
+      // If the removed song was in the queued zone, the new current is also
+      // queued, so decrement the count.
+      if (_queueCount > 0) _queueCount--;
       _currentIndex = index < _playlist.length ? index : _playlist.length - 1;
 
       if (_gaplessPlayback &&
@@ -175,10 +194,15 @@ extension AudioQueueManagerExtension on AudioPlayerService {
 
     _playlist.removeAt(index);
 
-    // Adjust current index if needed
+    // Adjust current index and queue boundary.
     if (index < _currentIndex) {
       _currentIndex--;
+      // Queue zone shifts left with _currentIndex, so relative count stays.
+    } else if (index > _currentIndex && index <= _currentIndex + _queueCount) {
+      // Removed song was in the queued zone.
+      _queueCount--;
     }
+    // Removing from source zone (beyond queued zone) needs no adjustment.
 
     if (_gaplessPlayback &&
         _audioPlayer.audioSource is ConcatenatingAudioSource) {
@@ -204,6 +228,12 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     if (newIndex < 0 || newIndex >= _playlist.length) return;
     if (oldIndex == newIndex) return;
 
+    // Determine whether the moved song is crossing the queue/source boundary
+    // BEFORE the actual move (using pre-move positions).
+    final queueZoneEnd = _currentIndex + _queueCount; // last queued song index
+    final wasQueued = oldIndex > _currentIndex && oldIndex <= queueZoneEnd;
+    final willBeQueued = newIndex > _currentIndex && newIndex <= queueZoneEnd;
+
     final song = _playlist.removeAt(oldIndex);
     _playlist.insert(newIndex, song);
 
@@ -214,6 +244,13 @@ extension AudioQueueManagerExtension on AudioPlayerService {
       _currentIndex--;
     } else if (oldIndex > _currentIndex && newIndex <= _currentIndex) {
       _currentIndex++;
+    }
+
+    // Adjust _queueCount if the song crossed the queue/source boundary.
+    if (wasQueued && !willBeQueued) {
+      _queueCount = (_queueCount - 1).clamp(0, _playlist.length);
+    } else if (!wasQueued && willBeQueued) {
+      _queueCount++;
     }
 
     if (_gaplessPlayback &&
@@ -243,6 +280,7 @@ extension AudioQueueManagerExtension on AudioPlayerService {
       // Keep only the current song
       _playlist = [currentSong];
       _currentIndex = 0;
+      _queueCount = 0;
 
       if (_gaplessPlayback) {
         try {
@@ -270,6 +308,7 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     } else {
       _playlist = [];
       _currentIndex = -1;
+      _queueCount = 0;
     }
 
     _scheduleNotify();
@@ -281,6 +320,7 @@ extension AudioQueueManagerExtension on AudioPlayerService {
 
     // Remove all songs after current
     _playlist = _playlist.sublist(0, _currentIndex + 1);
+    _queueCount = 0; // All queued and source songs are cleared
 
     if (_gaplessPlayback &&
         _audioPlayer.audioSource is ConcatenatingAudioSource) {
@@ -337,6 +377,7 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     rest.shuffle(Random());
     _playlist = [current, ...rest];
     _currentIndex = 0;
+    _queueCount = 0; // Queue distinction lost after shuffle
     unawaited(_rebuildAudioSourcePreservingPosition());
   }
 
@@ -347,6 +388,7 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     final current = currentSong;
     _playlist = List<SongModel>.from(_originalPlaylist);
     _originalPlaylist = [];
+    _queueCount = 0; // Queue distinction not preserved through shuffle/restore
     if (current != null) {
       final restoredIndex = _playlist.indexWhere((s) => s.id == current.id);
       _currentIndex = restoredIndex != -1 ? restoredIndex : 0;

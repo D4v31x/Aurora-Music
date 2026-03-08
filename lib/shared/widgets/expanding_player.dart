@@ -38,6 +38,14 @@ class ExpandingPlayer extends StatefulWidget {
   /// Notifier for when now playing screen is open/closed
   static final ValueNotifier<bool> isOpenNotifier = ValueNotifier<bool>(false);
 
+  /// Set to true by screens that should suppress the mini player (e.g. metadata editor)
+  static final ValueNotifier<bool> hiddenNotifier = ValueNotifier<bool>(false);
+
+  /// Set to true by [_MiniPlayerObserver] when any PopupRoute (dialog / bottom
+  /// sheet / menu) is active so the mini player yields to it.
+  static final ValueNotifier<bool> popupActiveNotifier =
+      ValueNotifier<bool>(false);
+
   /// Check if player is expanded (now playing screen is open)
   static bool get isExpanded => isOpenNotifier.value;
 
@@ -142,14 +150,28 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
         // Hide mini player when now playing screen is open
         if (isOpen) return const SizedBox.shrink();
 
-        return Selector<AudioPlayerService, SongModel?>(
-          selector: (_, service) => service.currentSong,
-          builder: (context, currentSong, _) {
-            if (currentSong == null) return const SizedBox.shrink();
+        return ValueListenableBuilder<bool>(
+          valueListenable: ExpandingPlayer.hiddenNotifier,
+          builder: (context, isHidden, _) {
+            if (isHidden) return const SizedBox.shrink();
 
-            return _MiniPlayerWidget(
-              song: currentSong,
-              onTap: _openNowPlaying,
+            return ValueListenableBuilder<bool>(
+              valueListenable: ExpandingPlayer.popupActiveNotifier,
+              builder: (context, isPopupActive, _) {
+                if (isPopupActive) return const SizedBox.shrink();
+
+                return Selector<AudioPlayerService, SongModel?>(
+                  selector: (_, service) => service.currentSong,
+                  builder: (context, currentSong, _) {
+                    if (currentSong == null) return const SizedBox.shrink();
+
+                    return _MiniPlayerWidget(
+                      song: currentSong,
+                      onTap: _openNowPlaying,
+                    );
+                  },
+                );
+              },
             );
           },
         );

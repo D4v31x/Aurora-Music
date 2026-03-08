@@ -135,7 +135,7 @@ class _AppInfoPageState extends State<AppInfoPage>
     final isDark = themeProvider.isDarkMode;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
     final localizations = AppLocalizations.of(context);
 
     return Scaffold(
@@ -295,13 +295,13 @@ class _AppInfoPageState extends State<AppInfoPage>
     required bool isDark,
   }) {
     final containerColor = isDark
-        ? Colors.white.withOpacity(0.05)
-        : Colors.black.withOpacity(0.05);
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
     final borderColor =
-        isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+        isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1);
     final titleColor = isDark ? Colors.white : Colors.black;
     final descriptionColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -318,7 +318,7 @@ class _AppInfoPageState extends State<AppInfoPage>
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(

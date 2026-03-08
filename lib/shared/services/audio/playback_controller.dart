@@ -20,15 +20,19 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
       // Reset loading flag when setting a new playlist
       _isLoading = false;
 
-      _playlist = songs;
-      _currentIndex = startIndex;
+      // Slice the song list to start at [startIndex] — songs before the
+      // selected track are excluded from the queue so "playing from the
+      // middle" shows only the current song and the ones after it.
+      _playlist = List<SongModel>.from(songs.sublist(startIndex));
+      _currentIndex = 0;
+      _queueCount = 0; // No user-queued songs when starting fresh
 
       // When shuffle is active, the new queue must also be shuffled.
       // Reset _originalPlaylist to the freshly loaded songs, then shuffle.
       if (_isShuffle) {
         _originalPlaylist = List<SongModel>.from(_playlist);
-        final current = _playlist[_currentIndex];
-        final rest = List<SongModel>.from(_playlist)..removeAt(_currentIndex);
+        final current = _playlist[0];
+        final rest = List<SongModel>.from(_playlist)..removeAt(0);
         rest.shuffle(Random());
         _playlist = [current, ...rest];
         _currentIndex = 0;
@@ -227,7 +231,9 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
 
     try {
       if (index != null) {
+        final oldIndex = _currentIndex;
         _currentIndex = index;
+        _updateQueueCountForIndexChange(oldIndex, index);
       }
 
       debugPrint(

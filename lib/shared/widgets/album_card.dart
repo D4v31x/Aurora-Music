@@ -123,17 +123,17 @@ class _AlbumCardState extends State<AlbumCard>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.white.withOpacity(0.1),
-                Colors.white.withOpacity(0.2),
+                Colors.white.withValues(alpha: 0.1),
+                Colors.white.withValues(alpha: 0.2),
               ],
             ),
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 10,
                 spreadRadius: 2,
               ),
@@ -150,7 +150,7 @@ class _AlbumCardState extends State<AlbumCard>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 8,
                         spreadRadius: 2,
                       ),
@@ -183,7 +183,7 @@ class _AlbumCardState extends State<AlbumCard>
                     Text(
                       widget.artistName ?? 'Unknown Artist',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 14,
                         fontFamily: FontConstants.fontFamily,
                       ),
@@ -195,7 +195,7 @@ class _AlbumCardState extends State<AlbumCard>
               ),
               Icon(
                 Icons.chevron_right,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 size: 30,
               ),
             ],
@@ -226,10 +226,10 @@ class _AlbumCardState extends State<AlbumCard>
     return Container(
       width: 80,
       height: 80,
-      color: Colors.white.withOpacity(0.1),
+      color: Colors.white.withValues(alpha: 0.1),
       child: Icon(
         Icons.album_rounded,
-        color: Colors.white.withOpacity(0.3),
+        color: Colors.white.withValues(alpha: 0.3),
         size: 40,
       ),
     );

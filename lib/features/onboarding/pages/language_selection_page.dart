@@ -165,7 +165,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
     final isDark = themeProvider.isDarkMode;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
     final localizations = AppLocalizations.of(context);
 
     return Scaffold(
@@ -247,17 +247,17 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                                 _selectedLanguage == language['code'];
 
                             final containerColor = isDark
-                                ? Colors.white.withOpacity(0.05)
-                                : Colors.black.withOpacity(0.05);
+                                ? Colors.white.withValues(alpha: 0.05)
+                                : Colors.black.withValues(alpha: 0.05);
                             final borderColor = isDark
-                                ? Colors.white.withOpacity(0.1)
-                                : Colors.black.withOpacity(0.1);
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.black.withValues(alpha: 0.1);
                             final primaryTextColor = isDark
-                                ? Colors.white.withOpacity(0.9)
-                                : Colors.black.withOpacity(0.9);
+                                ? Colors.white.withValues(alpha: 0.9)
+                                : Colors.black.withValues(alpha: 0.9);
                             final secondaryTextColor = isDark
-                                ? Colors.white.withOpacity(0.6)
-                                : Colors.black.withOpacity(0.6);
+                                ? Colors.white.withValues(alpha: 0.6)
+                                : Colors.black.withValues(alpha: 0.6);
 
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12.0),
@@ -275,7 +275,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                                           ? Theme.of(context)
                                               .colorScheme
                                               .primary
-                                              .withOpacity(0.15)
+                                              .withValues(alpha: 0.15)
                                           : containerColor,
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(

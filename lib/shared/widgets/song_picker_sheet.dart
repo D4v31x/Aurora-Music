@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -130,23 +132,27 @@ class SongPickerSheet extends HookWidget {
     final localizations = AppLocalizations.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return Container(
-      height: screenHeight * 0.85,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 24,
-            offset: const Offset(0, -4),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          height: screenHeight * 0.85,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 24,
+                offset: const Offset(0, -4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
+          child: Column(
             children: [
               // Handle
               Container(
@@ -239,10 +245,10 @@ class SongPickerSheet extends HookWidget {
                 child: Container(
                   height: 46,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                     ),
                   ),
                   child: TextField(
@@ -308,8 +314,8 @@ class SongPickerSheet extends HookWidget {
                               horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.white.withOpacity(0.06)
-                                : Colors.black.withOpacity(0.03),
+                                ? Colors.white.withValues(alpha: 0.06)
+                                : Colors.black.withValues(alpha: 0.03),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -385,6 +391,8 @@ class SongPickerSheet extends HookWidget {
               ),
             ],
       ),
+        ),
+      ),
     );
   }
 
@@ -403,7 +411,7 @@ class SongPickerSheet extends HookWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color:
-              isSelected ? primaryColor.withOpacity(0.12) : Colors.transparent,
+              isSelected ? primaryColor.withValues(alpha: 0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/performance_mode_provider.dart';
+import '../providers/theme_provider.dart';
 import '../services/background_manager_service.dart';
 
 /// A beautiful animated background that displays heavily blurred artwork
@@ -128,6 +129,10 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
     final shouldBlur = performanceProvider.shouldEnableBlur;
     final isLowEndMode = !shouldBlur;
 
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final blurIntensity = themeProvider.blurIntensity;
+    final overlayOpacity = themeProvider.overlayOpacity;
+
     // For low-end mode, use extracted colors as gradient instead of artwork
     if (isLowEndMode && widget.currentArtwork != null) {
       return _buildColorGradientBackground(context, backgroundColor);
@@ -149,7 +154,7 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
               opacity: (1.0 - _crossfadeAnimation.value).clamp(0.0, 1.0),
               child: child!,
             ),
-            child: _buildBlurredArtwork(_previousArtworkCache!, shouldBlur),
+            child: _buildBlurredArtwork(_previousArtworkCache!, shouldBlur, blurIntensity),
           ),
 
         // Current artwork (always visible once loaded, no animation wrapper when stable)
@@ -163,19 +168,19 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
                   ),
                   child: RepaintBoundary(
                     child: _buildBlurredArtwork(
-                        widget.currentArtwork!, shouldBlur),
+                        widget.currentArtwork!, shouldBlur, blurIntensity),
                   ),
                 )
               : RepaintBoundary(
                   child:
-                      _buildBlurredArtwork(widget.currentArtwork!, shouldBlur),
+                      _buildBlurredArtwork(widget.currentArtwork!, shouldBlur, blurIntensity),
                 ),
 
         // Overlay for better text readability
         Container(
           color: shouldBlur
-              ? Colors.black.withValues(alpha: 0.3)
-              : Colors.black.withValues(alpha: 0.6),
+              ? Colors.black.withValues(alpha: overlayOpacity)
+              : Colors.black.withValues(alpha: (overlayOpacity + 0.3).clamp(0.0, 1.0)),
         ),
 
         // Vignette effect for depth - only apply in high-end mode
@@ -225,7 +230,7 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
     );
   }
 
-  Widget _buildBlurredArtwork(Uint8List artworkData, bool shouldBlur) {
+  Widget _buildBlurredArtwork(Uint8List artworkData, bool shouldBlur, double blurIntensity) {
     return RepaintBoundary(
       child: Stack(
         fit: StackFit.expand,
@@ -242,8 +247,8 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
           if (shouldBlur)
             BackdropFilter(
               filter: ImageFilter.blur(
-                sigmaX: 25.0,
-                sigmaY: 25.0,
+                sigmaX: blurIntensity,
+                sigmaY: blurIntensity,
               ),
               child: Container(
                 color: Colors.black.withValues(alpha: 0.2),
@@ -448,7 +453,7 @@ class _AnimatedColorPointsBackgroundState
   bool _areColorsEqual(List<Color> a, List<Color> b) {
     if (a.length != b.length) return false;
     for (int i = 0; i < a.length; i++) {
-      if (a[i].value != b[i].value) return false;
+      if (a[i].toARGB32() != b[i].toARGB32()) return false;
     }
     return true;
   }
@@ -573,7 +578,7 @@ class _ColorPointsPainter extends CustomPainter {
   bool _colorListEquals(List<Color> a, List<Color> b) {
     if (a.length != b.length) return false;
     for (int i = 0; i < a.length; i++) {
-      if (a[i].value != b[i].value) return false;
+      if (a[i].toARGB32() != b[i].toARGB32()) return false;
     }
     return true;
   }
