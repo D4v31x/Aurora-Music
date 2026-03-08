@@ -402,18 +402,18 @@ class HomeScreenWidgetService {
       final progressColor = luminance > 0.5 ? Colors.black : Colors.white;
 
       debugPrint(
-          'Widget colors: bg=${backgroundColor.value.toRadixString(16)}, text=${textColor.value.toRadixString(16)}, luminance=$luminance');
+          'Widget colors: bg=${backgroundColor.toARGB32().toRadixString(16)}, text=${textColor.toARGB32().toRadixString(16)}, luminance=$luminance');
 
       // Save colors as int values (ARGB format)
       await Future.wait([
         HomeWidget.saveWidgetData<int>(
-            _keyBackgroundColor, backgroundColor.value),
-        HomeWidget.saveWidgetData<int>(_keyTextColor, textColor.value),
-        HomeWidget.saveWidgetData<int>(_keyProgressColor, progressColor.value),
+            _keyBackgroundColor, backgroundColor.toARGB32()),
+        HomeWidget.saveWidgetData<int>(_keyTextColor, textColor.toARGB32()),
+        HomeWidget.saveWidgetData<int>(_keyProgressColor, progressColor.toARGB32()),
       ]);
 
       debugPrint(
-          'Widget colors: bg=${backgroundColor.value.toRadixString(16)}, text=${textColor.value.toRadixString(16)}');
+          'Widget colors: bg=${backgroundColor.toARGB32().toRadixString(16)}, text=${textColor.toARGB32().toRadixString(16)}');
     } catch (e) {
       debugPrint('HomeScreenWidgetService: Failed to extract colors - $e');
       await _setDefaultColors();

@@ -84,7 +84,7 @@ class NowPlayingController {
   /// Disposes of resources.
   void dispose() {
     currentLyricIndexNotifier.dispose();
-    _positionSubscription?.cancel();
+    unawaited(_positionSubscription?.cancel());
     _songChangeSubscription?.cancel();
     _pendingSongLoadId = null;
   }
@@ -134,7 +134,7 @@ class NowPlayingController {
     onLyricsChanged?.call();
 
     // Set up position stream for lyric sync
-    _positionSubscription?.cancel();
+    await _positionSubscription?.cancel();
     _positionSubscription =
         _audioPlayerService.audioPlayer.positionStream.listen(_updateCurrentLyric);
   }

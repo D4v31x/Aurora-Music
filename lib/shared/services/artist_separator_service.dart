@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'artist_aggregator_service.dart';
 
 /// Service for parsing and splitting artist names from metadata.
 /// Provides configurable separators and exclusions that persist across app restarts.
-class ArtistSeparatorService {
+class ArtistSeparatorService extends ChangeNotifier {
   static final ArtistSeparatorService _instance =
       ArtistSeparatorService._internal();
   factory ArtistSeparatorService() => _instance;
@@ -97,46 +99,51 @@ class ArtistSeparatorService {
     _enabled = enabled;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_enabledKey, enabled);
+    _onConfigChanged();
   }
 
   /// Add a new separator
   Future<void> addSeparator(String separator) async {
     if (separator.isEmpty || _separators.contains(separator)) return;
-
     _separators.add(separator);
     await _saveSeparators();
+    _onConfigChanged();
   }
 
   /// Remove a separator
   Future<void> removeSeparator(String separator) async {
     _separators.remove(separator);
     await _saveSeparators();
+    _onConfigChanged();
   }
 
   /// Set all separators at once
   Future<void> setSeparators(List<String> separators) async {
     _separators = List.from(separators);
     await _saveSeparators();
+    _onConfigChanged();
   }
 
   /// Add a new exclusion
   Future<void> addExclusion(String exclusion) async {
     if (exclusion.isEmpty || _exclusions.contains(exclusion)) return;
-
     _exclusions.add(exclusion);
     await _saveExclusions();
+    _onConfigChanged();
   }
 
   /// Remove an exclusion
   Future<void> removeExclusion(String exclusion) async {
     _exclusions.remove(exclusion);
     await _saveExclusions();
+    _onConfigChanged();
   }
 
   /// Set all exclusions at once
   Future<void> setExclusions(List<String> exclusions) async {
     _exclusions = List.from(exclusions);
     await _saveExclusions();
+    _onConfigChanged();
   }
 
   /// Reset to default settings
@@ -148,6 +155,7 @@ class ArtistSeparatorService {
     await _saveExclusions();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_enabledKey, true);
+    _onConfigChanged();
   }
 
   Future<void> _saveSeparators() async {
@@ -160,6 +168,12 @@ class ArtistSeparatorService {
     await prefs.setString(_exclusionsKey, json.encode(_exclusions));
   }
 
+  /// Called after any config change: clears downstream caches and notifies listeners.
+  void _onConfigChanged() {
+    ArtistAggregatorService().clearCache();
+    notifyListeners();
+  }
+
   /// Split artist string into individual artists
   /// Returns a list of artist names
   List<String> splitArtists(String artistString) {
@@ -170,20 +184,10 @@ class ArtistSeparatorService {
       return [artistString.trim()];
     }
 
-    // Check if the artist string is in the exclusions list (case-insensitive)
-    final lowerArtist = artistString.toLowerCase().trim();
-    for (final exclusion in _exclusions) {
-      if (lowerArtist == exclusion.toLowerCase()) {
-        return [artistString.trim()];
-      }
-    }
-
-    // Build regex pattern from separators
-    // Sort by length (longest first) to prevent partial matches
+    // Build separator regex first
     final sortedSeparators = List<String>.from(_separators)
       ..sort((a, b) => b.length.compareTo(a.length));
 
-    // Escape special regex characters and join with |
     final escapedSeparators =
         sortedSeparators.map((s) => RegExp.escape(s)).join('|');
 
@@ -191,15 +195,42 @@ class ArtistSeparatorService {
       return [artistString.trim()];
     }
 
-    // Create case-insensitive regex
-    final regex = RegExp(escapedSeparators, caseSensitive: false);
+    // Replace excluded artist names with stable placeholders so they survive
+    // the separator-based split below. This supports partial exclusions, e.g.
+    // "AC/DC" stays intact even inside "Artist1/AC/DC".
+    String modified = artistString;
+    // Map from placeholder → original matched text (preserves original casing)
+    final restorations = <String, String>{};
 
-    // Split and clean up the results
-    final artists = artistString
-        .split(regex)
-        .map((artist) => artist.trim())
-        .where((artist) => artist.isNotEmpty)
+    for (int i = 0; i < _exclusions.length; i++) {
+      final exclusion = _exclusions[i];
+      if (exclusion.isEmpty) continue;
+      final excRegex = RegExp(RegExp.escape(exclusion), caseSensitive: false);
+      if (excRegex.hasMatch(modified)) {
+        final placeholder = '\x00E$i\x00';
+        // Keep the first matched casing for restoration
+        restorations[placeholder] =
+            excRegex.firstMatch(modified)!.group(0)!;
+        modified = modified.replaceAll(excRegex, placeholder);
+      }
+    }
+
+    // Split by separators
+    final sepRegex = RegExp(escapedSeparators, caseSensitive: false);
+    final parts = modified
+        .split(sepRegex)
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
         .toList();
+
+    // Restore placeholders back to original artist names
+    final artists = parts.map((part) {
+      String restored = part;
+      for (final entry in restorations.entries) {
+        restored = restored.replaceAll(entry.key, entry.value);
+      }
+      return restored;
+    }).toList();
 
     return artists.isEmpty ? [artistString.trim()] : artists;
   }

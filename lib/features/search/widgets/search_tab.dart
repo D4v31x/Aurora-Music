@@ -15,6 +15,7 @@ import '../../library/screens/artist_detail_screen.dart';
 import '../../library/screens/album_detail_screen.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/expanding_player.dart';
+import '../../../shared/widgets/song_context_menu.dart';
 
 class SearchTab extends StatefulWidget {
   final List<SongModel> songs;
@@ -309,7 +310,7 @@ class _SearchTabState extends State<SearchTab> {
                     )
                   : null,
               filled: true,
-              fillColor: Colors.white.withOpacity(0.1),
+              fillColor: Colors.white.withValues(alpha: 0.1),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide.none,
@@ -336,13 +337,13 @@ class _SearchTabState extends State<SearchTab> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search, size: 64, color: Colors.white.withOpacity(0.3)),
+            Icon(Icons.search, size: 64, color: Colors.white.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text(
               AppLocalizations.of(context).translate('Start_type'),
               style: TextStyle(
                 fontFamily: FontConstants.fontFamily,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 fontSize: 16,
               ),
             ),
@@ -361,13 +362,13 @@ class _SearchTabState extends State<SearchTab> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.search_off,
-                size: 64, color: Colors.white.withOpacity(0.3)),
+                size: 64, color: Colors.white.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text(
               'No results found',
               style: TextStyle(
                 fontFamily: FontConstants.fontFamily,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 fontSize: 16,
               ),
             ),
@@ -510,7 +511,7 @@ class _SearchTabState extends State<SearchTab> {
       title: album.album,
       subtitle: album.artist ?? '',
       trailing: Icon(Icons.chevron_right,
-          color: Colors.white.withOpacity(0.5), size: 32),
+          color: Colors.white.withValues(alpha: 0.5), size: 32),
       heroTag: 'album_image_${album.album}',
     );
   }
@@ -624,7 +625,7 @@ class _SearchTabState extends State<SearchTab> {
                     .textTheme
                     .bodySmall
                     ?.color
-                    ?.withOpacity(0.7),
+                    ?.withValues(alpha: 0.7),
                 fontSize: 12,
               ),
               maxLines: 1,
@@ -671,17 +672,15 @@ class _SearchSongTile extends StatelessWidget {
           style: TextStyle(
             fontFamily: FontConstants.fontFamily,
             color:
-                Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         trailing: IconButton(
           icon: Icon(Icons.more_vert,
-              color: Theme.of(context).iconTheme.color?.withOpacity(0.5)),
-          onPressed: () {
-            // TODO: Show song options
-          },
+              color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.5)),
+          onPressed: () => showSongContextMenu(context, song),
         ),
         onTap: onTap,
       ),
@@ -739,23 +738,23 @@ class _TopResultCardWithArtwork extends HookWidget {
       gradient: hasArtwork && dominantColor != null
           ? LinearGradient(
               colors: [
-                dominantColor.withOpacity(0.35),
-                (accentColor ?? dominantColor).withOpacity(0.15),
+                dominantColor.withValues(alpha: 0.35),
+                (accentColor ?? dominantColor).withValues(alpha: 0.15),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             )
           : null,
-      color: hasArtwork ? null : Colors.white.withOpacity(0.1),
+      color: hasArtwork ? null : Colors.white.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(20),
       border: Border.all(
         color: hasArtwork && dominantColor != null
-            ? dominantColor.withOpacity(0.3)
-            : Colors.white.withOpacity(0.2),
+            ? dominantColor.withValues(alpha: 0.3)
+            : Colors.white.withValues(alpha: 0.2),
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.2),
+          color: Colors.black.withValues(alpha: 0.2),
           blurRadius: 12,
           offset: const Offset(0, 4),
         ),
@@ -793,8 +792,8 @@ class _TopResultCardWithArtwork extends HookWidget {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: hasArtwork && accentColor != null
-                        ? accentColor.withOpacity(0.2)
-                        : Colors.white.withOpacity(0.1),
+                        ? accentColor.withValues(alpha: 0.2)
+                        : Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -802,8 +801,8 @@ class _TopResultCardWithArtwork extends HookWidget {
                     style: TextStyle(
                       fontFamily: FontConstants.fontFamily,
                       color: hasArtwork && accentColor != null
-                          ? Colors.white.withOpacity(0.9)
-                          : Colors.white.withOpacity(0.7),
+                          ? Colors.white.withValues(alpha: 0.9)
+                          : Colors.white.withValues(alpha: 0.7),
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
@@ -827,7 +826,7 @@ class _TopResultCardWithArtwork extends HookWidget {
                   subtitle,
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 14,
                   ),
                   maxLines: 1,
@@ -924,23 +923,23 @@ class _TopArtistResultCard extends HookWidget {
       gradient: hasArtwork && dominantColor != null
           ? LinearGradient(
               colors: [
-                dominantColor.withOpacity(0.35),
-                (accentColor ?? dominantColor).withOpacity(0.15),
+                dominantColor.withValues(alpha: 0.35),
+                (accentColor ?? dominantColor).withValues(alpha: 0.15),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             )
           : null,
-      color: hasArtwork ? null : Colors.white.withOpacity(0.1),
+      color: hasArtwork ? null : Colors.white.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(20),
       border: Border.all(
         color: hasArtwork && dominantColor != null
-            ? dominantColor.withOpacity(0.3)
-            : Colors.white.withOpacity(0.2),
+            ? dominantColor.withValues(alpha: 0.3)
+            : Colors.white.withValues(alpha: 0.2),
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.2),
+          color: Colors.black.withValues(alpha: 0.2),
           blurRadius: 12,
           offset: const Offset(0, 4),
         ),
@@ -973,8 +972,8 @@ class _TopArtistResultCard extends HookWidget {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: hasArtwork && accentColor != null
-                        ? accentColor.withOpacity(0.2)
-                        : Colors.white.withOpacity(0.1),
+                        ? accentColor.withValues(alpha: 0.2)
+                        : Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -982,8 +981,8 @@ class _TopArtistResultCard extends HookWidget {
                     style: TextStyle(
                       fontFamily: FontConstants.fontFamily,
                       color: hasArtwork && accentColor != null
-                          ? Colors.white.withOpacity(0.9)
-                          : Colors.white.withOpacity(0.7),
+                          ? Colors.white.withValues(alpha: 0.9)
+                          : Colors.white.withValues(alpha: 0.7),
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
@@ -1007,7 +1006,7 @@ class _TopArtistResultCard extends HookWidget {
                   '${artist.numberOfTracks} ${AppLocalizations.of(context).translate('songs').toLowerCase()}',
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14,
                   ),
                 ),
@@ -1015,7 +1014,7 @@ class _TopArtistResultCard extends HookWidget {
             ),
           ),
           Icon(Icons.chevron_right,
-              color: Colors.white.withOpacity(0.5), size: 32),
+              color: Colors.white.withValues(alpha: 0.5), size: 32),
         ],
       ),
     );

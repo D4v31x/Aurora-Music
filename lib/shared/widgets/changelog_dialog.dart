@@ -58,7 +58,7 @@ class ChangelogDialog extends StatelessWidget {
                           color: (isDarkMode
                                   ? Colors.blue[300]
                                   : Colors.blue[700])!
-                              .withOpacity(0.3),
+                              .withValues(alpha: 0.3),
                           blurRadius: 4,
                           spreadRadius: 1,
                         ),
@@ -163,15 +163,15 @@ class ChangelogDialog extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: shouldBlur
                       ? (isDarkMode
-                          ? Colors.blue.withOpacity(0.2)
-                          : Colors.blue.withOpacity(0.1))
+                          ? Colors.blue.withValues(alpha: 0.2)
+                          : Colors.blue.withValues(alpha: 0.1))
                       : colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: shouldBlur
                         ? (isDarkMode
-                            ? Colors.blue.withOpacity(0.3)
-                            : Colors.blue.withOpacity(0.2))
+                            ? Colors.blue.withValues(alpha: 0.3)
+                            : Colors.blue.withValues(alpha: 0.2))
                         : colorScheme.primary,
                     width: 1,
                   ),
@@ -219,8 +219,8 @@ class ChangelogDialog extends StatelessWidget {
                       Divider(
                         color: shouldBlur
                             ? (isDarkMode
-                                ? Colors.white.withOpacity(0.1)
-                                : Colors.black.withOpacity(0.1))
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.black.withValues(alpha: 0.1))
                             : colorScheme.outlineVariant,
                       ),
                       const SizedBox(height: 16),

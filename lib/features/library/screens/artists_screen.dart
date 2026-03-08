@@ -102,7 +102,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     });
     _applySorting();
     setState(() => _resetPaging());
-    _loadArtistImages();
+    unawaited(_loadArtistImages());
   }
 
   Future<void> _loadArtistImages() async {
@@ -288,13 +288,13 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.person, size: 64, color: Colors.white.withOpacity(0.3)),
+            Icon(Icons.person, size: 64, color: Colors.white.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text(
               _searchQuery.isEmpty
                   ? loc.translate('no_artists_found')
                   : loc.translate('no_results'),
-              style: TextStyle(color: Colors.white.withOpacity(0.5)),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
             ),
           ],
         ),
@@ -404,7 +404,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
               Text(
                 '${artist.numberOfTracks} songs',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 10,
                 ),
               ),
@@ -500,23 +500,23 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                     Row(
                       children: [
                         Icon(Icons.music_note,
-                            size: 14, color: Colors.white.withOpacity(0.6)),
+                            size: 14, color: Colors.white.withValues(alpha: 0.6)),
                         const SizedBox(width: 4),
                         Text(
                           '${artist.numberOfTracks} songs',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             fontSize: 13,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Icon(Icons.album,
-                            size: 14, color: Colors.white.withOpacity(0.6)),
+                            size: 14, color: Colors.white.withValues(alpha: 0.6)),
                         const SizedBox(width: 4),
                         Text(
                           '$albumCount albums',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             fontSize: 13,
                           ),
                         ),
@@ -555,12 +555,16 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(),
+      barrierColor: Colors.black.withValues(alpha: 0.75),
       builder: (context) => DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        child: Column(
+        child: SafeArea(
+          top: false,
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
@@ -642,6 +646,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             const SizedBox(height: 16),
           ],
         ),
+        ),
       ),
     );
   }
@@ -651,14 +656,14 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
         Provider.of<AudioPlayerService>(context, listen: false);
     final artistSongs = await _artistAggregator.getSongsByArtist(artist.name);
     if (artistSongs.isNotEmpty) {
-      audioPlayerService.setPlaylist(
+      unawaited(audioPlayerService.setPlaylist(
         artistSongs,
         0,
         source: PlaybackSourceInfo(
           source: PlaybackSource.artist,
           name: artist.name,
         ),
-      );
+      ));
     }
   }
 
@@ -668,14 +673,14 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     final artistSongs = await _artistAggregator.getSongsByArtist(artist.name);
     if (artistSongs.isNotEmpty) {
       final shuffled = List<SongModel>.from(artistSongs)..shuffle();
-      audioPlayerService.setPlaylist(
+      unawaited(audioPlayerService.setPlaylist(
         shuffled,
         0,
         source: PlaybackSourceInfo(
           source: PlaybackSource.artist,
           name: artist.name,
         ),
-      );
+      ));
     }
   }
 }

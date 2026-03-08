@@ -1,11 +1,14 @@
 package com.aurorasoftware.music
 
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Intent
+import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.Settings
 import androidx.core.view.WindowCompat
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -17,7 +20,9 @@ class MainActivity : AudioServiceActivity() {
 
     companion object {
         private const val SAF_CHANNEL = "aurora/saf_write"
+        private const val MEDIA_ACTIONS_CHANNEL = "aurora/media_actions"
         private const val REQUEST_WRITE_PERMISSION = 42
+        private const val REQUEST_DELETE_PERMISSION = 43
     }
 
     // Holds state for a pending write that is waiting for the user to approve
@@ -28,6 +33,9 @@ class MainActivity : AudioServiceActivity() {
         val result: MethodChannel.Result,
     )
     private var pendingWrite: PendingWrite? = null
+
+    // Holds state for a pending delete awaiting MediaStore.createDeleteRequest approval.
+    private var pendingDeleteResult: MethodChannel.Result? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +59,29 @@ class MainActivity : AudioServiceActivity() {
                             return@setMethodCallHandler
                         }
                         handleWriteRequest(tempPath, originalPath, result)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, MEDIA_ACTIONS_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "setAsRingtone" -> {
+                        val path = call.argument<String>("path")
+                        if (path == null) {
+                            result.error("INVALID_ARGS", "path is required", null)
+                            return@setMethodCallHandler
+                        }
+                        handleSetRingtone(path, result)
+                    }
+                    "deleteSong" -> {
+                        val path = call.argument<String>("path")
+                        if (path == null) {
+                            result.error("INVALID_ARGS", "path is required", null)
+                            return@setMethodCallHandler
+                        }
+                        handleDeleteSong(path, result)
                     }
                     else -> result.notImplemented()
                 }
@@ -128,24 +159,35 @@ class MainActivity : AudioServiceActivity() {
     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_WRITE_PERMISSION) {
-            val pw = pendingWrite
-            pendingWrite = null
-            if (pw == null) return
+        when (requestCode) {
+            REQUEST_WRITE_PERMISSION -> {
+                val pw = pendingWrite
+                pendingWrite = null
+                if (pw == null) return
 
-            if (resultCode == Activity.RESULT_OK) {
-                try {
-                    doWrite(pw.tempPath, pw.mediaUri)
-                    pw.result.success(null)
-                } catch (e: Exception) {
-                    pw.result.error("WRITE_FAILED", e.message, null)
+                if (resultCode == Activity.RESULT_OK) {
+                    try {
+                        doWrite(pw.tempPath, pw.mediaUri)
+                        pw.result.success(null)
+                    } catch (e: Exception) {
+                        pw.result.error("WRITE_FAILED", e.message, null)
+                    }
+                } else {
+                    pw.result.error(
+                        "PERMISSION_DENIED",
+                        "User denied write access to the media file",
+                        null
+                    )
                 }
-            } else {
-                pw.result.error(
-                    "PERMISSION_DENIED",
-                    "User denied write access to the media file",
-                    null
-                )
+            }
+            REQUEST_DELETE_PERMISSION -> {
+                val res = pendingDeleteResult
+                pendingDeleteResult = null
+                if (resultCode == Activity.RESULT_OK) {
+                    res?.success(null)
+                } else {
+                    res?.error("PERMISSION_DENIED", "User denied delete permission", null)
+                }
             }
         }
     }
@@ -179,5 +221,88 @@ class MainActivity : AudioServiceActivity() {
             }
         }
         return null
+    }
+
+    // -------------------------------------------------------------------------
+    // Ringtone: set a song as the default phone ringtone
+    // -------------------------------------------------------------------------
+
+    private fun handleSetRingtone(path: String, result: MethodChannel.Result) {
+        // On Android 6+ we need WRITE_SETTINGS (a special permission that is
+        // not granted as a runtime permission — the user must enable it in Settings).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            !Settings.System.canWrite(this)
+        ) {
+            // Open the "Modify system settings" page for the app so the user
+            // can grant the permission, then return PERMISSION_NEEDED so the
+            // Dart side can show a guiding snackbar.
+            val intent = Intent(
+                Settings.ACTION_MANAGE_WRITE_SETTINGS,
+                Uri.parse("package:$packageName")
+            )
+            startActivity(intent)
+            result.error("PERMISSION_NEEDED", "WRITE_SETTINGS permission required", null)
+            return
+        }
+
+        try {
+            val mediaUri = getMediaUriForPath(path)
+                ?: run {
+                    result.error("NOT_FOUND", "Could not locate song in MediaStore: $path", null)
+                    return
+                }
+
+            // Mark the file as a ringtone in MediaStore so the system accepts it.
+            val values = ContentValues().apply {
+                put(MediaStore.Audio.Media.IS_RINGTONE, true)
+                put(MediaStore.Audio.Media.IS_NOTIFICATION, false)
+                put(MediaStore.Audio.Media.IS_ALARM, false)
+                put(MediaStore.Audio.Media.IS_MUSIC, false)
+            }
+            contentResolver.update(mediaUri, values, null, null)
+
+            RingtoneManager.setActualDefaultRingtoneUri(
+                this,
+                RingtoneManager.TYPE_RINGTONE,
+                mediaUri
+            )
+            result.success(null)
+        } catch (e: Exception) {
+            result.error("SET_RINGTONE_FAILED", e.message, null)
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Delete: remove a song from the device via MediaStore
+    // -------------------------------------------------------------------------
+
+    private fun handleDeleteSong(path: String, result: MethodChannel.Result) {
+        try {
+            val mediaUri = getMediaUriForPath(path)
+                ?: run {
+                    result.error("NOT_FOUND", "Could not locate song in MediaStore: $path", null)
+                    return
+                }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // Android 11+: createDeleteRequest shows the system confirmation dialog.
+                pendingDeleteResult = result
+                val intentSender =
+                    MediaStore.createDeleteRequest(contentResolver, listOf(mediaUri))
+                startIntentSenderForResult(
+                    intentSender.intentSender, REQUEST_DELETE_PERMISSION, null, 0, 0, 0
+                )
+            } else {
+                // Android 10 and below: direct delete via ContentResolver.
+                val deleted = contentResolver.delete(mediaUri, null, null)
+                if (deleted > 0) {
+                    result.success(null)
+                } else {
+                    result.error("DELETE_FAILED", "ContentResolver.delete returned 0 rows", null)
+                }
+            }
+        } catch (e: Exception) {
+            result.error("DELETE_FAILED", e.message, null)
+        }
     }
 }

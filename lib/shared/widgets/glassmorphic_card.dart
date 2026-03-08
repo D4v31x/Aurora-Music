@@ -154,8 +154,8 @@ class GlassmorphicCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.purple.withOpacity(0.6),
-              Colors.blue.withOpacity(0.6),
+              Colors.purple.withValues(alpha: 0.6),
+              Colors.blue.withValues(alpha: 0.6),
             ],
           ),
         ),
@@ -195,8 +195,8 @@ class GlassmorphicCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.orange.withOpacity(0.6),
-              Colors.amber.withOpacity(0.6),
+              Colors.orange.withValues(alpha: 0.6),
+              Colors.amber.withValues(alpha: 0.6),
             ],
           ),
         ),
@@ -229,10 +229,10 @@ class GlassmorphicCard extends StatelessWidget {
     // frosted-glass look without the GPU cost.
     final cardDecoration = isDark
         ? BoxDecoration(
-            color: Colors.white.withOpacity(0.10),
+            color: Colors.white.withValues(alpha: 0.10),
             borderRadius: borderRadius,
             border: Border.all(
-              color: Colors.white.withOpacity(0.13),
+              color: Colors.white.withValues(alpha: 0.13),
               width: 1,
             ),
           )
@@ -297,8 +297,8 @@ class GlassmorphicCard extends StatelessWidget {
                     subtitle!,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: isDark
-                          ? Colors.white.withOpacity(0.55)
-                          : colorScheme.onSurface.withOpacity(0.6),
+                          ? Colors.white.withValues(alpha: 0.55)
+                          : colorScheme.onSurface.withValues(alpha: 0.6),
                       fontSize: 11,
                       fontFamily: FontConstants.fontFamily,
                     ),

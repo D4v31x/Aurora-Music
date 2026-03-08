@@ -13,6 +13,7 @@ import '../../../shared/models/artist_utils.dart';
 import '../../../shared/models/separated_artist.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artist_aggregator_service.dart';
+import '../../../shared/services/artist_separator_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_dialog.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
@@ -132,6 +133,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _setupListeners() {
     _scrollController.addListener(_scrollListener);
+    ArtistSeparatorService().addListener(_onArtistSeparatorChanged);
+  }
+
+  void _onArtistSeparatorChanged() {
+    // Separator config changed — reload artist list for search tab
+    if (mounted) unawaited(_loadAlbumsAndArtists());
   }
 
   void _showWelcomeMessage() {
@@ -149,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Wait a bit before showing feedback reminder
     await Future.delayed(const Duration(seconds: 10));
     if (mounted) {
-      FeedbackReminderDialog.showIfNeeded(context);
+      await FeedbackReminderDialog.showIfNeeded(context);
     }
   }
 
@@ -237,6 +244,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _notificationManager.dispose();
     _downloadStatusSubscription?.cancel();
     _downloadMonitor.stopMonitoring();
+    ArtistSeparatorService().removeListener(_onArtistSeparatorChanged);
     super.dispose();
   }
 
@@ -285,12 +293,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _triggerPullRefresh() async {
     _isRefreshing = true;
     _pullProgress = 0.0;
-    HapticFeedback.mediumImpact();
+    unawaited(HapticFeedback.mediumImpact());
 
     await _refreshLibrary();
 
     _isRefreshing = false;
-    HapticFeedback.lightImpact();
+    unawaited(HapticFeedback.lightImpact());
   }
 
   Future<void> _refreshLibrary() async {
@@ -323,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           await _loadSmartSuggestions();
 
           // Reload albums and artists
-          await _loadAlbumsAndArtists();
+          unawaited(_loadAlbumsAndArtists());
         }
 
         _notificationManager.showNotification(
@@ -392,7 +400,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               songs = audioPlayerService.songs;
               _randomizeContent();
             });
-            _loadAlbumsAndArtists();
+            unawaited(_loadAlbumsAndArtists());
           } else {
             _showPermissionDialog();
           }
@@ -421,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           songs = audioPlayerService.songs;
           _randomizeContent();
         });
-        _loadAlbumsAndArtists();
+        unawaited(_loadAlbumsAndArtists());
       }
     } catch (e) {
       debugPrint('Error in _checkPermissions: $e');
@@ -524,7 +532,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       songs = audioPlayerService.songs;
                       _randomizeContent();
                     });
-                    _loadAlbumsAndArtists();
+                    unawaited(_loadAlbumsAndArtists());
                   } else {
                     setState(() {
                       songs = [];
@@ -608,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
       // Exit the app
       if (Platform.isAndroid) {
-        SystemNavigator.pop();
+        unawaited(SystemNavigator.pop());
       } else if (Platform.isIOS) {
         exit(0);
       }
@@ -870,8 +878,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              // Mini player - placed here so dialogs/popups appear above it
-              const ExpandingPlayer(),
+              // (Mini player is now overlaid globally in MaterialApp.builder)
             ],
           ),
         ),
@@ -999,10 +1006,10 @@ class _BlurredNavBar extends StatelessWidget {
             ),
           )
         : BoxDecoration(
-            color: colorScheme.surfaceContainerHigh.withOpacity(0.92),
+            color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
             borderRadius: radius,
             border: Border.all(
-              color: colorScheme.outlineVariant.withOpacity(0.3),
+              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
             ),
           );
 

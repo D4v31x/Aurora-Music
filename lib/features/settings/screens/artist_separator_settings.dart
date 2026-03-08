@@ -1,6 +1,10 @@
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../shared/services/artist_separator_service.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/expanding_player.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Settings screen for configuring artist name separation
@@ -53,206 +57,276 @@ class _ArtistSeparatorSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(l10n.translate('artist_separation')),
+    return AppBackground(
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.restore),
-            onPressed: _showResetDialog,
-            tooltip: l10n.translate('reset'),
+        appBar: AppBar(
+          title: Text(
+            l10n.translate('artist_separation'),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
-        ],
-      ),
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: isDark
-                ? [Colors.black, Colors.grey.shade900]
-                : [Colors.grey.shade100, Colors.white],
-          ),
+          backgroundColor: Colors.black.withValues(alpha: 0.45),
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.white),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.restore_rounded,
+                  color: Colors.white.withValues(alpha: 0.7)),
+              onPressed: _showResetDialog,
+              tooltip: l10n.translate('reset'),
+            ),
+          ],
         ),
-        child: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.all(16),
+        body: Selector<AudioPlayerService, bool>(
+          selector: (_, svc) => svc.currentSong != null,
+          builder: (context, hasCurrentSong, _) => ListView(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              0,
+              16,
+              hasCurrentSong
+                  ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
+                  : MediaQuery.of(context).padding.bottom + 24,
+            ),
             children: [
-              // Enable/Disable toggle
-              _buildGlassmorphicCard(
-                isDark: isDark,
-                child: SwitchListTile(
-                  title: Text(
-                    l10n.translate('enable_artist_separation'),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+          const SizedBox(height: kToolbarHeight + 32),
+
+          // ── Enable toggle ─────────────────────────────────────
+          _sectionLabel('SETTINGS'),
+          const SizedBox(height: 10),
+          _glassCard(
+            child: SwitchListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              title: Text(
+                l10n.translate('enable_artist_separation'),
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                l10n.translate('enable_artist_separation_desc'),
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.45),
+                  fontSize: 12,
+                ),
+              ),
+              value: _isEnabled,
+              activeColor: Colors.blue,
+              onChanged: (value) async {
+                await _service.setEnabled(value);
+                setState(() => _isEnabled = value);
+                _updateTestResult();
+              },
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // ── Test section ──────────────────────────────────────
+          _sectionLabel('TEST'),
+          const SizedBox(height: 10),
+          _glassCard(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15)),
+                    ),
+                    child: TextField(
+                      controller: _testController,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      onChanged: (_) => _updateTestResult(),
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        border: InputBorder.none,
+                        hintText:
+                            'e.g. Artist One/Artist Two feat. Three',
+                        hintStyle: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.28),
+                            fontSize: 13),
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.refresh_rounded,
+                              color: Colors.white.withValues(alpha: 0.4),
+                              size: 18),
+                          onPressed: _updateTestResult,
+                        ),
+                      ),
+                    ),
                   ),
-                  subtitle: Text(
-                    l10n.translate('enable_artist_separation_desc'),
+                  const SizedBox(height: 14),
+                  Text(
+                    'RESULT',
                     style: TextStyle(
-                      fontSize: 12,
-                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.4,
+                      color: Colors.white.withValues(alpha: 0.4),
                     ),
                   ),
-                  value: _isEnabled,
-                  onChanged: (value) async {
-                    await _service.setEnabled(value);
-                    setState(() => _isEnabled = value);
-                    _updateTestResult();
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Test section
-              _buildSectionHeader(l10n.translate('test_separation')),
-              _buildGlassmorphicCard(
-                isDark: isDark,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        controller: _testController,
-                        decoration: InputDecoration(
-                          labelText: l10n.translate('test_artist_string'),
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.refresh),
-                            onPressed: _updateTestResult,
+                  const SizedBox(height: 8),
+                  if (_testResult.isEmpty)
+                    Text(
+                      '—',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          fontSize: 14),
+                    )
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children:
+                          _testResult.asMap().entries.map((e) {
+                        const colors = [
+                          Colors.blue,
+                          Colors.purple,
+                          Colors.teal,
+                          Colors.orange,
+                          Colors.pink,
+                        ];
+                        final c = colors[e.key % colors.length];
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: c.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: c.withValues(alpha: 0.4), width: 1),
                           ),
-                        ),
-                        onChanged: (_) => _updateTestResult(),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        l10n.translate('result'),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _testResult
-                            .map((artist) => Chip(
-                                  label: Text(artist),
-                                  backgroundColor: theme.colorScheme.primary
-                                      .withOpacity(0.15),
-                                ))
-                            .toList(),
-                      ),
-                    ],
-                  ),
+                          child: Text(
+                            e.value,
+                            style: TextStyle(
+                                color: c.withValues(alpha: 0.9),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // ── Separators ────────────────────────────────────────
+          Row(
+            children: [
+              Expanded(
+                  child: _sectionLabel(
+                      l10n.translate('separators').toUpperCase())),
+              TextButton.icon(
+                onPressed: _showAddSeparatorDialog,
+                icon: const Icon(Icons.add, size: 16),
+                label: const Text('Add'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.blue.shade300,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
               ),
-
-              const SizedBox(height: 24),
-
-              // Separators section
-              _buildSectionHeader(l10n.translate('separators')),
-              _buildGlassmorphicCard(
-                isDark: isDark,
-                child: Column(
-                  children: [
-                    ListTile(
-                      title: Text(l10n.translate('separators_desc')),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.add_circle_outline),
-                        onPressed: () => _showAddSeparatorDialog(),
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    if (_separators.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(16),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _glassCard(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: _separators.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(
                           l10n.translate('no_separators'),
-                          style: TextStyle(color: Colors.grey.shade500),
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              fontSize: 13),
                         ),
-                      )
-                    else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _separators.length,
-                        itemBuilder: (context, index) {
-                          final separator = _separators[index];
-                          return ListTile(
-                            title: Text(
-                              _formatSeparatorForDisplay(separator),
-                              style: const TextStyle(
-                                  fontFamily:
-                                      FontConstants.monospaceFontFamily),
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline,
-                                  color: Colors.red),
-                              onPressed: () => _removeSeparator(separator),
-                            ),
-                          );
-                        },
                       ),
-                  ],
+                    )
+                  : Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _separators.map((sep) {
+                        return _chipTag(
+                          label: _formatSeparatorForDisplay(sep),
+                          mono: true,
+                          onDelete: () => _removeSeparator(sep),
+                        );
+                      }).toList(),
+                    ),
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // ── Exclusions ────────────────────────────────────────
+          Row(
+            children: [
+              Expanded(
+                  child: _sectionLabel(
+                      l10n.translate('exclusions').toUpperCase())),
+              TextButton.icon(
+                onPressed: _showAddExclusionDialog,
+                icon: const Icon(Icons.add, size: 16),
+                label: const Text('Add'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.blue.shade300,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
               ),
-
-              const SizedBox(height: 24),
-
-              // Exclusions section
-              _buildSectionHeader(l10n.translate('exclusions')),
-              _buildGlassmorphicCard(
-                isDark: isDark,
-                child: Column(
-                  children: [
-                    ListTile(
-                      title: Text(l10n.translate('exclusions_desc')),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.add_circle_outline),
-                        onPressed: () => _showAddExclusionDialog(),
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    if (_exclusions.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(16),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.translate('exclusions_desc'),
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.35), fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+          _glassCard(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: _exclusions.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(
                           l10n.translate('no_exclusions'),
-                          style: TextStyle(color: Colors.grey.shade500),
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              fontSize: 13),
                         ),
-                      )
-                    else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _exclusions.length,
-                        itemBuilder: (context, index) {
-                          final exclusion = _exclusions[index];
-                          return ListTile(
-                            title: Text(exclusion),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline,
-                                  color: Colors.red),
-                              onPressed: () => _removeExclusion(exclusion),
-                            ),
-                          );
-                        },
                       ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
+                    )
+                  : Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _exclusions.map((ex) {
+                        return _chipTag(
+                          label: ex,
+                          accent: Colors.purple,
+                          onDelete: () => _removeExclusion(ex),
+                        );
+                      }).toList(),
+                    ),
+            ),
+          ),
             ],
           ),
         ),
@@ -260,41 +334,72 @@ class _ArtistSeparatorSettingsScreenState
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1.2,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+  Widget _sectionLabel(String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.4,
+        color: Colors.white.withValues(alpha: 0.45),
       ),
     );
   }
 
-  Widget _buildGlassmorphicCard({
-    required bool isDark,
-    required Widget child,
+  Widget _glassCard({required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _chipTag({
+    required String label,
+    Color accent = Colors.blue,
+    bool mono = false,
+    required VoidCallback onDelete,
   }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withOpacity(0.12)
-                  : Colors.black.withOpacity(0.08),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: accent.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.85),
+              fontSize: 13,
+              fontFamily:
+                  mono ? FontConstants.monospaceFontFamily : null,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          child: child,
-        ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: onDelete,
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Icon(Icons.close,
+                  size: 11,
+                  color: Colors.white.withValues(alpha: 0.55)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -311,10 +416,10 @@ class _ArtistSeparatorSettingsScreenState
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          backgroundColor: Colors.grey[900]?.withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
             l10n.translate('add_separator'),
@@ -338,7 +443,7 @@ class _ArtistSeparatorSettingsScreenState
               hintStyle: const TextStyle(color: Colors.white38),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -389,10 +494,10 @@ class _ArtistSeparatorSettingsScreenState
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          backgroundColor: Colors.grey[900]?.withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
             l10n.translate('add_exclusion'),
@@ -416,7 +521,7 @@ class _ArtistSeparatorSettingsScreenState
               hintStyle: const TextStyle(color: Colors.white38),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -482,10 +587,10 @@ class _ArtistSeparatorSettingsScreenState
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          backgroundColor: Colors.grey[900]?.withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
             l10n.translate('reset_to_defaults'),

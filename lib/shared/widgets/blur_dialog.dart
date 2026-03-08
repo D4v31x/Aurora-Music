@@ -1,6 +1,6 @@
 /// Frosted-glass dialog widget with BackdropFilter blur.
 ///
-/// A reusable dialog styled with Colors.white.withOpacity(0.1),
+/// A reusable dialog styled with Colors.white.withValues(alpha: 0.1),
 /// a white border, and a soft box shadow — with real backdrop blur.
 library;
 
@@ -86,14 +86,14 @@ class BlurDialog extends StatelessWidget {
             filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
             child: Container(
               decoration: BoxDecoration(
-                color: backgroundColor ?? Colors.white.withOpacity(0.1),
+                color: backgroundColor ?? Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(borderRadius),
                 border: Border.all(
-                  color: Colors.white.withOpacity(_kDefaultBorderOpacity),
+                  color: Colors.white.withValues(alpha: _kDefaultBorderOpacity),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),

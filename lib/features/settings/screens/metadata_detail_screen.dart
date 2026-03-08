@@ -11,6 +11,7 @@ import '../../../shared/services/metadata_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/expanding_player.dart';
 
 class MetadataDetailScreen extends StatefulWidget {
   final SongModel song;
@@ -51,6 +52,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   @override
   void initState() {
     super.initState();
+    ExpandingPlayer.hiddenNotifier.value = true;
     _initControllers();
     _loadTags();
     _loadCachedArtwork();
@@ -129,6 +131,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
 
   @override
   void dispose() {
+    ExpandingPlayer.hiddenNotifier.value = false;
     _titleController.dispose();
     _artistController.dispose();
     _albumController.dispose();
@@ -294,14 +297,14 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                     maxHeight: MediaQuery.of(context).size.height * 0.7,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 24,
                         offset: const Offset(0, 8),
                       ),
@@ -491,10 +494,10 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          backgroundColor: Colors.grey[900]?.withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
             loc.translate('save_changes'),
@@ -726,10 +729,10 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          backgroundColor: Colors.grey[900]?.withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Row(
             children: [
@@ -781,9 +784,9 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -791,7 +794,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                     Text(
                       loc.translate('possible_reasons'),
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                         fontFamily: FontConstants.fontFamily,
@@ -915,7 +918,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
           ],
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.fromLTRB(
+              20, 20, 20, 20 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -928,7 +932,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),

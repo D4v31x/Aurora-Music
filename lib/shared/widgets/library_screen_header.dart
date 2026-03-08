@@ -117,10 +117,10 @@ class LibraryScreenHeader extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.25),
-                          Colors.black.withOpacity(0.0),
-                          Colors.black.withOpacity(0.15),
-                          Colors.black.withOpacity(0.55),
+                          Colors.black.withValues(alpha: 0.25),
+                          Colors.black.withValues(alpha: 0.0),
+                          Colors.black.withValues(alpha: 0.15),
+                          Colors.black.withValues(alpha: 0.55),
                         ],
                         stops: const [0.0, 0.35, 0.7, 1.0],
                       ),
@@ -168,7 +168,7 @@ class LibraryScreenHeader extends StatelessWidget {
                                     subtitle!,
                                     style: TextStyle(
                                       fontFamily: FontConstants.fontFamily,
-                                      color: Colors.white.withOpacity(0.55),
+                                      color: Colors.white.withValues(alpha: 0.55),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
                                     ),
@@ -221,7 +221,7 @@ class LibraryScreenHeader extends StatelessWidget {
                                 subtitle!,
                                 style: TextStyle(
                                   fontFamily: FontConstants.fontFamily,
-                                  color: Colors.white.withOpacity(0.55),
+                                  color: Colors.white.withValues(alpha: 0.55),
                                   fontSize: 12,
                                 ),
                                 maxLines: 1,
@@ -250,7 +250,7 @@ class LibraryScreenHeader extends StatelessWidget {
           center: Alignment.topCenter,
           radius: 1.4,
           colors: [
-            accentColor.withOpacity(0.35),
+            accentColor.withValues(alpha: 0.35),
             const Color(0xFF080B14),
           ],
         ),
@@ -266,13 +266,13 @@ class LibraryScreenHeader extends StatelessWidget {
         Positioned(
           left: -60,
           top: 20,
-          child: _orb(accentColor.withOpacity(0.18), 180),
+          child: _orb(accentColor.withValues(alpha: 0.18), 180),
         ),
         // Right orb
         Positioned(
           right: -40,
           top: 60,
-          child: _orb(Colors.blue.withOpacity(0.14), 150),
+          child: _orb(Colors.blue.withValues(alpha: 0.14), 150),
         ),
         // Bottom centre orb
         Positioned(
@@ -280,7 +280,7 @@ class LibraryScreenHeader extends StatelessWidget {
           right: 0,
           bottom: -30,
           child: Center(
-            child: _orb(accentColor.withOpacity(0.10), 120),
+            child: _orb(accentColor.withValues(alpha: 0.10), 120),
           ),
         ),
       ],
@@ -312,10 +312,10 @@ class LibraryScreenHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
+        color: Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withOpacity(0.45),
+          color: Colors.white.withValues(alpha: 0.45),
           width: 1,
         ),
       ),
@@ -323,7 +323,7 @@ class LibraryScreenHeader extends StatelessWidget {
         badge.toUpperCase(),
         style: TextStyle(
           fontFamily: FontConstants.fontFamily,
-          color: Colors.white.withOpacity(0.95),
+          color: Colors.white.withValues(alpha: 0.95),
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.8,
@@ -344,10 +344,10 @@ class LibraryScreenHeader extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.35),
+            color: Colors.black.withValues(alpha: 0.35),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white.withOpacity(0.18),
+              color: Colors.white.withValues(alpha: 0.18),
             ),
           ),
           child: const Icon(
@@ -388,10 +388,10 @@ class LibrarySearchField extends StatelessWidget {
     return Container(
       height: 46,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.white.withOpacity(0.25),
+          color: Colors.white.withValues(alpha: 0.25),
           width: 1,
         ),
       ),
@@ -406,19 +406,19 @@ class LibrarySearchField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(
-            color: Colors.white.withOpacity(0.45),
+            color: Colors.white.withValues(alpha: 0.45),
             fontFamily: FontConstants.fontFamily,
             fontSize: 15,
           ),
           prefixIcon: Icon(
             Icons.search_rounded,
-            color: Colors.white.withOpacity(0.55),
+            color: Colors.white.withValues(alpha: 0.55),
             size: 20,
           ),
           suffixIcon: hasQuery
               ? IconButton(
                   icon: Icon(Icons.clear_rounded,
-                      color: Colors.white.withOpacity(0.55), size: 18),
+                      color: Colors.white.withValues(alpha: 0.55), size: 18),
                   onPressed: onClear,
                 )
               : null,
@@ -445,10 +445,10 @@ class LibraryControlPill extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.white.withOpacity(0.25),
+            color: Colors.white.withValues(alpha: 0.25),
             width: 1,
           ),
         ),

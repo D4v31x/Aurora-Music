@@ -17,6 +17,7 @@ import '../pages/permissions_page.dart';
 import '../pages/completion_page.dart';
 import '../pages/donation_page.dart';
 import '../../../shared/widgets/grainy_gradient_background.dart';
+import '../../../shared/widgets/expanding_player.dart';
 
 class OnboardingScreen extends HookWidget {
   const OnboardingScreen({super.key});
@@ -156,7 +157,7 @@ class OnboardingScreen extends HookWidget {
                         TextButton(
                           onPressed: skipToPermissions,
                           style: TextButton.styleFrom(
-                            foregroundColor: Colors.white.withOpacity(0.7),
+                            foregroundColor: Colors.white.withValues(alpha: 0.7),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
                           ),
@@ -197,7 +198,7 @@ class OnboardingScreen extends HookWidget {
                           decoration: BoxDecoration(
                             color: currentPage.value == pageIndex
                                 ? const Color(0xFF3B82F6)
-                                : Colors.white.withOpacity(0.3),
+                                : Colors.white.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(4),
                           ),
                         );
@@ -215,7 +216,8 @@ class OnboardingScreen extends HookWidget {
   Future<void> _completeOnboarding(BuildContext context) async {
     await UserPreferences.setFirstTimeUser(false);
     if (context.mounted) {
-      Navigator.of(context).pushReplacement(
+      ExpandingPlayer.hiddenNotifier.value = false;
+      await Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               const HomeScreen(),

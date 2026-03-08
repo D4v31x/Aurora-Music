@@ -146,9 +146,8 @@ class _HomeTabState extends State<HomeTab> {
             top: isTablet ? 32.0 : 24.0,
             bottom: widget.currentSong != null
                 ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
-                : isTablet
-                    ? 50.0
-                    : 40.0,
+                : MediaQuery.of(context).padding.bottom +
+                    (isTablet ? 50.0 : 40.0),
           ),
           child: Center(
             child: ConstrainedBox(

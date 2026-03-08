@@ -397,7 +397,7 @@ class _FavoriteSongsCard extends StatelessWidget {
                     '${playlist.songs.length} ${localizations.translate('tracks')}',
                     style: TextStyle(
                       color: isDark
-                          ? Colors.white.withOpacity(0.6)
+                          ? Colors.white.withValues(alpha: 0.6)
                           : Colors.black54,
                       fontSize: 12,
                       fontFamily: FontConstants.fontFamily,
@@ -414,7 +414,7 @@ class _FavoriteSongsCard extends StatelessWidget {
         Container(
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(0.15),
+            color: theme.colorScheme.primary.withValues(alpha: 0.15),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -514,7 +514,7 @@ class _ForYouItemCard extends StatelessWidget {
                             item.subtitle!,
                             style: TextStyle(
                               color: isDark
-                                  ? Colors.white.withOpacity(0.6)
+                                  ? Colors.white.withValues(alpha: 0.6)
                                   : Colors.black54,
                               fontSize: 11,
                               fontFamily: FontConstants.fontFamily,
@@ -549,8 +549,8 @@ class _ForYouItemCard extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.indigo.withOpacity(0.8),
-                Colors.purple.withOpacity(0.8),
+                Colors.indigo.withValues(alpha: 0.8),
+                Colors.purple.withValues(alpha: 0.8),
               ],
             ),
           ),
@@ -588,8 +588,8 @@ class _ForYouItemCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.purple.withOpacity(0.8),
-            Colors.blue.withOpacity(0.8),
+            Colors.purple.withValues(alpha: 0.8),
+            Colors.blue.withValues(alpha: 0.8),
           ],
         ),
       ),

@@ -26,7 +26,7 @@ class SuggestedArtistsSection extends StatelessWidget {
             'No data',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
           ),
         ),
@@ -53,7 +53,7 @@ class SuggestedArtistsSection extends StatelessWidget {
                   final imagePath =
                       await _artworkService.getArtistImageByName(artist);
                   if (context.mounted) {
-                    Navigator.push(
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ArtistDetailsScreen(

@@ -12,6 +12,7 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
       _gaplessPlayback = json['gaplessPlayback'] ?? true;
       _volumeNormalization = json['volumeNormalization'] ?? false;
       _playbackSpeed = (json['playbackSpeed'] ?? 1.0).toDouble();
+      _pitchWithSpeed = json['pitchWithSpeed'] ?? false;
       _defaultSortOrder = json['defaultSortOrder'] ?? 'title';
       _cacheSize = json['cacheSize'] ?? 100;
       _mediaControls = json['mediaControls'] ?? true;
@@ -29,6 +30,7 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
       'gaplessPlayback': _gaplessPlayback,
       'volumeNormalization': _volumeNormalization,
       'playbackSpeed': _playbackSpeed,
+      'pitchWithSpeed': _pitchWithSpeed,
       'defaultSortOrder': _defaultSortOrder,
       'cacheSize': _cacheSize,
       'mediaControls': _mediaControls,
@@ -40,6 +42,8 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
   Future<void> _applySettings() async {
     // Apply playback speed
     await _audioPlayer.setSpeed(_playbackSpeed);
+    // Apply pitch: locked to 1.0 unless pitchWithSpeed is enabled
+    await _audioPlayer.setPitch(_pitchWithSpeed ? _playbackSpeed : 1.0);
 
     // Apply volume normalization using regular volume control
     if (_volumeNormalization) {
@@ -93,9 +97,17 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
 
   Future<void> setPlaybackSpeed(double value) async {
     _playbackSpeed = value;
-    // Apply speed directly without reloading audio source
     await _audioPlayer.setSpeed(_playbackSpeed);
+    await _audioPlayer.setPitch(_pitchWithSpeed ? _playbackSpeed : 1.0);
     await _saveSettings();
+  }
+
+  Future<void> setPitchWithSpeed(bool value) async {
+    _pitchWithSpeed = value;
+    // Re-apply pitch immediately
+    await _audioPlayer.setPitch(value ? _playbackSpeed : 1.0);
+    await _saveSettings();
+    _scheduleNotify();
   }
 
   Future<void> setDefaultSortOrder(String value) async {

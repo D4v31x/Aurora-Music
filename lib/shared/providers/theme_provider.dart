@@ -4,15 +4,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider with ChangeNotifier {
   static const String _useDynamicColorKey = 'use_dynamic_color';
+  static const String _customSeedColorKey = 'custom_seed_color';
+  static const String _blurIntensityKey = 'blur_intensity';
+  static const String _overlayOpacityKey = 'overlay_opacity';
 
   // App is dark mode only
   bool get isDarkMode => true;
 
   bool _useDynamicColor = true;
   ColorScheme? _darkDynamicColorScheme;
+  Color _customSeedColor = Colors.deepPurple;
+  double _blurIntensity = 25.0;
+  double _overlayOpacity = 0.3;
 
   bool get useDynamicColor => _useDynamicColor;
   ThemeMode get themeMode => ThemeMode.dark;
+  Color get customSeedColor => _customSeedColor;
+  double get blurIntensity => _blurIntensity;
+  double get overlayOpacity => _overlayOpacity;
 
   ColorScheme? get darkDynamicColorScheme => _darkDynamicColorScheme;
 
@@ -28,8 +37,8 @@ class ThemeProvider with ChangeNotifier {
   List<Color> get currentGradientColors => darkGradientColors;
 
   // Fallback color scheme when dynamic colors are not available
-  static final _defaultDarkColorScheme = ColorScheme.fromSeed(
-    seedColor: Colors.deepPurple,
+  ColorScheme get _defaultDarkColorScheme => ColorScheme.fromSeed(
+    seedColor: _customSeedColor,
     brightness: Brightness.dark,
   );
 
@@ -37,6 +46,7 @@ class ThemeProvider with ChangeNotifier {
     final colorScheme = _useDynamicColor && _darkDynamicColorScheme != null
         ? _darkDynamicColorScheme!
         : _defaultDarkColorScheme;
+
 
     return ThemeData(
       useMaterial3: true,
@@ -116,6 +126,12 @@ class ThemeProvider with ChangeNotifier {
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     _useDynamicColor = prefs.getBool(_useDynamicColorKey) ?? true;
+    final savedColor = prefs.getInt(_customSeedColorKey);
+    if (savedColor != null) {
+      _customSeedColor = Color(savedColor);
+    }
+    _blurIntensity = (prefs.getDouble(_blurIntensityKey) ?? 25.0).clamp(5.0, 40.0);
+    _overlayOpacity = prefs.getDouble(_overlayOpacityKey) ?? 0.3;
     notifyListeners();
   }
 
@@ -135,6 +151,43 @@ class ThemeProvider with ChangeNotifier {
     _useDynamicColor = !_useDynamicColor;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_useDynamicColorKey, _useDynamicColor);
+    notifyListeners();
+  }
+
+  Future<void> setCustomSeedColor(Color color) async {
+    _customSeedColor = color;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_customSeedColorKey, color.toARGB32());
+    notifyListeners();
+  }
+
+  /// Updates blur intensity in memory immediately (no disk write).  
+  /// Use in slider [onChanged] for real-time feedback; call [setBlurIntensity]
+  /// in [onChangeEnd] to persist.
+  void updateBlurIntensity(double value) {
+    _blurIntensity = value.clamp(5.0, 40.0);
+    notifyListeners();
+  }
+
+  Future<void> setBlurIntensity(double value) async {
+    _blurIntensity = value.clamp(5.0, 40.0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_blurIntensityKey, _blurIntensity);
+    notifyListeners();
+  }
+
+  /// Updates overlay opacity in memory immediately (no disk write).
+  /// Use in slider [onChanged] for real-time feedback; call [setOverlayOpacity]
+  /// in [onChangeEnd] to persist.
+  void updateOverlayOpacity(double value) {
+    _overlayOpacity = value.clamp(0.0, 0.8);
+    notifyListeners();
+  }
+
+  Future<void> setOverlayOpacity(double value) async {
+    _overlayOpacity = value.clamp(0.0, 0.8);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_overlayOpacityKey, _overlayOpacity);
     notifyListeners();
   }
 

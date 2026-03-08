@@ -120,7 +120,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
     final isDark = themeProvider.isDarkMode;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
     final localizations = AppLocalizations.of(context);
 
     return Scaffold(
@@ -241,11 +241,11 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: (isDark ? Colors.white : Colors.black)
-                                    .withOpacity(0.05),
+                                    .withValues(alpha: 0.05),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: (isDark ? Colors.white : Colors.black)
-                                      .withOpacity(0.1),
+                                      .withValues(alpha: 0.1),
                                 ),
                               ),
                               child: Row(
@@ -309,16 +309,16 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
   }) {
     final titleColor = isDark ? Colors.white : Colors.black;
     final descriptionColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: (isDark ? Colors.white : Colors.black).withOpacity(0.05),
+        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: value
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
-              : (isDark ? Colors.white : Colors.black).withOpacity(0.1),
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
+              : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
           width: 1.5,
         ),
       ),
@@ -339,9 +339,9 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                         ? Theme.of(context)
                             .colorScheme
                             .primary
-                            .withOpacity(0.15)
+                            .withValues(alpha: 0.15)
                         : (isDark ? Colors.white : Colors.black)
-                            .withOpacity(0.05),
+                            .withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -349,7 +349,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                     color: value
                         ? Theme.of(context).colorScheme.primary
                         : (isDark ? Colors.white : Colors.black)
-                            .withOpacity(0.4),
+                            .withValues(alpha: 0.4),
                     size: 24,
                   ),
                 ),

@@ -254,7 +254,7 @@ class _PermissionsPageState extends State<PermissionsPage>
     final isDark = themeProvider.isDarkMode;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
 
     // Required permission is granted: audio on Android 13+, storage on Android 12-
     final requiredPermissionGranted = _shouldShowAudioPermission
@@ -485,15 +485,15 @@ class _PermissionsPageState extends State<PermissionsPage>
     VoidCallback? onTap,
   }) {
     final containerColor = isDark
-        ? Colors.white.withOpacity(0.05)
-        : Colors.black.withOpacity(0.05);
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
     final borderColor =
-        isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+        isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1);
     final titleColor = isDark ? Colors.white : Colors.black;
     final descriptionColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
     final iconColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
 
     return Material(
       color: Colors.transparent,
@@ -504,12 +504,12 @@ class _PermissionsPageState extends State<PermissionsPage>
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: isGranted
-                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                 : containerColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isGranted
-                  ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
+                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
                   : borderColor,
             ),
           ),
@@ -519,10 +519,10 @@ class _PermissionsPageState extends State<PermissionsPage>
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isGranted
-                      ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
+                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)
                       : (isDark
-                          ? Colors.white.withOpacity(0.1)
-                          : Colors.black.withOpacity(0.1)),
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.1)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -557,7 +557,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEF4444).withOpacity(0.2),
+                              color: const Color(0xFFEF4444).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -591,8 +591,8 @@ class _PermissionsPageState extends State<PermissionsPage>
                 color: isGranted
                     ? Theme.of(context).colorScheme.primary
                     : (isDark
-                        ? Colors.white.withOpacity(0.3)
-                        : Colors.black.withOpacity(0.3)),
+                        ? Colors.white.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.3)),
                 size: 24,
               ),
             ],

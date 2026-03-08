@@ -10,6 +10,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
+import '../../../core/constants/font_constants.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import 'album_detail_screen.dart';
@@ -290,13 +291,13 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.album, size: 64, color: Colors.white.withOpacity(0.3)),
+            Icon(Icons.album, size: 64, color: Colors.white.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text(
               _searchQuery.isEmpty
                   ? loc.translate('no_albums_found')
                   : loc.translate('no_results'),
-              style: TextStyle(color: Colors.white.withOpacity(0.5)),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
             ),
           ],
         ),
@@ -400,6 +401,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                         color: Colors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
+                        fontFamily: FontConstants.fontFamily,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -408,8 +410,9 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                     Text(
                       '${splitArtists(album.artist ?? 'Unknown').join(', ')} • ${album.numOfSongs} tracks',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 11,
+                        fontFamily: FontConstants.fontFamily,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -489,6 +492,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                         color: Colors.white,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
+                        fontFamily: FontConstants.fontFamily,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -497,8 +501,9 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                     Text(
                       splitArtists(album.artist ?? 'Unknown Artist').join(', '),
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 13,
+                        fontFamily: FontConstants.fontFamily,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -507,8 +512,9 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                     Text(
                       '${album.numOfSongs} tracks',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 12,
+                        fontFamily: FontConstants.fontFamily,
                       ),
                     ),
                   ],
@@ -631,14 +637,14 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     );
     final albumSongs = songs.where((s) => s.album == album.album).toList();
     if (albumSongs.isNotEmpty) {
-      audioPlayerService.setPlaylist(
+      unawaited(audioPlayerService.setPlaylist(
         albumSongs,
         0,
         source: PlaybackSourceInfo(
           source: PlaybackSource.album,
           name: album.album,
         ),
-      );
+      ));
     }
   }
 
@@ -653,14 +659,14 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     final albumSongs = songs.where((s) => s.album == album.album).toList()
       ..shuffle();
     if (albumSongs.isNotEmpty) {
-      audioPlayerService.setPlaylist(
+      unawaited(audioPlayerService.setPlaylist(
         albumSongs,
         0,
         source: PlaybackSourceInfo(
           source: PlaybackSource.album,
           name: album.album,
         ),
-      );
+      ));
     }
   }
 

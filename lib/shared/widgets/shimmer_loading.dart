@@ -38,9 +38,9 @@ class ShimmerLoading extends HookWidget {
           begin: Alignment(animation, 0),
           end: Alignment(animation + 1, 0),
           colors: [
-            Colors.white.withOpacity(0.05),
-            Colors.white.withOpacity(0.15),
-            Colors.white.withOpacity(0.05),
+            Colors.white.withValues(alpha: 0.05),
+            Colors.white.withValues(alpha: 0.15),
+            Colors.white.withValues(alpha: 0.05),
           ],
         ),
       ),

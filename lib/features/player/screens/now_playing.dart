@@ -313,7 +313,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             children: [
               SizedBox(height: isTablet ? 40 : 30),
               _buildArtworkWithInfo(audioPlayerService, isTablet, isLandscape),
-              SizedBox(height: isTablet && isLandscape ? 40 : 90),
+              SizedBox(height: isTablet && isLandscape ? 40 : 24),
               PlayerProgressBar(
                 audioService: audioPlayerService,
                 isTablet: isTablet,
@@ -370,36 +370,34 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     double artworkSize,
     bool isTablet,
   ) {
-    return Padding(
-      padding: EdgeInsets.zero,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.topCenter,
-        children: [
-          // Song info container below artwork
-          Positioned(
-            top: artworkSize - 25,
-            child: Container(
-              width: artworkSize,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(2),
-                  bottom: Radius.circular(16),
-                ),
-              ),
-              padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
-              child: _buildTrackInfo(audioPlayerService, isTablet),
-            ),
-          ),
-          // Artwork
-          SizedBox(
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: [
+        // Song info container: non-positioned so the Stack measures its full
+        // height, guaranteeing a fixed gap between the card and the progress bar.
+        Padding(
+          padding: EdgeInsets.only(top: artworkSize - 25),
+          child: Container(
             width: artworkSize,
-            height: artworkSize,
-            child: _buildHeroArtwork(),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(2),
+                bottom: Radius.circular(16),
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
+            child: _buildTrackInfo(audioPlayerService, isTablet),
           ),
-        ],
-      ),
+        ),
+        // Artwork (last = on top in Z order)
+        SizedBox(
+          width: artworkSize,
+          height: artworkSize,
+          child: _buildHeroArtwork(),
+        ),
+      ],
     );
   }
 
@@ -425,7 +423,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -456,7 +454,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     audioPlayerService.currentSong!.album!,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontFamily: FontConstants.fontFamily,
                     ),
                     maxLines: 1,
@@ -486,7 +484,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -511,10 +509,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       );
     }
     return ColoredBox(
-      color: Colors.white.withOpacity(0.1),
+      color: Colors.white.withValues(alpha: 0.1),
       child: Icon(
         Icons.music_note_rounded,
-        color: Colors.white.withOpacity(0.3),
+        color: Colors.white.withValues(alpha: 0.3),
         size: 64,
       ),
     );
@@ -559,7 +557,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 lyricText,
                 style: TextStyle(
                   fontSize: isTablet ? 13 : 12,
-                  color: Colors.white.withOpacity(0.45),
+                  color: Colors.white.withValues(alpha: 0.45),
                   fontFamily: FontConstants.fontFamily,
                   fontStyle: FontStyle.italic,
                 ),
@@ -610,7 +608,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           artists.join(', '),
           style: TextStyle(
             fontSize: isTablet ? 16 : 14,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontFamily: FontConstants.fontFamily,
           ),
           textAlign: TextAlign.center,
@@ -697,13 +695,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       return;
     }
 
-    // Multiple artists: show selection dialog
-    showDialog(
+    // Multiple artists: show selection sheet
+    showModalBottomSheet(
       context: context,
-      builder: (context) => _ArtistSelectionDialog(
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(),
+      barrierColor: Colors.black.withValues(alpha: 0.75),
+      builder: (ctx) => _ArtistSelectionSheet(
         artists: artists,
         onArtistSelected: (artist) {
-          Navigator.pop(context);
+          Navigator.pop(ctx);
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -716,73 +718,140 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   }
 }
 
-// MARK: - Artist Selection Dialog
+// MARK: - Artist Selection Sheet
 
-class _ArtistSelectionDialog extends StatelessWidget {
+class _ArtistSelectionSheet extends StatelessWidget {
   final List<String> artists;
   final void Function(String artist) onArtistSelected;
 
-  const _ArtistSelectionDialog({
+  const _ArtistSelectionSheet({
     required this.artists,
     required this.onArtistSelected,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border(
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+              left: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+              right: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(
-                    AppLocalizations.of(context).translate('select_artist'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12, bottom: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                ...artists.map(
-                  (artist) => ListTile(
-                    title: Text(
-                      artist,
-                      style: const TextStyle(color: Colors.white),
-                      textAlign: TextAlign.center,
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.people_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
+                    const SizedBox(width: 14),
+                    Text(
+                      AppLocalizations.of(context).translate('select_artist'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                color: Colors.white.withValues(alpha: 0.1),
+                height: 1,
+              ),
+              // Artist rows
+              ...artists.map(
+                (artist) => Material(
+                  color: Colors.transparent,
+                  child: InkWell(
                     onTap: () => onArtistSelected(artist),
+                    splashColor: Colors.white.withValues(alpha: 0.08),
+                    highlightColor: Colors.white.withValues(alpha: 0.05),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(22),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.12),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.person_rounded,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              artist,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: Colors.white.withValues(alpha: 0.4),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    AppLocalizations.of(context).translate('cancel'),
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                ),
-              ],
-            ),
+              ),
+              SizedBox(height: 12 + bottomInset),
+            ],
           ),
         ),
       ),

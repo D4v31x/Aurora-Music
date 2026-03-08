@@ -47,7 +47,7 @@ TextStyle lyricsCurrentLineStyle({double sizeFactor = 1.0}) => TextStyle(
 TextStyle lyricsOtherLineStyle({double sizeFactor = 1.0}) => TextStyle(
       fontSize: kLyricsOtherFontSize * sizeFactor,
       fontWeight: FontWeight.w500,
-      color: Colors.white.withOpacity(0.5),
+      color: Colors.white.withValues(alpha: 0.5),
       fontFamily: FontConstants.fontFamily,
       height: 1.5,
     );
@@ -61,16 +61,16 @@ TextStyle lyricsDialogTitleStyle() => const TextStyle(
 
 TextStyle lyricsDialogTextStyle() => TextStyle(
       fontSize: 14,
-      color: Colors.white.withOpacity(0.7),
+      color: Colors.white.withValues(alpha: 0.7),
       fontFamily: FontConstants.fontFamily,
     );
 
 // MARK: - Decorations
 
 BoxDecoration lyricsDialogDecoration() => BoxDecoration(
-      color: Colors.grey[900]?.withOpacity(0.95),
+      color: Colors.grey[900]?.withValues(alpha: 0.95),
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Colors.white.withOpacity(0.1)),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
     );
 
 // MARK: - Settings Keys

@@ -132,7 +132,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
     final isDark = themeProvider.isDarkMode;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -229,8 +229,8 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                   padding: const EdgeInsets.all(20),
                                   decoration: BoxDecoration(
                                     color: isDark
-                                        ? Colors.white.withOpacity(0.05)
-                                        : Colors.black.withOpacity(0.05),
+                                        ? Colors.white.withValues(alpha: 0.05)
+                                        : Colors.black.withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: Row(
@@ -325,20 +325,19 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
   }) {
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.white.withOpacity(0.03)
-            : Colors.black.withOpacity(0.03),
+            ? Colors.white.withValues(alpha: 0.03)
+            : Colors.black.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.08),
-          width: 1,
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.08),
         ),
       ),
       child: Row(
@@ -347,7 +346,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -387,7 +386,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(

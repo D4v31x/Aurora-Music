@@ -106,7 +106,7 @@ class ResponsiveScaffold extends StatelessWidget {
             VerticalDivider(
               width: 1,
               thickness: 1,
-              color: Theme.of(context).dividerColor.withOpacity(0.1),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
             ),
             Expanded(
               flex: ((1 - mainRatio) * 100).round(),
@@ -142,14 +142,14 @@ class ResponsiveScaffold extends StatelessWidget {
           Icon(
             Icons.touch_app_outlined,
             size: 64,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
             'Select an item to view details',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                      Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
           ),
         ],

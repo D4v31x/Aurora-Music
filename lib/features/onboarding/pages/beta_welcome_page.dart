@@ -98,7 +98,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
     final isDark = themeProvider.isDarkMode;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -237,15 +237,15 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
   }) {
     final titleColor = isDark ? Colors.white : Colors.black;
     final descriptionColor =
-        isDark ? Colors.white.withOpacity(0.6) : Colors.black.withOpacity(0.6);
+        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: (isDark ? Colors.white : Colors.black).withOpacity(0.05),
+        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: (isDark ? Colors.white : Colors.black).withOpacity(0.1),
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
           width: 1.5,
         ),
       ),
@@ -256,7 +256,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(

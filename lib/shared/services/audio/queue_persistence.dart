@@ -14,6 +14,7 @@ extension AudioQueuePersistenceExtension on AudioPlayerService {
         'queue': _playlist.map((song) => song.getMap).toList(),
         'originalQueue': _originalPlaylist.map((song) => song.getMap).toList(),
         'currentIndex': _currentIndex,
+        'queueCount': _queueCount,
         'positionMs': _audioPlayer.position.inMilliseconds,
         'isShuffle': _isShuffle,
         'loopMode': _loopMode.name,
@@ -71,6 +72,7 @@ extension AudioQueuePersistenceExtension on AudioPlayerService {
       _playlist = queue;
       _originalPlaylist = originalQueue;
       _currentIndex = savedIndex;
+      _queueCount = (json['queueCount'] as int? ?? 0).clamp(0, queue.length);
       _isShuffle = isShuffle;
       _loopMode = loopMode;
 

@@ -20,9 +20,14 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
   /// Saves artwork to a temp file and returns the file URI.
   /// Results are cached to avoid redundant disk writes.
   Future<Uri?> _getArtworkUri(int songId) async {
-    // Return cached URI if available
+    // Validate cached URI — the temp file may have been deleted by the OS
     if (_artworkUriCache.containsKey(songId)) {
-      return _artworkUriCache[songId];
+      final cachedUri = _artworkUriCache[songId];
+      if (cachedUri == null) return null;
+      final cachedFile = File(cachedUri.toFilePath());
+      if (await cachedFile.exists()) return cachedUri;
+      // File was deleted; fall through to recreate it
+      _artworkUriCache.remove(songId);
     }
     try {
       final artwork = await _artworkCache.getArtwork(songId);
@@ -34,10 +39,7 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
       final tempDir = await getTemporaryDirectory();
       final artworkFile = File('${tempDir.path}/notification_art_$songId.jpg');
 
-      // Only write if file doesn't already exist
-      if (!await artworkFile.exists()) {
-        await artworkFile.writeAsBytes(artwork);
-      }
+      await artworkFile.writeAsBytes(artwork);
 
       final uri = Uri.parse('file://${artworkFile.path}');
       _artworkUriCache[songId] = uri;
@@ -122,12 +124,12 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
 
       // Also push artwork to home screen widget
       if (artwork != null && artwork.isNotEmpty) {
-        _homeWidgetService.updateSongInfo(
+        unawaited(_homeWidgetService.updateSongInfo(
           title: currentSong!.title,
           artist: currentSong!.artist ?? 'Unknown Artist',
           isPlaying: isPlayingNotifier.value,
           artworkBytes: artwork,
-        );
+        ));
       }
     } catch (e) {
       currentArtwork.value = null;

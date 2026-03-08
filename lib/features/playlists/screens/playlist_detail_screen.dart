@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -189,10 +190,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                 width: 40,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.1),
+                                  color: Colors.white.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: const Icon(
@@ -283,13 +284,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
                   color: playlist.songs.isEmpty
-                      ? theme.colorScheme.primary.withOpacity(0.3)
+                      ? theme.colorScheme.primary.withValues(alpha: 0.3)
                       : theme.colorScheme.primary,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: playlist.songs.isNotEmpty
                       ? [
                           BoxShadow(
-                            color: theme.colorScheme.primary.withOpacity(0.4),
+                            color: theme.colorScheme.primary.withValues(alpha: 0.4),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -379,16 +380,16 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               onTap: () async {
                 await SongPickerSheet.show(context, playlist);
                 _refreshSongs();
-                _loadArtwork(); // Refresh artwork after adding songs
+                unawaited(_loadArtwork()); // Refresh artwork after adding songs
               },
               child: Container(
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: color.withOpacity(0.4),
+                    color: color.withValues(alpha: 0.4),
                   ),
                 ),
                 child: Icon(
@@ -478,8 +479,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
-        color: Colors.red.withOpacity(0.15),
-        child: Icon(Icons.delete_rounded, color: Colors.red.withOpacity(0.8)),
+        color: Colors.red.withValues(alpha: 0.15),
+        child: Icon(Icons.delete_rounded, color: Colors.red.withValues(alpha: 0.8)),
       ),
       confirmDismiss: (_) async {
         if (!_isAutoPlaylist) {
@@ -520,7 +521,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                             '${index + 1}',
                             style: TextStyle(
                               fontFamily: FontConstants.fontFamily,
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                               fontSize: 14,
                             ),
                             textAlign: TextAlign.center,
@@ -551,7 +552,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           splitArtists(song.artist ?? 'Unknown').join(', '),
                           style: TextStyle(
                             fontFamily: FontConstants.fontFamily,
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withValues(alpha: 0.5),
                             fontSize: 12,
                           ),
                           maxLines: 1,
@@ -565,7 +566,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     durationString,
                     style: TextStyle(
                       fontFamily: FontConstants.fontFamily,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 13,
                     ),
                   ),
@@ -573,7 +574,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   const SizedBox(width: 4),
                   Icon(
                     Icons.more_vert,
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     size: 20,
                   ),
                 ],
@@ -637,12 +638,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
@@ -697,7 +698,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.8),
+                              color: Colors.red.withValues(alpha: 0.8),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(
@@ -730,13 +731,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       builder: (context) => Container(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(20)),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 24,
                   offset: const Offset(0, -4),
                 ),
@@ -810,8 +811,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
           color: isDark
-              ? Colors.white.withOpacity(0.06)
-              : Colors.black.withOpacity(0.03),
+              ? Colors.white.withValues(alpha: 0.06)
+              : Colors.black.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -851,12 +852,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
@@ -867,7 +868,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 children: [
                   Icon(
                     Icons.delete_outline_rounded,
-                    color: Colors.red.withOpacity(0.8),
+                    color: Colors.red.withValues(alpha: 0.8),
                     size: 44,
                   ),
                   const SizedBox(height: 14),
@@ -919,7 +920,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.8),
+                              color: Colors.red.withValues(alpha: 0.8),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(

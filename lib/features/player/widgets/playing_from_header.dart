@@ -47,7 +47,7 @@ class PlayingFromHeader extends StatelessWidget {
         Text(
           AppLocalizations.of(context).translate('playing_from'),
           style: TextStyle(
-            color: Colors.white.withOpacity(_kHeaderOpacity),
+            color: Colors.white.withValues(alpha: _kHeaderOpacity),
             fontSize: _kHeaderFontSize,
             fontWeight: FontWeight.w400,
             fontFamily: FontConstants.fontFamily,

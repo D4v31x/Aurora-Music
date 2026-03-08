@@ -80,9 +80,15 @@ class _SettingsTabState extends State<SettingsTab> {
   Widget _buildGlassmorphicCard({required List<Widget> children}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GlassmorphicContainer(
-        borderRadius: BorderRadius.circular(20),
-        blur: 15,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.12),
+            width: 1,
+          ),
+        ),
         child: Column(
           children: children,
         ),
@@ -107,8 +113,8 @@ class _SettingsTabState extends State<SettingsTab> {
             height: 1,
             indent: 56,
             color: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.06),
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
           ),
         SwitchListTile(
           contentPadding:
@@ -116,7 +122,7 @@ class _SettingsTabState extends State<SettingsTab> {
           secondary: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -145,7 +151,7 @@ class _SettingsTabState extends State<SettingsTab> {
                           .textTheme
                           .bodySmall
                           ?.color
-                          ?.withOpacity(0.7),
+                          ?.withValues(alpha: 0.7),
                     ),
                   ),
                 )
@@ -178,8 +184,8 @@ class _SettingsTabState extends State<SettingsTab> {
             height: 1,
             indent: 56,
             color: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.06),
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
           ),
         ListTile(
           contentPadding:
@@ -187,7 +193,7 @@ class _SettingsTabState extends State<SettingsTab> {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: effectiveIconColor.withOpacity(0.15),
+              color: effectiveIconColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -216,7 +222,7 @@ class _SettingsTabState extends State<SettingsTab> {
                           .textTheme
                           .bodySmall
                           ?.color
-                          ?.withOpacity(0.7),
+                          ?.withValues(alpha: 0.7),
                     ),
                   ),
                 )
@@ -229,7 +235,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     .textTheme
                     .bodySmall
                     ?.color
-                    ?.withOpacity(0.5),
+                    ?.withValues(alpha: 0.5),
               ),
           onTap: onTap,
         ),
@@ -249,10 +255,75 @@ class _SettingsTabState extends State<SettingsTab> {
     ValueChanged<double>? onChangeEnd,
     String Function(double)? valueFormatter,
     bool isFirst = false,
+    double? defaultValue,
+  }) {
+    // _draft[0] tracks the live drag value so the label updates while dragging.
+    final draft = <double?>[null];
+
+    return StatefulBuilder(
+      builder: (context, setLocal) {
+        return _buildSliderTileContent(
+          icon: icon,
+          title: title,
+          subtitle: subtitle,
+          value: value,
+          draft: draft[0],
+          min: min,
+          max: max,
+          onChanged: (v) {
+            setLocal(() => draft[0] = v);
+            onChanged(v);
+          },
+          onChangeEnd: (v) {
+            setLocal(() => draft[0] = null); // revert to committed value
+            onChangeEnd?.call(v);
+          },
+          valueFormatter: valueFormatter,
+          isFirst: isFirst,
+          defaultValue: defaultValue,
+        );
+      },
+    );
+  }
+
+  Widget _buildSliderTileContent({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required double value,
+    double? draft,
+    required double min,
+    required double max,
+    required ValueChanged<double> onChanged,
+    ValueChanged<double>? onChangeEnd,
+    String Function(double)? valueFormatter,
+    bool isFirst = false,
+    double? defaultValue,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final displayValue =
-        valueFormatter?.call(value) ?? value.toStringAsFixed(1);
+        valueFormatter?.call(draft ?? value) ?? (draft ?? value).toStringAsFixed(1);
+
+    // Snap threshold: 2.5 % of the total range
+    final snapThreshold =
+        defaultValue != null ? (max - min) * 0.025 : 0.0;
+
+    ValueChanged<double> wrappedOnChanged = onChanged;
+    ValueChanged<double>? wrappedOnChangeEnd = onChangeEnd;
+    if (defaultValue != null) {
+      wrappedOnChanged = (v) {
+        final snapped =
+            (v - defaultValue).abs() <= snapThreshold ? defaultValue : v;
+        onChanged(snapped);
+      };
+      if (onChangeEnd != null) {
+        wrappedOnChangeEnd = (v) {
+          final snapped =
+              (v - defaultValue).abs() <= snapThreshold ? defaultValue : v;
+          onChangeEnd(snapped);
+        };
+      }
+    }
 
     return Column(
       children: [
@@ -342,13 +413,58 @@ class _SettingsTabState extends State<SettingsTab> {
                         thumbShape:
                             const RoundSliderThumbShape(enabledThumbRadius: 8),
                       ),
-                      child: Slider(
-                        value: value,
-                        min: min,
-                        max: max,
-                        onChanged: onChanged,
-                        onChangeEnd: onChangeEnd,
-                      ),
+                      child: defaultValue != null
+                          ? LayoutBuilder(
+                              builder: (context, constraints) {
+                                // Thumb travel range: 8 px padding on each side
+                                // (matches Flutter's default thumb overlay radius)
+                                const double thumbRadius = 8.0;
+                                final trackWidth =
+                                    constraints.maxWidth - thumbRadius * 2;
+                                final fraction =
+                                    (defaultValue - min) / (max - min);
+                                final markerLeft =
+                                    thumbRadius + fraction * trackWidth;
+                                return Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Slider(
+                                      value: (draft ?? value).clamp(min, max),
+                                      min: min,
+                                      max: max,
+                                      onChanged: wrappedOnChanged,
+                                      onChangeEnd: wrappedOnChangeEnd,
+                                    ),
+                                    Positioned(
+                                      left: markerLeft - 1,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: Center(
+                                        child: Container(
+                                          width: 2,
+                                          height: 10,
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                                .withValues(alpha: 0.5),
+                                            borderRadius:
+                                                BorderRadius.circular(1),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            )
+                          : Slider(
+                              value: (draft ?? value).clamp(min, max),
+                              min: min,
+                              max: max,
+                              onChanged: wrappedOnChanged,
+                              onChangeEnd: wrappedOnChangeEnd,
+                            ),
                     ),
                   ],
                 ),
@@ -400,7 +516,7 @@ class _SettingsTabState extends State<SettingsTab> {
     // Use solid surface colors for lowend devices
     final Color backgroundColor;
     if (shouldBlur) {
-      backgroundColor = Colors.grey[900]!.withOpacity(0.9);
+      backgroundColor = Colors.grey[900]!.withValues(alpha: 0.9);
     } else {
       backgroundColor = colorScheme.surfaceContainerHigh;
     }
@@ -409,7 +525,7 @@ class _SettingsTabState extends State<SettingsTab> {
       backgroundColor: backgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
       ),
       title: Text(
         l10n.translate('settings_clear_cache_title'),
@@ -477,7 +593,7 @@ class _SettingsTabState extends State<SettingsTab> {
     // Use solid surface colors for lowend devices
     final Color backgroundColor;
     if (shouldBlur) {
-      backgroundColor = Colors.grey[900]!.withOpacity(0.9);
+      backgroundColor = Colors.grey[900]!.withValues(alpha: 0.9);
     } else {
       backgroundColor = colorScheme.surfaceContainerHigh;
     }
@@ -520,9 +636,8 @@ class _SettingsTabState extends State<SettingsTab> {
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
             color: shouldBlur
-                ? Colors.white.withOpacity(0.1)
+                ? Colors.white.withValues(alpha: 0.1)
                 : colorScheme.outlineVariant,
-            width: 1,
           ),
         ),
         title: Text(
@@ -550,7 +665,7 @@ class _SettingsTabState extends State<SettingsTab> {
               _buildInfoRow(l10n.translate('lyrics'), _formatBytes(lyricsSize)),
               _buildInfoRow(l10n.translate('onboarding_album_artwork'),
                   _formatBytes(artworkSize)),
-              Divider(color: Colors.white.withOpacity(0.2)),
+              Divider(color: Colors.white.withValues(alpha: 0.2)),
               _buildInfoRow('Total', _formatBytes(totalSize), bold: true),
               const SizedBox(height: 16),
               const Text(
@@ -585,7 +700,7 @@ class _SettingsTabState extends State<SettingsTab> {
         ],
       );
 
-      showDialog(
+      await showDialog(
         context: context,
         builder: (context) => dialogContent,
       );
@@ -637,14 +752,13 @@ class _SettingsTabState extends State<SettingsTab> {
     final shouldBlur = performanceProvider.shouldEnableBlur;
 
     final dialogContent = AlertDialog(
-      backgroundColor: Colors.grey[900]?.withOpacity(shouldBlur ? 0.9 : 0.95),
+      backgroundColor: Colors.grey[900]?.withValues(alpha: shouldBlur ? 0.9 : 0.95),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
           color: shouldBlur
-              ? Colors.white.withOpacity(0.1)
+              ? Colors.white.withValues(alpha: 0.1)
               : Theme.of(context).colorScheme.outlineVariant,
-          width: 1,
         ),
       ),
       title: Text(
@@ -671,7 +785,7 @@ class _SettingsTabState extends State<SettingsTab> {
             );
 
             // Stop audio and exit the app
-            if (!context.mounted) return;
+            if (!mounted) return;
             final audioService =
                 Provider.of<AudioPlayerService>(context, listen: false);
             await audioService.stop();
@@ -679,7 +793,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
             // Exit the app
             if (Platform.isAndroid) {
-              SystemNavigator.pop();
+              await SystemNavigator.pop();
             } else if (Platform.isIOS) {
               exit(0);
             }
@@ -712,7 +826,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
     if (!mounted) return;
 
-    showDialog(
+    await showDialog(
       context: context,
       builder: (context) => AuroraAboutDialog(
         version: packageInfo.version,
@@ -724,7 +838,7 @@ class _SettingsTabState extends State<SettingsTab> {
   void _showChangelogDialog() async {
     if (!mounted) return;
 
-    showDialog(
+    await showDialog(
       context: context,
       builder: (context) => ChangelogDialog(
         currentVersion: _currentVersion,
@@ -741,6 +855,88 @@ class _SettingsTabState extends State<SettingsTab> {
     );
   }
 
+  void _showColorPickerDialog(ThemeProvider themeProvider) {
+    const presetColors = [
+      Color(0xFF673AB7), // Deep Purple (default)
+      Color(0xFF3F51B5), // Indigo
+      Color(0xFF2196F3), // Blue
+      Color(0xFF009688), // Teal
+      Color(0xFF4CAF50), // Green
+      Color(0xFFFFC107), // Amber
+      Color(0xFFFF9800), // Orange
+      Color(0xFFF44336), // Red
+      Color(0xFFE91E63), // Pink
+      Color(0xFF00BCD4), // Cyan
+    ];
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.grey[900]?.withValues(alpha: 0.95),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        title: const Text(
+          'Accent Color',
+          style: TextStyle(
+            fontFamily: FontConstants.fontFamily,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: presetColors.map((color) {
+            final isSelected =
+                color.toARGB32() == themeProvider.customSeedColor.toARGB32();
+            return GestureDetector(
+              onTap: () {
+                themeProvider.setCustomSeedColor(color);
+                Navigator.pop(dialogContext);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: isSelected
+                      ? Border.all(color: Colors.white, width: 3)
+                      : Border.all(
+                          color: Colors.white.withValues(alpha: 0.2), width: 1.5),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                              color: color.withValues(alpha: 0.6), blurRadius: 12)
+                        ]
+                      : null,
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check, color: Colors.white, size: 22)
+                    : null,
+              ),
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                fontFamily: FontConstants.fontFamily,
+                color: Colors.white70,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showUpdateAvailableDialog(dynamic latestVersion) {
     final l10n = AppLocalizations.of(context);
     // Check if blur should be enabled based on performance mode
@@ -752,7 +948,7 @@ class _SettingsTabState extends State<SettingsTab> {
     // Use solid surface colors for lowend devices
     final Color backgroundColor;
     if (shouldBlur) {
-      backgroundColor = Colors.grey[900]!.withOpacity(0.9);
+      backgroundColor = Colors.grey[900]!.withValues(alpha: 0.9);
     } else {
       backgroundColor = colorScheme.surfaceContainerHigh;
     }
@@ -763,9 +959,8 @@ class _SettingsTabState extends State<SettingsTab> {
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
           color: shouldBlur
-              ? Colors.white.withOpacity(0.1)
+              ? Colors.white.withValues(alpha: 0.1)
               : colorScheme.outlineVariant,
-          width: 1,
         ),
       ),
       title: Text(
@@ -831,8 +1026,8 @@ class _SettingsTabState extends State<SettingsTab> {
           height: 1,
           indent: 56,
           color: isDark
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.06),
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.06),
         ),
         ListTile(
           contentPadding:
@@ -840,7 +1035,7 @@ class _SettingsTabState extends State<SettingsTab> {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -860,7 +1055,7 @@ class _SettingsTabState extends State<SettingsTab> {
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: DropdownButton<String>(
@@ -914,7 +1109,7 @@ class _SettingsTabState extends State<SettingsTab> {
             top: isTablet ? 20.0 : 10.0,
             bottom: hasCurrentSong
                 ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
-                : 24.0,
+                : MediaQuery.of(context).padding.bottom + 24.0,
             left: horizontalPadding,
             right: horizontalPadding,
           ),
@@ -955,6 +1150,40 @@ class _SettingsTabState extends State<SettingsTab> {
               onChanged: (value) => themeProvider.toggleDynamicColor(),
               isFirst: true,
             ),
+            if (!themeProvider.useDynamicColor)
+              _buildActionTile(
+                icon: Icons.color_lens_rounded,
+                title: 'Accent Color',
+                subtitle: 'Choose the app accent color',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: themeProvider.customSeedColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 16,
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withValues(alpha: 0.5),
+                    ),
+                  ],
+                ),
+                onTap: () => _showColorPickerDialog(themeProvider),
+              ),
             Consumer<PerformanceModeProvider>(
               builder: (context, performanceProvider, _) {
                 final isHighEnd =
@@ -972,9 +1201,40 @@ class _SettingsTabState extends State<SettingsTab> {
                 );
               },
             ),
+            Consumer<PerformanceModeProvider>(
+              builder: (context, performanceProvider, _) {
+                if (!performanceProvider.shouldEnableBlur) {
+                  return const SizedBox.shrink();
+                }
+                return _buildSliderTile(
+                  icon: Icons.blur_on_rounded,
+                  title: 'Background Blur',
+                  subtitle: 'Artwork blur intensity',
+                  value: themeProvider.blurIntensity,
+                  min: 5.0,
+                  max: 40.0,
+                  defaultValue: 25.0,
+                  valueFormatter: (v) => v.toStringAsFixed(0),
+                  onChanged: (value) => themeProvider.updateBlurIntensity(value),
+                  onChangeEnd: (value) => themeProvider.setBlurIntensity(value),
+                );
+              },
+            ),
+            _buildSliderTile(
+              icon: Icons.brightness_4_rounded,
+              title: 'Background Darkness',
+              subtitle: 'Overlay opacity on artwork',
+              value: themeProvider.overlayOpacity,
+              min: 0.0,
+              max: 0.8,
+              defaultValue: 0.3,
+              valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
+              onChanged: (value) => themeProvider.updateOverlayOpacity(value),
+              onChangeEnd: (value) => themeProvider.setOverlayOpacity(value),
+            ),
             _buildLanguageTile(),
             _buildActionTile(
-              icon: Icons.dashboard_customize_rounded,
+              icon: Icons.dashboard_rounded,
               title: l10n.translate('homeLayout'),
               subtitle: l10n.translate('homeLayoutDesc'),
               onTap: () {
@@ -995,7 +1255,7 @@ class _SettingsTabState extends State<SettingsTab> {
         _buildGlassmorphicCard(
           children: [
             _buildSwitchTile(
-              icon: Icons.swap_horiz_rounded,
+              icon: Icons.call_split_rounded,
               title: l10n.translate('settings_gapless'),
               subtitle: l10n.translate('settings_gapless_desc'),
               value: audioPlayerService.gaplessPlayback,
@@ -1018,18 +1278,26 @@ class _SettingsTabState extends State<SettingsTab> {
               value: audioPlayerService.playbackSpeed,
               min: 0.25,
               max: 5.0,
+              defaultValue: 1.0,
               valueFormatter: (v) => '${v.toStringAsFixed(2)}x',
               onChanged: (value) {
-                // Just update UI during drag, don't apply yet
+                audioPlayerService.setPlaybackSpeed(value);
               },
               onChangeEnd: (value) {
-                // Round to nearest 0.05 for nice values and apply
                 final rounded = (value * 20).round() / 20;
                 audioPlayerService.setPlaybackSpeed(rounded);
               },
             ),
+            _buildSwitchTile(
+              icon: Icons.music_note_rounded,
+              title: 'Adjust pitch with speed',
+              subtitle: 'When off, tempo changes without pitch shift',
+              value: audioPlayerService.pitchWithSpeed,
+              onChanged: (value) =>
+                  audioPlayerService.setPitchWithSpeed(value),
+            ),
             _buildActionTile(
-              icon: Icons.people_outline_rounded,
+              icon: Icons.people_rounded,
               title: l10n.translate('artist_separation'),
               subtitle: l10n.translate('artist_separation_desc'),
               onTap: () {
@@ -1057,7 +1325,7 @@ class _SettingsTabState extends State<SettingsTab> {
               isFirst: true,
             ),
             _buildActionTile(
-              icon: Icons.delete_outline_rounded,
+              icon: Icons.delete_rounded,
               title: l10n.translate('settings_clear_cache'),
               subtitle: l10n.translate('settings_clear_cache_desc'),
               onTap: _showClearCacheDialog,
@@ -1071,7 +1339,7 @@ class _SettingsTabState extends State<SettingsTab> {
         _buildGlassmorphicCard(
           children: [
             _buildActionTile(
-              icon: Icons.info_outline_rounded,
+              icon: Icons.info_rounded,
               title: l10n.translate('settings_about_app'),
               subtitle:
                   '${l10n.translate('settings_version')} $_currentVersion',
@@ -1079,7 +1347,7 @@ class _SettingsTabState extends State<SettingsTab> {
               isFirst: true,
             ),
             _buildActionTile(
-              icon: Icons.new_releases_outlined,
+              icon: Icons.notifications_rounded,
               title: l10n.translate('whats_new'),
               subtitle: l10n.translate('view_changelog'),
               onTap: _showChangelogDialog,
@@ -1093,14 +1361,14 @@ class _SettingsTabState extends State<SettingsTab> {
               iconColor: Colors.pink,
             ),
             _buildActionTile(
-              icon: Icons.feedback_rounded,
+              icon: Icons.chat_bubble_outline_rounded,
               title: l10n.translate('send_feedback'),
               subtitle: l10n.translate('send_feedback_desc'),
               onTap: () => _showFeedbackDialog(),
               iconColor: Colors.green,
             ),
             _buildActionTile(
-              icon: Icons.system_update_rounded,
+              icon: Icons.restart_alt_rounded,
               title: l10n.translate('settings_check_updates'),
               subtitle: l10n.translate('settings_check_updates_desc'),
               onTap: () async {

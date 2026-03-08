@@ -30,14 +30,14 @@ class GlassmorphicDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final dialogContent = DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -69,7 +69,7 @@ class GlassmorphicDialog extends StatelessWidget {
                   fontFamily: FontConstants.fontFamily,
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
                 child: content!,
               ),
@@ -163,14 +163,14 @@ class GlassmorphicPopupMenuButton<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final menuDecoration = BoxDecoration(
-      color: Colors.white.withOpacity(0.1),
+      color: Colors.white.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(borderRadius),
       border: Border.all(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.25),
+          color: Colors.black.withValues(alpha: 0.25),
           blurRadius: 16,
           offset: const Offset(0, 4),
         ),
@@ -275,15 +275,15 @@ Future<T?> showGlassmorphicBottomSheet<T>({
           filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius:
                   BorderRadius.vertical(top: Radius.circular(borderRadius)),
               border: Border.all(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 24,
                   offset: const Offset(0, -4),
                 ),

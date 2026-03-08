@@ -167,6 +167,8 @@ void showSleepTimerOptions(BuildContext context) {
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
+    shape: const RoundedRectangleBorder(),
+    barrierColor: Colors.black.withValues(alpha: 0.75),
     builder: (context) => const _SleepTimerOptionsSheet(),
   );
 }
@@ -189,18 +191,16 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
         decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.white.withOpacity(0.22)
-              : Colors.white.withOpacity(0.07),
+          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ? Colors.white.withOpacity(0.6)
-                : Colors.white.withOpacity(0.15),
-            width: isSelected ? 1.5 : 1,
+                ? Colors.white
+                : Colors.white.withValues(alpha: 0.12),
+            width: 1,
           ),
         ),
         child: Column(
@@ -209,19 +209,21 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
             Text(
               '$minutes',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: isSelected ? 22 : 20,
+                color: isSelected ? Colors.black : Colors.white,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 1),
             Text(
               'min',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
+                color: isSelected
+                    ? Colors.black.withValues(alpha: 0.45)
+                    : Colors.white.withValues(alpha: 0.5),
                 fontSize: 11,
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -234,9 +236,11 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
     int picked = _selectedMinutes ?? 30;
     showDialog(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.75),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => Dialog(
           backgroundColor: Colors.transparent,
+          shape: const RoundedRectangleBorder(),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
             child: BackdropFilter(
@@ -244,12 +248,12 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
               child: Container(
                 padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -295,7 +299,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                               Text(
                                 'min',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 14,
                                 ),
                               ),
@@ -323,9 +327,10 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
+                          elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                         ),
                         child: Text(
@@ -353,18 +358,20 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
         Provider.of<AudioPlayerService>(context, listen: false);
     final sleepTimerController =
         Provider.of<SleepTimerController>(context, listen: false);
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.08),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.18),
+            border: Border(
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+              left: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+              right: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
             ),
           ),
           child: Column(
@@ -372,201 +379,272 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
             children: [
               // Drag handle
               Container(
-                width: 40,
+                width: 36,
                 height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
+                margin: const EdgeInsets.only(top: 12, bottom: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
 
-              // Header row
-              Row(
-                children: [
-                  const Icon(
-                    Icons.bedtime_outlined,
-                    color: Colors.white,
-                    size: 22,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    AppLocalizations.of(context).translate('sleep_timer'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+              // Header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.bedtime_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  // Active timer badge
-                  Consumer<SleepTimerController>(
-                    builder: (context, timer, _) {
-                      if (!timer.isActive) return const SizedBox.shrink();
-                      final rem = timer.remainingTime!;
-                      final m = rem.inMinutes;
-                      final s = (rem.inSeconds % 60).toString().padLeft(2, '0');
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.redAccent.withOpacity(0.4),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)
+                                .translate('sleep_timer'),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.3,
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          '$m:$s',
-                          style: const TextStyle(
-                            color: Colors.redAccent,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
+                          Text(
+                            _selectedMinutes != null
+                                ? '$_selectedMinutes min selected'
+                                : 'Choose a duration',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.55),
+                              fontSize: 13,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                        ],
+                      ),
+                    ),
+                    // Active timer badge
+                    Consumer<SleepTimerController>(
+                      builder: (context, timer, _) {
+                        if (!timer.isActive) return const SizedBox.shrink();
+                        final rem = timer.remainingTime!;
+                        final m = rem.inMinutes;
+                        final s =
+                            (rem.inSeconds % 60).toString().padLeft(2, '0');
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Colors.redAccent.withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.timer_rounded,
+                                color: Colors.redAccent,
+                                size: 13,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$m:$s',
+                                style: const TextStyle(
+                                  color: Colors.redAccent,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
 
-              const SizedBox(height: 24),
+              Divider(
+                color: Colors.white.withValues(alpha: 0.08),
+                height: 1,
+                indent: 20,
+                endIndent: 20,
+              ),
+
+              const SizedBox(height: 20),
 
               // Preset grid — 4 columns, 2 rows
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  childAspectRatio: 1.0,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    childAspectRatio: 1.15,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: _presets.length,
+                  itemBuilder: (context, i) {
+                    final m = _presets[i];
+                    return _buildPresetTile(
+                      m,
+                      _selectedMinutes == m,
+                      () => setState(() => _selectedMinutes = m),
+                    );
+                  },
                 ),
-                itemCount: _presets.length,
-                itemBuilder: (context, i) {
-                  final m = _presets[i];
-                  return _buildPresetTile(
-                    m,
-                    _selectedMinutes == m,
-                    () => setState(() => _selectedMinutes = m),
-                  );
-                },
               ),
 
               const SizedBox(height: 12),
 
               // Custom duration button
-              GestureDetector(
-                onTap: _showCustomPicker,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.07),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.15),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: GestureDetector(
+                  onTap: _showCustomPicker,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: (_selectedMinutes != null &&
+                              !_presets.contains(_selectedMinutes))
+                          ? Colors.white.withValues(alpha: 0.15)
+                          : Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: (_selectedMinutes != null &&
+                                !_presets.contains(_selectedMinutes))
+                            ? Colors.white.withValues(alpha: 0.4)
+                            : Colors.white.withValues(alpha: 0.1),
+                      ),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.tune_rounded,
-                        color: Colors.white.withOpacity(0.75),
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _selectedMinutes != null &&
-                                !_presets.contains(_selectedMinutes)
-                            ? '$_selectedMinutes min (custom)'
-                            : AppLocalizations.of(context)
-                                .translate('own_timer'),
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.tune_rounded,
+                          color: Colors.white.withValues(alpha: 0.7),
+                          size: 17,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Text(
+                          _selectedMinutes != null &&
+                                  !_presets.contains(_selectedMinutes)
+                              ? '$_selectedMinutes min (custom)'
+                              : AppLocalizations.of(context)
+                                  .translate('own_timer'),
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               // Action buttons
-              Row(
-                children: [
-                  Consumer<SleepTimerController>(
-                    builder: (context, timer, _) {
-                      if (!timer.isActive) return const SizedBox.shrink();
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 10),
-                          child: TextButton.icon(
-                            onPressed: () {
-                              timer.cancelTimer();
-                              Navigator.pop(context);
-                            },
-                            icon: const Icon(
-                              Icons.timer_off_rounded,
-                              color: Colors.redAccent,
-                              size: 18,
-                            ),
-                            label: Text(
-                              AppLocalizations.of(context).translate('cancel'),
-                              style: const TextStyle(color: Colors.redAccent),
-                            ),
-                            style: TextButton.styleFrom(
-                              backgroundColor:
-                                  Colors.redAccent.withOpacity(0.12),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
+              Padding(
+                padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + bottomInset),
+                child: Row(
+                  children: [
+                    Consumer<SleepTimerController>(
+                      builder: (context, timer, _) {
+                        if (!timer.isActive) return const SizedBox.shrink();
+                        return Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: TextButton.icon(
+                              onPressed: () {
+                                timer.cancelTimer();
+                                Navigator.pop(context);
+                              },
+                              icon: const Icon(
+                                Icons.timer_off_rounded,
+                                color: Colors.redAccent,
+                                size: 18,
+                              ),
+                              label: Text(
+                                AppLocalizations.of(context)
+                                    .translate('cancel'),
+                                style:
+                                    const TextStyle(color: Colors.redAccent),
+                              ),
+                              style: TextButton.styleFrom(
+                                backgroundColor:
+                                    Colors.redAccent.withValues(alpha: 0.1),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                               ),
                             ),
                           ),
+                        );
+                      },
+                    ),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _selectedMinutes != null
+                            ? () {
+                                sleepTimerController.startTimer(
+                                  Duration(minutes: _selectedMinutes!),
+                                  () => audioPlayerService.pause(),
+                                );
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          disabledBackgroundColor:
+                              Colors.white.withValues(alpha: 0.15),
+                          disabledForegroundColor:
+                              Colors.white.withValues(alpha: 0.35),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
-                      );
-                    },
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _selectedMinutes != null
-                          ? () {
-                              sleepTimerController.startTimer(
-                                Duration(minutes: _selectedMinutes!),
-                                () => audioPlayerService.pause(),
-                              );
-                              Navigator.pop(context);
-                            }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        disabledBackgroundColor:
-                            Colors.white.withOpacity(0.2),
-                        disabledForegroundColor:
-                            Colors.white.withOpacity(0.4),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: Text(
-                        AppLocalizations.of(context).translate('set'),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                        child: Text(
+                          AppLocalizations.of(context).translate('set'),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -591,10 +669,10 @@ class _CounterButton extends StatelessWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.white.withOpacity(0.25),
+            color: Colors.white.withValues(alpha: 0.25),
           ),
         ),
         child: Icon(icon, color: Colors.white, size: 22),

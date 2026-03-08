@@ -67,7 +67,7 @@ class _CompletionPageState extends State<CompletionPage>
     final isDark = themeProvider.isDarkMode;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
-        isDark ? Colors.white.withOpacity(0.7) : Colors.black.withOpacity(0.7);
+        isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.7);
 
     return Scaffold(
       backgroundColor: Colors.transparent,

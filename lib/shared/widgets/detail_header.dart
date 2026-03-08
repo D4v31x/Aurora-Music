@@ -100,10 +100,10 @@ class DetailHeader extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.3),
-                        Colors.black.withOpacity(0.05),
-                        Colors.black.withOpacity(0.15),
-                        Colors.black.withOpacity(0.6),
+                        Colors.black.withValues(alpha: 0.3),
+                        Colors.black.withValues(alpha: 0.05),
+                        Colors.black.withValues(alpha: 0.15),
+                        Colors.black.withValues(alpha: 0.6),
                       ],
                       stops: const [0.0, 0.35, 0.7, 1.0],
                     ),
@@ -141,7 +141,7 @@ class DetailHeader extends StatelessWidget {
                                 subtitle!,
                                 style: TextStyle(
                                   fontFamily: FontConstants.fontFamily,
-                                  color: Colors.white.withOpacity(0.85),
+                                  color: Colors.white.withValues(alpha: 0.85),
                                   fontSize: 16,
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -155,7 +155,7 @@ class DetailHeader extends StatelessWidget {
                                 metadata!,
                                 style: TextStyle(
                                   fontFamily: FontConstants.fontFamily,
-                                  color: Colors.white.withOpacity(0.55),
+                                  color: Colors.white.withValues(alpha: 0.55),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -201,7 +201,7 @@ class DetailHeader extends StatelessWidget {
                                 subtitle!,
                                 style: TextStyle(
                                   fontFamily: FontConstants.fontFamily,
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -237,10 +237,10 @@ class DetailHeader extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.35),
+            color: Colors.black.withValues(alpha: 0.35),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white.withOpacity(0.18),
+              color: Colors.white.withValues(alpha: 0.18),
             ),
           ),
           child: const Icon(
@@ -274,10 +274,10 @@ class DetailHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withOpacity(0.5),
+          color: Colors.white.withValues(alpha: 0.5),
           width: 1,
         ),
       ),
@@ -285,7 +285,7 @@ class DetailHeader extends StatelessWidget {
         badge.toUpperCase(),
         style: TextStyle(
           fontFamily: FontConstants.fontFamily,
-          color: Colors.white.withOpacity(0.95),
+          color: Colors.white.withValues(alpha: 0.95),
           fontSize: 12,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.5,
@@ -327,7 +327,7 @@ class DetailHeader extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              accentColor.withOpacity(0.4),
+              accentColor.withValues(alpha: 0.4),
               Colors.black87,
               Colors.black,
             ],
@@ -347,7 +347,7 @@ class DetailHeader extends StatelessWidget {
             child: imageWidget,
           ),
           Container(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
           ),
         ],
       ),

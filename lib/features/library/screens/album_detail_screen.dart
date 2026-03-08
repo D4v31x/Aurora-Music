@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -12,7 +13,7 @@ import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/detail_header.dart';
-import '../../../shared/models/artist_utils.dart';
+import '../../../shared/widgets/song_context_menu.dart';
 import '../../../shared/mixins/detail_screen_mixin.dart';
 
 class AlbumDetailScreen extends StatefulWidget {
@@ -123,7 +124,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     });
 
     _loadMoreSongs();
-    _updateDominantColor();
+    unawaited(_updateDominantColor());
   }
 
   void _loadMoreSongs() {
@@ -352,7 +353,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                 borderRadius: BorderRadius.circular(25),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withOpacity(0.4),
+                    color: color.withValues(alpha: 0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -380,18 +381,18 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           // Shuffle button
           GestureDetector(
             onTap: shuffleAllSongs,
             child: Container(
               height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(25),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -406,6 +407,43 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                   SizedBox(width: 8),
                   Text(
                     'Shuffle',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: FontConstants.fontFamily,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Add to Queue button
+          GestureDetector(
+            onTap: addAllToQueue,
+            child: Container(
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.queue_music_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Queue',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -474,7 +512,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                                 '${index + 1}',
                                 style: TextStyle(
                                   fontFamily: FontConstants.fontFamily,
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -501,7 +539,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                               durationString,
                               style: TextStyle(
                                 fontFamily: FontConstants.fontFamily,
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                                 fontSize: 13,
                               ),
                             ),
@@ -511,7 +549,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                               onTap: () => _showSongOptions(song),
                               child: Icon(
                                 Icons.more_vert,
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                                 size: 20,
                               ),
                             ),
@@ -530,111 +568,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     );
   }
 
-  void _showSongOptions(SongModel song) {
-    final audioPlayerService =
-        Provider.of<AudioPlayerService>(context, listen: false);
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: Colors.grey.shade900,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white30,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: _artworkService.buildCachedArtwork(song.id),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          song.title,
-                          style: const TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          splitArtists(song.artist ?? 'Unknown').join(', '),
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(color: Colors.white24),
-            ListTile(
-              leading: const Icon(Icons.play_arrow, color: Colors.white),
-              title: const Text('Play', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                final songIndex = _allSongs.indexWhere((s) => s.id == song.id);
-                if (songIndex >= 0) {
-                  audioPlayerService.setPlaylist(_allSongs, songIndex);
-                }
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.playlist_play, color: Colors.white),
-              title: Text(AppLocalizations.of(context).translate('play_next'),
-                  style: const TextStyle(color: Colors.white)),
-              onTap: () async {
-                Navigator.pop(context);
-                await audioPlayerService.playNext(song);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${song.title} will play next'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.queue_music, color: Colors.white),
-              title: Text(
-                  AppLocalizations.of(context).translate('add_to_queue'),
-                  style: const TextStyle(color: Colors.white)),
-              onTap: () async {
-                Navigator.pop(context);
-                await audioPlayerService.addToQueue(song);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${song.title} added to queue'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
+  void _showSongOptions(SongModel song) =>
+      showSongContextMenu(context, song);
 }

@@ -101,7 +101,7 @@ class NowPlayingArtwork extends StatelessWidget {
         boxShadow: showShadow
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(_kShadowOpacity),
+                  color: Colors.black.withValues(alpha: _kShadowOpacity),
                   blurRadius: _kShadowBlur,
                   offset: const Offset(0, _kShadowOffset),
                 ),
@@ -193,7 +193,7 @@ class NowPlayingArtwork extends StatelessWidget {
               borderRadius: animatedBorderRadius,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(_kShadowOpacity),
+                  color: Colors.black.withValues(alpha: _kShadowOpacity),
                   blurRadius: _kShadowBlur,
                   offset: const Offset(0, _kShadowOffset),
                 ),

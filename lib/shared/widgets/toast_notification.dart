@@ -170,14 +170,14 @@ class _ToastWidgetState extends State<_ToastWidget>
     final BoxDecoration toastDecoration;
     if (widget.shouldBlur) {
       toastDecoration = BoxDecoration(
-        color: Colors.grey[900]?.withOpacity(0.85),
+        color: Colors.grey[900]?.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 5),
           ),
@@ -189,11 +189,11 @@ class _ToastWidgetState extends State<_ToastWidget>
         color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: colorScheme.outlineVariant.withOpacity(0.3),
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.25),
+            color: Colors.black.withValues(alpha: 0.25),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),

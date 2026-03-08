@@ -733,7 +733,7 @@ class _ArtistArtworkWidgetState extends State<_ArtistArtworkWidget> {
       child: Icon(
         Icons.person,
         color: Colors.white.withValues(alpha: 0.6),
-        size: widget.size * 0.5,
+        size  : widget.size * 0.5,
       ),
     );
   }
@@ -875,7 +875,7 @@ class _ArtistNameImageWidgetState extends State<_ArtistNameImageWidget> {
       child: Icon(
         Icons.person,
         color: Colors.white.withValues(alpha: 0.6),
-        size: widget.size * 0.5,
+        size  : widget.size * 0.5,
       ),
     );
   }

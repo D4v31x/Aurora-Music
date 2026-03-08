@@ -111,6 +111,7 @@ void main() async {
                 create: (_) => BackgroundManagerService(), lazy: false),
             ChangeNotifierProvider(
                 create: (_) => SleepTimerController(), lazy: true),
+            ChangeNotifierProvider.value(value: ArtistSeparatorService()),
             ChangeNotifierProvider.value(value: HomeLayoutService()),
             Provider<ErrorTrackingService>.value(value: errorTracker),
           ],
@@ -147,6 +148,52 @@ void main() async {
   }
 }
 
+/// Navigator observer that hides the mini player whenever a [PopupRoute]
+/// (dialog, bottom sheet, menu) is on the stack, so popups always appear
+/// above the mini player which lives in the MaterialApp.builder Stack.
+class _MiniPlayerObserver extends NavigatorObserver {
+  int _popupCount = 0;
+
+  void _update() {
+    ExpandingPlayer.popupActiveNotifier.value = _popupCount > 0;
+  }
+
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    if (route is PopupRoute) {
+      _popupCount++;
+      _update();
+    }
+  }
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    if (route is PopupRoute) {
+      _popupCount = (_popupCount - 1).clamp(0, 999);
+      _update();
+    }
+  }
+
+  @override
+  void didRemove(Route route, Route? previousRoute) {
+    if (route is PopupRoute) {
+      _popupCount = (_popupCount - 1).clamp(0, 999);
+      _update();
+    }
+  }
+
+  @override
+  void didReplace({Route? newRoute, Route? oldRoute}) {
+    if (oldRoute is PopupRoute && newRoute is! PopupRoute) {
+      _popupCount = (_popupCount - 1).clamp(0, 999);
+      _update();
+    } else if (newRoute is PopupRoute && oldRoute is! PopupRoute) {
+      _popupCount++;
+      _update();
+    }
+  }
+}
+
 /// Root application widget
 class MyApp extends StatefulWidget {
   final String languageCode;
@@ -159,6 +206,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late ui.Locale _locale;
+  final _MiniPlayerObserver _miniPlayerObserver = _MiniPlayerObserver();
 
   @override
   void initState() {
@@ -250,6 +298,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             // Custom hero controller for faster, smoother transitions
+            navigatorObservers: [_miniPlayerObserver],
             builder: (context, child) {
               return HeroControllerScope(
                 controller: HeroController(
@@ -257,8 +306,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     return MaterialRectCenterArcTween(begin: begin, end: end);
                   },
                 ),
-                // Just pass the child, mini player is handled in home screen
-                child: child ?? const SizedBox.shrink(),
+                // Mini player overlaid above all routes. The _MiniPlayerObserver
+                // hides it automatically whenever a PopupRoute (dialog / bottom
+                // sheet) is active so popups always appear on top.
+                child: Stack(
+                  children: [
+                    child ?? const SizedBox.shrink(),
+                    const ExpandingPlayer(),
+                  ],
+                ),
               );
             },
             home: Builder(

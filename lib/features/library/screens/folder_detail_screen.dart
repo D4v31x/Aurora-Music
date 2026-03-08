@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
@@ -12,6 +13,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/detail_header.dart';
+import '../../../shared/widgets/song_context_menu.dart';
 import '../../../shared/mixins/detail_screen_mixin.dart';
 
 class FolderDetailScreen extends StatefulWidget {
@@ -81,7 +83,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
     });
 
     _loadMoreSongs();
-    _loadArtwork();
+    unawaited(_loadArtwork());
   }
 
   Future<void> _loadArtwork() async {
@@ -221,6 +223,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                         );
                       }
                     },
+                    onLongPress: () => showSongContextMenu(context, song),
                     child: GlassmorphicContainer(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -234,7 +237,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                                 '${index + 1}',
                                 style: TextStyle(
                                   fontFamily: FontConstants.fontFamily,
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -277,7 +280,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                                         .join(', '),
                                     style: TextStyle(
                                       fontFamily: FontConstants.fontFamily,
-                                      color: Colors.white.withOpacity(0.5),
+                                      color: Colors.white.withValues(alpha: 0.5),
                                       fontSize: 12,
                                     ),
                                     maxLines: 1,
@@ -291,16 +294,19 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                               durationString,
                               style: TextStyle(
                                 fontFamily: FontConstants.fontFamily,
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                                 fontSize: 13,
                               ),
                             ),
                             // More
                             const SizedBox(width: 4),
-                            Icon(
-                              Icons.more_vert,
-                              color: Colors.white.withOpacity(0.5),
-                              size: 20,
+                            GestureDetector(
+                              onTap: () => showSongContextMenu(context, song),
+                              child: Icon(
+                                Icons.more_vert,
+                                color: Colors.white.withValues(alpha: 0.5),
+                                size: 20,
+                              ),
                             ),
                           ],
                         ),

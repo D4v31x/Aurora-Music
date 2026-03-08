@@ -73,11 +73,11 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: (isDark ? Colors.white : Colors.black)
-                            .withOpacity(0.06),
+                            .withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: (isDark ? Colors.white : Colors.black)
-                              .withOpacity(0.1),
+                              .withValues(alpha: 0.1),
                         ),
                       ),
                       child: Row(
@@ -105,7 +105,11 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
               // Section list
               Expanded(
                 child: ReorderableListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    bottom: MediaQuery.of(context).padding.bottom + 16,
+                  ),
                   itemCount: layoutService.sectionOrder.length,
                   onReorder: (oldIndex, newIndex) {
                     HapticFeedback.mediumImpact();
@@ -123,7 +127,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
                           shadowColor: Theme.of(context)
                               .colorScheme
                               .primary
-                              .withOpacity(0.3),
+                              .withValues(alpha: 0.3),
                           child: child,
                         );
                       },
@@ -160,10 +164,10 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-          backgroundColor: Colors.grey[900]?.withOpacity(0.9),
+          backgroundColor: Colors.grey[900]?.withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
             l10n.translate('resetLayoutConfirm'),
@@ -256,11 +260,11 @@ class _SectionTile extends StatelessWidget {
         child: DecoratedBox(
             decoration: BoxDecoration(
               color: (isDark ? Colors.white : Colors.black)
-                  .withOpacity(isVisible ? 0.08 : 0.03),
+                  .withValues(alpha: isVisible ? 0.08 : 0.03),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: (isDark ? Colors.white : Colors.black)
-                    .withOpacity(isVisible ? 0.15 : 0.05),
+                    .withValues(alpha: isVisible ? 0.15 : 0.05),
               ),
             ),
             child: ListTile(
@@ -272,7 +276,7 @@ class _SectionTile extends StatelessWidget {
                   color: Theme.of(context)
                       .colorScheme
                       .primary
-                      .withOpacity(isVisible ? 0.15 : 0.05),
+                      .withValues(alpha: isVisible ? 0.15 : 0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
