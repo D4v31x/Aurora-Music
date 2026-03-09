@@ -316,6 +316,7 @@ class _TracksScreenState extends State<TracksScreen> {
         ),
       ),
     );
+    
   }
 
   PopupMenuItem<TrackSortOption> _sortItem(TrackSortOption opt, String label) {

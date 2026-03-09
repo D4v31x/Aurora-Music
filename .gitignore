@@ -57,3 +57,4 @@ app.*.map.json
 flutter.tar.xz
 
 sentry-wizard
+sentry.properties
