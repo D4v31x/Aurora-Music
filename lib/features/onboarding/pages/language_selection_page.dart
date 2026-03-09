@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui' as ui;
 import '../../../l10n/locale_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../l10n/supported_languages.dart';
 import '../../../shared/providers/theme_provider.dart';
 import '../../../shared/widgets/pill_button.dart';
 
@@ -36,10 +37,8 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
 
   String _selectedLanguage = 'en';
 
-  final List<Map<String, String>> _languages = [
-    {'code': 'en', 'name': 'English', 'native': 'English'},
-    {'code': 'cs', 'name': 'Czech', 'native': 'Čeština'},
-  ];
+  /// Derived from [SupportedLanguages.all] – add new languages there.
+  final List<SupportedLanguage> _languages = SupportedLanguages.all;
 
   @override
   void initState() {
@@ -244,7 +243,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                           itemBuilder: (context, index) {
                             final language = _languages[index];
                             final isSelected =
-                                _selectedLanguage == language['code'];
+                                _selectedLanguage == language.code;
 
                             final containerColor = isDark
                                 ? Colors.white.withValues(alpha: 0.05)
@@ -264,7 +263,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                               child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  onTap: () => _setLanguage(language['code']!),
+                                  onTap: () => _setLanguage(language.code),
                                   borderRadius: BorderRadius.circular(16),
                                   child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 300),
@@ -295,7 +294,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                language['native']!,
+                                                language.nativeName,
                                                 style: TextStyle(
                                                   fontFamily: FontConstants.fontFamily,
                                                   fontSize: 18,
@@ -309,7 +308,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
-                                                language['name']!,
+                                                language.englishName,
                                                 style: TextStyle(
                                                   fontFamily: FontConstants.fontFamily,
                                                   fontSize: 14,

@@ -12,6 +12,7 @@ import 'dart:io';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../l10n/locale_provider.dart';
+import '../../../l10n/supported_languages.dart';
 import '../../../shared/providers/theme_provider.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/services/device_performance_service.dart';
@@ -1082,10 +1083,12 @@ class _SettingsTabState extends State<SettingsTab> {
                 fontWeight: FontWeight.w500,
                 fontFamily: FontConstants.fontFamily,
               ),
-              items: const [
-                DropdownMenuItem(value: 'en', child: Text('English')),
-                DropdownMenuItem(value: 'cs', child: Text('Čeština')),
-              ],
+              items: SupportedLanguages.all
+                  .map((lang) => DropdownMenuItem(
+                        value: lang.code,
+                        child: Text(lang.nativeName),
+                      ))
+                  .toList(),
               onChanged: (value) {
                 if (value != null) {
                   LocaleProvider.of(context)!.setLocale(Locale(value));
