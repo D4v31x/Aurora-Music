@@ -436,7 +436,7 @@
   "noSongsFound": "Nenalezeny žádné skladby",
   "noFoldersFound": "Nenalezeny žádné složky",
   "deleteSong": "Smazat skladbu",
-  "modifySystemSettingsPermission": "V otevřené stránce povolte „Úprava systémových nastavení" a zkuste to znovu.",
+  "modifySystemSettingsPermission": "V otevřené stránce povolte \u201eÚprava systémových nastavení\u201c a zkuste to znovu.",
   "errorMessage": "Chyba: {message}",
   "@errorMessage": {
     "placeholders": {
@@ -449,13 +449,13 @@
       "count": {"type": "int"}
     }
   },
-  "songAddedToQueue": "„{title}" přidáno do fronty",
+  "songAddedToQueue": "„{title}“ přidáno do fronty",
   "@songAddedToQueue": {
     "placeholders": {
       "title": {"type": "String"}
     }
   },
-  "songSetAsRingtone": "„{title}" nastaveno jako vyzváněcí tón",
+  "songSetAsRingtone": "„{title}“ nastaveno jako vyzváněcí tón",
   "@songSetAsRingtone": {
     "placeholders": {
       "title": {"type": "String"}
@@ -467,13 +467,13 @@
       "error": {"type": "String"}
     }
   },
-  "deleteSongConfirm": "Smazat „{title}" ze zařízení? Tuto akci nelze vrátit zpět.",
+  "deleteSongConfirm": "Smazat „{title}“ ze zařízení? Tuto akci nelze vrátit zpět.",
   "@deleteSongConfirm": {
     "placeholders": {
       "title": {"type": "String"}
     }
   },
-  "songDeleted": "„{title}" smazáno",
+  "songDeleted": "„{title}“ smazáno",
   "@songDeleted": {
     "placeholders": {
       "title": {"type": "String"}

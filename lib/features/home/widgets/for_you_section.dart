@@ -105,7 +105,7 @@ class _ForYouSectionState extends State<ForYouSection> {
         items.add(_ForYouItem(
           type: _ForYouItemType.playlist,
           playlist: playlist,
-          title: playlist.name,
+          title: AppLocalizations.of(context).mostPlayed,
           subtitle:
               '${playlist.songs.length} ${AppLocalizations.of(context).tracks}',
         ));
@@ -119,7 +119,7 @@ class _ForYouSectionState extends State<ForYouSection> {
         items.add(_ForYouItem(
           type: _ForYouItemType.playlist,
           playlist: playlist,
-          title: playlist.name,
+          title: AppLocalizations.of(context).recentlyAdded,
           subtitle:
               '${playlist.songs.length} ${AppLocalizations.of(context).tracks}',
         ));

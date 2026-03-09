@@ -87,11 +87,15 @@ class TimedLyricsService {
         _log('✗ No cached lyrics found');
       }
 
-      // Use exact names without cleaning
-      final searchArtist = artist.trim();
-      final searchTitle = title.trim();
+      // Extract the first (primary) artist and clean the title for better
+      // API matching. Songs with multi-artist tags like "Artist1, Artist2" or
+      // "Artist1 feat. Artist2" confuse lrclib; sending only the primary artist
+      // yields far more reliable results.
+      final searchArtist = _extractFirstArtist(artist);
+      final searchTitle = _cleanTitleForSearch(title);
 
-      _log('Searching with EXACT names (no cleaning)');
+      _log('Primary artist: "$searchArtist" (original: "$artist")');
+      _log('Cleaned title:  "$searchTitle" (original: "$title")');
       _log('─' * 60);
       _log('METHOD 1 & 2: Parallel API Search (Direct + Search)');
       _log('Search Artist: "$searchArtist"');
@@ -300,6 +304,81 @@ class TimedLyricsService {
       }
 
       _log('✗ No lyrics found with artist+title search');
+
+      // Fallback: search by title only (catches tracks where the artist tag
+      // in the local file differs significantly from the lrclib database).
+      _log('─' * 60);
+      _log('FALLBACK: Title-only search');
+      try {
+        final fallbackUrl =
+            Uri.parse('$apiBaseUrl/search').replace(queryParameters: {
+          'track_name': searchTitle,
+        });
+        _log('Fallback URL: $fallbackUrl');
+        final fallbackResponse = await http.get(
+          fallbackUrl,
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'AuroraMusic v0.0.85'
+          },
+        ).timeout(_apiTimeout, onTimeout: () => http.Response('', 408));
+
+        if (fallbackResponse.statusCode == 200 &&
+            fallbackResponse.body.isNotEmpty) {
+          final List fallbackResults =
+              json.decode(utf8.decode(fallbackResponse.bodyBytes));
+          final fallbackSynced =
+              fallbackResults.where((r) => r['syncedLyrics'] != null).toList();
+
+          _log('Fallback: ${fallbackResults.length} results, '
+              '${fallbackSynced.length} with synced lyrics');
+
+          if (fallbackSynced.isNotEmpty) {
+            // Sort by duration proximity when available
+            if (songDuration != null) {
+              fallbackSynced.sort((a, b) {
+                final aDiff = (_parseApproximateDuration(
+                              a['syncedLyrics'] as String?) -
+                          songDuration)
+                      .abs();
+                final bDiff = (_parseApproximateDuration(
+                              b['syncedLyrics'] as String?) -
+                          songDuration)
+                      .abs();
+                return aDiff.compareTo(bDiff);
+              });
+            }
+
+            for (var i = 0; i < min(3, fallbackSynced.length); i++) {
+              final result = fallbackSynced[i];
+              final lrcContent = result['syncedLyrics'] as String;
+              final lyrics = _parseLrc(lrcContent);
+              if (_isLyricsDurationValid(lyrics, songDuration)) {
+                _log('✓ Fallback result #${i + 1} VALID');
+                _log(
+                    '📍 Got: "${result['trackName']}" by "${result['artistName']}"');
+                await _saveLyricsToFile(artist, title, lrcContent);
+                _log('=' * 60);
+                return lyrics;
+              }
+            }
+
+            // If duration check fails, still use the best fallback result
+            final best = fallbackSynced[0];
+            final lrcContent = best['syncedLyrics'] as String;
+            final lyrics = _parseLrc(lrcContent);
+            _log('⚠️ Fallback: using best result without duration match');
+            _log('📍 Got: "${best['trackName']}" by "${best['artistName']}"');
+            await _saveLyricsToFile(artist, title, lrcContent);
+            _log('=' * 60);
+            return lyrics;
+          }
+        }
+      } catch (e) {
+        _log('✗ Fallback search error: $e');
+      }
+
+      _log('✗ No lyrics found (including fallback)');
       _log('=' * 60);
       return null;
     } catch (e) {
@@ -307,6 +386,49 @@ class TimedLyricsService {
       _log('=' * 60);
       return null;
     }
+  }
+
+  /// Extracts the primary (first) artist from a potentially multi-artist tag.
+  /// Splits on common separators: `,` `;` `&` ` feat.` ` feat ` ` ft.` ` ft `
+  /// ` x ` (case-insensitive) and returns the first non-empty segment.
+  String _extractFirstArtist(String artist) {
+    final cleaned = artist
+        .splitMapJoin(
+          RegExp(
+              r',|;|&|\bfeat\.?\b|\bft\.?\b|\bversus\b|\bvs\.?\b|\bx\b',
+              caseSensitive: false),
+          onMatch: (_) => '\x00',
+          onNonMatch: (s) => s,
+        )
+        .split('\x00')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .firstOrNull;
+    return cleaned ?? artist.trim();
+  }
+
+  /// Strips common decorative suffixes from a track title so the API can
+  /// match it more reliably.
+  /// Removes:
+  ///  - Parenthetical/bracketed suffixes: `(feat. ...)`, `[Remastered]`, etc.
+  ///  - Trailing `feat. Artist` / `ft. Artist` without brackets
+  String _cleanTitleForSearch(String title) {
+    var s = title.trim();
+    // Remove (feat. ...) / [feat. ...] and similar bracketed extras
+    s = s.replaceAll(
+        RegExp(r'\s*[\(\[]\s*(?:feat\.?|ft\.?|with|prod\.?)[^\)\]]*[\)\]]',
+            caseSensitive: false),
+        '');
+    // Remove other bracketed qualifiers: (Official Video), [Remastered 2024], etc.
+    s = s.replaceAll(
+        RegExp(
+            r'\s*[\(\[]\s*(?:official|remaster(?:ed)?|live|acoustic|radio\s+edit|single\s+version|album\s+version)[^\)\]]*[\)\]]',
+            caseSensitive: false),
+        '');
+    // Remove trailing "feat. Artist" / "ft. Artist" without brackets
+    s = s.replaceAll(
+        RegExp(r'\s+(?:feat\.?|ft\.?)\s+.+$', caseSensitive: false), '');
+    return s.trim();
   }
 
   /// Public method to parse LRC content

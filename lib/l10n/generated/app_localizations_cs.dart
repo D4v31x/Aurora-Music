@@ -1375,35 +1375,50 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get modifySystemSettingsPermission =>
-      'V otevřené stránce povolte „Úprava systémových nastavení" a zkuste to znovu.';
+      'V otevřené stránce povolte „Úprava systémových nastavení“ a zkuste to znovu.';
 
   @override
-  String errorMessage(String message) => 'Chyba: $message';
+  String errorMessage(String message) {
+    return 'Chyba: $message';
+  }
 
   @override
-  String songsAddedToQueue(int count) => '$count skladeb přidáno do fronty';
+  String songsAddedToQueue(int count) {
+    return '$count skladeb přidáno do fronty';
+  }
 
   @override
-  String songAddedToQueue(String title) => '„$title" přidáno do fronty';
+  String songAddedToQueue(String title) {
+    return '„$title“ přidáno do fronty';
+  }
 
   @override
-  String songSetAsRingtone(String title) =>
-      '„$title" nastaveno jako vyzváněcí tón';
+  String songSetAsRingtone(String title) {
+    return '„$title“ nastaveno jako vyzváněcí tón';
+  }
 
   @override
-  String failedToSetRingtone(String error) =>
-      'Nepodařilo se nastavit vyzváněcí tón: $error';
+  String failedToSetRingtone(String error) {
+    return 'Nepodařilo se nastavit vyzváněcí tón: $error';
+  }
 
   @override
-  String deleteSongConfirm(String title) =>
-      'Smazat „$title" ze zařízení? Tuto akci nelze vrátit zpět.';
+  String deleteSongConfirm(String title) {
+    return 'Smazat „$title“ ze zařízení? Tuto akci nelze vrátit zpět.';
+  }
 
   @override
-  String songDeleted(String title) => '„$title" smazáno';
+  String songDeleted(String title) {
+    return '„$title“ smazáno';
+  }
 
   @override
-  String failedToDelete(String error) => 'Smazání selhalo: $error';
+  String failedToDelete(String error) {
+    return 'Smazání selhalo: $error';
+  }
 
   @override
-  String songCount(int count) => '$count skladeb';
+  String songCount(int count) {
+    return '$count skladeb';
+  }
 }

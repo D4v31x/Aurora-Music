@@ -9,6 +9,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// Fullscreen album artwork player screen
 /// Shows edge-to-edge album art with auto-hiding controls overlay
@@ -292,6 +293,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
   }
 
   Widget _buildTopBar(BuildContext context, AudioPlayerService audioService) {
+    final loc = AppLocalizations.of(context);
     final sourceInfo = audioService.playbackSource;
     String sourceName = 'Library';
 
@@ -312,10 +314,10 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
         sourceName = 'Recently Played';
         break;
       case PlaybackSource.recentlyAdded:
-        sourceName = 'Recently Added';
+        sourceName = loc.recentlyAdded;
         break;
       case PlaybackSource.mostPlayed:
-        sourceName = 'Most Played';
+        sourceName = loc.mostPlayed;
         break;
       case PlaybackSource.folder:
         sourceName = sourceInfo.name ?? 'Folder';

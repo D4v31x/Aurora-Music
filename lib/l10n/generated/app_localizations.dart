@@ -2717,7 +2717,7 @@ abstract class AppLocalizations {
   /// No description provided for @modifySystemSettingsPermission.
   ///
   /// In en, this message translates to:
-  /// **'Allow "Modify system settings" in the page that opened, then try again.'**
+  /// **'Allow \"Modify system settings\" in the page that opened, then try again.'**
   String get modifySystemSettingsPermission;
 
   /// No description provided for @errorMessage.
@@ -2735,13 +2735,13 @@ abstract class AppLocalizations {
   /// No description provided for @songAddedToQueue.
   ///
   /// In en, this message translates to:
-  /// **'"{title}" added to queue'**
+  /// **'\"{title}\" added to queue'**
   String songAddedToQueue(String title);
 
   /// No description provided for @songSetAsRingtone.
   ///
   /// In en, this message translates to:
-  /// **'"{title}" set as ringtone'**
+  /// **'\"{title}\" set as ringtone'**
   String songSetAsRingtone(String title);
 
   /// No description provided for @failedToSetRingtone.
@@ -2753,13 +2753,13 @@ abstract class AppLocalizations {
   /// No description provided for @deleteSongConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Delete "{title}" from your device? This cannot be undone.'**
+  /// **'Delete \"{title}\" from your device? This cannot be undone.'**
   String deleteSongConfirm(String title);
 
   /// No description provided for @songDeleted.
   ///
   /// In en, this message translates to:
-  /// **'"{title}" deleted'**
+  /// **'\"{title}\" deleted'**
   String songDeleted(String title);
 
   /// No description provided for @failedToDelete.

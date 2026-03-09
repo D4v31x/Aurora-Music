@@ -116,6 +116,17 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       widget.playlist.id == 'most_played' ||
       widget.playlist.id == 'recently_added';
 
+  String _autoPlaylistName(AppLocalizations loc, String id) {
+    switch (id) {
+      case 'most_played':
+        return loc.mostPlayed;
+      case 'recently_added':
+        return loc.recentlyAdded;
+      default:
+        return widget.playlist.name;
+    }
+  }
+
   String? get _playlistAssetImage {
     if (widget.playlist.id == 'liked_songs') {
       return 'assets/images/UI/liked.png';
@@ -173,7 +184,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 DetailHeader(
                   artworkBytes: _artworkBytes,
                   fallbackAsset: _playlistAssetImage,
-                  title: updatedPlaylist.name,
+                  title: _isAutoPlaylist
+                      ? _autoPlaylistName(localizations, updatedPlaylist.id)
+                      : updatedPlaylist.name,
                   metadata:
                       '${updatedPlaylist.songs.length} ${localizations.tracks} · $durationStr',
                   badge: localizations.playlist,
