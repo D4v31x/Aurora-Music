@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/home_layout_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// Settings screen for customizing home tab layout and section order
 class HomeLayoutSettingsScreen extends StatefulWidget {
@@ -34,7 +34,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          l10n.translate('customizeHomeTab'),
+          l10n.customizeHomeTab,
           style: TextStyle(
             fontFamily: FontConstants.fontFamily,
             fontWeight: FontWeight.bold,
@@ -50,7 +50,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
                     Icons.restore_rounded,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  tooltip: l10n.translate('resetToDefault'),
+                  tooltip: l10n.resetToDefault,
                   onPressed: () => _showResetDialog(context, layoutService),
                 );
               }
@@ -89,7 +89,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              l10n.translate('dragToReorder'),
+                              l10n.dragToReorder,
                               style: TextStyle(
                                 fontFamily: FontConstants.fontFamily,
                                 fontSize: 14,
@@ -170,7 +170,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
-            l10n.translate('resetLayoutConfirm'),
+            l10n.resetLayoutConfirm,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white,
@@ -178,7 +178,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
             ),
           ),
           content: Text(
-            l10n.translate('resetLayoutMessage'),
+            l10n.resetLayoutMessage,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white70,
@@ -188,7 +188,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                l10n.translate('cancel'),
+                l10n.cancel,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white70,
@@ -202,7 +202,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
                 HapticFeedback.mediumImpact();
               },
               child: Text(
-                l10n.translate('resetToDefault'),
+                l10n.resetToDefault,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
@@ -288,7 +288,7 @@ class _SectionTile extends StatelessWidget {
                 ),
               ),
               title: Text(
-                l10n.translate(section.translationKey),
+                section.localizedName(l10n),
                 style: TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   fontWeight: FontWeight.w600,

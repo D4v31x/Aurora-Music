@@ -11,7 +11,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
 import '../../../core/constants/font_constants.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import 'album_detail_screen.dart';
 
@@ -167,7 +167,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
           slivers: [
             LibraryScreenHeader(
               badge: 'Library',
-              title: loc.translate('albums'),
+              title: loc.albums,
               subtitle: _isLoading
                   ? null
                   : '$count ${count == 1 ? 'album' : 'albums'}',
@@ -175,7 +175,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
               showBackButton: true,
               searchField: LibrarySearchField(
                 controller: _searchController,
-                hint: loc.translate('search_albums'),
+                hint: loc.searchAlbums,
                 onChanged: _filterAlbums,
                 hasQuery: _searchQuery.isNotEmpty,
                 onClear: () {
@@ -294,8 +294,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             const SizedBox(height: 16),
             Text(
               _searchQuery.isEmpty
-                  ? loc.translate('no_albums_found')
-                  : loc.translate('no_results'),
+                  ? loc.noAlbumsFound
+                  : loc.noResults,
               style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
             ),
           ],
@@ -544,7 +544,9 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => DecoratedBox(
+      builder: (context) {
+        final loc = AppLocalizations.of(context);
+        return DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -595,7 +597,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             const Divider(color: Colors.white24),
             ListTile(
               leading: const Icon(Icons.play_arrow, color: Colors.white),
-              title: const Text('Play', style: TextStyle(color: Colors.white)),
+              title: Text(loc.play, style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _playAlbum(album);
@@ -604,7 +606,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             ListTile(
               leading: const Icon(Icons.shuffle, color: Colors.white),
               title:
-                  const Text('Shuffle', style: TextStyle(color: Colors.white)),
+                  Text(loc.shuffle, style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _shuffleAlbum(album);
@@ -612,8 +614,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.playlist_add, color: Colors.white),
-              title: const Text('Add to Queue',
-                  style: TextStyle(color: Colors.white)),
+              title: Text(loc.addToQueue,
+                  style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _addAlbumToQueue(album);
@@ -622,7 +624,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             const SizedBox(height: 16),
           ],
         ),
-      ),
+        );
+      },
     );
   }
 
@@ -684,7 +687,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${albumSongs.length} songs added to queue'),
+            content: Text(AppLocalizations.of(context).songsAddedToQueue(albumSongs.length)),
             behavior: SnackBarBehavior.floating,
           ),
         );

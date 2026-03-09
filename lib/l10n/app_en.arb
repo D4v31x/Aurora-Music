@@ -429,5 +429,66 @@
   "clearUpcoming": "Clear upcoming",
   "addToQueue": "Add to queue",
   "playNext": "Play next",
-  "removeFromQueue": "Remove from queue"
+  "removeFromQueue": "Remove from queue",
+  "play": "Play",
+  "viewAlbum": "View Album",
+  "shuffleAll": "Shuffle All",
+  "noSongsFound": "No songs found",
+  "noFoldersFound": "No folders found",
+  "deleteSong": "Delete Song",
+  "modifySystemSettingsPermission": "Allow \"Modify system settings\" in the page that opened, then try again.",
+  "errorMessage": "Error: {message}",
+  "@errorMessage": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "songsAddedToQueue": "{count} songs added to queue",
+  "@songsAddedToQueue": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "songAddedToQueue": "\"{title}\" added to queue",
+  "@songAddedToQueue": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "songSetAsRingtone": "\"{title}\" set as ringtone",
+  "@songSetAsRingtone": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "failedToSetRingtone": "Failed to set ringtone: {error}",
+  "@failedToSetRingtone": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "deleteSongConfirm": "Delete \"{title}\" from your device? This cannot be undone.",
+  "@deleteSongConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "songDeleted": "\"{title}\" deleted",
+  "@songDeleted": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "failedToDelete": "Failed to delete: {error}",
+  "@failedToDelete": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "songCount": "{count} songs",
+  "@songCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

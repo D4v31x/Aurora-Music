@@ -2,7 +2,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../l10n/app_localizations.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../features/settings/screens/metadata_detail_screen.dart';
 import '../providers/performance_mode_provider.dart';
 
@@ -50,12 +50,12 @@ class MusicMetadataWidget extends StatelessWidget {
     final bitrate = _estimateBitrateValue();
 
     if (format == 'FLAC' || format == 'WAV' || format == 'ALAC') {
-      return loc.translate('lossless');
+      return loc.lossless;
     }
-    if (bitrate >= 256) return loc.translate('high_quality');
-    if (bitrate >= 192) return loc.translate('good_quality');
-    if (bitrate >= 128) return loc.translate('standard_quality');
-    return loc.translate('low_quality');
+    if (bitrate >= 256) return loc.highQuality;
+    if (bitrate >= 192) return loc.goodQuality;
+    if (bitrate >= 128) return loc.standardQuality;
+    return loc.lowQuality;
   }
 
   String _formatDuration() {
@@ -68,10 +68,10 @@ class MusicMetadataWidget extends StatelessWidget {
 
   IconData _getQualityIcon(AppLocalizations loc) {
     final label = _getQualityLabel(loc);
-    if (label == loc.translate('lossless')) return Icons.diamond_outlined;
-    if (label == loc.translate('high_quality')) return Icons.stars_outlined;
-    if (label == loc.translate('good_quality')) return Icons.thumb_up_outlined;
-    if (label == loc.translate('standard_quality')) {
+    if (label == loc.lossless) return Icons.diamond_outlined;
+    if (label == loc.highQuality) return Icons.stars_outlined;
+    if (label == loc.goodQuality) return Icons.thumb_up_outlined;
+    if (label == loc.standardQuality) {
       return Icons.check_circle_outline;
     }
     return Icons.warning_amber_outlined;
@@ -79,10 +79,10 @@ class MusicMetadataWidget extends StatelessWidget {
 
   Color _getQualityColor(AppLocalizations loc) {
     final label = _getQualityLabel(loc);
-    if (label == loc.translate('lossless')) return const Color(0xFF8B5CF6);
-    if (label == loc.translate('high_quality')) return const Color(0xFF10B981);
-    if (label == loc.translate('good_quality')) return const Color(0xFF3B82F6);
-    if (label == loc.translate('standard_quality')) {
+    if (label == loc.lossless) return const Color(0xFF8B5CF6);
+    if (label == loc.highQuality) return const Color(0xFF10B981);
+    if (label == loc.goodQuality) return const Color(0xFF3B82F6);
+    if (label == loc.standardQuality) {
       return const Color(0xFFF59E0B);
     }
     return const Color(0xFFEF4444);
@@ -100,7 +100,7 @@ class MusicMetadataWidget extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 20),
           child: Text(
-            loc.translate('metadata'),
+            loc.metadata,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
@@ -178,16 +178,16 @@ class MusicMetadataWidget extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildStatItem(
-                          _getFileFormat(), loc.translate('format')),
+                          _getFileFormat(), loc.format),
                       _buildDivider(),
                       _buildStatItem('${_estimateBitrateValue()} kbps',
-                          loc.translate('bitrate')),
+                          loc.bitrate),
                       _buildDivider(),
                       _buildStatItem(
-                          _getFileSizeFormatted(), loc.translate('size')),
+                          _getFileSizeFormatted(), loc.size),
                       _buildDivider(),
                       _buildStatItem(
-                          _formatDuration(), loc.translate('duration')),
+                          _formatDuration(), loc.duration),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -196,7 +196,7 @@ class MusicMetadataWidget extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        loc.translate('view_details'),
+                        loc.viewDetails,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.5),
                           fontSize: 12,

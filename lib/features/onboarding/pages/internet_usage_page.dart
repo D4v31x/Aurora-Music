@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/providers/theme_provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
 
 class InternetUsagePage extends StatefulWidget {
@@ -158,7 +158,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                           : _titleFadeAnimation,
                       child: Text(
                         AppLocalizations.of(context)
-                            .translate('onboarding_internet_title'),
+                            .onboardingInternetTitle,
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
@@ -181,7 +181,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                         : _subtitleFadeAnimation,
                     child: Text(
                       AppLocalizations.of(context)
-                          .translate('onboarding_internet_subtitle'),
+                          .onboardingInternetSubtitle,
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
@@ -212,9 +212,9 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                               context: context,
                               icon: Icons.image_search_rounded,
                               title: AppLocalizations.of(context)
-                                  .translate('onboarding_album_artwork'),
+                                  .onboardingAlbumArtwork,
                               description: AppLocalizations.of(context)
-                                  .translate('onboarding_album_artwork_desc'),
+                                  .onboardingAlbumArtworkDesc,
                               isOptional: false,
                               isDark: isDark,
                             ),
@@ -223,9 +223,9 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                               context: context,
                               icon: Icons.info_outline_rounded,
                               title: AppLocalizations.of(context)
-                                  .translate('onboarding_music_metadata'),
+                                  .onboardingMusicMetadata,
                               description: AppLocalizations.of(context)
-                                  .translate('onboarding_music_metadata_desc'),
+                                  .onboardingMusicMetadataDesc,
                               isOptional: false,
                               isDark: isDark,
                             ),
@@ -234,9 +234,9 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                               context: context,
                               icon: Icons.lyrics_rounded,
                               title: AppLocalizations.of(context)
-                                  .translate('onboarding_lyrics'),
+                                  .onboardingLyrics,
                               description: AppLocalizations.of(context)
-                                  .translate('onboarding_lyrics_desc'),
+                                  .onboardingLyricsDesc,
                               isOptional: false,
                               isDark: isDark,
                             ),
@@ -268,7 +268,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                                   Expanded(
                                     child: Text(
                                       AppLocalizations.of(context)
-                                          .translate('onboarding_privacy_note'),
+                                          .onboardingPrivacyNote,
                                       style: TextStyle(
                                         fontFamily: FontConstants.fontFamily,
                                         fontSize: 13,
@@ -289,9 +289,9 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
                     child: PillNavigationButtons(
-                      backText: AppLocalizations.of(context).translate('back'),
+                      backText: AppLocalizations.of(context).back,
                       continueText: AppLocalizations.of(context)
-                          .translate('continueButton'),
+                          .continueButton,
                       onBack: () async {
                         await _exitController.forward();
                         widget.onBack();
@@ -387,7 +387,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                         ),
                         child: Text(
                           AppLocalizations.of(context)
-                              .translate('onboarding_optional'),
+                              .onboardingOptional,
                           style: TextStyle(
                             fontFamily: FontConstants.fontFamily,
                             fontSize: 11,

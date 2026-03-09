@@ -5,7 +5,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/sleep_timer_controller.dart';
 
 // MARK: - Constants
@@ -61,7 +61,7 @@ class _SleepTimerRow extends StatelessWidget {
             ),
             const SizedBox(width: _kIconSpacing),
             Text(
-              AppLocalizations.of(context).translate('sleep_timer'),
+              AppLocalizations.of(context).sleepTimer,
               style: const TextStyle(color: Colors.white),
             ),
           ],
@@ -114,7 +114,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
           value: 'view_artist',
           child: _MenuItemRow(
             icon: Icons.person_outline,
-            label: l10n.translate('view_artist'),
+            label: l10n.viewArtist,
           ),
         ),
         // Lyrics
@@ -122,7 +122,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
           value: 'lyrics',
           child: _MenuItemRow(
             icon: Icons.lyrics_outlined,
-            label: l10n.translate('lyrics'),
+            label: l10n.lyrics,
           ),
         ),
         // Add to Playlist
@@ -130,7 +130,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
           value: 'add_playlist',
           child: _MenuItemRow(
             icon: Icons.playlist_add,
-            label: l10n.translate('add_to_playlist'),
+            label: l10n.addToPlaylist,
           ),
         ),
         // Share
@@ -138,7 +138,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
           value: 'share',
           child: _MenuItemRow(
             icon: Icons.share_outlined,
-            label: l10n.translate('share'),
+            label: l10n.share,
           ),
         ),
         // Queue
@@ -146,7 +146,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
           value: 'queue',
           child: _MenuItemRow(
             icon: Icons.queue_music_outlined,
-            label: l10n.translate('queue'),
+            label: l10n.queue,
           ),
         ),
         // Song Info
@@ -154,7 +154,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
           value: 'info',
           child: _MenuItemRow(
             icon: Icons.info_outline,
-            label: l10n.translate('song_info'),
+            label: l10n.songInfo,
           ),
         ),
       ],

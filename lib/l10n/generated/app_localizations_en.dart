@@ -1350,4 +1350,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removeFromQueue => 'Remove from queue';
+
+  @override
+  String get play => 'Play';
+
+  @override
+  String get viewAlbum => 'View Album';
+
+  @override
+  String get shuffleAll => 'Shuffle All';
+
+  @override
+  String get noSongsFound => 'No songs found';
+
+  @override
+  String get noFoldersFound => 'No folders found';
+
+  @override
+  String get deleteSong => 'Delete Song';
+
+  @override
+  String get modifySystemSettingsPermission =>
+      'Allow \"Modify system settings\" in the page that opened, then try again.';
+
+  @override
+  String errorMessage(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String songsAddedToQueue(int count) {
+    return '$count songs added to queue';
+  }
+
+  @override
+  String songAddedToQueue(String title) {
+    return '\"$title\" added to queue';
+  }
+
+  @override
+  String songSetAsRingtone(String title) {
+    return '\"$title\" set as ringtone';
+  }
+
+  @override
+  String failedToSetRingtone(String error) {
+    return 'Failed to set ringtone: $error';
+  }
+
+  @override
+  String deleteSongConfirm(String title) {
+    return 'Delete \"$title\" from your device? This cannot be undone.';
+  }
+
+  @override
+  String songDeleted(String title) {
+    return '\"$title\" deleted';
+  }
+
+  @override
+  String failedToDelete(String error) {
+    return 'Failed to delete: $error';
+  }
+
+  @override
+  String songCount(int count) {
+    return '$count songs';
+  }
 }

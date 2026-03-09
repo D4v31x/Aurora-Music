@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/detail_header.dart';
@@ -156,9 +156,9 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                     artworkBytes: _artworkBytes,
                     title: folderName,
                     metadata: _allSongs.isNotEmpty
-                        ? '${_allSongs.length} ${localizations.translate('songs')} · ${formatDuration(totalDuration)}'
+                        ? '${_allSongs.length} ${localizations.songs} · ${formatDuration(totalDuration)}'
                         : null,
-                    badge: localizations.translate('folder'),
+                    badge: localizations.folder,
                     heroTag: 'folder_icon_${widget.folderPath}',
                     accentColor: Colors.amber,
                   ),
@@ -276,7 +276,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                                   Text(
                                     splitArtists(song.artist ??
                                             AppLocalizations.of(context)
-                                                .translate('unknown_artist'))
+                                                .unknownArtist)
                                         .join(', '),
                                     style: TextStyle(
                                       fontFamily: FontConstants.fontFamily,

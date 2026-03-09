@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../../core/constants/font_constants.dart';
-import '../../l10n/app_localizations.dart';
+import '../../l10n/generated/app_localizations.dart';
 import './glassmorphic_container.dart';
 import './changelog_dialog.dart';
 import './packages_dialog.dart';
@@ -139,7 +139,7 @@ class AuroraAboutDialog extends StatelessWidget {
                           ),
                           icon: const Icon(Icons.new_releases_outlined),
                           label: Text(
-                            AppLocalizations.of(context).translate('whats_new'),
+                            AppLocalizations.of(context).whatsNew,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -186,7 +186,7 @@ class AuroraAboutDialog extends StatelessWidget {
                       // Links Section
                       Text(
                         AppLocalizations.of(context)
-                            .translate('connect_with_us'),
+                            .connectWithUs,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 14,
@@ -243,7 +243,7 @@ class AuroraAboutDialog extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    AppLocalizations.of(context).translate('close'),
+                    AppLocalizations.of(context).close,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,

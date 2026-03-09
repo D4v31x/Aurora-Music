@@ -8,7 +8,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import '../models/playlist_model.dart';
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
-import '../../l10n/app_localizations.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../models/artist_utils.dart';
 
 /// Glassmorphic song picker bottom sheet for adding songs to playlists
@@ -175,7 +175,7 @@ class SongPickerSheet extends HookWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            localizations.translate('add_songs'),
+                            localizations.addSongs,
                             style: TextStyle(
                               fontFamily: FontConstants.fontFamily,
                               color: isDark ? Colors.white : Colors.black87,
@@ -185,7 +185,7 @@ class SongPickerSheet extends HookWidget {
                           ),
                           if (selectedSongIds.value.isNotEmpty)
                             Text(
-                              '${selectedSongIds.value.length} ${localizations.translate('selected')}',
+                              '${selectedSongIds.value.length} ${localizations.selected}',
                               style: TextStyle(
                                 fontFamily: FontConstants.fontFamily,
                                 color: theme.colorScheme.primary,
@@ -212,7 +212,7 @@ class SongPickerSheet extends HookWidget {
                                   size: 18, color: Colors.white),
                               const SizedBox(width: 6),
                               Text(
-                                localizations.translate('add'),
+                                localizations.add,
                                 style: const TextStyle(
                                   fontFamily: FontConstants.fontFamily,
                                   color: Colors.white,
@@ -227,7 +227,7 @@ class SongPickerSheet extends HookWidget {
                       TextButton(
                         onPressed: () => Navigator.pop(context),
                         child: Text(
-                          localizations.translate('cancel'),
+                          localizations.cancel,
                           style: TextStyle(
                             fontFamily: FontConstants.fontFamily,
                             color: isDark ? Colors.white54 : Colors.black45,
@@ -259,7 +259,7 @@ class SongPickerSheet extends HookWidget {
                       fontFamily: FontConstants.fontFamily,
                     ),
                     decoration: InputDecoration(
-                      hintText: localizations.translate('search_tracks'),
+                      hintText: localizations.searchTracks,
                       hintStyle: TextStyle(
                         color: isDark ? Colors.white38 : Colors.black38,
                         fontFamily: FontConstants.fontFamily,
@@ -333,8 +333,8 @@ class SongPickerSheet extends HookWidget {
                               Text(
                                 selectedSongIds.value.length ==
                                         filteredSongs.value.length
-                                    ? localizations.translate('deselect_all')
-                                    : localizations.translate('select_all'),
+                                    ? localizations.deselectAll
+                                    : localizations.selectAll,
                                 style: TextStyle(
                                   fontFamily: FontConstants.fontFamily,
                                   fontSize: 13,
@@ -348,7 +348,7 @@ class SongPickerSheet extends HookWidget {
                       ),
                       const Spacer(),
                       Text(
-                        '${filteredSongs.value.length} ${localizations.translate('tracks')}',
+                        '${filteredSongs.value.length} ${localizations.tracks}',
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
                           color: isDark ? Colors.white38 : Colors.black38,
@@ -502,8 +502,8 @@ class SongPickerSheet extends HookWidget {
           const SizedBox(height: 16),
           Text(
             searchQuery.isNotEmpty
-                ? localizations.translate('no_results')
-                : localizations.translate('no_songs_available'),
+                ? localizations.noResults
+                : localizations.noSongsAvailable,
             style: TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: isDark ? Colors.white54 : Colors.black45,

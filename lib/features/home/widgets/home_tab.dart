@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/local_caching_service.dart';
 import '../../../shared/services/home_layout_service.dart';
 import '../../../shared/utils/responsive_utils.dart';
@@ -42,7 +42,7 @@ class _HomeTabState extends State<HomeTab> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionTitle(title: l10n.translate('for_you'), isTablet: isTablet),
+            _SectionTitle(title: l10n.forYou, isTablet: isTablet),
             SizedBox(height: isTablet ? 16.0 : 12.0),
             RepaintBoundary(
               child: ForYouSection(
@@ -60,7 +60,7 @@ class _HomeTabState extends State<HomeTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _SectionTitle(
-                title: l10n.translate('suggested_artists'), isTablet: isTablet),
+                title: l10n.suggestedArtists, isTablet: isTablet),
             SizedBox(height: isTablet ? 16.0 : 12.0),
             RepaintBoundary(
               child: SuggestedArtistsSection(
@@ -77,7 +77,7 @@ class _HomeTabState extends State<HomeTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _SectionTitle(
-                title: l10n.translate('recently_played'), isTablet: isTablet),
+                title: l10n.recentlyPlayed, isTablet: isTablet),
             SizedBox(height: isTablet ? 16.0 : 12.0),
             const RepaintBoundary(child: RecentlyPlayedSection()),
             SizedBox(height: spacing),
@@ -88,7 +88,7 @@ class _HomeTabState extends State<HomeTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _SectionTitle(
-                title: l10n.translate('most_played'), isTablet: isTablet),
+                title: l10n.mostPlayed, isTablet: isTablet),
             SizedBox(height: isTablet ? 16.0 : 12.0),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: isTablet ? 24.0 : 16.0),
@@ -110,7 +110,7 @@ class _HomeTabState extends State<HomeTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _SectionTitle(
-                title: l10n.translate('recently_added'), isTablet: isTablet),
+                title: l10n.recentlyAdded, isTablet: isTablet),
             SizedBox(height: isTablet ? 16.0 : 12.0),
             const RepaintBoundary(child: RecentlyAddedSection()),
             SizedBox(height: spacing),

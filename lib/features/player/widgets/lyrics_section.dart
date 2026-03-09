@@ -7,7 +7,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/timed_lyrics.dart';
 import '../screens/fullscreen_lyrics.dart';
 import '../../../shared/services/audio_player_service.dart';
@@ -230,7 +230,7 @@ class LyricsSection extends StatelessWidget {
           return Transform.translate(
             offset: Offset(0, 20 * (1 - value)),
             child: Text(
-              AppLocalizations.of(context).translate('no_lyrics'),
+              AppLocalizations.of(context).noLyrics,
               style: TextStyle(
                 color: Colors.white70.withValues(alpha: value),
                 fontSize: 16,
@@ -272,7 +272,7 @@ class LyricsSection extends StatelessWidget {
                 size: 20,
               ),
               onPressed: () => _openFullscreenLyrics(context),
-              tooltip: AppLocalizations.of(context).translate('expand_lyrics'),
+              tooltip: AppLocalizations.of(context).expandLyrics,
             ),
           ),
         ),

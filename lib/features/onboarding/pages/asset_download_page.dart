@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/providers/theme_provider.dart';
 import '../../../shared/widgets/pill_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class AssetDownloadPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -150,7 +150,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                     child: FadeTransition(
                       opacity: fadeOp,
                       child: Text(
-                        localizations.translate('downloadPreferences'),
+                        localizations.downloadPreferences,
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
@@ -169,7 +169,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                   FadeTransition(
                     opacity: fadeOp,
                     child: Text(
-                      localizations.translate('downloadContentSubtitle'),
+                      localizations.downloadContentSubtitle,
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
@@ -193,9 +193,9 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                             _buildOptionItem(
                               icon: Icons.image_rounded,
                               title:
-                                  localizations.translate('downloadAlbumArt'),
+                                  localizations.downloadAlbumArt,
                               description: localizations
-                                  .translate('downloadAlbumArtDesc'),
+                                  .downloadAlbumArtDesc,
                               value: _downloadAlbumArt,
                               onChanged: (value) {
                                 setState(() {
@@ -209,9 +209,9 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                             _buildOptionItem(
                               icon: Icons.lyrics_rounded,
                               title: localizations
-                                  .translate('downloadLyricsTitle'),
+                                  .downloadLyricsTitle,
                               description:
-                                  localizations.translate('downloadLyricsDesc'),
+                                  localizations.downloadLyricsDesc,
                               value: _downloadLyrics,
                               onChanged: (value) {
                                 setState(() {
@@ -224,9 +224,9 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                             const SizedBox(height: 12),
                             _buildOptionItem(
                               icon: Icons.wifi_rounded,
-                              title: localizations.translate('wifiOnly'),
+                              title: localizations.wifiOnly,
                               description:
-                                  localizations.translate('wifiOnlyDesc'),
+                                  localizations.wifiOnlyDesc,
                               value: _downloadOnWifiOnly,
                               onChanged: (value) {
                                 setState(() {
@@ -260,7 +260,7 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                                   Expanded(
                                     child: Text(
                                       localizations
-                                          .translate('downloadSettingsNote'),
+                                          .downloadSettingsNote,
                                       style: TextStyle(
                                         fontFamily: FontConstants.fontFamily,
                                         fontSize: 13,
@@ -281,8 +281,8 @@ class _AssetDownloadPageState extends State<AssetDownloadPage>
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
                     child: PillNavigationButtons(
-                      backText: localizations.translate('back'),
-                      continueText: localizations.translate('continueButton'),
+                      backText: localizations.back,
+                      continueText: localizations.continueButton,
                       onBack: widget.onBack,
                       onContinue: () async {
                         await _exitController.forward();

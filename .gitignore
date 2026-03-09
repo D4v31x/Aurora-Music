@@ -55,3 +55,6 @@ app.*.map.json
 
 # Temporary files
 flutter.tar.xz
+
+sentry-wizard
+sentry.properties

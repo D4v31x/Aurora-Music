@@ -3,7 +3,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/audio_player_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 
@@ -107,7 +107,7 @@ class MusicStatsCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      AppLocalizations.of(context).translate('your_library'),
+                      AppLocalizations.of(context).yourLibrary,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -133,23 +133,23 @@ class MusicStatsCard extends StatelessWidget {
                   children: [
                     _MinimalStat(
                       value: _formatNumber(stats.totalSongs),
-                      label: AppLocalizations.of(context).translate('songs'),
+                      label: AppLocalizations.of(context).songs,
                       isDark: isDark,
                     ),
                     _MinimalStat(
                       value: _formatNumber(stats.totalArtists),
-                      label: AppLocalizations.of(context).translate('artists'),
+                      label: AppLocalizations.of(context).artists,
                       isDark: isDark,
                     ),
                     _MinimalStat(
                       value: _formatNumber(stats.totalAlbums),
-                      label: AppLocalizations.of(context).translate('albums'),
+                      label: AppLocalizations.of(context).albums,
                       isDark: isDark,
                     ),
                     _MinimalStat(
                       value: _formatNumber(stats.totalPlaylists),
                       label:
-                          AppLocalizations.of(context).translate('playlists'),
+                          AppLocalizations.of(context).playlists,
                       isDark: isDark,
                     ),
                   ],

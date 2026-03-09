@@ -6,7 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:palette_generator/palette_generator.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/music_search_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
@@ -302,7 +302,7 @@ class _SearchTabState extends State<SearchTab> {
             style: const TextStyle(
                 color: Colors.white, fontFamily: FontConstants.fontFamily),
             decoration: InputDecoration(
-              hintText: AppLocalizations.of(context).translate('search'),
+              hintText: AppLocalizations.of(context).search,
               hintStyle: const TextStyle(
                   color: Colors.white54, fontFamily: FontConstants.fontFamily),
               prefixIcon: const Icon(Icons.search, color: Colors.white54),
@@ -346,7 +346,7 @@ class _SearchTabState extends State<SearchTab> {
             Icon(Icons.search, size: 64, color: Colors.white.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text(
-              AppLocalizations.of(context).translate('Start_type'),
+              AppLocalizations.of(context).startType,
               style: TextStyle(
                 fontFamily: FontConstants.fontFamily,
                 color: Colors.white.withValues(alpha: 0.5),
@@ -389,7 +389,7 @@ class _SearchTabState extends State<SearchTab> {
         // Top Result Card
         if (_topResultType.isNotEmpty) ...[
           _buildSectionHeader(
-              AppLocalizations.of(context).translate('top_result')),
+              AppLocalizations.of(context).topResult),
           const SizedBox(height: 8),
           _buildTopResultCard(),
           const SizedBox(height: 24),
@@ -398,7 +398,7 @@ class _SearchTabState extends State<SearchTab> {
         // Artists section (horizontal scroll)
         if (_filteredArtists.isNotEmpty && _topResultType != 'artist') ...[
           _buildSectionHeader(
-              AppLocalizations.of(context).translate('artists')),
+              AppLocalizations.of(context).artists),
           const SizedBox(height: 8),
           SizedBox(
             height: 140,
@@ -414,7 +414,7 @@ class _SearchTabState extends State<SearchTab> {
 
         // Albums section (horizontal scroll)
         if (_filteredAlbums.isNotEmpty && _topResultType != 'album') ...[
-          _buildSectionHeader(AppLocalizations.of(context).translate('albums')),
+          _buildSectionHeader(AppLocalizations.of(context).albums),
           const SizedBox(height: 8),
           SizedBox(
             height: 190,
@@ -430,7 +430,7 @@ class _SearchTabState extends State<SearchTab> {
 
         // Songs section
         if (_filteredSongs.isNotEmpty) ...[
-          _buildSectionHeader(AppLocalizations.of(context).translate('songs')),
+          _buildSectionHeader(AppLocalizations.of(context).songs),
           const SizedBox(height: 8),
           ..._filteredSongs.take(20).map((song) => _SearchSongTile(
                 song: song,
@@ -496,7 +496,7 @@ class _SearchTabState extends State<SearchTab> {
         );
       },
       typeLabel:
-          AppLocalizations.of(context).translate('artists').toUpperCase(),
+          AppLocalizations.of(context).artists.toUpperCase(),
     );
   }
 
@@ -513,7 +513,7 @@ class _SearchTabState extends State<SearchTab> {
           ),
         );
       },
-      typeLabel: AppLocalizations.of(context).translate('albums').toUpperCase(),
+      typeLabel: AppLocalizations.of(context).albums.toUpperCase(),
       title: album.album,
       subtitle: album.artist ?? '',
       trailing: Icon(Icons.chevron_right,
@@ -527,7 +527,7 @@ class _SearchTabState extends State<SearchTab> {
       id: song.id,
       artworkService: _artworkService,
       onTap: () => _onSongTap(song),
-      typeLabel: AppLocalizations.of(context).translate('songs').toUpperCase(),
+      typeLabel: AppLocalizations.of(context).songs.toUpperCase(),
       title: song.title,
       subtitle: song.artist ?? '',
       trailing: Container(
@@ -1025,7 +1025,7 @@ class _TopArtistResultCard extends HookWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${artist.numberOfTracks} ${AppLocalizations.of(context).translate('songs').toLowerCase()}',
+                  '${artist.numberOfTracks} ${AppLocalizations.of(context).songs.toLowerCase()}',
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     color: Colors.white.withValues(alpha: 0.6),

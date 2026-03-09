@@ -10,7 +10,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/timed_lyrics.dart';
 import '../../../shared/services/artist_separator_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
@@ -563,31 +563,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Current lyric line
-        ValueListenableBuilder<int>(
-          valueListenable: _currentLyricIndexNotifier,
-          builder: (context, currentIndex, _) {
-            final hasLyrics = _timedLyrics != null && _timedLyrics!.isNotEmpty;
-            if (!hasLyrics) return const SizedBox.shrink();
-            final lyricText = _timedLyrics![currentIndex].text.trim();
-            if (lyricText.isEmpty) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                lyricText,
-                style: TextStyle(
-                  fontSize: isTablet ? 13 : 12,
-                  color: Colors.white.withValues(alpha: 0.45),
-                  fontFamily: FontConstants.fontFamily,
-                  fontStyle: FontStyle.italic,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            );
-          },
-        ),
         _buildTitleText(audioPlayerService, isTablet: isTablet),
         const SizedBox(height: 4),
         _buildArtistText(audioPlayerService, isTablet: isTablet),
@@ -649,7 +624,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       children: [
         SizedBox(height: isTablet ? 80 : 60),
         Text(
-          AppLocalizations.of(context).translate('lyrics'),
+          AppLocalizations.of(context).lyrics,
           style: TextStyle(
             color: Colors.white,
             fontSize: isTablet ? 26 : 22,
@@ -687,7 +662,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
-              Text(AppLocalizations.of(context).translate('no_artist_info')),
+              Text(AppLocalizations.of(context).noArtistInfo),
         ),
       );
       return;
@@ -698,7 +673,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
-              Text(AppLocalizations.of(context).translate('no_artist_info')),
+              Text(AppLocalizations.of(context).noArtistInfo),
         ),
       );
       return;
@@ -798,7 +773,7 @@ class _ArtistSelectionSheet extends StatelessWidget {
                     ),
                     const SizedBox(width: 14),
                     Text(
-                      AppLocalizations.of(context).translate('select_artist'),
+                      AppLocalizations.of(context).selectArtist,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,

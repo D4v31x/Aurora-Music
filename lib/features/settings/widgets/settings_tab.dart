@@ -10,8 +10,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import '../../../shared/services/audio_player_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../l10n/locale_provider.dart';
+import '../../../l10n/supported_languages.dart';
 import '../../../shared/providers/theme_provider.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/services/device_performance_service.dart';
@@ -537,7 +538,7 @@ class _SettingsTabState extends State<SettingsTab> {
         side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
       ),
       title: Text(
-        l10n.translate('settings_clear_cache_title'),
+        l10n.settingsClearCacheTitle,
         style: const TextStyle(
           fontFamily: FontConstants.fontFamily,
           color: Colors.white,
@@ -545,7 +546,7 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
       ),
       content: Text(
-        l10n.translate('settings_clear_cache_message'),
+        l10n.settingsClearCacheMessage,
         style: const TextStyle(
           fontFamily: FontConstants.fontFamily,
           color: Colors.white70,
@@ -555,7 +556,7 @@ class _SettingsTabState extends State<SettingsTab> {
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(
-            l10n.translate('cancel'),
+            l10n.cancel,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white70,
@@ -568,13 +569,13 @@ class _SettingsTabState extends State<SettingsTab> {
             await _clearAllCaches();
             if (mounted) {
               widget.notificationManager.showNotification(
-                l10n.translate('settings_cache_cleared'),
+                l10n.settingsCacheCleared,
                 duration: const Duration(seconds: 2),
               );
             }
           },
           child: Text(
-            l10n.translate('delete'),
+            l10n.delete,
             style: TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Theme.of(context).colorScheme.error,
@@ -650,7 +651,7 @@ class _SettingsTabState extends State<SettingsTab> {
           ),
         ),
         title: Text(
-          l10n.translate('settings_cache_info'),
+          l10n.settingsCacheInfo,
           style: const TextStyle(
             fontFamily: FontConstants.fontFamily,
             color: Colors.white,
@@ -663,7 +664,7 @@ class _SettingsTabState extends State<SettingsTab> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                l10n.translate('settings_storage'),
+                l10n.settingsStorage,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
@@ -671,8 +672,8 @@ class _SettingsTabState extends State<SettingsTab> {
                 ),
               ),
               const SizedBox(height: 8),
-              _buildInfoRow(l10n.translate('lyrics'), _formatBytes(lyricsSize)),
-              _buildInfoRow(l10n.translate('onboarding_album_artwork'),
+              _buildInfoRow(l10n.lyrics, _formatBytes(lyricsSize)),
+              _buildInfoRow(l10n.onboardingAlbumArtwork,
                   _formatBytes(artworkSize)),
               Divider(color: Colors.white.withValues(alpha: 0.2)),
               _buildInfoRow('Total', _formatBytes(totalSize), bold: true),
@@ -687,10 +688,10 @@ class _SettingsTabState extends State<SettingsTab> {
               ),
               const SizedBox(height: 8),
               _buildInfoRow(
-                  l10n.translate('lyrics'), '${cacheSizes['lyrics']} items'),
-              _buildInfoRow(l10n.translate('onboarding_album_artwork'),
+                  l10n.lyrics, '${cacheSizes['lyrics']} items'),
+              _buildInfoRow(l10n.onboardingAlbumArtwork,
                   '${cacheSizes['artwork']} items'),
-              _buildInfoRow(l10n.translate('metadata'),
+              _buildInfoRow(l10n.metadata,
                   '${cacheSizes['metadata']} items'),
             ],
           ),
@@ -699,7 +700,7 @@ class _SettingsTabState extends State<SettingsTab> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              l10n.translate('cancel'),
+              l10n.cancel,
               style: const TextStyle(
                 fontFamily: FontConstants.fontFamily,
                 color: Colors.white70,
@@ -771,7 +772,7 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
       ),
       title: Text(
-        l10n.translate('restart_required'),
+        l10n.restartRequired,
         style: const TextStyle(
           fontFamily: FontConstants.fontFamily,
           color: Colors.white,
@@ -779,7 +780,7 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
       ),
       content: Text(
-        l10n.translate('restart_required_desc'),
+        l10n.restartRequiredDesc,
         style: const TextStyle(
           fontFamily: FontConstants.fontFamily,
           color: Colors.white70,
@@ -789,7 +790,7 @@ class _SettingsTabState extends State<SettingsTab> {
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(
-            l10n.translate('cancel'),
+            l10n.cancel,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white70,
@@ -818,7 +819,7 @@ class _SettingsTabState extends State<SettingsTab> {
             }
           },
           child: Text(
-            l10n.translate('restart_now'),
+            l10n.restartNow,
             style: TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Theme.of(context).colorScheme.primary,
@@ -979,7 +980,7 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
       ),
       title: Text(
-        l10n.translate('update_available'),
+        l10n.updateAvailable,
         style: const TextStyle(
           fontFamily: FontConstants.fontFamily,
           color: Colors.white,
@@ -987,7 +988,7 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
       ),
       content: Text(
-        '${l10n.translate('update_message')}: $latestVersion',
+        '${l10n.updateMessage}: $latestVersion',
         style: const TextStyle(
           fontFamily: FontConstants.fontFamily,
           color: Colors.white70,
@@ -997,7 +998,7 @@ class _SettingsTabState extends State<SettingsTab> {
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(
-            l10n.translate('later'),
+            l10n.later,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white70,
@@ -1012,7 +1013,7 @@ class _SettingsTabState extends State<SettingsTab> {
             }
           },
           child: Text(
-            l10n.translate('update_now'),
+            l10n.updateNow,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white,
@@ -1060,7 +1061,7 @@ class _SettingsTabState extends State<SettingsTab> {
             ),
           ),
           title: Text(
-            l10n.translate('settings_language'),
+            l10n.settingsLanguage,
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w500,
@@ -1082,10 +1083,12 @@ class _SettingsTabState extends State<SettingsTab> {
                 fontWeight: FontWeight.w500,
                 fontFamily: FontConstants.fontFamily,
               ),
-              items: const [
-                DropdownMenuItem(value: 'en', child: Text('English')),
-                DropdownMenuItem(value: 'cs', child: Text('Čeština')),
-              ],
+              items: SupportedLanguages.all
+                  .map((lang) => DropdownMenuItem(
+                        value: lang.code,
+                        child: Text(lang.nativeName),
+                      ))
+                  .toList(),
               onChanged: (value) {
                 if (value != null) {
                   LocaleProvider.of(context)!.setLocale(Locale(value));
@@ -1154,13 +1157,13 @@ class _SettingsTabState extends State<SettingsTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // APPEARANCE
-        _buildSectionHeader(l10n.translate('settings_appearance')),
+        _buildSectionHeader(l10n.settingsAppearance),
         _buildGlassmorphicCard(
           children: [
             _buildSwitchTile(
               icon: Icons.palette_rounded,
-              title: l10n.translate('settings_material_you'),
-              subtitle: l10n.translate('settings_material_you_desc'),
+              title: l10n.settingsMaterialYou,
+              subtitle: l10n.settingsMaterialYouDesc,
               value: themeProvider.useDynamicColor,
               onChanged: (value) => themeProvider.toggleDynamicColor(),
               isFirst: true,
@@ -1205,8 +1208,8 @@ class _SettingsTabState extends State<SettingsTab> {
                     performanceProvider.currentMode == PerformanceLevel.high;
                 return _buildSwitchTile(
                   icon: Icons.speed_rounded,
-                  title: l10n.translate('settings_highend_ui'),
-                  subtitle: l10n.translate('settings_highend_ui_desc'),
+                  title: l10n.settingsHighendUi,
+                  subtitle: l10n.settingsHighendUiDesc,
                   value: isHighEnd,
                   onChanged: (value) {
                     // Don't change mode here - show dialog first
@@ -1257,8 +1260,8 @@ class _SettingsTabState extends State<SettingsTab> {
             _buildLanguageTile(),
             _buildActionTile(
               icon: Icons.dashboard_rounded,
-              title: l10n.translate('homeLayout'),
-              subtitle: l10n.translate('homeLayoutDesc'),
+              title: l10n.homeLayout,
+              subtitle: l10n.homeLayoutDesc,
               onTap: () {
                 Navigator.push(
                   context,
@@ -1273,13 +1276,13 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
 
         // PLAYBACK
-        _buildSectionHeader(l10n.translate('settings_playback')),
+        _buildSectionHeader(l10n.settingsPlayback),
         _buildGlassmorphicCard(
           children: [
             _buildSwitchTile(
               icon: Icons.call_split_rounded,
-              title: l10n.translate('settings_gapless'),
-              subtitle: l10n.translate('settings_gapless_desc'),
+              title: l10n.settingsGapless,
+              subtitle: l10n.settingsGaplessDesc,
               value: audioPlayerService.gaplessPlayback,
               onChanged: (value) =>
                   audioPlayerService.setGaplessPlayback(value),
@@ -1287,16 +1290,16 @@ class _SettingsTabState extends State<SettingsTab> {
             ),
             _buildSwitchTile(
               icon: Icons.volume_up_rounded,
-              title: l10n.translate('settings_normalization'),
-              subtitle: l10n.translate('settings_normalization_desc'),
+              title: l10n.settingsNormalization,
+              subtitle: l10n.settingsNormalizationDesc,
               value: audioPlayerService.volumeNormalization,
               onChanged: (value) =>
                   audioPlayerService.setVolumeNormalization(value),
             ),
             _buildSliderTile(
               icon: Icons.speed_rounded,
-              title: l10n.translate('playback_speed'),
-              subtitle: l10n.translate('playback_speed_desc'),
+              title: l10n.playbackSpeed,
+              subtitle: l10n.playbackSpeedDesc,
               value: audioPlayerService.playbackSpeed,
               min: 0.25,
               max: 5.0,
@@ -1320,8 +1323,8 @@ class _SettingsTabState extends State<SettingsTab> {
             ),
             _buildActionTile(
               icon: Icons.people_rounded,
-              title: l10n.translate('artist_separation'),
-              subtitle: l10n.translate('artist_separation_desc'),
+              title: l10n.artistSeparation,
+              subtitle: l10n.artistSeparationDesc,
               onTap: () {
                 Navigator.push(
                   context,
@@ -1336,20 +1339,20 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
 
         // STORAGE
-        _buildSectionHeader(l10n.translate('settings_storage')),
+        _buildSectionHeader(l10n.settingsStorage),
         _buildGlassmorphicCard(
           children: [
             _buildActionTile(
               icon: Icons.storage_rounded,
-              title: l10n.translate('settings_cache_info'),
-              subtitle: l10n.translate('settings_cache_info_desc'),
+              title: l10n.settingsCacheInfo,
+              subtitle: l10n.settingsCacheInfoDesc,
               onTap: _showCacheInfo,
               isFirst: true,
             ),
             _buildActionTile(
               icon: Icons.delete_rounded,
-              title: l10n.translate('settings_clear_cache'),
-              subtitle: l10n.translate('settings_clear_cache_desc'),
+              title: l10n.settingsClearCache,
+              subtitle: l10n.settingsClearCacheDesc,
               onTap: _showClearCacheDialog,
               isLast: true,
             ),
@@ -1357,45 +1360,45 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
 
         // ABOUT
-        _buildSectionHeader(l10n.translate('settings_about')),
+        _buildSectionHeader(l10n.settingsAbout),
         _buildGlassmorphicCard(
           children: [
             _buildActionTile(
               icon: Icons.info_rounded,
-              title: l10n.translate('settings_about_app'),
+              title: l10n.settingsAboutApp,
               subtitle:
-                  '${l10n.translate('settings_version')} $_currentVersion',
+                  '${l10n.settingsVersion} $_currentVersion',
               onTap: _showAboutDialog,
               isFirst: true,
             ),
             _buildActionTile(
               icon: Icons.notifications_rounded,
-              title: l10n.translate('whats_new'),
-              subtitle: l10n.translate('view_changelog'),
+              title: l10n.whatsNew,
+              subtitle: l10n.view_changelog,
               onTap: _showChangelogDialog,
               iconColor: Colors.blue,
             ),
             _buildActionTile(
               icon: Icons.favorite_rounded,
-              title: l10n.translate('support_aurora'),
-              subtitle: l10n.translate('support_aurora_desc'),
+              title: l10n.supportAurora,
+              subtitle: l10n.supportAuroraDescShort,
               onTap: () => DonationService.showDonationDialog(context),
               iconColor: Colors.pink,
             ),
             _buildActionTile(
               icon: Icons.chat_bubble_outline_rounded,
-              title: l10n.translate('send_feedback'),
-              subtitle: l10n.translate('send_feedback_desc'),
+              title: l10n.send_feedback,
+              subtitle: l10n.send_feedback_desc,
               onTap: () => _showFeedbackDialog(),
               iconColor: Colors.green,
             ),
             _buildActionTile(
               icon: Icons.restart_alt_rounded,
-              title: l10n.translate('settings_check_updates'),
-              subtitle: l10n.translate('settings_check_updates_desc'),
+              title: l10n.settingsCheckUpdates,
+              subtitle: l10n.settingsCheckUpdatesDesc,
               onTap: () async {
                 widget.notificationManager.showNotification(
-                  l10n.translate('settings_checking_updates'),
+                  l10n.settingsCheckingUpdates,
                   duration: const Duration(seconds: 2),
                 );
 
@@ -1403,7 +1406,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
                 if (result.isUpdateAvailable && result.latestVersion != null) {
                   widget.notificationManager.showNotification(
-                    l10n.translate('settings_update_available'),
+                    l10n.settingsUpdateAvailable,
                     duration: const Duration(seconds: 2),
                     onComplete: () {
                       _showUpdateAvailableDialog(result.latestVersion!);
@@ -1412,7 +1415,7 @@ class _SettingsTabState extends State<SettingsTab> {
                   );
                 } else {
                   widget.notificationManager.showNotification(
-                    l10n.translate('settings_up_to_date'),
+                    l10n.settingsUpToDate,
                     duration: const Duration(seconds: 2),
                     onComplete: () =>
                         widget.notificationManager.showDefaultTitle(),

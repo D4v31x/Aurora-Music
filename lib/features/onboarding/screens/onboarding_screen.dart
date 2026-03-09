@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/user_preferences.dart';
 import '../../../shared/providers/theme_provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../home/screens/home_screen.dart';
 import '../pages/welcome_page.dart';
 import '../pages/beta_welcome_page.dart';
@@ -163,7 +163,7 @@ class OnboardingScreen extends HookWidget {
                           ),
                           child: Text(
                             AppLocalizations.of(context)
-                                .translate('onboarding_skip'),
+                                .onboardingSkip,
                             style: const TextStyle(
                               fontFamily: FontConstants.fontFamily,
                               fontSize: 16,

@@ -5,7 +5,7 @@ import '../../../shared/services/artist_separator_service.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// Settings screen for configuring artist name separation
 class ArtistSeparatorSettingsScreen extends StatefulWidget {
@@ -65,7 +65,7 @@ class _ArtistSeparatorSettingsScreenState
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: Text(
-            l10n.translate('artist_separation'),
+            l10n.artistSeparation,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -80,7 +80,7 @@ class _ArtistSeparatorSettingsScreenState
               icon: Icon(Icons.restore_rounded,
                   color: Colors.white.withValues(alpha: 0.7)),
               onPressed: _showResetDialog,
-              tooltip: l10n.translate('reset'),
+              tooltip: l10n.reset,
             ),
           ],
         ),
@@ -106,12 +106,12 @@ class _ArtistSeparatorSettingsScreenState
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               title: Text(
-                l10n.translate('enable_artist_separation'),
+                l10n.enableArtistSeparation,
                 style: const TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
-                l10n.translate('enable_artist_separation_desc'),
+                l10n.enableArtistSeparationDesc,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.45),
                   fontSize: 12,
@@ -231,11 +231,11 @@ class _ArtistSeparatorSettingsScreenState
             children: [
               Expanded(
                   child: _sectionLabel(
-                      l10n.translate('separators').toUpperCase())),
+                      l10n.separators.toUpperCase())),
               TextButton.icon(
                 onPressed: _showAddSeparatorDialog,
                 icon: const Icon(Icons.add, size: 16),
-                label: const Text('Add'),
+                label: Text(l10n.add),
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.blue.shade300,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -252,7 +252,7 @@ class _ArtistSeparatorSettingsScreenState
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(
-                          l10n.translate('no_separators'),
+                          l10n.noSeparators,
                           style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.3),
                               fontSize: 13),
@@ -280,11 +280,11 @@ class _ArtistSeparatorSettingsScreenState
             children: [
               Expanded(
                   child: _sectionLabel(
-                      l10n.translate('exclusions').toUpperCase())),
+                      l10n.exclusions.toUpperCase())),
               TextButton.icon(
                 onPressed: _showAddExclusionDialog,
                 icon: const Icon(Icons.add, size: 16),
-                label: const Text('Add'),
+                label: Text(l10n.add),
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.blue.shade300,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -294,7 +294,7 @@ class _ArtistSeparatorSettingsScreenState
           ),
           const SizedBox(height: 4),
           Text(
-            l10n.translate('exclusions_desc'),
+            l10n.exclusionsDesc,
             style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.35), fontSize: 12),
           ),
@@ -307,7 +307,7 @@ class _ArtistSeparatorSettingsScreenState
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(
-                          l10n.translate('no_exclusions'),
+                          l10n.noExclusions,
                           style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.3),
                               fontSize: 13),
@@ -422,7 +422,7 @@ class _ArtistSeparatorSettingsScreenState
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
-            l10n.translate('add_separator'),
+            l10n.addSeparator,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white,
@@ -437,8 +437,8 @@ class _ArtistSeparatorSettingsScreenState
               color: Colors.white,
             ),
             decoration: InputDecoration(
-              labelText: l10n.translate('separator'),
-              hintText: l10n.translate('separator_hint'),
+              labelText: l10n.separator,
+              hintText: l10n.separatorHint,
               labelStyle: const TextStyle(color: Colors.white70),
               hintStyle: const TextStyle(color: Colors.white38),
               enabledBorder: OutlineInputBorder(
@@ -455,7 +455,7 @@ class _ArtistSeparatorSettingsScreenState
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                l10n.translate('cancel'),
+                l10n.cancel,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white70,
@@ -474,7 +474,7 @@ class _ArtistSeparatorSettingsScreenState
                 if (context.mounted) Navigator.pop(context);
               },
               child: Text(
-                l10n.translate('add'),
+                l10n.add,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
@@ -500,7 +500,7 @@ class _ArtistSeparatorSettingsScreenState
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
-            l10n.translate('add_exclusion'),
+            l10n.addExclusion,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white,
@@ -515,8 +515,8 @@ class _ArtistSeparatorSettingsScreenState
               color: Colors.white,
             ),
             decoration: InputDecoration(
-              labelText: l10n.translate('artist_name'),
-              hintText: l10n.translate('exclusion_hint'),
+              labelText: l10n.artistName,
+              hintText: l10n.exclusionHint,
               labelStyle: const TextStyle(color: Colors.white70),
               hintStyle: const TextStyle(color: Colors.white38),
               enabledBorder: OutlineInputBorder(
@@ -533,7 +533,7 @@ class _ArtistSeparatorSettingsScreenState
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                l10n.translate('cancel'),
+                l10n.cancel,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white70,
@@ -552,7 +552,7 @@ class _ArtistSeparatorSettingsScreenState
                 if (context.mounted) Navigator.pop(context);
               },
               child: Text(
-                l10n.translate('add'),
+                l10n.add,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
@@ -593,7 +593,7 @@ class _ArtistSeparatorSettingsScreenState
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
-            l10n.translate('reset_to_defaults'),
+            l10n.resetToDefaults,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white,
@@ -601,7 +601,7 @@ class _ArtistSeparatorSettingsScreenState
             ),
           ),
           content: Text(
-            l10n.translate('reset_artist_separation_desc'),
+            l10n.resetArtistSeparationDesc,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white70,
@@ -611,7 +611,7 @@ class _ArtistSeparatorSettingsScreenState
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                l10n.translate('cancel'),
+                l10n.cancel,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white70,
@@ -625,7 +625,7 @@ class _ArtistSeparatorSettingsScreenState
                 if (context.mounted) Navigator.pop(context);
               },
               child: Text(
-                l10n.translate('reset'),
+                l10n.reset,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white,

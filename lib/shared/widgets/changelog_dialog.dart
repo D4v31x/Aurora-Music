@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:ui';
 import '../../core/constants/font_constants.dart';
-import '../../l10n/app_localizations.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../providers/performance_mode_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/changelog_content.dart';
@@ -142,7 +142,7 @@ class ChangelogDialog extends StatelessWidget {
                 duration: const Duration(milliseconds: 500),
                 offset: const Offset(0, 0),
                 child: Text(
-                  AppLocalizations.of(context).translate('whats_new'),
+                  AppLocalizations.of(context).whatsNew,
                   style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
                     fontSize: 24,
@@ -224,7 +224,7 @@ class ChangelogDialog extends StatelessWidget {
                       const SizedBox(height: 16),
                       Text(
                         AppLocalizations.of(context)
-                            .translate('privacy_notice'),
+                            .privacyNotice,
                         style: TextStyle(
                           fontSize: 12,
                           fontFamily: FontConstants.fontFamily,
@@ -240,7 +240,7 @@ class ChangelogDialog extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(vertical: 4.0),
                           child: Text(
                             AppLocalizations.of(context)
-                                .translate('privacy_policy_link'),
+                                .privacyPolicyLink,
                             style: TextStyle(
                               fontSize: 12,
                               fontFamily: FontConstants.fontFamily,
@@ -275,7 +275,7 @@ class ChangelogDialog extends StatelessWidget {
                 ),
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text(
-                  AppLocalizations.of(context).translate('got_it'),
+                  AppLocalizations.of(context).gotIt,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.bold,

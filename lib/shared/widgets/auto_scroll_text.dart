@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import '../../l10n/app_localizations.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../core/constants/animation_constants.dart';
 
 class AutoScrollText extends HookWidget {
@@ -54,7 +54,7 @@ class AutoScrollText extends HookWidget {
 
     // Check if scanning message - use captured localizations
     bool isScanningMessage() {
-      return text.contains(localizations.translate('scanning_songs'));
+      return text.contains(localizations.scanningSongs);
     }
 
     // Fade to next message - use captured localizations
@@ -62,7 +62,7 @@ class AutoScrollText extends HookWidget {
       if (!isMounted.value) return;
       fadeController.reverse().then((_) {
         if (isMounted.value) {
-          onMessageComplete(localizations.translate('aurora_music'));
+          onMessageComplete(localizations.auroraMusic);
         }
       });
     }

@@ -429,5 +429,66 @@
   "clearUpcoming": "Vymazat nadcházející",
   "addToQueue": "Přidat do fronty",
   "playNext": "Přehrát jako další",
-  "removeFromQueue": "Odebrat z fronty"
+  "removeFromQueue": "Odebrat z fronty",
+  "play": "Přehrát",
+  "viewAlbum": "Zobrazit album",
+  "shuffleAll": "Přehrát náhodně vše",
+  "noSongsFound": "Nenalezeny žádné skladby",
+  "noFoldersFound": "Nenalezeny žádné složky",
+  "deleteSong": "Smazat skladbu",
+  "modifySystemSettingsPermission": "V otevřené stránce povolte \u201eÚprava systémových nastavení\u201c a zkuste to znovu.",
+  "errorMessage": "Chyba: {message}",
+  "@errorMessage": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "songsAddedToQueue": "{count} skladeb přidáno do fronty",
+  "@songsAddedToQueue": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "songAddedToQueue": "„{title}“ přidáno do fronty",
+  "@songAddedToQueue": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "songSetAsRingtone": "„{title}“ nastaveno jako vyzváněcí tón",
+  "@songSetAsRingtone": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "failedToSetRingtone": "Nepodařilo se nastavit vyzváněcí tón: {error}",
+  "@failedToSetRingtone": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "deleteSongConfirm": "Smazat „{title}“ ze zařízení? Tuto akci nelze vrátit zpět.",
+  "@deleteSongConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "songDeleted": "„{title}“ smazáno",
+  "@songDeleted": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "failedToDelete": "Smazání selhalo: {error}",
+  "@failedToDelete": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "songCount": "{count} skladeb",
+  "@songCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

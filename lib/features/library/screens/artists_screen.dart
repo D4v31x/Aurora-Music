@@ -13,7 +13,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import 'artist_detail_screen.dart';
 
 enum ArtistSortOption { name, tracks, albums }
@@ -165,7 +165,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
           slivers: [
             LibraryScreenHeader(
               badge: 'Library',
-              title: loc.translate('artists'),
+              title: loc.artists,
               subtitle: _isLoading
                   ? null
                   : '$count ${count == 1 ? 'artist' : 'artists'}',
@@ -173,7 +173,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
               showBackButton: true,
               searchField: LibrarySearchField(
                 controller: _searchController,
-                hint: loc.translate('search_artists'),
+                hint: loc.searchArtists,
                 onChanged: _filterArtists,
                 hasQuery: _searchQuery.isNotEmpty,
                 onClear: () {
@@ -291,8 +291,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             const SizedBox(height: 16),
             Text(
               _searchQuery.isEmpty
-                  ? loc.translate('no_artists_found')
-                  : loc.translate('no_results'),
+                  ? loc.noArtistsFound
+                  : loc.noResults,
               style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
             ),
           ],
@@ -556,7 +556,9 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
       backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(),
       barrierColor: Colors.black.withValues(alpha: 0.75),
-      builder: (context) => DecoratedBox(
+      builder: (context) {
+        final loc = AppLocalizations.of(context);
+        return DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -604,7 +606,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          '${artist.numberOfTracks} songs',
+                          loc.songCount(artist.numberOfTracks),
                           style: const TextStyle(
                               color: Colors.white70, fontSize: 13),
                         ),
@@ -618,7 +620,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             ListTile(
               leading: const Icon(Icons.play_arrow, color: Colors.white),
               title:
-                  const Text('Play All', style: TextStyle(color: Colors.white)),
+                  Text(loc.playAll, style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _playArtist(artist);
@@ -626,8 +628,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.shuffle, color: Colors.white),
-              title: const Text('Shuffle All',
-                  style: TextStyle(color: Colors.white)),
+              title: Text(loc.shuffleAll,
+                  style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _shuffleArtist(artist);
@@ -635,8 +637,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.info_outline, color: Colors.white),
-              title: const Text('View Details',
-                  style: TextStyle(color: Colors.white)),
+              title: Text(loc.viewDetails,
+                  style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _navigateToArtistDetail(artist);
@@ -646,7 +648,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
           ],
         ),
         ),
-      ),
+        );
+      },
     );
   }
 

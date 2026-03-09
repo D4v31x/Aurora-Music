@@ -6,7 +6,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
@@ -217,9 +217,9 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                   fallbackAsset: 'assets/images/UI/unknown.png',
                   title: widget.artistName,
                   metadata: _allSongs.isNotEmpty
-                      ? '${_allSongs.length} ${localizations.translate('songs')} · ${_albums.length} ${localizations.translate('albums')} · ${_formatDuration(_totalDuration)}'
+                      ? '${_allSongs.length} ${localizations.songs} · ${_albums.length} ${localizations.albums} · ${_formatDuration(_totalDuration)}'
                       : null,
-                  badge: localizations.translate('artist'),
+                  badge: localizations.artist,
                   heroTag: 'artist_image_${widget.artistName}',
                   accentColor: _dominantColor == Colors.deepPurple.shade900
                       ? Colors.cyan
@@ -237,7 +237,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                           child: _buildActionButton(
                             context,
                             Icons.play_arrow_rounded,
-                            localizations.translate('play_all'),
+                            localizations.playAll,
                             () => _playAllSongs(context),
                             isPrimary: true,
                           ),
@@ -246,7 +246,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                         _buildActionButton(
                           context,
                           Icons.shuffle_rounded,
-                          localizations.translate('shuffle'),
+                          localizations.shuffle,
                           () => _shuffleAllSongs(context),
                         ),
                         const SizedBox(width: 10),
@@ -270,7 +270,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                       children: [
                         Expanded(
                           child: _buildCategoryTab(
-                            '${localizations.translate('songs')} (${_allSongs.length})',
+                            '${localizations.songs} (${_allSongs.length})',
                             0,
                             Icons.music_note_rounded,
                           ),
@@ -278,7 +278,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildCategoryTab(
-                            '${localizations.translate('albums')} (${_albums.length})',
+                            '${localizations.albums} (${_albums.length})',
                             1,
                             Icons.album_rounded,
                           ),
@@ -384,7 +384,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
               Icon(Icons.album, size: 64, color: Colors.white.withValues(alpha: 0.3)),
               const SizedBox(height: 16),
               Text(
-                AppLocalizations.of(context).translate('no_albums_found'),
+                AppLocalizations.of(context).noAlbumsFound,
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
               ),
             ],
@@ -494,7 +494,9 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => DecoratedBox(
+      builder: (context) {
+        final loc = AppLocalizations.of(context);
+        return DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -532,7 +534,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          '${albumSongs.length} songs',
+                          loc.songCount(albumSongs.length),
                           style: const TextStyle(
                               color: Colors.white70, fontSize: 13),
                         ),
@@ -545,7 +547,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             const Divider(color: Colors.white24),
             ListTile(
               leading: const Icon(Icons.play_arrow, color: Colors.white),
-              title: const Text('Play', style: TextStyle(color: Colors.white)),
+              title: Text(loc.play, style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 if (albumSongs.isNotEmpty) {
@@ -563,7 +565,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             ListTile(
               leading: const Icon(Icons.shuffle, color: Colors.white),
               title:
-                  const Text('Shuffle', style: TextStyle(color: Colors.white)),
+                  Text(loc.shuffle, style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 if (albumSongs.isNotEmpty) {
@@ -581,8 +583,8 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.info_outline, color: Colors.white),
-              title: const Text('View Album',
-                  style: TextStyle(color: Colors.white)),
+              title: Text(loc.viewAlbum,
+                  style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -597,7 +599,8 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             const SizedBox(height: 16),
           ],
         ),
-      ),
+        );
+      },
     );
   }
 

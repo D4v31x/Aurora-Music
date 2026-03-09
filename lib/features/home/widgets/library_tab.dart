@@ -16,7 +16,7 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/widgets/glassmorphic_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/utils/responsive_utils.dart';
 
 import '../../../shared/widgets/expanding_player.dart';
@@ -94,7 +94,7 @@ class _LibraryTabState extends State<LibraryTab>
           ),
           children: [
             buildCategorySection(
-              title: AppLocalizations.of(context).translate('tracks'),
+              title: AppLocalizations.of(context).tracks,
               items: audioPlayerService.getMostPlayedTracks(),
               onDetailsTap: () => Navigator.push(
                 context,
@@ -115,7 +115,7 @@ class _LibraryTabState extends State<LibraryTab>
             ),
             const SizedBox(height: 24.0),
             buildCategorySection(
-              title: AppLocalizations.of(context).translate('albums'),
+              title: AppLocalizations.of(context).albums,
               items: audioPlayerService.getMostPlayedAlbums(),
               onDetailsTap: () => Navigator.push(
                 context,
@@ -138,7 +138,7 @@ class _LibraryTabState extends State<LibraryTab>
               selector: (context, service) => service.playlists,
               builder: (context, playlists, child) {
                 return buildCategorySection(
-                  title: AppLocalizations.of(context).translate('playlists'),
+                  title: AppLocalizations.of(context).playlists,
                   items: audioPlayerService.getThreePlaylists(),
                   onDetailsTap: () => Navigator.push(
                     context,
@@ -159,7 +159,7 @@ class _LibraryTabState extends State<LibraryTab>
             ),
             const SizedBox(height: 24.0),
             buildCategorySection(
-              title: AppLocalizations.of(context).translate('artists'),
+              title: AppLocalizations.of(context).artists,
               items: audioPlayerService.getMostPlayedArtists(),
               onDetailsTap: () => Navigator.push(
                 context,
@@ -180,7 +180,7 @@ class _LibraryTabState extends State<LibraryTab>
             ),
             const SizedBox(height: 24.0),
             buildCategorySection(
-              title: AppLocalizations.of(context).translate('folders'),
+              title: AppLocalizations.of(context).folders,
               items: audioPlayerService.getThreeFolders(),
               onDetailsTap: () => Navigator.push(
                 context,
@@ -228,7 +228,7 @@ class _LibraryTabState extends State<LibraryTab>
               children: [
                 Expanded(
                   child: _buildTabletCategorySection(
-                    title: AppLocalizations.of(context).translate('tracks'),
+                    title: AppLocalizations.of(context).tracks,
                     items: audioPlayerService.getMostPlayedTracks(),
                     onDetailsTap: () => Navigator.push(
                       context,
@@ -252,7 +252,7 @@ class _LibraryTabState extends State<LibraryTab>
                 SizedBox(width: spacing),
                 Expanded(
                   child: _buildTabletCategorySection(
-                    title: AppLocalizations.of(context).translate('albums'),
+                    title: AppLocalizations.of(context).albums,
                     items: audioPlayerService.getMostPlayedAlbums(),
                     onDetailsTap: () => Navigator.push(
                       context,
@@ -286,7 +286,7 @@ class _LibraryTabState extends State<LibraryTab>
                     builder: (context, playlists, child) {
                       return _buildTabletCategorySection(
                         title:
-                            AppLocalizations.of(context).translate('playlists'),
+                            AppLocalizations.of(context).playlists,
                         items: audioPlayerService.getThreePlaylists(),
                         onDetailsTap: () => Navigator.push(
                           context,
@@ -311,7 +311,7 @@ class _LibraryTabState extends State<LibraryTab>
                 SizedBox(width: spacing),
                 Expanded(
                   child: _buildTabletCategorySection(
-                    title: AppLocalizations.of(context).translate('artists'),
+                    title: AppLocalizations.of(context).artists,
                     items: audioPlayerService.getMostPlayedArtists(),
                     onDetailsTap: () => Navigator.push(
                       context,
@@ -338,7 +338,7 @@ class _LibraryTabState extends State<LibraryTab>
             SizedBox(height: spacing),
             // Third row: Folders (full width)
             _buildTabletCategorySection(
-              title: AppLocalizations.of(context).translate('folders'),
+              title: AppLocalizations.of(context).folders,
               items: audioPlayerService.getThreeFolders(),
               onDetailsTap: () => Navigator.push(
                 context,
@@ -392,7 +392,7 @@ class _LibraryTabState extends State<LibraryTab>
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: detailsButtonDecoration,
       child: Text(
-        AppLocalizations.of(context).translate('details'),
+        AppLocalizations.of(context).details,
         style: theme.textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.w500,
           fontFamily: FontConstants.fontFamily,
@@ -439,11 +439,11 @@ class _LibraryTabState extends State<LibraryTab>
                           ),
                         );
                       } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
+                        return Center(child: Text(AppLocalizations.of(context).errorMessage('${snapshot.error}')));
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                         return Center(
                           child: Text(
-                            AppLocalizations.of(context).translate('No_data'),
+                            AppLocalizations.of(context).noData,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color:
                                   theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -569,7 +569,7 @@ class _LibraryTabState extends State<LibraryTab>
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: detailsButtonDecoration,
       child: Text(
-        AppLocalizations.of(context).translate('details'),
+        AppLocalizations.of(context).details,
         style: theme.textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.w500,
           fontFamily: FontConstants.fontFamily,
@@ -615,11 +615,11 @@ class _LibraryTabState extends State<LibraryTab>
                           ),
                         );
                       } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
+                        return Center(child: Text(AppLocalizations.of(context).errorMessage('${snapshot.error}')));
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                         return Center(
                           child: Text(
-                            AppLocalizations.of(context).translate('No_data'),
+                            AppLocalizations.of(context).noData,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color:
                                   theme.colorScheme.onSurface.withValues(alpha: 0.6),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
@@ -243,16 +244,16 @@ class _FoldersScreenState extends State<FoldersScreen> {
     if (_error != null) {
       return SliverFillRemaining(
         child: Center(
-          child: Text('Error: $_error',
+          child: Text(AppLocalizations.of(context).errorMessage(_error!),
               style: const TextStyle(color: Colors.white)),
         ),
       );
     }
     if (_filteredFolders.isEmpty) {
-      return const SliverFillRemaining(
+      return SliverFillRemaining(
         child: Center(
-          child:
-              Text('No folders found', style: TextStyle(color: Colors.white)),
+          child: Text(AppLocalizations.of(context).noFoldersFound,
+              style: const TextStyle(color: Colors.white)),
         ),
       );
     }

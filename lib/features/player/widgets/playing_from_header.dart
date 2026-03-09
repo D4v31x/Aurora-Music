@@ -5,7 +5,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 
 // MARK: - Constants
@@ -45,7 +45,7 @@ class PlayingFromHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          AppLocalizations.of(context).translate('playing_from'),
+          AppLocalizations.of(context).playingFrom,
           style: TextStyle(
             color: Colors.white.withValues(alpha: _kHeaderOpacity),
             fontSize: _kHeaderFontSize,
@@ -77,26 +77,26 @@ class PlayingFromHeader extends StatelessWidget {
 
     switch (source.source) {
       case PlaybackSource.forYou:
-        return l10n.translate('for_you');
+        return l10n.forYou;
       case PlaybackSource.recentlyPlayed:
-        return l10n.translate('recently_played');
+        return l10n.recentlyPlayed;
       case PlaybackSource.recentlyAdded:
-        return l10n.translate('recently_added');
+        return l10n.recentlyAdded;
       case PlaybackSource.mostPlayed:
-        return l10n.translate('most_played');
+        return l10n.mostPlayed;
       case PlaybackSource.album:
-        return source.name ?? l10n.translate('album');
+        return source.name ?? l10n.album;
       case PlaybackSource.artist:
-        return source.name ?? l10n.translate('artist');
+        return source.name ?? l10n.artist;
       case PlaybackSource.playlist:
-        return source.name ?? l10n.translate('playlist');
+        return source.name ?? l10n.playlist;
       case PlaybackSource.folder:
-        return source.name ?? l10n.translate('folder');
+        return source.name ?? l10n.folder;
       case PlaybackSource.search:
-        return l10n.translate('search');
+        return l10n.search;
       case PlaybackSource.library:
       case PlaybackSource.unknown:
-        return l10n.translate('library');
+        return l10n.library;
     }
   }
 }

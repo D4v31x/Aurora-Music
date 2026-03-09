@@ -6,7 +6,7 @@ import '../../../shared/models/playlist_model.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/optimized_tiles.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -144,16 +144,16 @@ class _TracksScreenState extends State<TracksScreen> {
     _loadMoreSongs();
   }
 
-  String _getSortLabel(TrackSortOption opt) {
+  String _getSortLabel(TrackSortOption opt, AppLocalizations loc) {
     switch (opt) {
       case TrackSortOption.title:
-        return 'Title';
+        return loc.title;
       case TrackSortOption.artist:
-        return 'Artist';
+        return loc.artist;
       case TrackSortOption.duration:
-        return 'Duration';
+        return loc.duration;
       case TrackSortOption.dateAdded:
-        return 'Date added';
+        return loc.dateAdded;
     }
   }
 
@@ -228,7 +228,7 @@ class _TracksScreenState extends State<TracksScreen> {
           slivers: [
             LibraryScreenHeader(
               badge: 'Library',
-              title: loc.translate('tracks'),
+              title: loc.tracks,
               subtitle: totalCount > 0 ? '$totalCount songs' : null,
               showBackButton: true,
               actions: [
@@ -244,7 +244,7 @@ class _TracksScreenState extends State<TracksScreen> {
               ],
               searchField: LibrarySearchField(
                 controller: _searchController,
-                hint: loc.translate('search_tracks'),
+                hint: loc.searchTracks,
                 onChanged: _onSearchChanged,
                 hasQuery: _searchQuery.isNotEmpty,
                 onClear: () {
@@ -270,7 +270,7 @@ class _TracksScreenState extends State<TracksScreen> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                _getSortLabel(_sortOption),
+                                _getSortLabel(_sortOption, loc),
                                 style: const TextStyle(
                                     color: Colors.white, fontSize: 13),
                                 overflow: TextOverflow.ellipsis,
@@ -282,10 +282,10 @@ class _TracksScreenState extends State<TracksScreen> {
                         ),
                       ),
                       itemBuilder: (context) => [
-                        _sortItem(TrackSortOption.title, 'Title'),
-                        _sortItem(TrackSortOption.artist, 'Artist'),
-                        _sortItem(TrackSortOption.duration, 'Duration'),
-                        _sortItem(TrackSortOption.dateAdded, 'Date added'),
+                        _sortItem(TrackSortOption.title, loc.title),
+                        _sortItem(TrackSortOption.artist, loc.artist),
+                        _sortItem(TrackSortOption.duration, loc.duration),
+                        _sortItem(TrackSortOption.dateAdded, loc.dateAdded),
                       ],
                     ),
                   ),
@@ -316,6 +316,7 @@ class _TracksScreenState extends State<TracksScreen> {
         ),
       ),
     );
+    
   }
 
   PopupMenuItem<TrackSortOption> _sortItem(TrackSortOption opt, String label) {
@@ -346,10 +347,10 @@ class _TracksScreenState extends State<TracksScreen> {
                 style: const TextStyle(color: Colors.white))),
       );
     } else if (_displayedSongs.isEmpty) {
-      return const SliverFillRemaining(
+      return SliverFillRemaining(
         child: Center(
-            child:
-                Text('No songs found', style: TextStyle(color: Colors.white))),
+            child: Text(AppLocalizations.of(context).noSongsFound,
+                style: const TextStyle(color: Colors.white))),
       );
     } else {
       final isTablet = ResponsiveUtils.isTablet(context);

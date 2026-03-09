@@ -11,7 +11,7 @@ import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../playlists/screens/playlist_detail_screen.dart';
 import '../../library/screens/album_detail_screen.dart';
 import '../../library/screens/artist_detail_screen.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// A "For You" section with a 2-row fixed grid of personalized content
 /// Based on currently playing, recently played, liked songs, and listening habits
@@ -91,7 +91,7 @@ class _ForYouSectionState extends State<ForYouSection> {
             type: _ForYouItemType.artist,
             artistName: artistName,
             title: artistName,
-            subtitle: AppLocalizations.of(context).translate('now_playing'),
+            subtitle: AppLocalizations.of(context).nowPlaying,
           ));
           addedIds.add('artist_$artistName');
           break; // Only add the first/primary artist to avoid cluttering
@@ -105,9 +105,9 @@ class _ForYouSectionState extends State<ForYouSection> {
         items.add(_ForYouItem(
           type: _ForYouItemType.playlist,
           playlist: playlist,
-          title: playlist.name,
+          title: AppLocalizations.of(context).mostPlayed,
           subtitle:
-              '${playlist.songs.length} ${AppLocalizations.of(context).translate('tracks')}',
+              '${playlist.songs.length} ${AppLocalizations.of(context).tracks}',
         ));
         break;
       }
@@ -119,9 +119,9 @@ class _ForYouSectionState extends State<ForYouSection> {
         items.add(_ForYouItem(
           type: _ForYouItemType.playlist,
           playlist: playlist,
-          title: playlist.name,
+          title: AppLocalizations.of(context).recentlyAdded,
           subtitle:
-              '${playlist.songs.length} ${AppLocalizations.of(context).translate('tracks')}',
+              '${playlist.songs.length} ${AppLocalizations.of(context).tracks}',
         ));
         break;
       }
@@ -380,7 +380,7 @@ class _FavoriteSongsCard extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(
-                    localizations.translate('favorite_songs'),
+                    localizations.favoriteSongs,
                     style: TextStyle(
                       color: isDark ? Colors.white : Colors.black87,
                       fontSize: 14,
@@ -394,7 +394,7 @@ class _FavoriteSongsCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Flexible(
                   child: Text(
-                    '${playlist.songs.length} ${localizations.translate('tracks')}',
+                    '${playlist.songs.length} ${localizations.tracks}',
                     style: TextStyle(
                       color: isDark
                           ? Colors.white.withValues(alpha: 0.6)

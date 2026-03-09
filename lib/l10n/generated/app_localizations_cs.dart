@@ -1354,4 +1354,71 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get removeFromQueue => 'Odebrat z fronty';
+
+  @override
+  String get play => 'Přehrát';
+
+  @override
+  String get viewAlbum => 'Zobrazit album';
+
+  @override
+  String get shuffleAll => 'Přehrát náhodně vše';
+
+  @override
+  String get noSongsFound => 'Nenalezeny žádné skladby';
+
+  @override
+  String get noFoldersFound => 'Nenalezeny žádné složky';
+
+  @override
+  String get deleteSong => 'Smazat skladbu';
+
+  @override
+  String get modifySystemSettingsPermission =>
+      'V otevřené stránce povolte „Úprava systémových nastavení“ a zkuste to znovu.';
+
+  @override
+  String errorMessage(String message) {
+    return 'Chyba: $message';
+  }
+
+  @override
+  String songsAddedToQueue(int count) {
+    return '$count skladeb přidáno do fronty';
+  }
+
+  @override
+  String songAddedToQueue(String title) {
+    return '„$title“ přidáno do fronty';
+  }
+
+  @override
+  String songSetAsRingtone(String title) {
+    return '„$title“ nastaveno jako vyzváněcí tón';
+  }
+
+  @override
+  String failedToSetRingtone(String error) {
+    return 'Nepodařilo se nastavit vyzváněcí tón: $error';
+  }
+
+  @override
+  String deleteSongConfirm(String title) {
+    return 'Smazat „$title“ ze zařízení? Tuto akci nelze vrátit zpět.';
+  }
+
+  @override
+  String songDeleted(String title) {
+    return '„$title“ smazáno';
+  }
+
+  @override
+  String failedToDelete(String error) {
+    return 'Smazání selhalo: $error';
+  }
+
+  @override
+  String songCount(int count) {
+    return '$count skladeb';
+  }
 }

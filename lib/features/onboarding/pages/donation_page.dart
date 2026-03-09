@@ -3,7 +3,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/providers/theme_provider.dart';
 import '../../../shared/services/donation_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
 
 class DonationPage extends StatefulWidget {
@@ -129,7 +129,7 @@ class _DonationPageState extends State<DonationPage>
                       opacity: fadeOp,
                       child: Text(
                         AppLocalizations.of(context)
-                            .translate('support_aurora'),
+                            .supportAurora,
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
@@ -149,7 +149,7 @@ class _DonationPageState extends State<DonationPage>
                     opacity: fadeOp,
                     child: Text(
                       AppLocalizations.of(context)
-                          .translate('support_aurora_desc'),
+                          .supportAuroraDescShort,
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
@@ -174,7 +174,7 @@ class _DonationPageState extends State<DonationPage>
                               context: context,
                               icon: Icons.coffee_rounded,
                               title: AppLocalizations.of(context)
-                                  .translate('buy_me_a_coffee'),
+                                  .buyMeACoffee,
                               color: const Color(0xFFFFDD00),
                               isDark: isDark,
                               onTap: () => DonationService.openBuyMeACoffee(),
@@ -184,7 +184,7 @@ class _DonationPageState extends State<DonationPage>
                               context: context,
                               icon: Icons.favorite_rounded,
                               title: AppLocalizations.of(context)
-                                  .translate('kofi'),
+                                  .kofi,
                               color: const Color(0xFFFF5E5B),
                               isDark: isDark,
                               onTap: () => DonationService.openKofi(),
@@ -213,7 +213,7 @@ class _DonationPageState extends State<DonationPage>
                                   Expanded(
                                     child: Text(
                                       AppLocalizations.of(context)
-                                          .translate('donation_note'),
+                                          .donationNote,
                                       style: TextStyle(
                                         fontFamily: FontConstants.fontFamily,
                                         fontSize: 13,
@@ -235,9 +235,9 @@ class _DonationPageState extends State<DonationPage>
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
                     child: PillNavigationButtons(
-                      backText: AppLocalizations.of(context).translate('back'),
+                      backText: AppLocalizations.of(context).back,
                       continueText: AppLocalizations.of(context)
-                          .translate('continueButton'),
+                          .continueButton,
                       onBack: () async {
                         await _exitController.forward();
                         widget.onBack();

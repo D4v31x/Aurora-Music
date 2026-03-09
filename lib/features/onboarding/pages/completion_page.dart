@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/providers/theme_provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
 
 class CompletionPage extends StatefulWidget {
@@ -86,7 +86,7 @@ class _CompletionPageState extends State<CompletionPage>
                   opacity: _fadeAnimation,
                   child: Text(
                     AppLocalizations.of(context)
-                        .translate('onboarding_completion_title'),
+                        .onboardingCompletionTitle,
                     style: TextStyle(
                       fontFamily: FontConstants.fontFamily,
                       fontSize: 36,
@@ -106,7 +106,7 @@ class _CompletionPageState extends State<CompletionPage>
                 opacity: _fadeAnimation,
                 child: Text(
                   AppLocalizations.of(context)
-                      .translate('onboarding_completion_subtitle'),
+                      .onboardingCompletionSubtitle,
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     fontSize: 18,
@@ -124,7 +124,7 @@ class _CompletionPageState extends State<CompletionPage>
                 opacity: _fadeAnimation,
                 child: PillButton(
                   text: AppLocalizations.of(context)
-                      .translate('onboarding_start_listening'),
+                      .onboardingStartListening,
                   onPressed: widget.onComplete,
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 18),

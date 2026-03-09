@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/providers/theme_provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
 
 class BetaWelcomePage extends StatefulWidget {
@@ -128,7 +128,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                       opacity: fadeOp,
                       child: Text(
                         AppLocalizations.of(context)
-                            .translate('beta_welcome_title'),
+                            .beta_welcome_title,
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
@@ -148,7 +148,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                     opacity: fadeOp,
                     child: Text(
                       AppLocalizations.of(context)
-                          .translate('beta_welcome_thanks'),
+                          .beta_welcome_thanks,
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
@@ -172,8 +172,8 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                             _buildInfoCard(
                               context,
                               icon: Icons.bug_report_outlined,
-                              titleKey: 'beta_expect_bugs_title',
-                              descriptionKey: 'beta_expect_bugs_desc',
+                              title: AppLocalizations.of(context).beta_expect_bugs_title,
+                              description: AppLocalizations.of(context).beta_expect_bugs_desc,
                               color: Colors.orange,
                               isDark: isDark,
                             ),
@@ -181,8 +181,8 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                             _buildInfoCard(
                               context,
                               icon: Icons.feedback_outlined,
-                              titleKey: 'beta_feedback_title',
-                              descriptionKey: 'beta_feedback_desc',
+                              title: AppLocalizations.of(context).beta_feedback_title,
+                              description: AppLocalizations.of(context).beta_feedback_desc,
                               color: Colors.green,
                               isDark: isDark,
                             ),
@@ -190,8 +190,8 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                             _buildInfoCard(
                               context,
                               icon: Icons.update_outlined,
-                              titleKey: 'beta_updates_title',
-                              descriptionKey: 'beta_updates_desc',
+                              title: AppLocalizations.of(context).beta_updates_title,
+                              description: AppLocalizations.of(context).beta_updates_desc,
                               color: Colors.purple,
                               isDark: isDark,
                             ),
@@ -205,9 +205,9 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
                     child: PillNavigationButtons(
-                      backText: AppLocalizations.of(context).translate('back'),
+                      backText: AppLocalizations.of(context).back,
                       continueText: AppLocalizations.of(context)
-                          .translate('continueButton'),
+                          .continueButton,
                       onBack: () async {
                         await _exitController.forward();
                         widget.onBack();
@@ -230,8 +230,8 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
   Widget _buildInfoCard(
     BuildContext context, {
     required IconData icon,
-    required String titleKey,
-    required String descriptionKey,
+    required String title,
+    required String description,
     required Color color,
     required bool isDark,
   }) {
@@ -271,7 +271,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  AppLocalizations.of(context).translate(titleKey),
+                  title,
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     fontSize: 16,
@@ -281,7 +281,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  AppLocalizations.of(context).translate(descriptionKey),
+                  description,
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     fontSize: 13,

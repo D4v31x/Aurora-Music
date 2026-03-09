@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/providers/theme_provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
 
 class ThemeSelectionPage extends StatefulWidget {
@@ -159,7 +159,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                           : _titleFadeAnimation,
                       child: Text(
                         AppLocalizations.of(context)
-                            .translate('onboarding_theme_title'),
+                            .onboardingThemeTitle,
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
@@ -182,7 +182,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                         : _subtitleFadeAnimation,
                     child: Text(
                       AppLocalizations.of(context)
-                          .translate('onboarding_theme_subtitle'),
+                          .onboardingThemeSubtitle,
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
@@ -250,8 +250,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                           children: [
                                             Text(
                                               AppLocalizations.of(context)
-                                                  .translate(
-                                                      'onboarding_dynamic_colors'),
+                                                  .onboardingDynamicColors,
                                               style: TextStyle(
                                                 fontFamily:
                                                     FontConstants.fontFamily,
@@ -263,8 +262,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                             const SizedBox(height: 4),
                                             Text(
                                               AppLocalizations.of(context)
-                                                  .translate(
-                                                      'onboarding_dynamic_colors_desc'),
+                                                  .onboardingDynamicColorsDesc,
                                               style: TextStyle(
                                                 fontFamily:
                                                     FontConstants.fontFamily,
@@ -299,9 +297,9 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
                     child: PillNavigationButtons(
-                      backText: AppLocalizations.of(context).translate('back'),
+                      backText: AppLocalizations.of(context).back,
                       continueText: AppLocalizations.of(context)
-                          .translate('continueButton'),
+                          .continueButton,
                       onBack: widget.onBack,
                       onContinue: () async {
                         await _exitController.forward();
@@ -362,7 +360,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
               children: [
                 Text(
                   AppLocalizations.of(context)
-                      .translate('onboarding_dark_mode'),
+                      .onboardingDarkMode,
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     fontSize: 16,
@@ -373,7 +371,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                 const SizedBox(height: 4),
                 Text(
                   AppLocalizations.of(context)
-                      .translate('onboarding_dark_mode_desc'),
+                      .onboardingDarkModeDesc,
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     fontSize: 14,
@@ -390,7 +388,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              AppLocalizations.of(context).translate('always_on'),
+              AppLocalizations.of(context).alwaysOn,
               style: TextStyle(
                 fontFamily: FontConstants.fontFamily,
                 fontSize: 12,
