@@ -56,6 +56,32 @@ class BackgroundManagerService extends ChangeNotifier {
   bool get hasArtwork => _currentArtwork != null && _currentArtwork!.isNotEmpty;
   SongModel? get currentSong => _currentSong;
 
+  /// Directly push artwork and song to the background without any guards.
+  /// Called from the audio service whenever artwork is successfully fetched so
+  /// the background always updates, regardless of [_isUpdating] state.
+  void pushArtwork(Uint8List? artwork, SongModel song) {
+    // Invalidate any in-progress update — its result will be discarded
+    // by the stale-update counter check when it eventually finishes.
+    _updateCounter++;
+    _isUpdating = false;
+
+    _previousArtwork = _currentArtwork;
+    _currentArtwork = artwork;
+    _currentSong = song;
+    _isTransitioning = artwork != null;
+    notifyListeners();
+
+    // Clean up transition state after animation
+    if (artwork != null) {
+      Future.delayed(const Duration(milliseconds: 900), () {
+        _isTransitioning = false;
+        _previousArtwork = null;
+      });
+      // Extract palette colors in background (does not affect the blurred artwork display)
+      unawaited(updateColorsFromArtwork(artwork));
+    }
+  }
+
   /// Force refresh artwork for current song
   Future<void> refreshArtwork() async {
     if (_currentSong != null) {
@@ -154,13 +180,25 @@ class BackgroundManagerService extends ChangeNotifier {
       return;
     }
 
-    // Prevent concurrent updates
-    if (_isUpdating) {
+    // Only block concurrent updates when the in-progress update is for the
+    // SAME song. A different song should always proceed — the stale-update
+    // counter will discard the old result once it finishes.
+    if (_isUpdating && _currentSong?.id == song.id) {
       if (kDebugMode) {
         debugPrint(
-            '🎨 [BG_MGR] Update already running, skipping song id ${song.id}');
+            '🎨 [BG_MGR] Same-song update already running, skipping song id ${song.id}');
       }
       return;
+    }
+
+    // Invalidate any in-progress update for a different song so its result
+    // is discarded once it reaches the stale-update check.
+    if (_isUpdating) {
+      _updateCounter++;
+      if (kDebugMode) {
+        debugPrint(
+            '🎨 [BG_MGR] Invalidating previous update, counter now $_updateCounter');
+      }
     }
 
     try {

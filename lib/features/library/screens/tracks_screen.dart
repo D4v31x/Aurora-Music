@@ -29,7 +29,7 @@ class TracksScreen extends StatefulWidget {
   });
 
   @override
-  _TracksScreenState createState() => _TracksScreenState();
+  State<TracksScreen> createState() => _TracksScreenState();
 }
 
 class _TracksScreenState extends State<TracksScreen> {
@@ -230,8 +230,6 @@ class _TracksScreenState extends State<TracksScreen> {
               badge: 'Library',
               title: loc.translate('tracks'),
               subtitle: totalCount > 0 ? '$totalCount songs' : null,
-              accentColor: Colors.deepPurple,
-              expandedHeight: 310,
               showBackButton: true,
               actions: [
                 if (widget.isEditingPlaylist)

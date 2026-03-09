@@ -118,7 +118,7 @@ class _ArtistSeparatorSettingsScreenState
                 ),
               ),
               value: _isEnabled,
-              activeColor: Colors.blue,
+              activeThumbColor: Colors.blue,
               onChanged: (value) async {
                 await _service.setEnabled(value);
                 setState(() => _isEnabled = value);
@@ -139,7 +139,7 @@ class _ArtistSeparatorSettingsScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Input field
-                  Container(
+                  DecoratedBox(
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(12),
@@ -207,7 +207,7 @@ class _ArtistSeparatorSettingsScreenState
                             color: c.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: c.withValues(alpha: 0.4), width: 1),
+                                color: c.withValues(alpha: 0.4)),
                           ),
                           child: Text(
                             e.value,
@@ -347,7 +347,7 @@ class _ArtistSeparatorSettingsScreenState
   }
 
   Widget _glassCard({required Widget child}) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(18),

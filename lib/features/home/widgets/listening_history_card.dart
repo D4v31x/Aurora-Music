@@ -97,6 +97,8 @@ class ListeningHistoryCard extends StatelessWidget {
       child: GlassmorphicContainer(
         borderRadius: BorderRadius.circular(16),
         blur: 15,
+        child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
             Padding(
@@ -244,6 +246,7 @@ class ListeningHistoryCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

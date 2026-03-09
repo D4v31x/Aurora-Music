@@ -393,7 +393,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                 borderRadius: BorderRadius.circular(25),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.2),
-                  width: 1,
                 ),
               ),
               child: const Row(
@@ -430,7 +429,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                 borderRadius: BorderRadius.circular(25),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.2),
-                  width: 1,
                 ),
               ),
               child: const Row(

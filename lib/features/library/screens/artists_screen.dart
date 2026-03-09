@@ -170,7 +170,6 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                   ? null
                   : '$count ${count == 1 ? 'artist' : 'artists'}',
               accentColor: Colors.teal,
-              expandedHeight: 310,
               showBackButton: true,
               searchField: LibrarySearchField(
                 controller: _searchController,

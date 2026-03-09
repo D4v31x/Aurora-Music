@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/sleep_timer_controller.dart';
+import '../../../shared/providers/performance_mode_provider.dart';
 
 /// Sleep timer indicator widget for the app bar.
 ///
@@ -200,7 +201,6 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
             color: isSelected
                 ? Colors.white
                 : Colors.white.withValues(alpha: 0.12),
-            width: 1,
           ),
         ),
         child: Column(
@@ -359,25 +359,20 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
     final sleepTimerController =
         Provider.of<SleepTimerController>(context, listen: false);
     final bottomInset = MediaQuery.of(context).padding.bottom;
-
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
-              left: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
-              right: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Drag handle
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
+    final sheetBody = DecoratedBox(
+      decoration: BoxDecoration(
+        color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: 0.08),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: isLowEnd
+            ? Border.all(color: colorScheme.outlineVariant)
+            : Border.all(color: Colors.white.withValues(alpha: 0.12)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
               Container(
                 width: 36,
                 height: 4,
@@ -648,8 +643,15 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
               ),
             ],
           ),
-        ),
-      ),
+    );
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      child: isLowEnd
+          ? sheetBody
+          : BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+              child: sheetBody,
+            ),
     );
   }
 }

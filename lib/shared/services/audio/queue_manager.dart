@@ -21,13 +21,11 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     _playlist.insert(insertIndex, song);
     _queueCount++;
 
-    if (_gaplessPlayback &&
-        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+    if (_gaplessPlayback) {
       try {
-        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
         final mediaItem = _createMediaItemSync(song);
         final uri = song.uri ?? song.data;
-        await source.insert(insertIndex, AudioSource.uri(Uri.parse(uri), tag: mediaItem));
+        await _audioPlayer.insertAudioSource(insertIndex, AudioSource.uri(Uri.parse(uri), tag: mediaItem));
 
         // Update notification queue with lightweight items
         final mediaItems =
@@ -62,18 +60,16 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     _playlist.insertAll(insertStart, songs);
     _queueCount += songs.length;
 
-    if (_gaplessPlayback &&
-        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+    if (_gaplessPlayback) {
       try {
-        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
         final mediaItems =
             songs.map((song) => _createMediaItemSync(song)).toList();
 
-        for (var i = 0; i < songs.length; i++) {
-          final song = songs[i];
-          final uri = song.uri ?? song.data;
-          await source.insert(insertStart + i, AudioSource.uri(Uri.parse(uri), tag: mediaItems[i]));
-        }
+        final audioSources = songs.asMap().entries.map((e) {
+          final uri = e.value.uri ?? e.value.data;
+          return AudioSource.uri(Uri.parse(uri), tag: mediaItems[e.key]);
+        }).toList();
+        await _audioPlayer.insertAudioSources(insertStart, audioSources);
 
         // Update notification queue with lightweight items
         final allMediaItems =
@@ -105,13 +101,11 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     _playlist.insert(insertIndex, song);
     _queueCount++; // This song is part of the user-queued zone
 
-    if (_gaplessPlayback &&
-        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+    if (_gaplessPlayback) {
       try {
-        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
         final mediaItem = _createMediaItemSync(song);
         final uri = song.uri ?? song.data;
-        await source.insert(
+        await _audioPlayer.insertAudioSource(
             insertIndex, AudioSource.uri(Uri.parse(uri), tag: mediaItem));
 
         // Update notification queue with lightweight items
@@ -149,13 +143,11 @@ extension AudioQueueManagerExtension on AudioPlayerService {
       // Remove from both the in-memory list and the audio source first, then
       // determine which track to play next (calculated after removal so the
       // index arithmetic is always based on the updated list length).
-      if (_gaplessPlayback &&
-          _audioPlayer.audioSource is ConcatenatingAudioSource) {
+      if (_gaplessPlayback) {
         try {
-          final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
           // Remove from the audio source before updating _playlist so that the
           // index is still valid for the unmodified source.
-          await source.removeAt(index);
+          await _audioPlayer.removeAudioSourceAt(index);
         } catch (e) {
           debugPrint(
               'Error removing currently playing song from audio source: $e');
@@ -168,8 +160,7 @@ extension AudioQueueManagerExtension on AudioPlayerService {
       if (_queueCount > 0) _queueCount--;
       _currentIndex = index < _playlist.length ? index : _playlist.length - 1;
 
-      if (_gaplessPlayback &&
-          _audioPlayer.audioSource is ConcatenatingAudioSource) {
+      if (_gaplessPlayback) {
         try {
           await _audioPlayer.seek(Duration.zero, index: _currentIndex);
           if (!_isPlaying) await _audioPlayer.play();
@@ -204,11 +195,9 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     }
     // Removing from source zone (beyond queued zone) needs no adjustment.
 
-    if (_gaplessPlayback &&
-        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+    if (_gaplessPlayback) {
       try {
-        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
-        await source.removeAt(index);
+        await _audioPlayer.removeAudioSourceAt(index);
 
         // Update notification queue with lightweight items
         final mediaItems =
@@ -253,11 +242,9 @@ extension AudioQueueManagerExtension on AudioPlayerService {
       _queueCount++;
     }
 
-    if (_gaplessPlayback &&
-        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+    if (_gaplessPlayback) {
       try {
-        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
-        await source.move(oldIndex, newIndex);
+        await _audioPlayer.moveAudioSource(oldIndex, newIndex);
 
         // Update notification queue with lightweight items
         final mediaItems =
@@ -288,14 +275,8 @@ extension AudioQueueManagerExtension on AudioPlayerService {
           final uri = currentSong.uri ?? currentSong.data;
           final position = _audioPlayer.position;
 
-          final newSource = ConcatenatingAudioSource(
-            children: [
-              AudioSource.uri(Uri.parse(uri), tag: mediaItem),
-            ],
-          );
-
-          await _audioPlayer.setAudioSource(
-            newSource,
+          await _audioPlayer.setAudioSources(
+            [AudioSource.uri(Uri.parse(uri), tag: mediaItem)],
             initialIndex: 0,
             initialPosition: position,
           );
@@ -322,14 +303,11 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     _playlist = _playlist.sublist(0, _currentIndex + 1);
     _queueCount = 0; // All queued and source songs are cleared
 
-    if (_gaplessPlayback &&
-        _audioPlayer.audioSource is ConcatenatingAudioSource) {
+    if (_gaplessPlayback) {
       try {
-        final source = _audioPlayer.audioSource as ConcatenatingAudioSource;
-        // Remove from end to avoid index shifting issues
-        while (source.length > _currentIndex + 1) {
-          await source.removeAt(source.length - 1);
-        }
+        // Remove all sources after current index in one call
+        await _audioPlayer.removeAudioSourceRange(
+            _currentIndex + 1, _audioPlayer.audioSources.length);
 
         // Update notification queue with lightweight items
         final mediaItems =
@@ -396,24 +374,21 @@ extension AudioQueueManagerExtension on AudioPlayerService {
     unawaited(_rebuildAudioSourcePreservingPosition());
   }
 
-  /// Rebuilds the gapless ConcatenatingAudioSource with the current _playlist
+  /// Rebuilds the gapless audio source with the current _playlist
   /// order, preserving the playback position of the active track.
   Future<void> _rebuildAudioSourcePreservingPosition() async {
     if (!_gaplessPlayback) return;
     try {
       final position = _audioPlayer.position;
       final mediaItems = _playlist.map((s) => _createMediaItemSync(s)).toList();
-      final newSource = ConcatenatingAudioSource(
-        children: _playlist.asMap().entries.map((entry) {
+
+      audioHandler.suppressIndexUpdates();
+      await _audioPlayer.setAudioSources(
+        _playlist.asMap().entries.map((entry) {
           final song = entry.value;
           final uri = song.uri ?? song.data;
           return AudioSource.uri(Uri.parse(uri), tag: mediaItems[entry.key]);
         }).toList(),
-      );
-
-      audioHandler.suppressIndexUpdates();
-      await _audioPlayer.setAudioSource(
-        newSource,
         initialIndex: _currentIndex,
         initialPosition: position,
       );

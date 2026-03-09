@@ -114,7 +114,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
             .toList();
 
         _likedSongsPlaylist = Playlist(
-          id: AudioPlayerService.LIKED_SONGS_PLAYLIST_ID,
+          id: AudioPlayerService.likedSongsPlaylistId,
           name: _likedPlaylistName,
           songs: likedSongs,
         );
@@ -337,7 +337,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     // Don't try to query audio directly - just use the songs we already have
     if (_songs.isEmpty) {
       _likedSongsPlaylist = Playlist(
-        id: AudioPlayerService.LIKED_SONGS_PLAYLIST_ID,
+        id: AudioPlayerService.likedSongsPlaylistId,
         name: _likedPlaylistName,
         songs: [],
       );
@@ -350,7 +350,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
           .toList();
 
       _likedSongsPlaylist = Playlist(
-        id: AudioPlayerService.LIKED_SONGS_PLAYLIST_ID,
+        id: AudioPlayerService.likedSongsPlaylistId,
         name: _likedPlaylistName,
         songs: likedSongs,
       );
@@ -359,7 +359,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     } catch (e) {
       // Handle errors by keeping the current playlist or creating an empty one
       _likedSongsPlaylist ??= Playlist(
-        id: AudioPlayerService.LIKED_SONGS_PLAYLIST_ID,
+        id: AudioPlayerService.likedSongsPlaylistId,
         name: _likedPlaylistName,
         songs: [],
       );
@@ -502,7 +502,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     _likedPlaylistName = newName;
     if (_likedSongsPlaylist != null) {
       _likedSongsPlaylist = Playlist(
-        id: AudioPlayerService.LIKED_SONGS_PLAYLIST_ID,
+        id: AudioPlayerService.likedSongsPlaylistId,
         name: _likedPlaylistName,
         songs: _likedSongsPlaylist!.songs,
       );

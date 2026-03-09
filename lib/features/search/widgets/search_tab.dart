@@ -16,6 +16,7 @@ import '../../library/screens/album_detail_screen.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/song_context_menu.dart';
+import '../../../shared/providers/performance_mode_provider.dart';
 
 class SearchTab extends StatefulWidget {
   final List<SongModel> songs;
@@ -194,14 +195,15 @@ class _SearchTabState extends State<SearchTab> {
 
       if (title == query) {
         bestSongScore = 100;
-      } else if (title.startsWith(query))
+      } else if (title.startsWith(query)) {
         bestSongScore = 70;
-      else if (artist == query)
+      } else if (artist == query) {
         bestSongScore = 60;
-      else if (title.contains(query))
+      } else if (title.contains(query)) {
         bestSongScore = 40;
-      else
+      } else {
         bestSongScore = 20;
+      }
 
       _topSong = song;
     }
@@ -213,12 +215,13 @@ class _SearchTabState extends State<SearchTab> {
 
       if (name == query) {
         bestArtistScore = 100;
-      } else if (name.startsWith(query))
+      } else if (name.startsWith(query)) {
         bestArtistScore = 80;
-      else if (name.contains(query))
+      } else if (name.contains(query)) {
         bestArtistScore = 50;
-      else
+      } else {
         bestArtistScore = 25;
+      }
 
       _topArtist = artist;
     }
@@ -230,12 +233,13 @@ class _SearchTabState extends State<SearchTab> {
 
       if (name == query) {
         bestAlbumScore = 100;
-      } else if (name.startsWith(query))
+      } else if (name.startsWith(query)) {
         bestAlbumScore = 75;
-      else if (name.contains(query))
+      } else if (name.contains(query)) {
         bestAlbumScore = 45;
-      else
+      } else {
         bestAlbumScore = 22;
+      }
 
       _topAlbum = album;
     }
@@ -285,6 +289,8 @@ class _SearchTabState extends State<SearchTab> {
       );
     }
 
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         // Search bar
@@ -310,7 +316,7 @@ class _SearchTabState extends State<SearchTab> {
                     )
                   : null,
               filled: true,
-              fillColor: Colors.white.withValues(alpha: 0.1),
+              fillColor: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: 0.1),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide.none,
@@ -651,9 +657,18 @@ class _SearchSongTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
     return RepaintBoundary(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 4),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 3),
+        decoration: BoxDecoration(
+          color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(12),
+          border: isLowEnd ? Border.all(color: colorScheme.outlineVariant) : null,
+        ),
+        child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: artworkService.buildCachedArtwork(song.id),
@@ -683,6 +698,7 @@ class _SearchSongTile extends StatelessWidget {
           onPressed: () => showSongContextMenu(context, song),
         ),
         onTap: onTap,
+        ),
       ),
     );
   }
@@ -733,9 +749,11 @@ class _TopResultCardWithArtwork extends HookWidget {
     final hasArtwork = colorState.value.hasArtwork;
     final dominantColor = colorState.value.dominant;
     final accentColor = colorState.value.accent;
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final cardDecoration = BoxDecoration(
-      gradient: hasArtwork && dominantColor != null
+      gradient: !isLowEnd && hasArtwork && dominantColor != null
           ? LinearGradient(
               colors: [
                 dominantColor.withValues(alpha: 0.35),
@@ -745,12 +763,16 @@ class _TopResultCardWithArtwork extends HookWidget {
               end: Alignment.bottomRight,
             )
           : null,
-      color: hasArtwork ? null : Colors.white.withValues(alpha: 0.1),
+      color: isLowEnd
+          ? colorScheme.surfaceContainerHigh
+          : (hasArtwork ? null : Colors.white.withValues(alpha: 0.1)),
       borderRadius: BorderRadius.circular(20),
       border: Border.all(
-        color: hasArtwork && dominantColor != null
-            ? dominantColor.withValues(alpha: 0.3)
-            : Colors.white.withValues(alpha: 0.2),
+        color: isLowEnd
+            ? colorScheme.outlineVariant
+            : (hasArtwork && dominantColor != null
+                ? dominantColor.withValues(alpha: 0.3)
+                : Colors.white.withValues(alpha: 0.2)),
       ),
       boxShadow: [
         BoxShadow(

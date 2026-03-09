@@ -19,10 +19,12 @@ class FeedbackReminderDialog extends StatelessWidget {
     if (shouldShow && context.mounted) {
       await FeedbackReminderService.recordPromptShown();
 
-      unawaited(showDialog(
-        context: context,
-        builder: (context) => const FeedbackReminderDialog(),
-      ));
+      if (context.mounted) {
+        unawaited(showDialog(
+          context: context,
+          builder: (context) => const FeedbackReminderDialog(),
+        ));
+      }
     }
   }
 
@@ -74,7 +76,6 @@ class FeedbackReminderDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: colorScheme.outlineVariant,
-          width: 1,
         ),
       );
     }
@@ -201,6 +202,7 @@ class FeedbackReminderDialog extends StatelessWidget {
     // Return dialog with BackdropFilter blur when performance allows
     return Dialog(
       backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
         child: shouldBlur

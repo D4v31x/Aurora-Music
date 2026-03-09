@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
+import 'package:provider/provider.dart';
+import '../providers/performance_mode_provider.dart';
 import '../services/artwork_cache_service.dart';
 
 /// A unified glassmorphic card widget used across the app for songs, albums, artists, etc.
@@ -218,6 +220,7 @@ class GlassmorphicCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
 
     final borderRadius = BorderRadius.circular(16);
 
@@ -227,13 +230,12 @@ class GlassmorphicCard extends StatelessWidget {
     // visible simultaneously. The app background is already a blurred
     // artwork image, so a semi-transparent overlay achieves a very similar
     // frosted-glass look without the GPU cost.
-    final cardDecoration = isDark
+    final cardDecoration = (isDark && !isLowEnd)
         ? BoxDecoration(
             color: Colors.white.withValues(alpha: 0.10),
             borderRadius: borderRadius,
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.13),
-              width: 1,
             ),
           )
         : BoxDecoration(
@@ -241,7 +243,6 @@ class GlassmorphicCard extends StatelessWidget {
             borderRadius: borderRadius,
             border: Border.all(
               color: colorScheme.outlineVariant,
-              width: 1,
             ),
           );
 

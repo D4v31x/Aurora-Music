@@ -138,7 +138,6 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                   subtitle:
                       '$totalCount ${totalCount == 1 ? 'playlist' : 'playlists'}',
                   accentColor: Colors.pink,
-                  expandedHeight: 310,
                   showBackButton: true,
                   actions: [
                     IconButton(

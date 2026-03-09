@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/font_constants.dart';
 import '../services/local_caching_service.dart';
 import '../services/performance_manager.dart';
 import '../services/artist_separator_service.dart';
+import '../providers/performance_mode_provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -146,7 +148,7 @@ class _ArtistCardState extends State<ArtistCard>
         _isInitialized = true;
       });
       await _loadArtistImage();
-    } catch (e) {}
+    } catch (_) {}
   }
 
   Future<void> _loadArtistImage() async {
@@ -170,21 +172,24 @@ class _ArtistCardState extends State<ArtistCard>
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
 
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
     return RepaintBoundary(
       child: InkWell(
         onTap: widget.onTap,
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: isLowEnd ? null : LinearGradient(
               colors: [
                 Colors.white.withValues(alpha: 0.1),
                 Colors.white.withValues(alpha: 0.2),
               ],
             ),
+            color: isLowEnd ? colorScheme.surfaceContainerHigh : null,
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: isLowEnd ? colorScheme.outlineVariant : Colors.white.withValues(alpha: 0.1),
             ),
             boxShadow: [
               BoxShadow(

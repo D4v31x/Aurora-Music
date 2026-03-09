@@ -304,9 +304,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _refreshLibrary() async {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
+    final localizations = AppLocalizations.of(context);
 
     _notificationManager.showNotification(
-      AppLocalizations.of(context).translate('scanning_songs'),
+      localizations.translate('scanning_songs'),
       isProgress: true,
     );
 
@@ -334,24 +335,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           unawaited(_loadAlbumsAndArtists());
         }
 
+        if (!mounted) return;
         _notificationManager.showNotification(
-          '${AppLocalizations.of(context).translate('library_updated')} ($_totalSongs ${AppLocalizations.of(context).translate('songs_loaded')})',
+          '${localizations.translate('library_updated')} ($_totalSongs ${localizations.translate('songs_loaded')})',
           duration: const Duration(seconds: 5),
           onComplete: () => _notificationManager.showDefaultTitle(),
         );
 
         await audioPlayerService.saveLibrary();
       } else {
+        if (!mounted) return;
         _notificationManager.showNotification(
-          AppLocalizations.of(context).translate('scan_failed'),
+          localizations.translate('scan_failed'),
           duration: const Duration(seconds: 5),
           onComplete: () => _notificationManager.showDefaultTitle(),
         );
       }
     } catch (e) {
       debugPrint('Error refreshing library: $e');
+      if (!mounted) return;
       _notificationManager.showNotification(
-        AppLocalizations.of(context).translate('scan_failed'),
+        localizations.translate('scan_failed'),
         duration: const Duration(seconds: 5),
         onComplete: () => _notificationManager.showDefaultTitle(),
       );
@@ -370,6 +374,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
+    final localizations = AppLocalizations.of(context);
 
     try {
       if (Platform.isAndroid) {
@@ -381,16 +386,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
         if (hasAudioPermission || hasStoragePermission) {
           // If we already have permissions, initialize the library
+          if (!mounted) return;
           _notificationManager.showNotification(
-            AppLocalizations.of(context).translate('loading_library'),
+            localizations.translate('loading_library'),
             isProgress: true,
           );
 
           final success = await audioPlayerService.initializeMusicLibrary();
 
+          if (!mounted) return;
           if (success) {
             _notificationManager.showNotification(
-              AppLocalizations.of(context).translate('library_loaded'),
+              localizations.translate('library_loaded'),
               duration: const Duration(seconds: 2),
               onComplete: () => _notificationManager.showDefaultTitle(),
             );
@@ -411,15 +418,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       } else if (Platform.isWindows) {
         // Initialize for Windows immediately - no permissions needed
         _notificationManager.showNotification(
-          AppLocalizations.of(context).translate('loading_library'),
+          localizations.translate('loading_library'),
           isProgress: true,
         );
 
         final success = await audioPlayerService.initializeMusicLibrary();
 
+        if (!mounted) return;
         if (success) {
           _notificationManager.showNotification(
-            AppLocalizations.of(context).translate('library_loaded'),
+            localizations.translate('library_loaded'),
             duration: const Duration(seconds: 2),
             onComplete: () => _notificationManager.showDefaultTitle(),
           );
@@ -446,28 +454,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: Text(
-              AppLocalizations.of(context).translate('permission_required')),
+              AppLocalizations.of(dialogContext).translate('permission_required')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(AppLocalizations.of(context)
+              Text(AppLocalizations.of(dialogContext)
                   .translate('permission_explanation')),
               const SizedBox(height: 12),
               Text(
-                  AppLocalizations.of(context)
+                  AppLocalizations.of(dialogContext)
                       .translate('no_permission_explanation'),
                   style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ],
           ),
           actions: <Widget>[
             TextButton(
-              child: Text(AppLocalizations.of(context).translate('cancel')),
+              child: Text(AppLocalizations.of(dialogContext).translate('cancel')),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 // User denied permission - handle accordingly
                 setState(() {
                   songs = [];
@@ -491,14 +499,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             TextButton(
               child: Text(
-                  AppLocalizations.of(context).translate('grant_permission')),
+                  AppLocalizations.of(dialogContext).translate('grant_permission')),
               onPressed: () async {
-                Navigator.of(context).pop();
+                final audioPlayerService =
+                    Provider.of<AudioPlayerService>(dialogContext, listen: false);
+                final localizations = AppLocalizations.of(dialogContext);
+                Navigator.of(dialogContext).pop();
                 // Request permissions
                 final statuses = await [
                   permissionhandler.Permission.audio,
                   permissionhandler.Permission.storage,
                 ].request();
+
+                if (!mounted) return;
 
                 final hasAudioPermission =
                     statuses[permissionhandler.Permission.audio]?.isGranted ??
@@ -509,20 +522,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                 if (hasAudioPermission || hasStoragePermission) {
                   // Permissions granted, initialize library
-                  final audioPlayerService =
-                      Provider.of<AudioPlayerService>(context, listen: false);
-
                   _notificationManager.showNotification(
-                    AppLocalizations.of(context).translate('loading_library'),
+                    localizations.translate('loading_library'),
                     isProgress: true,
                   );
 
                   final success =
                       await audioPlayerService.initializeMusicLibrary();
 
+                  if (!mounted) return;
                   if (success) {
                     _notificationManager.showNotification(
-                      AppLocalizations.of(context).translate('library_loaded'),
+                      localizations.translate('library_loaded'),
                       duration: const Duration(seconds: 2),
                       onComplete: () => _notificationManager.showDefaultTitle(),
                     );
@@ -540,8 +551,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(AppLocalizations.of(context)
-                            .translate('library_error')),
+                        content: Text(localizations.translate('library_error')),
                       ),
                     );
                   }
@@ -553,11 +563,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                          AppLocalizations.of(context).translate('perm_deny')),
+                      content: Text(localizations.translate('perm_deny')),
                       action: SnackBarAction(
-                        label:
-                            AppLocalizations.of(context).translate('settings'),
+                        label: localizations.translate('settings'),
                         onPressed: () async {
                           await permissionhandler.openAppSettings();
                         },
@@ -585,6 +593,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       return false;
     }
 
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+
     // Show the exit dialog when user attempts to leave the app
     final shouldExit = await showGlassmorphicDialog<bool>(
           context: context,
@@ -609,8 +620,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (shouldExit) {
       // Stop audio and exit the app properly
-      final audioService =
-          Provider.of<AudioPlayerService>(context, listen: false);
       await audioService.stop();
       audioService.dispose();
 

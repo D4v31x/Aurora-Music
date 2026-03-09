@@ -92,7 +92,7 @@ class PlayCountService {
   Future<void> load() async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/${kPlayCountsFileName}');
+      final file = File('${directory.path}/$kPlayCountsFileName');
 
       if (await file.exists()) {
         final contents = await file.readAsString();
@@ -115,7 +115,7 @@ class PlayCountService {
 
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/${kPlayCountsFileName}');
+      final file = File('${directory.path}/$kPlayCountsFileName');
 
       final json = {
         'tracks': _trackPlayCounts,

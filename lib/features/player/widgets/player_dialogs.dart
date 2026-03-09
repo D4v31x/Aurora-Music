@@ -1,7 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/services/audio_player_service.dart';
@@ -239,11 +241,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
             color: Colors.grey.shade900.withValues(alpha: 0.88),
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
-              left: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
-              right: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
           ),
           child: Column(
             children: [
@@ -358,9 +356,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                                 song: currentSong,
                                 isCurrentSong: true,
                                 reorderIndex: null,
-                                isQueued: false,
                                 onTap: () {},
-                                onRemove: null,
                               ),
                             ),
                             SliverToBoxAdapter(
@@ -469,7 +465,6 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                                   playlistIndex: pIdx,
                                   reorderIndex: i,
                                   audio: audio,
-                                  isQueued: false,
                                 );
                               },
                             ),
@@ -524,7 +519,7 @@ class _QueueSongTile extends StatelessWidget {
                   color: Colors.blue.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                      color: Colors.blue.withValues(alpha: 0.3), width: 1),
+                      color: Colors.blue.withValues(alpha: 0.3)),
                 )
               : BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
@@ -543,7 +538,7 @@ class _QueueSongTile extends StatelessWidget {
                       ArtworkCacheService()
                           .buildCachedArtwork(song.id, size: 46),
                       if (isCurrentSong)
-                        Container(
+                        DecoratedBox(
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.52),
                           ),
@@ -636,6 +631,8 @@ void showSongInfoDialog(
     return;
   }
 
+  final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+  final colorScheme = Theme.of(context).colorScheme;
   showDialog(
     context: context,
     barrierColor: Colors.black.withValues(alpha: 0.75),
@@ -649,9 +646,11 @@ void showSongInfoDialog(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  border: Border.all(
+                    color: isLowEnd ? colorScheme.outlineVariant : Colors.white.withValues(alpha: 0.2),
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.3),

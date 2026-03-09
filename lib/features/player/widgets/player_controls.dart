@@ -18,9 +18,9 @@ class PlayerControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconSize = isTablet ? 28.0 : 24.0;
-    final playIconSize = isTablet ? 56.0 : 48.0;
-    final skipIconSize = isTablet ? 40.0 : 36.0;
+    final iconSize = isTablet ? 26.0 : 22.0;
+    final playIconSize = isTablet ? 50.0 : 42.0;
+    final skipIconSize = isTablet ? 38.0 : 31.0;
 
     return RepaintBoundary(
       child: Row(
@@ -41,6 +41,8 @@ class PlayerControls extends StatelessWidget {
       valueListenable: audioPlayerService.isShuffleNotifier,
       builder: (context, isShuffle, _) {
         return IconButton(
+          padding: const EdgeInsets.all(8),
+          constraints: const BoxConstraints(),
           icon: Icon(
             Icons.shuffle_rounded,
             color:
@@ -55,6 +57,8 @@ class PlayerControls extends StatelessWidget {
 
   Widget _buildSkipPreviousButton(double iconSize) {
     return IconButton(
+      padding: const EdgeInsets.all(4),
+      constraints: const BoxConstraints(),
       icon: Icon(
         Icons.skip_previous_rounded,
         color: Colors.white,
@@ -69,6 +73,8 @@ class PlayerControls extends StatelessWidget {
       valueListenable: audioPlayerService.isPlayingNotifier,
       builder: (context, isPlaying, _) {
         return IconButton(
+          padding: const EdgeInsets.all(4),
+          constraints: const BoxConstraints(),
           icon: Icon(
             isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
             color: Colors.white,
@@ -88,6 +94,8 @@ class PlayerControls extends StatelessWidget {
 
   Widget _buildSkipNextButton(double iconSize) {
     return IconButton(
+      padding: const EdgeInsets.all(4),
+      constraints: const BoxConstraints(),
       icon: Icon(
         Icons.skip_next_rounded,
         color: Colors.white,
@@ -120,6 +128,8 @@ class PlayerControls extends StatelessWidget {
         }
 
         return IconButton(
+          padding: const EdgeInsets.all(4),
+          constraints: const BoxConstraints(),
           icon: Icon(icon, color: color, size: iconSize),
           onPressed: audioPlayerService.toggleRepeat,
         );

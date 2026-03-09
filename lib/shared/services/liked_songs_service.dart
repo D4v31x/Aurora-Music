@@ -50,7 +50,7 @@ class LikedSongsService {
   Future<void> load() async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/${kLikedSongsFileName}');
+      final file = File('${directory.path}/$kLikedSongsFileName');
 
       if (await file.exists()) {
         final contents = await file.readAsString();
@@ -67,7 +67,7 @@ class LikedSongsService {
   Future<void> save() async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/${kLikedSongsFileName}');
+      final file = File('${directory.path}/$kLikedSongsFileName');
 
       final json = {
         'liked_songs': _likedSongs.toList(),

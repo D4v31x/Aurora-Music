@@ -53,7 +53,7 @@ class _SongContextMenu extends StatelessWidget {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             color: Colors.grey[900]!.withValues(alpha: 0.88),
             borderRadius:

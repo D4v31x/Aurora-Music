@@ -49,7 +49,7 @@ class PlaylistPersistenceService {
   Future<void> load() async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/${kPlaylistsFileName}');
+      final file = File('${directory.path}/$kPlaylistsFileName');
 
       if (await file.exists()) {
         final contents = await file.readAsString();
@@ -76,7 +76,7 @@ class PlaylistPersistenceService {
 
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/${kPlaylistsFileName}');
+      final file = File('${directory.path}/$kPlaylistsFileName');
 
       final json = _playlists
           .map((playlist) => {

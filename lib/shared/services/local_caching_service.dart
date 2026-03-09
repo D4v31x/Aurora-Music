@@ -308,7 +308,7 @@ class LocalCachingArtistService {
         await _getSpotifyAccessToken();
         return _getArtistImageFromSpotify(artistName);
       }
-    } catch (e) {}
+    } catch (_) {}
     return null;
   }
 
@@ -324,7 +324,7 @@ class LocalCachingArtistService {
         await _saveCacheMetadata();
         return cacheFile.path;
       }
-    } catch (e) {}
+    } catch (_) {}
     return null;
   }
 }

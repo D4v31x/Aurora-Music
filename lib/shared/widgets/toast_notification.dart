@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/performance_mode_provider.dart';

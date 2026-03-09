@@ -68,7 +68,7 @@ class GrainyGradientBackground extends HookWidget {
   Widget _buildSimpleBackground(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
+    return ColoredBox(
       color: colorScheme.surface,
       child: child,
     );

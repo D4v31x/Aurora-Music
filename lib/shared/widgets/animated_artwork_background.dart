@@ -219,11 +219,6 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
           fallbackColor: fallbackColor,
         ),
 
-        // Solid dark overlay for better text readability in low-end mode
-        Container(
-          color: Colors.black.withValues(alpha: 0.6),
-        ),
-
         // Child content
         widget.child,
       ],
@@ -303,15 +298,9 @@ class SimpleBlurredBackground extends StatelessWidget {
       return Stack(
         fit: StackFit.expand,
         children: [
-          // Dark base
           Container(color: Colors.black),
-          // Animated color points background
           AnimatedColorPointsBackground(
             fallbackColor: surfaceColor,
-          ),
-          // Solid overlay for better text readability in low-end mode
-          Container(
-            color: Colors.black.withValues(alpha: 0.6),
           ),
           child,
         ],
@@ -374,7 +363,7 @@ class _AnimatedColorPointsBackgroundState
   late AnimationController _positionController;
   late AnimationController _colorController;
 
-  // Random positions for 3 color points (normalized 0-1)
+  // Random positions for 5 color points (normalized 0-1)
   late List<Offset> _startPositions;
   late List<Offset> _endPositions;
 
@@ -392,9 +381,9 @@ class _AnimatedColorPointsBackgroundState
     _startPositions = _generateRandomPositions();
     _endPositions = _generateRandomPositions();
 
-    // Position animation - slow movement
+    // Position animation - active movement
     _positionController = AnimationController(
-      duration: const Duration(seconds: 8),
+      duration: const Duration(seconds: 4),
       vsync: this,
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
@@ -415,13 +404,24 @@ class _AnimatedColorPointsBackgroundState
     _positionController.forward();
   }
 
+  // Normalized [xMin, xMax, yMin, yMax] region per blob — wider ranges
+  // give each blob more room to roam while still covering the whole screen.
+  static const List<List<double>> _blobRegions = [
+    [0.0,  0.75, 0.0,  0.75], // top-left (large)
+    [0.25, 1.0,  0.0,  0.75], // top-right (large)
+    [0.0,  1.0,  0.0,  1.0],  // centre — free to roam anywhere
+    [0.0,  0.75, 0.25, 1.0],  // bottom-left (large)
+    [0.25, 1.0,  0.25, 1.0],  // bottom-right (large)
+  ];
+
   List<Offset> _generateRandomPositions() {
-    return List.generate(
-        3,
-        (_) => Offset(
-              _random.nextDouble() * 0.6 + 0.2, // Keep within 0.2 - 0.8 range
-              _random.nextDouble() * 0.6 + 0.2,
-            ));
+    return List.generate(5, (i) {
+      final r = _blobRegions[i];
+      return Offset(
+        _random.nextDouble() * (r[1] - r[0]) + r[0],
+        _random.nextDouble() * (r[3] - r[2]) + r[2],
+      );
+    });
   }
 
   @override
@@ -432,22 +432,38 @@ class _AnimatedColorPointsBackgroundState
   }
 
   void _updateColorsFrom(List<Color> newColors) {
-    if (newColors.isNotEmpty && !_areColorsEqual(newColors, _targetColors)) {
+    // Build an expanded palette of up to 5 colors, deriving extras if needed
+    final expanded = _expandColors(newColors, target: 5);
+    if (expanded.isNotEmpty && !_areColorsEqual(expanded, _targetColors)) {
       setState(() {
         _currentColors = _targetColors.isNotEmpty
             ? _targetColors
-            : newColors.take(3).toList();
-        _targetColors = newColors.take(3).toList();
+            : expanded;
+        _targetColors = expanded;
       });
 
       // Animate color transition
       _colorController.forward(from: 0.0);
-    } else if (_currentColors.isEmpty && newColors.isNotEmpty) {
+    } else if (_currentColors.isEmpty && expanded.isNotEmpty) {
       setState(() {
-        _currentColors = newColors.take(3).toList();
-        _targetColors = newColors.take(3).toList();
+        _currentColors = expanded;
+        _targetColors = expanded;
       });
     }
+  }
+
+  /// Expands [colors] to [target] entries by blending adjacent pairs for extras.
+  List<Color> _expandColors(List<Color> colors, {required int target}) {
+    if (colors.isEmpty) return [];
+    final result = List<Color>.from(colors);
+    int src = 0;
+    while (result.length < target) {
+      final a = result[src % result.length];
+      final b = result[(src + 1) % result.length];
+      result.add(Color.lerp(a, b, 0.5)!);
+      src++;
+    }
+    return result.take(target).toList();
   }
 
   bool _areColorsEqual(List<Color> a, List<Color> b) {
@@ -502,7 +518,7 @@ class _AnimatedColorPointsBackgroundState
 
   List<Offset> _getInterpolatedPositions() {
     final t = Curves.easeInOut.transform(_positionController.value);
-    return List.generate(3, (i) {
+    return List.generate(5, (i) {
       if (i >= _startPositions.length || i >= _endPositions.length) {
         return const Offset(0.5, 0.5);
       }
@@ -545,16 +561,16 @@ class _ColorPointsPainter extends CustomPainter {
         positions[i].dy * size.height,
       );
 
-      // Large radius for soft, spread-out glow
-      final radius = size.width * 0.6;
+      // Large radius — covers the full screen so no dark patches remain
+      final radius = size.width * 0.8;
 
       paint.shader = RadialGradient(
         colors: [
-          colors[i].withValues(alpha: 0.8),
-          colors[i].withValues(alpha: 0.4),
+          colors[i].withValues(alpha: 0.95),
+          colors[i].withValues(alpha: 0.55),
           colors[i].withValues(alpha: 0.0),
         ],
-        stops: const [0.0, 0.5, 1.0],
+        stops: const [0.0, 0.55, 1.0],
       ).createShader(Rect.fromCircle(center: position, radius: radius));
 
       canvas.drawCircle(position, radius, paint);

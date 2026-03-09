@@ -113,20 +113,27 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
   }
 
   Future<void> updateCurrentArtwork() async {
-    if (currentSong == null) {
+    // Capture song now — currentSong is a getter that could change across awaits.
+    final song = currentSong;
+    if (song == null) {
       currentArtwork.value = null;
       return;
     }
     try {
       // Use cached artwork service for better performance
-      final artwork = await _artworkCache.getArtwork(currentSong!.id);
+      final artwork = await _artworkCache.getArtwork(song.id);
       currentArtwork.value = artwork;
+
+      // Push artwork directly to the background manager, bypassing all guards.
+      // This is the primary mechanism for updating the background because this
+      // function is confirmed to run on every song change.
+      _backgroundManager?.pushArtwork(artwork, song);
 
       // Also push artwork to home screen widget
       if (artwork != null && artwork.isNotEmpty) {
         unawaited(_homeWidgetService.updateSongInfo(
-          title: currentSong!.title,
-          artist: currentSong!.artist ?? 'Unknown Artist',
+          title: song.title,
+          artist: song.artist ?? 'Unknown Artist',
           isPlaying: isPlayingNotifier.value,
           artworkBytes: artwork,
         ));

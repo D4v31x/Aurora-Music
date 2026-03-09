@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
@@ -381,7 +380,6 @@ class HomeScreenWidgetService {
       final palette = await PaletteGenerator.fromImageProvider(
         MemoryImage(artworkBytes),
         size: const Size(100, 100), // Downscale for faster processing
-        maximumColorCount: 16,
       ).timeout(
         const Duration(seconds: 5),
         onTimeout: () {
@@ -391,7 +389,7 @@ class HomeScreenWidgetService {
       );
 
       // Get dominant color (fallback to vibrant or first available)
-      Color backgroundColor = palette.dominantColor?.color ??
+      final Color backgroundColor = palette.dominantColor?.color ??
           palette.vibrantColor?.color ??
           palette.lightVibrantColor?.color ??
           const Color(0xFFD8B4FE); // Light purple fallback

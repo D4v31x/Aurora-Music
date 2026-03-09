@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/performance_mode_provider.dart';
 
 /// Glassmorphic container using semi-transparent color + border + shadow.
 /// No BackdropFilter — only the root background layer carries a blur.
@@ -27,16 +29,27 @@ class GlassmorphicContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = borderRadius ?? BorderRadius.circular(15);
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final Color bgColor;
+    final Color borderColor;
+    if (isLowEnd) {
+      bgColor = colorScheme.surfaceContainerHigh;
+      borderColor = colorScheme.outlineVariant;
+    } else {
+      bgColor = Colors.white.withValues(alpha: 0.1);
+      borderColor = Colors.white.withValues(alpha: 0.2);
+    }
 
     return Container(
       width: width,
       padding: padding,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: bgColor,
         borderRadius: radius,
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
+          color: borderColor,
         ),
         boxShadow: [
           BoxShadow(

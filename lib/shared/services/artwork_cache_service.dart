@@ -15,9 +15,9 @@ class ArtworkCacheService {
   static const int _maxArtworkCacheSize = 80; // Reduced from 100
   static const int _maxArtistCacheSize = 40; // Reduced from 50
 
-  // Artwork quality settings for performance
-  static const int _thumbnailQuality = 80; // Lower quality for list items
-  static const int _thumbnailSize = 200; // Smaller size for thumbnails
+  // Artwork quality settings
+  static const int _thumbnailQuality = 100; // Full quality everywhere
+  static const int _thumbnailSize = 600;    // High-res for crisp display
 
   final Map<int, Uint8List?> _artworkCache = {};
   final Map<int, ImageProvider<Object>?> _imageProviderCache = {};
@@ -101,7 +101,7 @@ class ArtworkCacheService {
       for (final chunk in chunks) {
         await Future.wait(chunk.map((song) => _getArtwork(song.id)));
       }
-    } catch (e) {}
+    } catch (_) {}
   }
 
   Future<ImageProvider<Object>> getCachedImageProvider(int id,
@@ -333,7 +333,7 @@ class ArtworkCacheService {
         _imageProviderCache[id] = MemoryImage(artwork);
         _updateAccessOrder(id, false);
       }
-    } catch (e) {}
+    } catch (_) {}
   }
 
   Future<void> preloadArtistArtwork(int id) async {
@@ -362,7 +362,7 @@ class ArtworkCacheService {
         _artistImageProviderCache[id] = MemoryImage(artwork);
         _updateAccessOrder(id, true);
       }
-    } catch (e) {}
+    } catch (_) {}
   }
 
   Future<ImageProvider<Object>> getArtistImageProvider(int id) async {

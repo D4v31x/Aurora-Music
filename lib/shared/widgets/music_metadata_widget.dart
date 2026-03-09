@@ -1,8 +1,10 @@
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../features/settings/screens/metadata_detail_screen.dart';
+import '../providers/performance_mode_provider.dart';
 
 /// Compact glassmorphic widget to display music file metadata overview
 class MusicMetadataWidget extends StatelessWidget {
@@ -89,6 +91,8 @@ class MusicMetadataWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       children: [
@@ -121,11 +125,10 @@ class MusicMetadataWidget extends StatelessWidget {
             child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
+                    color: isLowEnd ? colorScheme.outlineVariant : Colors.white.withValues(alpha: 0.2),
                   ),
                   boxShadow: [
                     BoxShadow(

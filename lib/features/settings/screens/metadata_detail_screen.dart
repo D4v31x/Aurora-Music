@@ -10,6 +10,7 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/metadata_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 
@@ -48,6 +49,11 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
 
   // OnAudioQuery instance for MediaStore operations
   final OnAudioQuery _audioQuery = OnAudioQuery();
+
+  // Inline auto-tag search state
+  final TextEditingController _autoTagSearchController = TextEditingController();
+  List<Map<String, dynamic>>? _autoTagResults;
+  bool _autoTagIsLoading = false;
 
   @override
   void initState() {
@@ -139,6 +145,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     _trackController.dispose();
     _yearController.dispose();
     _composerController.dispose();
+    _autoTagSearchController.dispose();
     super.dispose();
   }
 
@@ -263,208 +270,57 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     return const Color(0xFFEF4444);
   }
 
-  void _showAutoTagDialog() {
-    final loc = AppLocalizations.of(context);
-    final searchController = TextEditingController(
-      text: '${_titleController.text} ${_artistController.text}'.trim(),
-    );
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          List<Map<String, dynamic>>? results;
-          bool isLoading = false;
-
-          Future<void> search() async {
-            if (searchController.text.isEmpty) return;
-            setState(() => isLoading = true);
-            final service = MetadataService();
-            final res = await service.searchMetadata(searchController.text);
-            if (mounted) {
-              setState(() {
-                results = res;
-                isLoading = false;
-              });
-            }
-          }
-
-          return Dialog(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            child: Container(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                        child: Text(
-                          loc.translate('auto_tag'),
-                          style: const TextStyle(
-                            fontFamily: FontConstants.fontFamily,
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                        child: TextField(
-                          controller: searchController,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontFamily: FontConstants.fontFamily),
-                          decoration: InputDecoration(
-                            hintText: loc.translate('search_metadata'),
-                            hintStyle: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.5),
-                              fontFamily: FontConstants.fontFamily,
-                            ),
-                            suffixIcon: IconButton(
-                              icon:
-                                  const Icon(Icons.search, color: Colors.white),
-                              onPressed: search,
-                            ),
-                            enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Colors.white.withValues(alpha: 0.3)),
-                            ),
-                            focusedBorder: const UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                            ),
-                          ),
-                          onSubmitted: (_) => search(),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      if (isLoading)
-                        const Padding(
-                          padding: EdgeInsets.all(24),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      else if (results != null)
-                        Flexible(
-                          child: results!.isEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.all(24),
-                                  child: Text(
-                                    loc.translate('no_results'),
-                                    style: TextStyle(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.7),
-                                      fontFamily: FontConstants.fontFamily,
-                                    ),
-                                  ),
-                                )
-                              : ListView.builder(
-                                  shrinkWrap: true,
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 8),
-                                  itemCount: results!.length,
-                                  itemBuilder: (context, index) {
-                                    final item = results![index];
-                                    final artist = item['artist']['name'];
-                                    final title = item['title'];
-                                    final album = item['album']['title'];
-
-                                    return ListTile(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      title: Text(
-                                        title,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontFamily: FontConstants.fontFamily,
-                                        ),
-                                      ),
-                                      subtitle: Text(
-                                        '$artist - $album',
-                                        style: TextStyle(
-                                          color: Colors.white
-                                              .withValues(alpha: 0.7),
-                                          fontFamily: FontConstants.fontFamily,
-                                        ),
-                                      ),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        _applyMetadata(item);
-                                      },
-                                    );
-                                  },
-                                ),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white70,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                loc.translate('cancel'),
-                                style: const TextStyle(
-                                    fontFamily: FontConstants.fontFamily),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-          );
-        },
-      ),
-    );
+  Future<void> _runAutoTagSearch() async {
+    if (_autoTagSearchController.text.trim().isEmpty) return;
+    setState(() {
+      _autoTagIsLoading = true;
+      _autoTagResults = null;
+    });
+    final res =
+        await MetadataService().searchMetadata(_autoTagSearchController.text);
+    if (mounted) {
+      setState(() {
+        _autoTagResults = res;
+        _autoTagIsLoading = false;
+      });
+    }
   }
 
   Future<void> _applyMetadata(Map<String, dynamic> data) async {
+    final service = MetadataService();
+
+    // Fetch enriched data (year, genre, track#) and cover art in parallel.
+    final results = await Future.wait([
+      service.fetchFullTrackDetails(data),
+      service.fetchCoverArt('${data['title']} ${(data['artist'] as Map?)?['name'] ?? ''}'),
+    ]);
+
+    final enriched = results[0] as Map<String, dynamic>;
+    final coverUrl = results[1] as String?;
+
+    // Parse year from release_date string ("YYYY-MM-DD" or "YYYY").
+    String year = '';
+    final releaseDate = enriched['_release_date'] as String? ?? '';
+    if (releaseDate.length >= 4) year = releaseDate.substring(0, 4);
+
+    // Track position and genre.
+    final trackPos = enriched['_track_position'];
+    final genre = enriched['_genre'] as String? ?? '';
+
     setState(() {
-      _titleController.text = data['title'] ?? '';
-      _artistController.text = data['artist']['name'] ?? '';
-      _albumController.text = data['album']['title'] ?? '';
+      _titleController.text = enriched['title'] as String? ?? '';
+      _artistController.text = (enriched['artist'] as Map?)?['name'] as String? ?? '';
+      _albumController.text = (enriched['album'] as Map?)?['title'] as String? ?? '';
+      if (genre.isNotEmpty) _genreController.text = genre;
+      if (year.isNotEmpty) _yearController.text = year;
+      if (trackPos != null) _trackController.text = trackPos.toString();
       _isEditing = true;
       _hasChanges = true;
     });
 
-    // Fetch cover art
-    final service = MetadataService();
-    final query = '${data['title']} ${data['artist']['name']}';
-
-    // Show loading indicator for cover art? Or just do it in background
-    final coverUrl = await service.fetchCoverArt(query);
-
     if (coverUrl != null && mounted) {
       final bytes = await service.downloadImage(coverUrl);
-      if (bytes != null) {
+      if (bytes != null && mounted) {
         setState(() {
           _pendingCoverArt = Uint8List.fromList(bytes);
           _hasChanges = true;
@@ -479,6 +335,13 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   }
 
   void _toggleEditMode() {
+    if (!_isEditing) {
+      // Entering edit mode — pre-fill the inline auto-tag search field.
+      _autoTagSearchController.text =
+          '${_titleController.text} ${_artistController.text}'.trim();
+      _autoTagResults = null;
+      _autoTagIsLoading = false;
+    }
     setState(() {
       if (_isEditing && _hasChanges) {
         _showSaveDialog();
@@ -552,6 +415,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
       _initControllers();
       _isEditing = false;
       _hasChanges = false;
+      _autoTagResults = null;
+      _autoTagIsLoading = false;
     });
   }
 
@@ -862,6 +727,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return AppBackground(
       child: Scaffold(
@@ -889,12 +756,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             ),
           ),
           actions: [
-            if (_isEditing)
-              IconButton(
-                icon: const Icon(Icons.auto_fix_high, color: Colors.white),
-                onPressed: _showAutoTagDialog,
-                tooltip: loc.translate('auto_tag'),
-              ),
             if (_isSaving)
               const Padding(
                 padding: EdgeInsets.all(12),
@@ -964,8 +825,14 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               ),
               const SizedBox(height: 24),
 
+              // Inline auto-tag search — visible in edit mode
+              if (_isEditing) ...[
+                _buildAutoTagPanel(loc, isLowEnd, colorScheme),
+                const SizedBox(height: 16),
+              ],
+
               // Quality card
-              _buildQualityCard(loc),
+              _buildQualityCard(loc, isLowEnd, colorScheme),
               const SizedBox(height: 24),
 
               // Audio info section
@@ -981,6 +848,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   _buildInfoRow(loc.translate('duration'), _formatDuration()),
                 ],
                 description: loc.translate('audio_quality_desc'),
+                isLowEnd: isLowEnd,
+                colorScheme: colorScheme,
               ),
               const SizedBox(height: 16),
 
@@ -1003,6 +872,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                 description: _isEditing
                     ? loc.translate('track_info_edit_desc')
                     : loc.translate('track_info_desc'),
+                isLowEnd: isLowEnd,
+                colorScheme: colorScheme,
               ),
               const SizedBox(height: 16),
 
@@ -1022,11 +893,13 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                         _formatDate(widget.song.dateModified)),
                 ],
                 description: loc.translate('file_info_desc'),
+                isLowEnd: isLowEnd,
+                colorScheme: colorScheme,
               ),
               const SizedBox(height: 16),
 
               // File path section
-              _buildPathCard(loc),
+              _buildPathCard(loc, isLowEnd, colorScheme),
               const SizedBox(height: 32),
             ],
           ),
@@ -1035,35 +908,38 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     );
   }
 
-  Widget _buildQualityCard(AppLocalizations loc) {
+  Widget _buildQualityCard(AppLocalizations loc, bool isLowEnd, ColorScheme colorScheme) {
+    final qualityColor = _getQualityColor(loc);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: isLowEnd ? null : LinearGradient(
           colors: [
-            _getQualityColor(loc).withValues(alpha: 0.3),
-            _getQualityColor(loc).withValues(alpha: 0.1),
+            qualityColor.withValues(alpha: 0.3),
+            qualityColor.withValues(alpha: 0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
+        color: isLowEnd ? colorScheme.surfaceContainerHigh : null,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _getQualityColor(loc).withValues(alpha: 0.3),
+          color: isLowEnd ? colorScheme.outlineVariant : qualityColor.withValues(alpha: 0.3),
         ),
       ),
+      // replace two uses of _getQualityColor(loc) below with local variable
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _getQualityColor(loc).withValues(alpha: 0.2),
+              color: qualityColor.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
               _getQualityIcon(loc),
-              color: _getQualityColor(loc),
+              color: qualityColor,
               size: 32,
             ),
           ),
@@ -1075,7 +951,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                 Text(
                   _getQualityLabel(loc),
                   style: TextStyle(
-                    color: _getQualityColor(loc),
+                    color: qualityColor,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     fontFamily: FontConstants.fontFamily,
@@ -1106,15 +982,19 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   }
 
   Widget _buildSectionCard(String title, IconData icon, List<Widget> children,
-      {String? description}) {
+      {String? description, bool isLowEnd = false, ColorScheme? colorScheme}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
+        color: isLowEnd
+            ? colorScheme!.surfaceContainerHigh
+            : Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: isLowEnd
+              ? colorScheme!.outlineVariant
+              : Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -1254,15 +1134,19 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     );
   }
 
-  Widget _buildPathCard(AppLocalizations loc) {
+  Widget _buildPathCard(AppLocalizations loc, bool isLowEnd, ColorScheme colorScheme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: isLowEnd
+            ? colorScheme.surfaceContainerHigh
+            : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: isLowEnd
+              ? colorScheme.outlineVariant
+              : Colors.white.withValues(alpha: 0.08),
         ),
       ),
       child: Column(
@@ -1330,6 +1214,221 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAutoTagPanel(
+      AppLocalizations loc, bool isLowEnd, ColorScheme colorScheme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isLowEnd
+            ? colorScheme.surfaceContainerHigh
+            : Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isLowEnd
+              ? colorScheme.outlineVariant
+              : Colors.white.withValues(alpha: 0.1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Icon(Icons.auto_fix_high,
+                  color: Colors.white.withValues(alpha: 0.7), size: 20),
+              const SizedBox(width: 10),
+              Text(
+                loc.translate('auto_tag'),
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: FontConstants.fontFamily,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Search field
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _autoTagSearchController,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: FontConstants.fontFamily),
+                  decoration: InputDecoration(
+                    hintText: loc.translate('search_metadata'),
+                    hintStyle: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontFamily: FontConstants.fontFamily,
+                    ),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    filled: true,
+                    fillColor: Colors.white.withValues(alpha: 0.1),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide:
+                          BorderSide(color: colorScheme.primary),
+                    ),
+                  ),
+                  onSubmitted: (_) => _runAutoTagSearch(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: _runAutoTagSearch,
+                icon: const Icon(Icons.search, color: Colors.white),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+          // Results
+          if (_autoTagIsLoading) ...[
+            const SizedBox(height: 20),
+            const Center(child: CircularProgressIndicator()),
+            const SizedBox(height: 20),
+          ] else if (_autoTagResults != null) ...[
+            const SizedBox(height: 16),
+            if (_autoTagResults!.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  loc.translate('no_results'),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontFamily: FontConstants.fontFamily),
+                ),
+              )
+            else
+              SizedBox(
+                height: 148,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _autoTagResults!.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  itemBuilder: (context, index) {
+                    final item = _autoTagResults![index];
+                    final title = item['title'] as String? ?? '';
+                    final artist =
+                        (item['artist'] as Map?)?['name'] as String? ?? '';
+                    final album =
+                        (item['album'] as Map?)?['title'] as String? ?? '';
+                    final coverUrl =
+                        (item['album'] as Map?)?['cover_medium'] as String?;
+                    return GestureDetector(
+                      onTap: () => _applyMetadata(item),
+                      child: Container(
+                        width: 104,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.12)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Artwork
+                            ClipRRect(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                topRight: Radius.circular(12),
+                              ),
+                              child: coverUrl != null && coverUrl.isNotEmpty
+                                  ? Image.network(
+                                      coverUrl,
+                                      width: 104,
+                                      height: 104,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Container(
+                                        width: 104,
+                                        height: 104,
+                                        color: Colors.grey[800],
+                                        child: const Icon(Icons.music_note,
+                                            color: Colors.white54),
+                                      ),
+                                    )
+                                  : Container(
+                                      width: 104,
+                                      height: 104,
+                                      color: Colors.grey[800],
+                                      child: const Icon(Icons.music_note,
+                                          color: Colors.white54),
+                                    ),
+                            ),
+                            // Text
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(6, 5, 6, 4),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: FontConstants.fontFamily,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      artist,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.55),
+                                        fontSize: 9,
+                                        fontFamily: FontConstants.fontFamily,
+                                      ),
+                                    ),
+                                    Text(
+                                      album,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.4),
+                                        fontSize: 9,
+                                        fontFamily: FontConstants.fontFamily,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+          ],
         ],
       ),
     );

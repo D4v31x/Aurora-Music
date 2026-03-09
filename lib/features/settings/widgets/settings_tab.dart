@@ -23,7 +23,6 @@ import '../../../shared/services/donation_service.dart';
 import '../screens/artist_separator_settings.dart';
 import '../screens/home_layout_settings.dart';
 import '../../../shared/utils/responsive_utils.dart';
-import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/expanding_player.dart';
 
 /// A glassmorphic settings tab with translations.
@@ -78,15 +77,25 @@ class _SettingsTabState extends State<SettingsTab> {
 
   // Glassmorphic Card Container
   Widget _buildGlassmorphicCard({required List<Widget> children}) {
+    final isLowEnd =
+        Provider.of<PerformanceModeProvider>(context, listen: false)
+            .isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
+    final Color bgColor = isLowEnd
+        ? colorScheme.surfaceContainerHigh
+        : Colors.white.withValues(alpha: 0.08);
+    final Color borderColor = isLowEnd
+        ? colorScheme.outlineVariant
+        : Colors.white.withValues(alpha: 0.12);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: bgColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.12),
-            width: 1,
+            color: borderColor,
           ),
         ),
         child: Column(
@@ -778,6 +787,16 @@ class _SettingsTabState extends State<SettingsTab> {
       ),
       actions: [
         TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            l10n.translate('cancel'),
+            style: const TextStyle(
+              fontFamily: FontConstants.fontFamily,
+              color: Colors.white70,
+            ),
+          ),
+        ),
+        TextButton(
           onPressed: () async {
             // Apply the mode change only now, right before restart
             await performanceProvider.setPerformanceMode(
@@ -812,11 +831,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
     showDialog(
       context: context,
-      barrierDismissible: false, // Cannot dismiss by tapping outside
-      builder: (context) => PopScope(
-        canPop: false, // Cannot dismiss with back button
-        child: dialogContent,
-      ),
+      builder: (context) => dialogContent,
     );
   }
 
@@ -1220,17 +1235,24 @@ class _SettingsTabState extends State<SettingsTab> {
                 );
               },
             ),
-            _buildSliderTile(
-              icon: Icons.brightness_4_rounded,
-              title: 'Background Darkness',
-              subtitle: 'Overlay opacity on artwork',
-              value: themeProvider.overlayOpacity,
-              min: 0.0,
-              max: 0.8,
-              defaultValue: 0.3,
-              valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
-              onChanged: (value) => themeProvider.updateOverlayOpacity(value),
-              onChangeEnd: (value) => themeProvider.setOverlayOpacity(value),
+            Consumer<PerformanceModeProvider>(
+              builder: (context, performanceProvider, _) {
+                if (performanceProvider.isLowEndDevice) {
+                  return const SizedBox.shrink();
+                }
+                return _buildSliderTile(
+                  icon: Icons.brightness_4_rounded,
+                  title: 'Background Darkness',
+                  subtitle: 'Overlay opacity on artwork',
+                  value: themeProvider.overlayOpacity,
+                  min: 0.0,
+                  max: 0.8,
+                  defaultValue: 0.3,
+                  valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
+                  onChanged: (value) => themeProvider.updateOverlayOpacity(value),
+                  onChangeEnd: (value) => themeProvider.setOverlayOpacity(value),
+                );
+              },
             ),
             _buildLanguageTile(),
             _buildActionTile(

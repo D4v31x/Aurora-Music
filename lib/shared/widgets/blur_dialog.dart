@@ -84,7 +84,7 @@ class BlurDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadius),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-            child: Container(
+            child: DecoratedBox(
               decoration: BoxDecoration(
                 color: backgroundColor ?? Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(borderRadius),

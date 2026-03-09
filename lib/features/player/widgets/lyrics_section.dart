@@ -5,11 +5,13 @@ library;
 
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/timed_lyrics.dart';
 import '../screens/fullscreen_lyrics.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/providers/performance_mode_provider.dart';
 
 // MARK: - Constants
 
@@ -84,6 +86,8 @@ class LyricsSection extends StatelessWidget {
     bool hasLyrics,
     double screenWidth,
   ) {
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
     return Stack(
       children: [
         Container(
@@ -91,7 +95,7 @@ class LyricsSection extends StatelessWidget {
           height: _kLyricsSectionHeight,
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: _kLyricsContainerOpacity),
+            color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: _kLyricsContainerOpacity),
             borderRadius: BorderRadius.circular(_kBorderRadius),
           ),
           child: hasLyrics
@@ -108,7 +112,7 @@ class LyricsSection extends StatelessWidget {
     return Center(
       child: ShaderMask(
         shaderCallback: (Rect bounds) {
-          return LinearGradient(
+          return const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
@@ -117,7 +121,7 @@ class LyricsSection extends StatelessWidget {
               Colors.white,
               Colors.transparent,
             ],
-            stops: const [0.0, 0.2, 0.8, 1.0],
+            stops: [0.0, 0.2, 0.8, 1.0],
           ).createShader(bounds);
         },
         blendMode: BlendMode.dstIn,
@@ -244,17 +248,19 @@ class LyricsSection extends StatelessWidget {
 
   /// Builds the expand button overlay.
   Widget _buildExpandButton(BuildContext context) {
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
     return Positioned(
       bottom: 28,
       right: 24,
       child: GestureDetector(
         onTap: () => _openFullscreenLyrics(context),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: _kExpandButtonOpacity),
+            color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: _kExpandButtonOpacity),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withValues(alpha: _kExpandButtonBorderOpacity),
+              color: isLowEnd ? colorScheme.outlineVariant : Colors.white.withValues(alpha: _kExpandButtonBorderOpacity),
             ),
           ),
           child: Material(

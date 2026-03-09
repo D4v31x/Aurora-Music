@@ -69,7 +69,6 @@ class LibraryScreenHeader extends StatelessWidget {
       // Back button is always shown on every library screen
       leading: _buildBackButton(context),
       actions: actions,
-      title: null,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
@@ -141,7 +140,6 @@ class LibraryScreenHeader extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 // Badge
                                 _buildBadgePill(),
@@ -316,7 +314,6 @@ class LibraryScreenHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.45),
-          width: 1,
         ),
       ),
       child: Text(
@@ -392,7 +389,6 @@ class LibrarySearchField extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.25),
-          width: 1,
         ),
       ),
       child: TextField(
@@ -449,7 +445,6 @@ class LibraryControlPill extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.25),
-            width: 1,
           ),
         ),
         child: child,

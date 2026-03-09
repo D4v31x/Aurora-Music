@@ -373,6 +373,31 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               ),
             ),
           ),
+          const SizedBox(width: 10),
+          // Queue Button
+          GestureDetector(
+            onTap: playlist.songs.isEmpty
+                ? null
+                : () async {
+                    await audioService.addMultipleToQueue(playlist.songs);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            '${playlist.songs.length} song${playlist.songs.length == 1 ? '' : 's'} added to queue'),
+                        duration: const Duration(seconds: 2),
+                      ));
+                    }
+                  },
+            child: GlassmorphicContainer(
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+              child: Icon(
+                Icons.queue_music_rounded,
+                color:
+                    playlist.songs.isEmpty ? Colors.white30 : Colors.white,
+                size: 22,
+              ),
+            ),
+          ),
           if (!_isAutoPlaylist) ...[
             const SizedBox(width: 10),
             // Add Button

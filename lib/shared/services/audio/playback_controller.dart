@@ -58,8 +58,12 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
           // Update audio handler queue for notification
           audioHandler.updateNotificationQueue(lightMediaItems);
 
-          final playlistSource = ConcatenatingAudioSource(
-            children: _playlist.asMap().entries.map((entry) {
+          // Suppress automatic mediaItem updates during source setup
+          // to prevent intermediate index 0 from overriding the correct item
+          audioHandler.suppressIndexUpdates();
+
+          await _audioPlayer.setAudioSources(
+            _playlist.asMap().entries.map((entry) {
               final song = entry.value;
               final mediaItem = lightMediaItems[entry.key];
               final uri = song.uri ?? song.data;
@@ -68,14 +72,6 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
                 tag: mediaItem,
               );
             }).toList(),
-          );
-
-          // Suppress automatic mediaItem updates during source setup
-          // to prevent intermediate index 0 from overriding the correct item
-          audioHandler.suppressIndexUpdates();
-
-          await _audioPlayer.setAudioSource(
-            playlistSource,
             initialIndex: _currentIndex,
             initialPosition: Duration.zero,
           );
@@ -169,14 +165,17 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
 
   Future<void> updatePlaylist(List<SongModel> newSongs) async {
     try {
-      if (_gaplessPlayback &&
-          _audioPlayer.audioSource is ConcatenatingAudioSource) {
+      if (_gaplessPlayback) {
         // Use lightweight MediaItems for instant rebuild
         final mediaItems =
             newSongs.map((song) => _createMediaItemSync(song)).toList();
 
-        final newSource = ConcatenatingAudioSource(
-          children: newSongs
+        // Preserve current playback position
+        final currentPosition = _audioPlayer.position;
+        final currentIndex = _audioPlayer.currentIndex ?? _currentIndex;
+
+        await _audioPlayer.setAudioSources(
+          newSongs
               .asMap()
               .entries
               .map((entry) => AudioSource.uri(
@@ -184,14 +183,6 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
                     tag: mediaItems[entry.key],
                   ))
               .toList(),
-        );
-
-        // Preserve current playback position
-        final currentPosition = _audioPlayer.position;
-        final currentIndex = _audioPlayer.currentIndex ?? _currentIndex;
-
-        await _audioPlayer.setAudioSource(
-          newSource,
           initialIndex: currentIndex,
           initialPosition: currentPosition,
         );
@@ -315,14 +306,13 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
   void _setAudioSource() {
     if (_spotifyPlaylist.isEmpty) return;
 
-    final playlist = ConcatenatingAudioSource(
-      children: _spotifyPlaylist
+    audioPlayer.setAudioSources(
+      _spotifyPlaylist
           .map((song) =>
               AudioSource.uri(Uri.parse(song.uri), tag: song.toMediaItem()))
           .toList(),
+      initialIndex: _currentSpotifyIndex,
     );
-
-    audioPlayer.setAudioSource(playlist, initialIndex: _currentSpotifyIndex);
   }
 
   Future<void> pause() async {

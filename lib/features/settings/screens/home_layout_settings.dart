@@ -305,7 +305,7 @@ class _SectionTile extends StatelessWidget {
                   Switch.adaptive(
                     value: isVisible,
                     onChanged: onVisibilityChanged,
-                    activeColor: Theme.of(context).colorScheme.primary,
+                    activeTrackColor: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
                   // Drag handle

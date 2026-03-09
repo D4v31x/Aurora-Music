@@ -58,8 +58,8 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
         final mediaItems =
             _playlist.map((song) => _createMediaItemSync(song)).toList();
 
-        final playlist = ConcatenatingAudioSource(
-          children: _playlist
+        await _audioPlayer.setAudioSources(
+          _playlist
               .asMap()
               .entries
               .map((entry) => AudioSource.uri(
@@ -67,11 +67,6 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
                     tag: mediaItems[entry.key],
                   ))
               .toList(),
-        );
-
-        // Set the audio source with the current index
-        await _audioPlayer.setAudioSource(
-          playlist,
           initialIndex: _currentIndex,
           initialPosition: _audioPlayer.position,
         );
@@ -143,7 +138,6 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
           flags: AndroidAudioFlags.audibilityEnforced,
           usage: AndroidAudioUsage.media,
         ),
-        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
         androidWillPauseWhenDucked: true,
       ));
     } else {
@@ -158,7 +152,6 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
           flags: AndroidAudioFlags.audibilityEnforced,
           usage: AndroidAudioUsage.media,
         ),
-        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
         androidWillPauseWhenDucked: true,
       ));
 

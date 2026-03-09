@@ -75,7 +75,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
     final audioService =
         Provider.of<AudioPlayerService>(context, listen: false);
     await audioService.addMultipleToQueue(allSongs);
-    if (context.mounted) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

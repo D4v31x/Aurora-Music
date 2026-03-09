@@ -223,7 +223,7 @@ class _MiniPlayerWidget extends StatelessWidget {
       playerDecoration = BoxDecoration(
         color: colorScheme.surfaceContainerHigh,
         borderRadius: const BorderRadius.all(Radius.circular(24)),
-        border: Border.all(color: colorScheme.outlineVariant, width: 1),
+        border: Border.all(color: colorScheme.outlineVariant),
       );
     }
 

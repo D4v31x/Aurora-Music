@@ -84,12 +84,16 @@ class MusicSearchService {
       for (final titleWord in titleWords) {
         if (titleWord == queryWord) {
           score += 15;
-        } else if (titleWord.startsWith(queryWord)) score += 10;
+        } else if (titleWord.startsWith(queryWord)) {
+          score += 10;
+        }
       }
       for (final artistWord in artistWords) {
         if (artistWord == queryWord) {
           score += 12;
-        } else if (artistWord.startsWith(queryWord)) score += 8;
+        } else if (artistWord.startsWith(queryWord)) {
+          score += 8;
+        }
       }
     }
 

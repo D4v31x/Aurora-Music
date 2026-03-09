@@ -60,7 +60,7 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
     // Load display songs (limited to 3 for UI)
-    final displaySongs = await audioPlayerService.getRecentlyPlayed(count: 3);
+    final displaySongs = await audioPlayerService.getRecentlyPlayed();
     // Load full playlist for playback
     final fullPlaylist = await audioPlayerService.getAllRecentlyPlayed();
     if (mounted) {

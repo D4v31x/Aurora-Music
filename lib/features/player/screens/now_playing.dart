@@ -19,6 +19,7 @@ import '../../../shared/services/background_manager_service.dart';
 import '../../../shared/services/lyrics_service.dart';
 import '../../../shared/utils/responsive_utils.dart';
 import '../../../shared/widgets/app_background.dart';
+import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/widgets/common/scrolling_text.dart';
 import '../../../shared/widgets/music_metadata_widget.dart';
 import '../../library/screens/artist_detail_screen.dart';
@@ -139,13 +140,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     var lyrics = await timedLyricsService.loadLyricsFromFile(artist, title);
     if (!mounted || song.id != _pendingSongLoadId) return;
 
-    if (lyrics == null) {
-      lyrics = await timedLyricsService.fetchTimedLyrics(
+    lyrics ??= await timedLyricsService.fetchTimedLyrics(
         artist,
         title,
         songDuration: audioPlayerService.audioPlayer.duration,
       );
-    }
     if (!mounted || song.id != _pendingSongLoadId) return;
 
     setState(() => _timedLyrics = lyrics);
@@ -297,6 +296,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     final horizontalPadding = isTablet ? 32.0 : 20.0;
     final verticalPadding = isTablet ? 50.0 : 40.0;
     final maxContentWidth = isTablet ? 900.0 : double.infinity;
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return SafeArea(
       child: Center(
@@ -319,9 +320,27 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 isTablet: isTablet,
               ),
               SizedBox(height: isTablet ? 28 : 20),
-              PlayerControls(
-                audioPlayerService: audioPlayerService,
-                isTablet: isTablet,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: isTablet ? 60.0 : 32.0),
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: isTablet ? 12 : 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(100),
+                    color: isLowEnd
+                        ? colorScheme.surfaceContainerHigh
+                        : Colors.white.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: isLowEnd
+                          ? colorScheme.outlineVariant
+                          : Colors.white.withValues(alpha: 0.15),
+                    ),
+                  ),
+                  child: PlayerControls(
+                    audioPlayerService: audioPlayerService,
+                    isTablet: isTablet,
+                  ),
+                ),
               ),
               SizedBox(height: isTablet ? 28 : 20),
               Center(
@@ -370,6 +389,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     double artworkSize,
     bool isTablet,
   ) {
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.topCenter,
@@ -381,7 +402,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           child: Container(
             width: artworkSize,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(2),
                 bottom: Radius.circular(16),
@@ -533,7 +554,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 300),
         reverseTransitionDuration: const Duration(milliseconds: 250),
       ),
     );
@@ -732,25 +752,20 @@ class _ArtistSelectionSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
-
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
-              left: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
-              right: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Drag handle
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
+    final colorScheme = Theme.of(context).colorScheme;
+    final sheetBody = DecoratedBox(
+      decoration: BoxDecoration(
+        color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: 0.08),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: isLowEnd
+            ? Border.all(color: colorScheme.outlineVariant)
+            : Border.all(color: Colors.white.withValues(alpha: 0.12)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
               Container(
                 width: 36,
                 height: 4,
@@ -853,8 +868,15 @@ class _ArtistSelectionSheet extends StatelessWidget {
               SizedBox(height: 12 + bottomInset),
             ],
           ),
-        ),
-      ),
+    );
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      child: isLowEnd
+          ? sheetBody
+          : BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: sheetBody,
+            ),
     );
   }
 }

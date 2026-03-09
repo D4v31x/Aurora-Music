@@ -120,7 +120,6 @@ class ChangelogDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
           color: colorScheme.outlineVariant,
-          width: 1,
         ),
       );
     }
@@ -173,7 +172,6 @@ class ChangelogDialog extends StatelessWidget {
                             ? Colors.blue.withValues(alpha: 0.3)
                             : Colors.blue.withValues(alpha: 0.2))
                         : colorScheme.primary,
-                    width: 1,
                   ),
                 ),
                 child: Text(
@@ -292,7 +290,7 @@ class ChangelogDialog extends StatelessWidget {
     );
 
     // Apply blur filter to popup window when performance allows
-    Widget blurredContent = ClipRRect(
+    final Widget blurredContent = ClipRRect(
       borderRadius: BorderRadius.circular(28),
       child: shouldBlur
           ? BackdropFilter(
@@ -305,6 +303,7 @@ class ChangelogDialog extends StatelessWidget {
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
+      shape: const RoundedRectangleBorder(),
       child: RepaintBoundary(
         child: blurredContent,
       ),

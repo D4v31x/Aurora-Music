@@ -31,7 +31,7 @@ class ArtistDetailsScreen extends StatefulWidget {
   });
 
   @override
-  _ArtistDetailsScreenState createState() => _ArtistDetailsScreenState();
+  State<ArtistDetailsScreen> createState() => _ArtistDetailsScreenState();
 }
 
 class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
@@ -242,14 +242,19 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                             isPrimary: true,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildActionButton(
-                            context,
-                            Icons.shuffle_rounded,
-                            localizations.translate('shuffle'),
-                            () => _shuffleAllSongs(context),
-                          ),
+                        const SizedBox(width: 10),
+                        _buildActionButton(
+                          context,
+                          Icons.shuffle_rounded,
+                          localizations.translate('shuffle'),
+                          () => _shuffleAllSongs(context),
+                        ),
+                        const SizedBox(width: 10),
+                        _buildActionButton(
+                          context,
+                          Icons.queue_music_rounded,
+                          'Queue',
+                          () => _addAllToQueue(context),
                         ),
                       ],
                     ),
@@ -761,6 +766,22 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
           name: widget.artistName,
         ),
       ));
+    }
+  }
+
+  void _addAllToQueue(BuildContext context) async {
+    if (_allSongs.isEmpty) return;
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+    await audioService.addMultipleToQueue(_allSongs);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              '${_allSongs.length} song${_allSongs.length == 1 ? '' : 's'} added to queue'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 

@@ -195,6 +195,7 @@ class PackagesDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(),
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: 450,

@@ -172,7 +172,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                   ? null
                   : '$count ${count == 1 ? 'album' : 'albums'}',
               accentColor: Colors.indigo,
-              expandedHeight: 310,
               showBackButton: true,
               searchField: LibrarySearchField(
                 controller: _searchController,

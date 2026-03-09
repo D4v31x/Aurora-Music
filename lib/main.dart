@@ -78,12 +78,6 @@ void main() async {
         androidNotificationChannelId: AppConfig.androidNotificationChannelId,
         androidNotificationChannelName:
             AppConfig.androidNotificationChannelName,
-        // androidStopForegroundOnPause: false keeps the foreground service
-        // alive even when the user pauses playback. This is the primary fix
-        // for the app being killed by Android after ~30 minutes.
-        // NOTE: androidNotificationOngoing must be false when
-        // androidStopForegroundOnPause is false (audio_service assertion).
-        androidNotificationOngoing: false,
         androidStopForegroundOnPause: false,
         // Monochrome status-bar notification icon (white silhouette on transparent).
         androidNotificationIcon: 'drawable/ic_stat_music',
@@ -201,7 +195,7 @@ class MyApp extends StatefulWidget {
   const MyApp({super.key, required this.languageCode});
 
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {

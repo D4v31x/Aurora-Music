@@ -179,7 +179,7 @@ class AudioPlayerService extends ChangeNotifier {
     songsNotifier.value = newSongs;
   }
 
-  static const String LIKED_SONGS_PLAYLIST_ID = 'liked_songs';
+  static const String likedSongsPlaylistId = 'liked_songs';
   String _likedPlaylistName = 'Favorite Songs'; // Default English name
 
   // New settings properties
@@ -258,7 +258,7 @@ class AudioPlayerService extends ChangeNotifier {
     // Initialize with empty data first - don't try to load music yet
     _updateSongs([]);
     _likedSongsPlaylist = Playlist(
-      id: LIKED_SONGS_PLAYLIST_ID,
+      id: likedSongsPlaylistId,
       name: _likedPlaylistName,
       songs: [],
     );
@@ -288,7 +288,6 @@ class AudioPlayerService extends ChangeNotifier {
         flags: AndroidAudioFlags.audibilityEnforced,
         usage: AndroidAudioUsage.media,
       ),
-      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
       androidWillPauseWhenDucked: true,
     ));
 

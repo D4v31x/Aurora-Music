@@ -53,8 +53,6 @@ class DetailHeader extends StatelessWidget {
       automaticallyImplyLeading: false,
       leading: _buildBackButton(context),
       actions: actions,
-      // We never set title here – our LayoutBuilder draws everything.
-      title: null,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
@@ -278,7 +276,6 @@ class DetailHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.5),
-          width: 1,
         ),
       ),
       child: Text(
