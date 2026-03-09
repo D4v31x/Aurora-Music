@@ -346,10 +346,10 @@ class _TracksScreenState extends State<TracksScreen> {
                 style: const TextStyle(color: Colors.white))),
       );
     } else if (_displayedSongs.isEmpty) {
-      return const SliverFillRemaining(
+      return SliverFillRemaining(
         child: Center(
-            child:
-                Text('No songs found', style: TextStyle(color: Colors.white))),
+            child: Text(AppLocalizations.of(context).noSongsFound,
+                style: const TextStyle(color: Colors.white))),
       );
     } else {
       final isTablet = ResponsiveUtils.isTablet(context);

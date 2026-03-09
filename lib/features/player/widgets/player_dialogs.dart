@@ -386,7 +386,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    Text('QUEUE',
+                                    Text(AppLocalizations.of(context).queue.toUpperCase(),
                                         style: _sectionLabelStyle.copyWith(
                                             color: Colors.blue.shade300)),
                                     const SizedBox(width: 8),

@@ -544,7 +544,9 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => DecoratedBox(
+      builder: (context) {
+        final loc = AppLocalizations.of(context);
+        return DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -595,7 +597,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             const Divider(color: Colors.white24),
             ListTile(
               leading: const Icon(Icons.play_arrow, color: Colors.white),
-              title: const Text('Play', style: TextStyle(color: Colors.white)),
+              title: Text(loc.play, style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _playAlbum(album);
@@ -604,7 +606,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             ListTile(
               leading: const Icon(Icons.shuffle, color: Colors.white),
               title:
-                  const Text('Shuffle', style: TextStyle(color: Colors.white)),
+                  Text(loc.shuffle, style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _shuffleAlbum(album);
@@ -612,8 +614,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.playlist_add, color: Colors.white),
-              title: const Text('Add to Queue',
-                  style: TextStyle(color: Colors.white)),
+              title: Text(loc.addToQueue,
+                  style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _addAlbumToQueue(album);
@@ -622,7 +624,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             const SizedBox(height: 16),
           ],
         ),
-      ),
+        );
+      },
     );
   }
 
@@ -684,7 +687,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${albumSongs.length} songs added to queue'),
+            content: Text(AppLocalizations.of(context).songsAddedToQueue(albumSongs.length)),
             behavior: SnackBarBehavior.floating,
           ),
         );

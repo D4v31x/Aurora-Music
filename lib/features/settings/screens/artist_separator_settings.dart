@@ -235,7 +235,7 @@ class _ArtistSeparatorSettingsScreenState
               TextButton.icon(
                 onPressed: _showAddSeparatorDialog,
                 icon: const Icon(Icons.add, size: 16),
-                label: const Text('Add'),
+                label: Text(l10n.add),
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.blue.shade300,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -284,7 +284,7 @@ class _ArtistSeparatorSettingsScreenState
               TextButton.icon(
                 onPressed: _showAddExclusionDialog,
                 icon: const Icon(Icons.add, size: 16),
-                label: const Text('Add'),
+                label: Text(l10n.add),
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.blue.shade300,
                   padding: const EdgeInsets.symmetric(horizontal: 12),

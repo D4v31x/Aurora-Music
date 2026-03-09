@@ -2677,6 +2677,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove from queue'**
   String get removeFromQueue;
+
+  /// No description provided for @play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get play;
+
+  /// No description provided for @viewAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'View Album'**
+  String get viewAlbum;
+
+  /// No description provided for @shuffleAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle All'**
+  String get shuffleAll;
+
+  /// No description provided for @noSongsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No songs found'**
+  String get noSongsFound;
+
+  /// No description provided for @noFoldersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No folders found'**
+  String get noFoldersFound;
+
+  /// No description provided for @deleteSong.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Song'**
+  String get deleteSong;
+
+  /// No description provided for @modifySystemSettingsPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow "Modify system settings" in the page that opened, then try again.'**
+  String get modifySystemSettingsPermission;
+
+  /// No description provided for @errorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {message}'**
+  String errorMessage(String message);
+
+  /// No description provided for @songsAddedToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} songs added to queue'**
+  String songsAddedToQueue(int count);
+
+  /// No description provided for @songAddedToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'"{title}" added to queue'**
+  String songAddedToQueue(String title);
+
+  /// No description provided for @songSetAsRingtone.
+  ///
+  /// In en, this message translates to:
+  /// **'"{title}" set as ringtone'**
+  String songSetAsRingtone(String title);
+
+  /// No description provided for @failedToSetRingtone.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to set ringtone: {error}'**
+  String failedToSetRingtone(String error);
+
+  /// No description provided for @deleteSongConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete "{title}" from your device? This cannot be undone.'**
+  String deleteSongConfirm(String title);
+
+  /// No description provided for @songDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'"{title}" deleted'**
+  String songDeleted(String title);
+
+  /// No description provided for @failedToDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete: {error}'**
+  String failedToDelete(String error);
+
+  /// No description provided for @songCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} songs'**
+  String songCount(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -1350,4 +1350,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removeFromQueue => 'Remove from queue';
+
+  @override
+  String get play => 'Play';
+
+  @override
+  String get viewAlbum => 'View Album';
+
+  @override
+  String get shuffleAll => 'Shuffle All';
+
+  @override
+  String get noSongsFound => 'No songs found';
+
+  @override
+  String get noFoldersFound => 'No folders found';
+
+  @override
+  String get deleteSong => 'Delete Song';
+
+  @override
+  String get modifySystemSettingsPermission =>
+      'Allow "Modify system settings" in the page that opened, then try again.';
+
+  @override
+  String errorMessage(String message) => 'Error: $message';
+
+  @override
+  String songsAddedToQueue(int count) => '$count songs added to queue';
+
+  @override
+  String songAddedToQueue(String title) => '"$title" added to queue';
+
+  @override
+  String songSetAsRingtone(String title) => '"$title" set as ringtone';
+
+  @override
+  String failedToSetRingtone(String error) => 'Failed to set ringtone: $error';
+
+  @override
+  String deleteSongConfirm(String title) =>
+      'Delete "$title" from your device? This cannot be undone.';
+
+  @override
+  String songDeleted(String title) => '"$title" deleted';
+
+  @override
+  String failedToDelete(String error) => 'Failed to delete: $error';
+
+  @override
+  String songCount(int count) => '$count songs';
 }

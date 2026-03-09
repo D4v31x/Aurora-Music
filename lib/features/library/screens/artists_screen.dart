@@ -556,7 +556,9 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
       backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(),
       barrierColor: Colors.black.withValues(alpha: 0.75),
-      builder: (context) => DecoratedBox(
+      builder: (context) {
+        final loc = AppLocalizations.of(context);
+        return DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -604,7 +606,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          '${artist.numberOfTracks} songs',
+                          loc.songCount(artist.numberOfTracks),
                           style: const TextStyle(
                               color: Colors.white70, fontSize: 13),
                         ),
@@ -618,7 +620,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             ListTile(
               leading: const Icon(Icons.play_arrow, color: Colors.white),
               title:
-                  const Text('Play All', style: TextStyle(color: Colors.white)),
+                  Text(loc.playAll, style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _playArtist(artist);
@@ -626,8 +628,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.shuffle, color: Colors.white),
-              title: const Text('Shuffle All',
-                  style: TextStyle(color: Colors.white)),
+              title: Text(loc.shuffleAll,
+                  style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _shuffleArtist(artist);
@@ -635,8 +637,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.info_outline, color: Colors.white),
-              title: const Text('View Details',
-                  style: TextStyle(color: Colors.white)),
+              title: Text(loc.viewDetails,
+                  style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _navigateToArtistDetail(artist);
@@ -646,7 +648,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
           ],
         ),
         ),
-      ),
+        );
+      },
     );
   }
 

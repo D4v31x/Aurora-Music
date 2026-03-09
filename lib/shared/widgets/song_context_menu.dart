@@ -10,6 +10,7 @@ import '../../core/constants/font_constants.dart';
 import '../../features/library/screens/album_detail_screen.dart';
 import '../../features/library/screens/artist_detail_screen.dart';
 import '../../features/settings/screens/metadata_detail_screen.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../models/artist_utils.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/audio_player_service.dart';
@@ -220,7 +221,7 @@ class _SongContextMenu extends StatelessWidget {
     await audioService.addToQueue(song);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('"${song.title}" added to queue')),
+        SnackBar(content: Text(AppLocalizations.of(context).songAddedToQueue(song.title))),
       );
     }
   }
@@ -231,22 +232,21 @@ class _SongContextMenu extends StatelessWidget {
       await _channel.invokeMethod('setAsRingtone', {'path': song.data});
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('"${song.title}" set as ringtone')),
+          SnackBar(content: Text(AppLocalizations.of(context).songSetAsRingtone(song.title))),
         );
       }
     } on PlatformException catch (e) {
       if (!context.mounted) return;
       if (e.code == 'PERMISSION_NEEDED') {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Allow "Modify system settings" in the page that opened, then try again.'),
-            duration: Duration(seconds: 5),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).modifySystemSettingsPermission),
+            duration: const Duration(seconds: 5),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to set ringtone: ${e.message}')),
+          SnackBar(content: Text(AppLocalizations.of(context).failedToSetRingtone(e.message ?? ''))),
         );
       }
     }
@@ -293,22 +293,24 @@ class _SongContextMenu extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.75),
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx);
+        return AlertDialog(
         backgroundColor: Colors.grey[900]!.withValues(alpha: 0.95),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
-        title: const Text(
-          'Delete song',
-          style: TextStyle(
+        title: Text(
+          l10n.deleteSong,
+          style: const TextStyle(
             color: Colors.white,
             fontFamily: FontConstants.fontFamily,
             fontWeight: FontWeight.bold,
           ),
         ),
         content: Text(
-          'Delete "${song.title}" from your device? This cannot be undone.',
+          l10n.deleteSongConfirm(song.title),
           style: const TextStyle(
             color: Colors.white70,
             fontFamily: FontConstants.fontFamily,
@@ -317,18 +319,18 @@ class _SongContextMenu extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(
                   color: Colors.white70,
                   fontFamily: FontConstants.fontFamily),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(
+            child: Text(
+              l10n.delete,
+              style: const TextStyle(
                 color: Colors.redAccent,
                 fontFamily: FontConstants.fontFamily,
                 fontWeight: FontWeight.bold,
@@ -336,7 +338,8 @@ class _SongContextMenu extends StatelessWidget {
             ),
           ),
         ],
-      ),
+        );
+      },
     );
 
     if (confirmed != true) return;
@@ -345,13 +348,13 @@ class _SongContextMenu extends StatelessWidget {
       await _channel.invokeMethod('deleteSong', {'path': song.data});
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('"${song.title}" deleted')),
+          SnackBar(content: Text(AppLocalizations.of(context).songDeleted(song.title))),
         );
       }
     } on PlatformException catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete: ${e.message}')),
+          SnackBar(content: Text(AppLocalizations.of(context).failedToDelete(e.message ?? ''))),
         );
       }
     }
