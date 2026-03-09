@@ -144,16 +144,16 @@ class _TracksScreenState extends State<TracksScreen> {
     _loadMoreSongs();
   }
 
-  String _getSortLabel(TrackSortOption opt) {
+  String _getSortLabel(TrackSortOption opt, AppLocalizations loc) {
     switch (opt) {
       case TrackSortOption.title:
-        return 'Title';
+        return loc.title;
       case TrackSortOption.artist:
-        return 'Artist';
+        return loc.artist;
       case TrackSortOption.duration:
-        return 'Duration';
+        return loc.duration;
       case TrackSortOption.dateAdded:
-        return 'Date added';
+        return loc.dateAdded;
     }
   }
 
@@ -270,7 +270,7 @@ class _TracksScreenState extends State<TracksScreen> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                _getSortLabel(_sortOption),
+                                _getSortLabel(_sortOption, loc),
                                 style: const TextStyle(
                                     color: Colors.white, fontSize: 13),
                                 overflow: TextOverflow.ellipsis,
@@ -282,10 +282,10 @@ class _TracksScreenState extends State<TracksScreen> {
                         ),
                       ),
                       itemBuilder: (context) => [
-                        _sortItem(TrackSortOption.title, 'Title'),
-                        _sortItem(TrackSortOption.artist, 'Artist'),
-                        _sortItem(TrackSortOption.duration, 'Duration'),
-                        _sortItem(TrackSortOption.dateAdded, 'Date added'),
+                        _sortItem(TrackSortOption.title, loc.title),
+                        _sortItem(TrackSortOption.artist, loc.artist),
+                        _sortItem(TrackSortOption.duration, loc.duration),
+                        _sortItem(TrackSortOption.dateAdded, loc.dateAdded),
                       ],
                     ),
                   ),

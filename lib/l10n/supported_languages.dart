@@ -16,9 +16,12 @@
 /// 3. Add **one entry** to [SupportedLanguages.all] below – that is the only
 ///    hand-written change needed.
 ///
+// ignore: dangling_library_doc_comments
 /// Everything else (settings dropdown, onboarding language picker, locale
+// ignore: dangling_library_doc_comments
 /// resolution) derives its data from this single list.
-
+///
+library;
 /// Metadata for a single locale that Aurora Music ships.
 class SupportedLanguage {
   /// BCP-47 language tag (matches the ARB filename suffix, e.g. `'de'`).
@@ -76,3 +79,4 @@ class SupportedLanguages {
   static String nativeNameFor(String languageCode) =>
       forCode(languageCode)?.nativeName ?? languageCode.toUpperCase();
 }
+
