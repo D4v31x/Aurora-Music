@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/models/playlist_model.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/song_picker_sheet.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -175,8 +175,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   fallbackAsset: _playlistAssetImage,
                   title: updatedPlaylist.name,
                   metadata:
-                      '${updatedPlaylist.songs.length} ${localizations.translate('tracks')} · $durationStr',
-                  badge: localizations.translate('playlist'),
+                      '${updatedPlaylist.songs.length} ${localizations.tracks} · $durationStr',
+                  badge: localizations.playlist,
                   heroTag: 'playlist_${updatedPlaylist.id}',
                   accentColor: _getPlaylistColor(updatedPlaylist.id),
                   actions: [
@@ -306,7 +306,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        localizations.translate('play_all'),
+                        localizations.playAll,
                         style: const TextStyle(
                           fontFamily: FontConstants.fontFamily,
                           color: Colors.white,
@@ -355,7 +355,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        localizations.translate('shuffle'),
+                        localizations.shuffle,
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
                           color: playlist.songs.isEmpty
@@ -624,7 +624,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            localizations.translate('no_songs_in_playlist'),
+            localizations.noSongsInPlaylist,
             style: TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: isDark ? Colors.white60 : Colors.black54,
@@ -634,7 +634,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
           if (!_isAutoPlaylist) ...[
             const SizedBox(height: 6),
             Text(
-              localizations.translate('tap_add_to_add_songs'),
+              localizations.tapAddToAddSongs,
               style: TextStyle(
                 fontFamily: FontConstants.fontFamily,
                 color: isDark ? Colors.white38 : Colors.black38,
@@ -678,7 +678,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    localizations.translate('remove_song'),
+                    localizations.removeSong,
                     style: TextStyle(
                       fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white : Colors.black87,
@@ -688,7 +688,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    localizations.translate('remove_song_confirmation'),
+                    localizations.removeSongConfirmation,
                     style: TextStyle(
                       fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white54 : Colors.black45,
@@ -703,7 +703,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         child: TextButton(
                           onPressed: () => Navigator.pop(context),
                           child: Text(
-                            localizations.translate('cancel'),
+                            localizations.cancel,
                             style: TextStyle(
                               fontFamily: FontConstants.fontFamily,
                               color: isDark ? Colors.white54 : Colors.black45,
@@ -728,7 +728,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                             ),
                             child: Center(
                               child: Text(
-                                localizations.translate('remove'),
+                                localizations.remove,
                                 style: const TextStyle(
                                   fontFamily: FontConstants.fontFamily,
                                   color: Colors.white,
@@ -796,7 +796,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 _buildOptionTile(
                   context,
                   Icons.edit_rounded,
-                  localizations.translate('rename'),
+                  localizations.rename,
                   isDark,
                   () {
                     Navigator.pop(context);
@@ -807,7 +807,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 _buildOptionTile(
                   context,
                   Icons.delete_outline_rounded,
-                  localizations.translate('delete'),
+                  localizations.delete,
                   isDark,
                   () {
                     Navigator.pop(context);
@@ -898,7 +898,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    localizations.translate('delete_playlist'),
+                    localizations.deletePlaylist,
                     style: TextStyle(
                       fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white : Colors.black87,
@@ -908,7 +908,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    localizations.translate('delete_playlist_confirmation'),
+                    localizations.deletePlaylistConfirmation,
                     style: TextStyle(
                       fontFamily: FontConstants.fontFamily,
                       color: isDark ? Colors.white54 : Colors.black45,
@@ -923,7 +923,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         child: TextButton(
                           onPressed: () => Navigator.pop(context),
                           child: Text(
-                            localizations.translate('cancel'),
+                            localizations.cancel,
                             style: TextStyle(
                               fontFamily: FontConstants.fontFamily,
                               color: isDark ? Colors.white54 : Colors.black45,
@@ -950,7 +950,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                             ),
                             child: Center(
                               child: Text(
-                                localizations.translate('delete'),
+                                localizations.delete,
                                 style: const TextStyle(
                                   fontFamily: FontConstants.fontFamily,
                                   color: Colors.white,

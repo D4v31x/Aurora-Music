@@ -11,7 +11,7 @@ import '../../../shared/models/timed_lyrics.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/lyrics_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 
 class FullscreenLyricsScreen extends StatefulWidget {
@@ -354,19 +354,19 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             itemBuilder: (context) => [
               _buildMenuItem(
                   Icons.refresh,
-                  AppLocalizations.of(context).translate('refresh_lyrics'),
+                  AppLocalizations.of(context).refreshLyrics,
                   'refresh'),
               _buildMenuItem(
                   Icons.search,
-                  AppLocalizations.of(context).translate('search_lyrics'),
+                  AppLocalizations.of(context).searchLyrics,
                   'search'),
               _buildMenuItem(
                   Icons.timer_outlined,
-                  AppLocalizations.of(context).translate('adjust_sync'),
+                  AppLocalizations.of(context).adjustSync,
                   'sync'),
               _buildMenuItem(
                   Icons.text_fields,
-                  AppLocalizations.of(context).translate('font_size'),
+                  AppLocalizations.of(context).fontSize,
                   'font_size'),
             ],
           ),
@@ -430,7 +430,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
-            AppLocalizations.of(context).translate('search_lyrics'),
+            AppLocalizations.of(context).searchLyrics,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white,
@@ -445,7 +445,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 style: const TextStyle(
                     color: Colors.white, fontFamily: FontConstants.fontFamily),
                 decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context).translate('artists'),
+                  labelText: AppLocalizations.of(context).artists,
                   labelStyle: const TextStyle(
                       color: Colors.white70,
                       fontFamily: FontConstants.fontFamily),
@@ -465,7 +465,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 style: const TextStyle(
                     color: Colors.white, fontFamily: FontConstants.fontFamily),
                 decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context).translate('title'),
+                  labelText: AppLocalizations.of(context).title,
                   labelStyle: const TextStyle(
                       color: Colors.white70,
                       fontFamily: FontConstants.fontFamily),
@@ -485,7 +485,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                AppLocalizations.of(context).translate('cancel'),
+                AppLocalizations.of(context).cancel,
                 style: const TextStyle(
                     color: Colors.white70,
                     fontFamily: FontConstants.fontFamily),
@@ -501,7 +501,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 }
               },
               child: Text(
-                AppLocalizations.of(context).translate('search'),
+                AppLocalizations.of(context).search,
                 style: const TextStyle(
                     color: Colors.white,
                     fontFamily: FontConstants.fontFamily,
@@ -544,7 +544,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  AppLocalizations.of(context).translate('no_lyrics_found')),
+                  AppLocalizations.of(context).noLyricsFound),
               backgroundColor: Colors.grey.shade800,
             ),
           );
@@ -560,7 +560,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content:
-                  Text(AppLocalizations.of(context).translate('search_failed')),
+                  Text(AppLocalizations.of(context).searchFailed),
               backgroundColor: Colors.grey.shade800,
             ),
           );
@@ -572,7 +572,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:
-                Text(AppLocalizations.of(context).translate('search_failed')),
+                Text(AppLocalizations.of(context).searchFailed),
             backgroundColor: Colors.grey.shade800,
           ),
         );
@@ -590,7 +590,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
-            '${AppLocalizations.of(context).translate('results')} (${results.length})',
+            '${AppLocalizations.of(context).results} (${results.length})',
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white,
@@ -685,7 +685,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                AppLocalizations.of(context).translate('cancel'),
+                AppLocalizations.of(context).cancel,
                 style: const TextStyle(
                     color: Colors.white70,
                     fontFamily: FontConstants.fontFamily),
@@ -761,7 +761,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
             title: Text(
-              AppLocalizations.of(context).translate('adjust_sync'),
+              AppLocalizations.of(context).adjustSync,
               style: const TextStyle(
                 fontFamily: FontConstants.fontFamily,
                 color: Colors.white,
@@ -783,12 +783,12 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 const SizedBox(height: 8),
                 Text(
                   tempOffset > 0
-                      ? AppLocalizations.of(context).translate('lyrics_ahead')
+                      ? AppLocalizations.of(context).lyricsAhead
                       : tempOffset < 0
                           ? AppLocalizations.of(context)
-                              .translate('lyrics_behind')
+                              .lyricsBehind
                           : AppLocalizations.of(context)
-                              .translate('lyrics_synced'),
+                              .lyricsSynced,
                   style: const TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     color: Colors.white70,
@@ -813,7 +813,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 TextButton(
                   onPressed: () => setDialogState(() => tempOffset = 0),
                   child: Text(
-                    AppLocalizations.of(context).translate('reset'),
+                    AppLocalizations.of(context).reset,
                     style: const TextStyle(
                         color: Colors.white70,
                         fontFamily: FontConstants.fontFamily),
@@ -825,7 +825,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  AppLocalizations.of(context).translate('cancel'),
+                  AppLocalizations.of(context).cancel,
                   style: const TextStyle(
                       color: Colors.white70,
                       fontFamily: FontConstants.fontFamily),
@@ -837,7 +837,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                   _saveSyncOffset(tempOffset);
                 },
                 child: Text(
-                  AppLocalizations.of(context).translate('save'),
+                  AppLocalizations.of(context).save,
                   style: const TextStyle(
                       color: Colors.white,
                       fontFamily: FontConstants.fontFamily,
@@ -883,7 +883,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
-            AppLocalizations.of(context).translate('font_size'),
+            AppLocalizations.of(context).fontSize,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white,
@@ -894,13 +894,13 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildFontSizeOption(
-                  AppLocalizations.of(context).translate('small'), 0.8),
+                  AppLocalizations.of(context).small, 0.8),
               _buildFontSizeOption(
-                  AppLocalizations.of(context).translate('medium'), 1.0),
+                  AppLocalizations.of(context).medium, 1.0),
               _buildFontSizeOption(
-                  AppLocalizations.of(context).translate('large'), 1.2),
+                  AppLocalizations.of(context).large, 1.2),
               _buildFontSizeOption(
-                  AppLocalizations.of(context).translate('extra_large'), 1.4),
+                  AppLocalizations.of(context).extraLarge, 1.4),
             ],
           ),
         ),
@@ -1024,7 +1024,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           ),
           const SizedBox(height: 16),
           Text(
-            AppLocalizations.of(context).translate('no_lyrics'),
+            AppLocalizations.of(context).noLyrics,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white,
@@ -1034,7 +1034,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            AppLocalizations.of(context).translate('no_lyrics_desc'),
+            AppLocalizations.of(context).noLyricsDesc,
             style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               color: Colors.white54,

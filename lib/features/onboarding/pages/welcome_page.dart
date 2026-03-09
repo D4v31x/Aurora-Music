@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../../shared/providers/theme_provider.dart';
 import '../../../shared/widgets/pill_button.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class WelcomePage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -538,7 +538,7 @@ class _WelcomePageState extends State<WelcomePage>
                             ),
                             child: PillButton(
                               text: AppLocalizations.of(context)
-                                  .translate('get_started'),
+                                  .getStarted,
                               onPressed: _onButtonPressed,
                               isPrimary: false,
                               padding: const EdgeInsets.symmetric(

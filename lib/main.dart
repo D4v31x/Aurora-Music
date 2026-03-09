@@ -17,7 +17,7 @@ import 'shared/services/background_manager_service.dart';
 import 'shared/services/sleep_timer_controller.dart';
 import 'shared/services/artist_separator_service.dart';
 import 'shared/services/home_layout_service.dart';
-import 'l10n/app_localizations.dart';
+import 'l10n/generated/app_localizations.dart';
 import 'features/splash/splash_screen.dart';
 import 'l10n/locale_provider.dart';
 import 'shared/providers/theme_provider.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/providers/theme_provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
 
 class AppInfoPage extends StatefulWidget {
@@ -162,7 +162,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
                       child: Text(
-                        localizations.translate('onboarding_app_info_title'),
+                        localizations.onboardingAppInfoTitle,
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
@@ -184,7 +184,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                         ? _exitFadeAnimation
                         : _subtitleFadeAnimation,
                     child: Text(
-                      localizations.translate('onboarding_app_info_subtitle'),
+                      localizations.onboardingAppInfoSubtitle,
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
@@ -214,46 +214,45 @@ class _AppInfoPageState extends State<AppInfoPage>
                             _buildFeatureItem(
                               icon: Icons.folder_open_rounded,
                               title: AppLocalizations.of(context)
-                                  .translate('onboarding_local_music'),
+                                  .onboardingLocalMusic,
                               description: AppLocalizations.of(context)
-                                  .translate('onboarding_local_music_desc'),
+                                  .onboardingLocalMusicDesc,
                               isDark: isDark,
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
                               icon: Icons.image_rounded,
                               title: AppLocalizations.of(context)
-                                  .translate('onboarding_beautiful_artwork'),
+                                  .onboardingBeautifulArtwork,
                               description: AppLocalizations.of(context)
-                                  .translate(
-                                      'onboarding_beautiful_artwork_desc'),
+                                  .onboardingBeautifulArtworkDesc,
                               isDark: isDark,
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
                               icon: Icons.palette_rounded,
                               title: AppLocalizations.of(context)
-                                  .translate('onboarding_material_design'),
+                                  .onboardingMaterialDesign,
                               description: AppLocalizations.of(context)
-                                  .translate('onboarding_material_design_desc'),
+                                  .onboardingMaterialDesignDesc,
                               isDark: isDark,
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
                               icon: Icons.queue_music_rounded,
                               title: AppLocalizations.of(context)
-                                  .translate('onboarding_smart_playlists'),
+                                  .onboardingSmartPlaylists,
                               description: AppLocalizations.of(context)
-                                  .translate('onboarding_smart_playlists_desc'),
+                                  .onboardingSmartPlaylistsDesc,
                               isDark: isDark,
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
                               icon: Icons.lyrics_rounded,
                               title: AppLocalizations.of(context)
-                                  .translate('onboarding_lyrics_support'),
+                                  .onboardingLyricsSupport,
                               description: AppLocalizations.of(context)
-                                  .translate('onboarding_lyrics_support_desc'),
+                                  .onboardingLyricsSupportDesc,
                               isDark: isDark,
                             ),
                           ],
@@ -266,9 +265,9 @@ class _AppInfoPageState extends State<AppInfoPage>
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),
                     child: PillNavigationButtons(
-                      backText: AppLocalizations.of(context).translate('back'),
+                      backText: AppLocalizations.of(context).back,
                       continueText: AppLocalizations.of(context)
-                          .translate('continueButton'),
+                          .continueButton,
                       onBack: () async {
                         await _exitController.forward();
                         widget.onBack();

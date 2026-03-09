@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/sleep_timer_controller.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
@@ -263,7 +263,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      AppLocalizations.of(context).translate('set_minutes'),
+                      AppLocalizations.of(context).setMinutes,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -334,7 +334,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                           ),
                         ),
                         child: Text(
-                          AppLocalizations.of(context).translate('set'),
+                          AppLocalizations.of(context).set,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -411,7 +411,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                         children: [
                           Text(
                             AppLocalizations.of(context)
-                                .translate('sleep_timer'),
+                                .sleepTimer,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -549,7 +549,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                                   !_presets.contains(_selectedMinutes)
                               ? '$_selectedMinutes min (custom)'
                               : AppLocalizations.of(context)
-                                  .translate('own_timer'),
+                                  .ownTimer,
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 14,
@@ -587,7 +587,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                               ),
                               label: Text(
                                 AppLocalizations.of(context)
-                                    .translate('cancel'),
+                                    .cancel,
                                 style:
                                     const TextStyle(color: Colors.redAccent),
                               ),
@@ -630,7 +630,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                           ),
                         ),
                         child: Text(
-                          AppLocalizations.of(context).translate('set'),
+                          AppLocalizations.of(context).set,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,

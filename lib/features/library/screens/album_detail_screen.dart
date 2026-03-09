@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../../shared/services/audio_player_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
@@ -222,9 +222,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                   title: widget.albumName,
                   subtitle: _artistName,
                   metadata: _allSongs.isNotEmpty
-                      ? '${_allSongs.length} ${localizations.translate('songs')} · ${formatDuration(_totalDuration)}'
+                      ? '${_allSongs.length} ${localizations.songs} · ${formatDuration(_totalDuration)}'
                       : null,
-                  badge: localizations.translate('album'),
+                  badge: localizations.album,
                   heroTag: 'album_image_${widget.albumName}',
                   accentColor: dominantColor == Colors.deepPurple.shade900
                       ? Colors.cyan

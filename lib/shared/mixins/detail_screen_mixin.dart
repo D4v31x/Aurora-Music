@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../services/audio_player_service.dart';
-import '../../l10n/app_localizations.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../widgets/expanding_player.dart';
 
 /// A mixin that provides common UI patterns for detail screens.
@@ -183,7 +183,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
           Expanded(
             child: buildActionButton(
               icon: Icons.play_arrow_rounded,
-              label: AppLocalizations.of(context).translate('play_all'),
+              label: AppLocalizations.of(context).playAll,
               onTap: playAllSongs,
               isPrimary: true,
             ),
@@ -191,7 +191,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
           const SizedBox(width: 8),
           buildActionButton(
             icon: Icons.shuffle_rounded,
-            label: AppLocalizations.of(context).translate('shuffle'),
+            label: AppLocalizations.of(context).shuffle,
             onTap: shuffleAllSongs,
           ),
           const SizedBox(width: 8),

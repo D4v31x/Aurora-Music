@@ -6,7 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artist_separator_service.dart';
 import '../../../shared/widgets/artist_card.dart';
@@ -64,7 +64,7 @@ class ArtistSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: _kBottomPadding),
       child: Text(
-        AppLocalizations.of(context).translate('about_artist'),
+        AppLocalizations.of(context).aboutArtist,
         style: const TextStyle(
           color: Colors.white,
           fontSize: _kSectionTitleFontSize,

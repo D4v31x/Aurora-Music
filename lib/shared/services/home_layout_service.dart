@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:aurora_music_v01/l10n/generated/app_localizations.dart';
 
 /// Enum representing the different sections on the home tab
 enum HomeSection {
@@ -30,6 +31,25 @@ extension HomeSectionExtension on HomeSection {
         return 'recently_added';
       case HomeSection.libraryStats:
         return 'library_stats';
+    }
+  }
+
+  String localizedName(AppLocalizations l10n) {
+    switch (this) {
+      case HomeSection.forYou:
+        return l10n.forYou;
+      case HomeSection.suggestedArtists:
+        return l10n.suggestedArtists;
+      case HomeSection.recentlyPlayed:
+        return l10n.recentlyPlayed;
+      case HomeSection.mostPlayed:
+        return l10n.mostPlayed;
+      case HomeSection.listeningHistory:
+        return l10n.listeningHistory;
+      case HomeSection.recentlyAdded:
+        return l10n.recentlyAdded;
+      case HomeSection.libraryStats:
+        return l10n.libraryStats;
     }
   }
 

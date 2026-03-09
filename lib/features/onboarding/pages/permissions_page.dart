@@ -5,7 +5,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../../../shared/providers/theme_provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
 
 class PermissionsPage extends StatefulWidget {
@@ -287,7 +287,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                           : _titleFadeAnimation,
                       child: Text(
                         AppLocalizations.of(context)
-                            .translate('onboarding_permissions_title'),
+                            .onboardingPermissionsTitle,
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
@@ -310,7 +310,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                         : _subtitleFadeAnimation,
                     child: Text(
                       AppLocalizations.of(context)
-                          .translate('onboarding_permissions_subtitle'),
+                          .onboardingPermissionsSubtitle,
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
@@ -344,10 +344,9 @@ class _PermissionsPageState extends State<PermissionsPage>
                                   context: context,
                                   icon: Icons.music_note_rounded,
                                   title: AppLocalizations.of(context)
-                                      .translate('onboarding_audio_access'),
+                                      .onboardingAudioAccess,
                                   description: AppLocalizations.of(context)
-                                      .translate(
-                                          'onboarding_audio_access_desc'),
+                                      .onboardingAudioAccessDesc,
                                   isGranted: _audioPermissionGranted,
                                   isRequired: true,
                                   isDark: isDark,
@@ -362,10 +361,9 @@ class _PermissionsPageState extends State<PermissionsPage>
                                   context: context,
                                   icon: Icons.folder_rounded,
                                   title: AppLocalizations.of(context)
-                                      .translate('onboarding_storage_access'),
+                                      .onboardingStorageAccess,
                                   description: AppLocalizations.of(context)
-                                      .translate(
-                                          'onboarding_storage_access_desc'),
+                                      .onboardingStorageAccessDesc,
                                   isGranted: _storagePermissionGranted,
                                   isRequired: true,
                                   isDark: isDark,
@@ -378,9 +376,9 @@ class _PermissionsPageState extends State<PermissionsPage>
                                 context: context,
                                 icon: Icons.bluetooth_rounded,
                                 title: AppLocalizations.of(context)
-                                    .translate('onboarding_bluetooth'),
+                                    .onboardingBluetooth,
                                 description: AppLocalizations.of(context)
-                                    .translate('onboarding_bluetooth_desc'),
+                                    .onboardingBluetoothDesc,
                                 isGranted: _bluetoothPermissionGranted,
                                 isRequired: false,
                                 isDark: isDark,
@@ -393,9 +391,9 @@ class _PermissionsPageState extends State<PermissionsPage>
                                 context: context,
                                 icon: Icons.notifications_rounded,
                                 title: AppLocalizations.of(context)
-                                    .translate('onboarding_notifications'),
+                                    .onboardingNotifications,
                                 description: AppLocalizations.of(context)
-                                    .translate('onboarding_notifications_desc'),
+                                    .onboardingNotificationsDesc,
                                 isGranted: _notificationPermissionGranted,
                                 isRequired: false,
                                 isDark: isDark,
@@ -409,9 +407,8 @@ class _PermissionsPageState extends State<PermissionsPage>
                                 PillButton(
                                   text: _isChecking
                                       ? AppLocalizations.of(context)
-                                          .translate('onboarding_requesting')
-                                      : AppLocalizations.of(context).translate(
-                                          'onboarding_grant_permissions'),
+                                          .onboardingRequesting
+                                      : AppLocalizations.of(context).onboardingGrantPermissions,
                                   onPressed: _isChecking
                                       ? null
                                       : _requestAllPermissions,
@@ -432,9 +429,9 @@ class _PermissionsPageState extends State<PermissionsPage>
                     child: requiredPermissionGranted
                         ? PillNavigationButtons(
                             backText:
-                                AppLocalizations.of(context).translate('back'),
+                                AppLocalizations.of(context).back,
                             continueText: AppLocalizations.of(context)
-                                .translate('continueButton'),
+                                .continueButton,
                             onBack: widget.onBack,
                             onContinue: () async {
                               await _exitController.forward();
@@ -445,7 +442,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                             children: [
                               Text(
                                 AppLocalizations.of(context)
-                                    .translate('onboarding_audio_required'),
+                                    .onboardingAudioRequired,
                                 style: const TextStyle(
                                   fontFamily: FontConstants.fontFamily,
                                   fontSize: 14,
@@ -457,9 +454,9 @@ class _PermissionsPageState extends State<PermissionsPage>
                               const SizedBox(height: 16),
                               PillNavigationButtons(
                                 backText: AppLocalizations.of(context)
-                                    .translate('back'),
+                                    .back,
                                 continueText: AppLocalizations.of(context)
-                                    .translate('continueButton'),
+                                    .continueButton,
                                 onBack: widget.onBack,
                               ),
                             ],
@@ -562,7 +559,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                             ),
                             child: Text(
                               AppLocalizations.of(context)
-                                  .translate('onboarding_required'),
+                                  .onboardingRequired,
                               style: const TextStyle(
                                 fontFamily: FontConstants.fontFamily,
                                 fontSize: 10,

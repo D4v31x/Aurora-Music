@@ -13,7 +13,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import 'artist_detail_screen.dart';
 
 enum ArtistSortOption { name, tracks, albums }
@@ -165,7 +165,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
           slivers: [
             LibraryScreenHeader(
               badge: 'Library',
-              title: loc.translate('artists'),
+              title: loc.artists,
               subtitle: _isLoading
                   ? null
                   : '$count ${count == 1 ? 'artist' : 'artists'}',
@@ -173,7 +173,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
               showBackButton: true,
               searchField: LibrarySearchField(
                 controller: _searchController,
-                hint: loc.translate('search_artists'),
+                hint: loc.searchArtists,
                 onChanged: _filterArtists,
                 hasQuery: _searchQuery.isNotEmpty,
                 onClear: () {
@@ -291,8 +291,8 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             const SizedBox(height: 16),
             Text(
               _searchQuery.isEmpty
-                  ? loc.translate('no_artists_found')
-                  : loc.translate('no_results'),
+                  ? loc.noArtistsFound
+                  : loc.noResults,
               style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
             ),
           ],

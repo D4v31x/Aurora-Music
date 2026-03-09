@@ -5,7 +5,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/glassmorphic_container.dart';
-import '../../l10n/app_localizations.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Service for handling donations via external platforms
 /// Uses free services like Ko-fi, Buy Me a Coffee, and PayPal
@@ -116,7 +116,7 @@ class DonationService {
               const SizedBox(height: 20),
               // Title
               Text(
-                loc.translate('enjoying_aurora'),
+                loc.enjoyingAurora,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -127,7 +127,7 @@ class DonationService {
               const SizedBox(height: 12),
               // Description
               Text(
-                loc.translate('enjoying_aurora_desc'),
+                loc.enjoyingAuroraDesc,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -154,7 +154,7 @@ class DonationService {
                     ),
                   ),
                   child: Text(
-                    loc.translate('support_aurora_btn'),
+                    loc.supportAuroraBtn,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -168,7 +168,7 @@ class DonationService {
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  loc.translate('maybe_later'),
+                  loc.maybeLater,
                   style: TextStyle(
                     fontSize: 14,
                     fontFamily: FontConstants.fontFamily,
@@ -183,7 +183,7 @@ class DonationService {
                   Navigator.pop(context);
                 },
                 child: Text(
-                  loc.translate('dont_show_again'),
+                  loc.dontShowAgain,
                   style: TextStyle(
                     fontSize: 12,
                     fontFamily: FontConstants.fontFamily,
@@ -228,7 +228,7 @@ class DonationService {
                 children: [
                   // Title
                   Text(
-                    loc.translate('support_aurora_title'),
+                    loc.supportAuroraTitle,
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -241,7 +241,7 @@ class DonationService {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      loc.translate('support_aurora_message'),
+                      loc.supportAuroraMessage,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
@@ -254,8 +254,8 @@ class DonationService {
                   const SizedBox(height: 28),
                   // Donation options
                   _DonationOption(
-                    title: loc.translate('buy_me_coffee'),
-                    subtitle: loc.translate('one_time_support'),
+                    title: loc.buyMeCoffee,
+                    subtitle: loc.oneTimeSupport,
                     color: const Color(0xFFFFDD00),
                     onTap: () {
                       Navigator.pop(context);
@@ -265,8 +265,8 @@ class DonationService {
                   ),
                   const SizedBox(height: 12),
                   _DonationOption(
-                    title: loc.translate('kofi'),
-                    subtitle: loc.translate('coffee_support'),
+                    title: loc.kofi,
+                    subtitle: loc.coffeeSupport,
                     color: const Color(0xFFFF5E5B),
                     onTap: () {
                       Navigator.pop(context);
@@ -277,7 +277,7 @@ class DonationService {
                   const SizedBox(height: 16),
                   // Thank you note
                   Text(
-                    loc.translate('thank_you_support'),
+                    loc.thankYouSupport,
                     style: TextStyle(
                       fontSize: 12,
                       fontFamily: FontConstants.fontFamily,

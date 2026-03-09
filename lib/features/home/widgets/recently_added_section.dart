@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:aurora_music_v01/core/constants/app_config.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/widgets/glassmorphic_card.dart';
 
@@ -57,7 +57,7 @@ class RecentlyAddedSection extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                AppLocalizations.of(context).translate('No_data'),
+                AppLocalizations.of(context).noData,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context)
                           .colorScheme

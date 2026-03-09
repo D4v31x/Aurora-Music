@@ -6,7 +6,7 @@ import '../../../shared/models/playlist_model.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/optimized_tiles.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -228,7 +228,7 @@ class _TracksScreenState extends State<TracksScreen> {
           slivers: [
             LibraryScreenHeader(
               badge: 'Library',
-              title: loc.translate('tracks'),
+              title: loc.tracks,
               subtitle: totalCount > 0 ? '$totalCount songs' : null,
               showBackButton: true,
               actions: [
@@ -244,7 +244,7 @@ class _TracksScreenState extends State<TracksScreen> {
               ],
               searchField: LibrarySearchField(
                 controller: _searchController,
-                hint: loc.translate('search_tracks'),
+                hint: loc.searchTracks,
                 onChanged: _onSearchChanged,
                 hasQuery: _searchQuery.isNotEmpty,
                 onClear: () {

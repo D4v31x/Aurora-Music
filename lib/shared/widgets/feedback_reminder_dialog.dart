@@ -4,7 +4,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../l10n/app_localizations.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../providers/performance_mode_provider.dart';
 import '../services/feedback_reminder_service.dart';
 
@@ -107,7 +107,7 @@ class FeedbackReminderDialog extends StatelessWidget {
 
               // Title
               Text(
-                l10n.translate('feedback_title'),
+                l10n.feedback_title,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   fontSize: 22,
@@ -120,7 +120,7 @@ class FeedbackReminderDialog extends StatelessWidget {
 
               // Description
               Text(
-                l10n.translate('feedback_description'),
+                l10n.feedback_description,
                 style: TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   fontSize: 14,
@@ -137,7 +137,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                   Expanded(
                     child: _FeedbackButton(
                       icon: Icons.bug_report_rounded,
-                      label: l10n.translate('report_bug'),
+                      label: l10n.report_bug,
                       color: Colors.orange,
                       onTap: () {
                         Navigator.pop(context);
@@ -149,7 +149,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                   Expanded(
                     child: _FeedbackButton(
                       icon: Icons.lightbulb_rounded,
-                      label: l10n.translate('suggest_feature'),
+                      label: l10n.suggest_feature,
                       color: Colors.blue,
                       onTap: () {
                         Navigator.pop(context);
@@ -168,7 +168,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                   TextButton(
                     onPressed: () => Navigator.pop(context),
                     child: Text(
-                      l10n.translate('maybe_later'),
+                      l10n.maybeLater,
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
                         color: Colors.white.withValues(alpha: 0.6),
@@ -184,7 +184,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                       }
                     },
                     child: Text(
-                      l10n.translate('dont_ask_again'),
+                      l10n.dont_ask_again,
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
                         color: Colors.white.withValues(alpha: 0.4),

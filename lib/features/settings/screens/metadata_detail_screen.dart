@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/metadata_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
@@ -204,12 +204,12 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     final bitrate = _estimateBitrateValue();
 
     if (format == 'FLAC' || format == 'WAV' || format == 'ALAC') {
-      return loc.translate('lossless');
+      return loc.lossless;
     }
-    if (bitrate >= 256) return loc.translate('high_quality');
-    if (bitrate >= 192) return loc.translate('good_quality');
-    if (bitrate >= 128) return loc.translate('standard_quality');
-    return loc.translate('low_quality');
+    if (bitrate >= 256) return loc.highQuality;
+    if (bitrate >= 192) return loc.goodQuality;
+    if (bitrate >= 128) return loc.standardQuality;
+    return loc.lowQuality;
   }
 
   String _formatDuration() {
@@ -250,10 +250,10 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
 
   IconData _getQualityIcon(AppLocalizations loc) {
     final label = _getQualityLabel(loc);
-    if (label == loc.translate('lossless')) return Icons.diamond_outlined;
-    if (label == loc.translate('high_quality')) return Icons.stars_outlined;
-    if (label == loc.translate('good_quality')) return Icons.thumb_up_outlined;
-    if (label == loc.translate('standard_quality')) {
+    if (label == loc.lossless) return Icons.diamond_outlined;
+    if (label == loc.highQuality) return Icons.stars_outlined;
+    if (label == loc.goodQuality) return Icons.thumb_up_outlined;
+    if (label == loc.standardQuality) {
       return Icons.check_circle_outline;
     }
     return Icons.warning_amber_outlined;
@@ -261,10 +261,10 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
 
   Color _getQualityColor(AppLocalizations loc) {
     final label = _getQualityLabel(loc);
-    if (label == loc.translate('lossless')) return const Color(0xFF8B5CF6);
-    if (label == loc.translate('high_quality')) return const Color(0xFF10B981);
-    if (label == loc.translate('good_quality')) return const Color(0xFF3B82F6);
-    if (label == loc.translate('standard_quality')) {
+    if (label == loc.lossless) return const Color(0xFF8B5CF6);
+    if (label == loc.highQuality) return const Color(0xFF10B981);
+    if (label == loc.goodQuality) return const Color(0xFF3B82F6);
+    if (label == loc.standardQuality) {
       return const Color(0xFFF59E0B);
     }
     return const Color(0xFFEF4444);
@@ -328,7 +328,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  AppLocalizations.of(context).translate('cover_art_updated'))),
+                  AppLocalizations.of(context).coverArtUpdated)),
         );
       }
     }
@@ -363,7 +363,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           title: Text(
-            loc.translate('save_changes'),
+            loc.saveChanges,
             style: const TextStyle(
               color: Colors.white,
               fontFamily: FontConstants.fontFamily,
@@ -371,7 +371,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             ),
           ),
           content: Text(
-            loc.translate('save_changes_desc'),
+            loc.saveChangesDesc,
             style: const TextStyle(
               color: Colors.white70,
               fontFamily: FontConstants.fontFamily,
@@ -384,7 +384,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                 _discardChanges();
               },
               child: Text(
-                loc.translate('discard'),
+                loc.discard,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white70,
@@ -397,7 +397,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                 _saveChanges();
               },
               child: Text(
-                loc.translate('save'),
+                loc.save,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
@@ -494,7 +494,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
           } catch (_) {}
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(loc.translate('storage_permission_needed')),
+              content: Text(loc.storagePermissionNeeded),
               backgroundColor: Colors.orange[700],
               behavior: SnackBarBehavior.floating,
             ));
@@ -570,7 +570,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               children: [
                 const Icon(Icons.check_circle, color: Colors.white),
                 const SizedBox(width: 12),
-                Text(loc.translate('metadata_saved')),
+                Text(loc.metadataSaved),
               ],
             ),
             backgroundColor: Colors.green[700],
@@ -605,7 +605,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  loc.translate('save_failed'),
+                  loc.saveFailed,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -621,7 +621,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                loc.translate('save_failed_desc'),
+                loc.saveFailedDesc,
                 style: const TextStyle(
                   color: Colors.white70,
                   fontFamily: FontConstants.fontFamily,
@@ -657,7 +657,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      loc.translate('possible_reasons'),
+                      loc.possibleReasons,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.7),
                         fontWeight: FontWeight.bold,
@@ -666,9 +666,9 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _buildReasonItem(loc.translate('reason_permissions')),
-                    _buildReasonItem(loc.translate('reason_readonly')),
-                    _buildReasonItem(loc.translate('reason_format')),
+                    _buildReasonItem(loc.reasonPermissions),
+                    _buildReasonItem(loc.reasonReadonly),
+                    _buildReasonItem(loc.reasonFormat),
                   ],
                 ),
               ),
@@ -678,7 +678,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                loc.translate('got_it'),
+                loc.gotIt,
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white,
@@ -718,7 +718,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     final loc = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${loc.translate('copied')}: $label'),
+        content: Text('${loc.copied}: $label'),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -748,7 +748,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             },
           ),
           title: Text(
-            loc.translate('metadata'),
+            loc.metadata,
             style: const TextStyle(
               color: Colors.white,
               fontFamily: FontConstants.fontFamily,
@@ -837,17 +837,17 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
 
               // Audio info section
               _buildSectionCard(
-                loc.translate('audio_quality'),
+                loc.audioQuality,
                 Icons.graphic_eq,
                 [
-                  _buildInfoRow(loc.translate('format'), _getFileFormat()),
-                  _buildInfoRow(loc.translate('bitrate'),
+                  _buildInfoRow(loc.format, _getFileFormat()),
+                  _buildInfoRow(loc.bitrate,
                       '${_estimateBitrateValue()} kbps'),
                   _buildInfoRow(
-                      loc.translate('sample_rate'), _getEstimatedSampleRate()),
-                  _buildInfoRow(loc.translate('duration'), _formatDuration()),
+                      loc.sampleRate, _getEstimatedSampleRate()),
+                  _buildInfoRow(loc.duration, _formatDuration()),
                 ],
-                description: loc.translate('audio_quality_desc'),
+                description: loc.audioQualityDesc,
                 isLowEnd: isLowEnd,
                 colorScheme: colorScheme,
               ),
@@ -855,23 +855,23 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
 
               // Track info section (editable)
               _buildSectionCard(
-                loc.translate('track_info'),
+                loc.trackInfo,
                 Icons.music_note_outlined,
                 [
-                  _buildEditableRow(loc.translate('title'), _titleController),
-                  _buildEditableRow(loc.translate('artist'), _artistController),
-                  _buildEditableRow(loc.translate('album'), _albumController),
-                  _buildEditableRow(loc.translate('genre'), _genreController),
-                  _buildEditableRow(loc.translate('year'), _yearController,
+                  _buildEditableRow(loc.title, _titleController),
+                  _buildEditableRow(loc.artist, _artistController),
+                  _buildEditableRow(loc.album, _albumController),
+                  _buildEditableRow(loc.genre, _genreController),
+                  _buildEditableRow(loc.year, _yearController,
                       isNumber: true),
-                  _buildEditableRow(loc.translate('track'), _trackController,
+                  _buildEditableRow(loc.track, _trackController,
                       isNumber: true),
                   _buildEditableRow(
-                      loc.translate('composer'), _composerController),
+                      loc.composer, _composerController),
                 ],
                 description: _isEditing
-                    ? loc.translate('track_info_edit_desc')
-                    : loc.translate('track_info_desc'),
+                    ? loc.trackInfoEditDesc
+                    : loc.trackInfoDesc,
                 isLowEnd: isLowEnd,
                 colorScheme: colorScheme,
               ),
@@ -879,20 +879,20 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
 
               // File info section
               _buildSectionCard(
-                loc.translate('file_info'),
+                loc.fileInfo,
                 Icons.folder_outlined,
                 [
-                  _buildInfoRow(loc.translate('file_name'), _getFileName(),
+                  _buildInfoRow(loc.fileName, _getFileName(),
                       canCopy: true),
-                  _buildInfoRow(loc.translate('size'), _getFileSizeFormatted()),
+                  _buildInfoRow(loc.size, _getFileSizeFormatted()),
                   if (widget.song.dateAdded != null)
-                    _buildInfoRow(loc.translate('date_added'),
+                    _buildInfoRow(loc.dateAdded,
                         _formatDate(widget.song.dateAdded)),
                   if (widget.song.dateModified != null)
-                    _buildInfoRow(loc.translate('date_modified'),
+                    _buildInfoRow(loc.dateModified,
                         _formatDate(widget.song.dateModified)),
                 ],
-                description: loc.translate('file_info_desc'),
+                description: loc.fileInfoDesc,
                 isLowEnd: isLowEnd,
                 colorScheme: colorScheme,
               ),
@@ -967,7 +967,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  loc.translate('quality_desc'),
+                  loc.qualityDesc,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.5),
                     fontSize: 11,
@@ -1158,7 +1158,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   color: Colors.white.withValues(alpha: 0.5), size: 18),
               const SizedBox(width: 10),
               Text(
-                loc.translate('file_path'),
+                loc.filePath,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 14,
@@ -1173,8 +1173,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   size: 18,
                 ),
                 onPressed: () => _copyToClipboard(
-                    widget.song.data, loc.translate('file_path')),
-                tooltip: loc.translate('copy'),
+                    widget.song.data, loc.filePath),
+                tooltip: loc.copy,
               ),
             ],
           ),
@@ -1203,7 +1203,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             child: OutlinedButton.icon(
               onPressed: () => _openInFileManager(),
               icon: const Icon(Icons.folder_open, size: 18),
-              label: Text(loc.translate('open_folder')),
+              label: Text(loc.openFolder),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white.withValues(alpha: 0.8),
                 side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
@@ -1245,7 +1245,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   color: Colors.white.withValues(alpha: 0.7), size: 20),
               const SizedBox(width: 10),
               Text(
-                loc.translate('auto_tag'),
+                loc.autoTag,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 16,
@@ -1266,7 +1266,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                       color: Colors.white,
                       fontFamily: FontConstants.fontFamily),
                   decoration: InputDecoration(
-                    hintText: loc.translate('search_metadata'),
+                    hintText: loc.searchMetadata,
                     hintStyle: TextStyle(
                       color: Colors.white.withValues(alpha: 0.4),
                       fontFamily: FontConstants.fontFamily,
@@ -1311,7 +1311,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
-                  loc.translate('no_results'),
+                  loc.noResults,
                   style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.5),
                       fontFamily: FontConstants.fontFamily),
@@ -1439,7 +1439,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     // This would require platform-specific implementation
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(loc.translate('open_folder_info')),
+        content: Text(loc.openFolderInfo),
         duration: const Duration(seconds: 2),
       ),
     );

@@ -14,7 +14,7 @@ import '../../../shared/models/separated_artist.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artist_aggregator_service.dart';
 import '../../../shared/services/artist_separator_service.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_dialog.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/widgets/feedback_reminder_dialog.dart';
@@ -145,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
         _notificationManager.showNotification(
-          AppLocalizations.of(context).translate('welcome_back'),
+          AppLocalizations.of(context).welcomeBack,
           onComplete: () => _notificationManager.showDefaultTitle(),
         );
       }
@@ -307,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final localizations = AppLocalizations.of(context);
 
     _notificationManager.showNotification(
-      localizations.translate('scanning_songs'),
+      localizations.scanningSongs,
       isProgress: true,
     );
 
@@ -337,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
         if (!mounted) return;
         _notificationManager.showNotification(
-          '${localizations.translate('library_updated')} ($_totalSongs ${localizations.translate('songs_loaded')})',
+          '${localizations.libraryUpdated} ($_totalSongs ${localizations.songsLoaded})',
           duration: const Duration(seconds: 5),
           onComplete: () => _notificationManager.showDefaultTitle(),
         );
@@ -346,7 +346,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       } else {
         if (!mounted) return;
         _notificationManager.showNotification(
-          localizations.translate('scan_failed'),
+          localizations.scanFailed,
           duration: const Duration(seconds: 5),
           onComplete: () => _notificationManager.showDefaultTitle(),
         );
@@ -355,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       debugPrint('Error refreshing library: $e');
       if (!mounted) return;
       _notificationManager.showNotification(
-        localizations.translate('scan_failed'),
+        localizations.scanFailed,
         duration: const Duration(seconds: 5),
         onComplete: () => _notificationManager.showDefaultTitle(),
       );
@@ -388,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           // If we already have permissions, initialize the library
           if (!mounted) return;
           _notificationManager.showNotification(
-            localizations.translate('loading_library'),
+            localizations.loadingLibrary,
             isProgress: true,
           );
 
@@ -397,7 +397,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           if (!mounted) return;
           if (success) {
             _notificationManager.showNotification(
-              localizations.translate('library_loaded'),
+              localizations.libraryLoaded,
               duration: const Duration(seconds: 2),
               onComplete: () => _notificationManager.showDefaultTitle(),
             );
@@ -418,7 +418,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       } else if (Platform.isWindows) {
         // Initialize for Windows immediately - no permissions needed
         _notificationManager.showNotification(
-          localizations.translate('loading_library'),
+          localizations.loadingLibrary,
           isProgress: true,
         );
 
@@ -427,7 +427,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         if (!mounted) return;
         if (success) {
           _notificationManager.showNotification(
-            localizations.translate('library_loaded'),
+            localizations.libraryLoaded,
             duration: const Duration(seconds: 2),
             onComplete: () => _notificationManager.showDefaultTitle(),
           );
@@ -457,23 +457,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: Text(
-              AppLocalizations.of(dialogContext).translate('permission_required')),
+              AppLocalizations.of(dialogContext).permissionRequired),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(AppLocalizations.of(dialogContext)
-                  .translate('permission_explanation')),
+                  .permissionExplanation),
               const SizedBox(height: 12),
               Text(
                   AppLocalizations.of(dialogContext)
-                      .translate('no_permission_explanation'),
+                      .noPermissionExplanation,
                   style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ],
           ),
           actions: <Widget>[
             TextButton(
-              child: Text(AppLocalizations.of(dialogContext).translate('cancel')),
+              child: Text(AppLocalizations.of(dialogContext).cancel),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
                 // User denied permission - handle accordingly
@@ -485,10 +485,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(AppLocalizations.of(context)
-                        .translate('permission_later')),
+                        .permissionLater),
                     duration: const Duration(seconds: 5),
                     action: SnackBarAction(
-                      label: AppLocalizations.of(context).translate('settings'),
+                      label: AppLocalizations.of(context).settings,
                       onPressed: () async {
                         await permissionhandler.openAppSettings();
                       },
@@ -499,7 +499,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             TextButton(
               child: Text(
-                  AppLocalizations.of(dialogContext).translate('grant_permission')),
+                  AppLocalizations.of(dialogContext).grantPermission),
               onPressed: () async {
                 final audioPlayerService =
                     Provider.of<AudioPlayerService>(dialogContext, listen: false);
@@ -523,7 +523,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 if (hasAudioPermission || hasStoragePermission) {
                   // Permissions granted, initialize library
                   _notificationManager.showNotification(
-                    localizations.translate('loading_library'),
+                    localizations.loadingLibrary,
                     isProgress: true,
                   );
 
@@ -533,7 +533,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   if (!mounted) return;
                   if (success) {
                     _notificationManager.showNotification(
-                      localizations.translate('library_loaded'),
+                      localizations.libraryLoaded,
                       duration: const Duration(seconds: 2),
                       onComplete: () => _notificationManager.showDefaultTitle(),
                     );
@@ -551,7 +551,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(localizations.translate('library_error')),
+                        content: Text(localizations.libraryError),
                       ),
                     );
                   }
@@ -563,9 +563,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(localizations.translate('perm_deny')),
+                      content: Text(localizations.permDeny),
                       action: SnackBarAction(
-                        label: localizations.translate('settings'),
+                        label: localizations.settings,
                         onPressed: () async {
                           await permissionhandler.openAppSettings();
                         },
@@ -600,18 +600,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final shouldExit = await showGlassmorphicDialog<bool>(
           context: context,
           builder: (context) => GlassmorphicDialog(
-            title: Text(AppLocalizations.of(context).translate('exit_app')),
+            title: Text(AppLocalizations.of(context).exitApp),
             content: Text(
-                AppLocalizations.of(context).translate('exit_app_confirm')),
+                AppLocalizations.of(context).exitAppConfirm),
             actions: <Widget>[
               GlassmorphicTextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text(AppLocalizations.of(context).translate('no')),
+                child: Text(AppLocalizations.of(context).no),
               ),
               GlassmorphicTextButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 isPrimary: true,
-                child: Text(AppLocalizations.of(context).translate('yes')),
+                child: Text(AppLocalizations.of(context).yes),
               ),
             ],
           ),
@@ -664,7 +664,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: message.isEmpty
                           ? Text(
                               AppLocalizations.of(context)
-                                  .translate('aurora_music'),
+                                  .auroraMusic,
                               key: const ValueKey('default'),
                               textAlign: TextAlign.center,
                               style: const TextStyle(
@@ -962,20 +962,20 @@ class _HomeTabBarState extends State<_HomeTabBar> {
       indicator: OutlineIndicator(
         radius: const Radius.circular(20),
         text: [
-          AppLocalizations.of(context).translate('home'),
-          AppLocalizations.of(context).translate('library'),
-          AppLocalizations.of(context).translate('search'),
-          AppLocalizations.of(context).translate('settings'),
+          AppLocalizations.of(context).home,
+          AppLocalizations.of(context).library,
+          AppLocalizations.of(context).search,
+          AppLocalizations.of(context).settings,
         ][_currentIndex],
       ),
       tabs: [
-        _buildTabItem(context, AppLocalizations.of(context).translate('home')),
+        _buildTabItem(context, AppLocalizations.of(context).home),
         _buildTabItem(
-            context, AppLocalizations.of(context).translate('library')),
+            context, AppLocalizations.of(context).library),
         _buildTabItem(
-            context, AppLocalizations.of(context).translate('search')),
+            context, AppLocalizations.of(context).search),
         _buildTabItem(
-            context, AppLocalizations.of(context).translate('settings')),
+            context, AppLocalizations.of(context).settings),
       ],
     );
   }

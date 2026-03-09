@@ -7,7 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/widgets/album_card.dart';
 import '../../library/screens/album_detail_screen.dart';
@@ -63,7 +63,7 @@ class AlbumSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: _kBottomPadding),
       child: Text(
-        AppLocalizations.of(context).translate('album'),
+        AppLocalizations.of(context).album,
         style: const TextStyle(
           color: Colors.white,
           fontSize: _kSectionTitleFontSize,

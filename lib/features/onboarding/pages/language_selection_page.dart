@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui' as ui;
 import '../../../l10n/locale_provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/theme_provider.dart';
 import '../../../shared/widgets/pill_button.dart';
 
@@ -192,7 +192,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
                       child: Text(
-                        localizations.translate('onboarding_choose_language'),
+                        localizations.onboardingChooseLanguage,
                         style: TextStyle(
                           fontFamily: FontConstants.fontFamily,
                           fontSize: 32,
@@ -214,7 +214,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                         ? _exitFadeAnimation
                         : _subtitleFadeAnimation,
                     child: Text(
-                      localizations.translate('onboarding_select_language'),
+                      localizations.onboardingSelectLanguage,
                       style: TextStyle(
                         fontFamily: FontConstants.fontFamily,
                         fontSize: 16,
@@ -351,7 +351,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                         if (widget.onBack != null) ...[
                           Expanded(
                             child: PillButton(
-                              text: localizations.translate('onboarding_back'),
+                              text: localizations.onboardingBack,
                               onPressed: widget.onBack!,
                               isPrimary: false,
                             ),
@@ -361,7 +361,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                         Expanded(
                           child: PillButton(
                             text:
-                                localizations.translate('onboarding_continue'),
+                                localizations.onboardingContinue,
                             onPressed: () async {
                               await _exitController.forward();
                               widget.onContinue();

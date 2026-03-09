@@ -11,7 +11,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
 import '../../../core/constants/font_constants.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import 'album_detail_screen.dart';
 
@@ -167,7 +167,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
           slivers: [
             LibraryScreenHeader(
               badge: 'Library',
-              title: loc.translate('albums'),
+              title: loc.albums,
               subtitle: _isLoading
                   ? null
                   : '$count ${count == 1 ? 'album' : 'albums'}',
@@ -175,7 +175,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
               showBackButton: true,
               searchField: LibrarySearchField(
                 controller: _searchController,
-                hint: loc.translate('search_albums'),
+                hint: loc.searchAlbums,
                 onChanged: _filterAlbums,
                 hasQuery: _searchQuery.isNotEmpty,
                 onClear: () {
@@ -294,8 +294,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             const SizedBox(height: 16),
             Text(
               _searchQuery.isEmpty
-                  ? loc.translate('no_albums_found')
-                  : loc.translate('no_results'),
+                  ? loc.noAlbumsFound
+                  : loc.noResults,
               style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
             ),
           ],

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
@@ -17,7 +17,7 @@ void showAddToPlaylistDialog(
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content:
-              Text(AppLocalizations.of(context).translate('no_song_playing'))),
+              Text(AppLocalizations.of(context).noSongPlaying)),
     );
     return;
   }
@@ -53,7 +53,7 @@ void showAddToPlaylistDialog(
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    AppLocalizations.of(context).translate('select_playlist'),
+                    AppLocalizations.of(context).selectPlaylist,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -66,7 +66,7 @@ void showAddToPlaylistDialog(
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
-                      AppLocalizations.of(context).translate('no_playlists'),
+                      AppLocalizations.of(context).noPlaylists,
                       style: const TextStyle(color: Colors.white70),
                     ),
                   )
@@ -99,7 +99,7 @@ void showAddToPlaylistDialog(
                               SnackBar(
                                 content: Text(
                                   AppLocalizations.of(context)
-                                      .translate('added_to_playlist'),
+                                      .addedToPlaylist,
                                 ),
                               ),
                             );
@@ -276,7 +276,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            AppLocalizations.of(context).translate('queue'),
+                            AppLocalizations.of(context).queue,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 19,
@@ -298,7 +298,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                         icon: const Icon(Icons.clear_all_rounded,
                             color: Colors.white54),
                         tooltip: AppLocalizations.of(context)
-                            .translate('clear_upcoming'),
+                            .clearUpcoming,
                         onPressed: () async {
                           await audio.clearUpcoming();
                           if (mounted) setState(() {});
@@ -327,7 +327,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                             const SizedBox(height: 12),
                             Text(
                               AppLocalizations.of(context)
-                                  .translate('queue_empty'),
+                                  .queueEmpty,
                               style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.4),
                                   fontSize: 15),
@@ -345,7 +345,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                                     20, 16, 20, 8),
                                 child: Text(
                                   AppLocalizations.of(context)
-                                      .translate('now_playing')
+                                      .nowPlaying
                                       .toUpperCase(),
                                   style: _sectionLabelStyle,
                                 ),
@@ -626,7 +626,7 @@ void showSongInfoDialog(
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content:
-              Text(AppLocalizations.of(context).translate('no_song_playing'))),
+              Text(AppLocalizations.of(context).noSongPlaying)),
     );
     return;
   }
@@ -668,7 +668,7 @@ void showSongInfoDialog(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          AppLocalizations.of(context).translate('song_info'),
+                          AppLocalizations.of(context).songInfo,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
