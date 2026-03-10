@@ -247,11 +247,23 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                         itemCount: autoPlaylists.length,
                         itemBuilder: (context, index) {
                           final playlist = autoPlaylists[index];
+                          String autoName;
+                          switch (playlist.id) {
+                            case 'most_played':
+                              autoName = localizations.mostPlayed;
+                              break;
+                            case 'recently_added':
+                              autoName = localizations.recentlyAdded;
+                              break;
+                            default:
+                              autoName = playlist.name;
+                          }
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: GlassmorphicCard.playlist(
-                              playlistName: playlist.name,
+                              playlistName: autoName,
                               songCount: playlist.songs.length,
+                              subtitle: localizations.songCount(playlist.songs.length),
                               playlistId: playlist.id,
                               onTap: () => Navigator.push(
                                 context,

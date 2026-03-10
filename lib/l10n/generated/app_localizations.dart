@@ -2054,6 +2054,18 @@ abstract class AppLocalizations {
   /// **'Adjust audio playback rate'**
   String get playbackSpeedDesc;
 
+  /// No description provided for @adjustPitchWithSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust pitch with speed'**
+  String get adjustPitchWithSpeed;
+
+  /// No description provided for @adjustPitchWithSpeedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'When off, tempo changes without pitch shift'**
+  String get adjustPitchWithSpeedDesc;
+
   /// No description provided for @settingsPlayback.
   ///
   /// In en, this message translates to:
@@ -2773,6 +2785,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} songs'**
   String songCount(int count);
+
+  /// No description provided for @badgeNew.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW'**
+  String get badgeNew;
+
+  /// No description provided for @paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get paused;
+
+  /// No description provided for @readyToPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to play'**
+  String get readyToPlay;
+
+  /// No description provided for @tapSongToStartListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a song to start listening'**
+  String get tapSongToStartListening;
+
+  /// No description provided for @clearCachedLyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear cached lyrics'**
+  String get clearCachedLyrics;
+
+  /// No description provided for @lyricsCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Cached lyrics cleared for \"{title}\"'**
+  String lyricsCleared(String title);
+
+  /// No description provided for @noLyricsCached.
+  ///
+  /// In en, this message translates to:
+  /// **'No cached lyrics found for this song'**
+  String get noLyricsCached;
 }
 
 class _AppLocalizationsDelegate

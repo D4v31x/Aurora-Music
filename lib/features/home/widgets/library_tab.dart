@@ -487,13 +487,14 @@ class _LibraryTabState extends State<LibraryTab>
       physics: const BouncingScrollPhysics(),
       itemBuilder: (context, index) {
         final item = displayItems[index];
-        return _buildTabletItemCard(item, onItemTap, cardSize);
+        return _buildTabletItemCard(context, item, onItemTap, cardSize);
       },
     );
   }
 
   /// Build individual item card for tablet layout
   Widget _buildTabletItemCard(
+    BuildContext context,
     dynamic item,
     Function(dynamic)? onItemTap,
     double cardSize,
@@ -519,10 +520,23 @@ class _LibraryTabState extends State<LibraryTab>
         size: cardSize,
       );
     } else if (item is Playlist) {
+      final l10n = AppLocalizations.of(context);
+      String playlistName;
+      switch (item.id) {
+        case 'most_played':
+          playlistName = l10n.mostPlayed;
+          break;
+        case 'recently_added':
+          playlistName = l10n.recentlyAdded;
+          break;
+        default:
+          playlistName = item.name;
+      }
       return GlassmorphicCard.playlist(
         key: ValueKey('tablet_playlist_${item.name}'),
-        playlistName: item.name,
+        playlistName: playlistName,
         songCount: item.songs.length,
+        subtitle: l10n.songCount(item.songs.length),
         playlistId: item.id,
         onTap: () => onItemTap?.call(item),
         size: cardSize,
@@ -647,12 +661,12 @@ class _LibraryTabState extends State<LibraryTab>
       physics: const BouncingScrollPhysics(),
       itemBuilder: (context, index) {
         final item = displayItems[index];
-        return _buildItemCard(item, onItemTap);
+        return _buildItemCard(context, item, onItemTap);
       },
     );
   }
 
-  Widget _buildItemCard(dynamic item, Function(dynamic)? onItemTap) {
+  Widget _buildItemCard(BuildContext context, dynamic item, Function(dynamic)? onItemTap) {
     if (item is SongModel) {
       return GlassmorphicCard.song(
         key: ValueKey('song_${item.id}'),
@@ -672,10 +686,23 @@ class _LibraryTabState extends State<LibraryTab>
         onTap: () => onItemTap?.call(item),
       );
     } else if (item is Playlist) {
+      final l10n = AppLocalizations.of(context);
+      String playlistName;
+      switch (item.id) {
+        case 'most_played':
+          playlistName = l10n.mostPlayed;
+          break;
+        case 'recently_added':
+          playlistName = l10n.recentlyAdded;
+          break;
+        default:
+          playlistName = item.name;
+      }
       return GlassmorphicCard.playlist(
         key: ValueKey('playlist_${item.name}'),
-        playlistName: item.name,
+        playlistName: playlistName,
         songCount: item.songs.length,
+        subtitle: l10n.songCount(item.songs.length),
         playlistId: item.id,
         onTap: () => onItemTap?.call(item),
       );

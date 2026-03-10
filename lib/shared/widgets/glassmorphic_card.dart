@@ -112,6 +112,7 @@ class GlassmorphicCard extends StatelessWidget {
     String? playlistId,
     Widget? customArtwork,
     double size = 130,
+    String? subtitle,
   }) {
     // Determine artwork based on playlist ID for special playlists
     Widget artworkWidget;
@@ -173,7 +174,7 @@ class GlassmorphicCard extends StatelessWidget {
       key: key,
       artwork: artworkWidget,
       title: playlistName,
-      subtitle: '$songCount tracks',
+      subtitle: subtitle ?? '$songCount tracks',
       onTap: onTap,
       width: size,
       artworkSize: size,

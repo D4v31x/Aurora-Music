@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 
 /// A beautiful blurred-artwork header for detail screens (album, artist, playlist, folder).
@@ -241,10 +242,10 @@ class DetailHeader extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.18),
             ),
           ),
-          child: const Icon(
-            Icons.arrow_back,
+          child: const Iconoir.NavArrowLeft(
             color: Colors.white,
-            size: 20,
+            width: 20,
+            height: 20,
           ),
         ),
       ),

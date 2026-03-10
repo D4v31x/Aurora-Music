@@ -326,6 +326,8 @@
   "settingsNormalizationDesc": "Consistent volume levels",
   "playbackSpeed": "Playback Speed",
   "playbackSpeedDesc": "Adjust audio playback rate",
+  "adjustPitchWithSpeed": "Adjust pitch with speed",
+  "adjustPitchWithSpeedDesc": "When off, tempo changes without pitch shift",
   "settingsPlayback": "Playback",
   "settingsStorage": "Storage",
   "settingsUpdateAvailable": "Update available!",
@@ -490,5 +492,17 @@
     "placeholders": {
       "count": {"type": "int"}
     }
-  }
+  },
+  "badgeNew": "NEW",
+  "paused": "Paused",
+  "readyToPlay": "Ready to play",
+  "tapSongToStartListening": "Tap a song to start listening",
+  "clearCachedLyrics": "Clear cached lyrics",
+  "lyricsCleared": "Cached lyrics cleared for \"{title}\"",
+  "@lyricsCleared": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "noLyricsCached": "No cached lyrics found for this song"
 }

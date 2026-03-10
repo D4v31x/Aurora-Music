@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -337,10 +338,10 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
             HapticFeedback.lightImpact();
             Navigator.of(context).pop();
           },
-          icon: const Icon(
-            Icons.keyboard_arrow_down_rounded,
+          icon: const Iconoir.NavArrowDown(
             color: Colors.white,
-            size: 32,
+            width: 32,
+            height: 32,
           ),
         ),
 

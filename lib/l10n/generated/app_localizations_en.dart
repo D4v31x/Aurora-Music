@@ -1027,6 +1027,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playbackSpeedDesc => 'Adjust audio playback rate';
 
   @override
+  String get adjustPitchWithSpeed => 'Adjust pitch with speed';
+
+  @override
+  String get adjustPitchWithSpeedDesc =>
+      'When off, tempo changes without pitch shift';
+
+  @override
   String get settingsPlayback => 'Playback';
 
   @override
@@ -1417,4 +1424,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String songCount(int count) {
     return '$count songs';
   }
+
+  @override
+  String get badgeNew => 'NEW';
+
+  @override
+  String get paused => 'Paused';
+
+  @override
+  String get readyToPlay => 'Ready to play';
+
+  @override
+  String get tapSongToStartListening => 'Tap a song to start listening';
+
+  @override
+  String get clearCachedLyrics => 'Clear cached lyrics';
+
+  @override
+  String lyricsCleared(String title) {
+    return 'Cached lyrics cleared for \"$title\"';
+  }
+
+  @override
+  String get noLyricsCached => 'No cached lyrics found for this song';
 }

@@ -5,6 +5,7 @@ library;
 
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:provider/provider.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -266,10 +267,10 @@ class LyricsSection extends StatelessWidget {
           child: Material(
             color: Colors.transparent,
             child: IconButton(
-              icon: const Icon(
-                Icons.fullscreen,
+              icon: const Iconoir.Expand(
                 color: Colors.white,
-                size: 20,
+                width: 20,
+                height: 20,
               ),
               onPressed: () => _openFullscreenLyrics(context),
               tooltip: AppLocalizations.of(context).expandLyrics,

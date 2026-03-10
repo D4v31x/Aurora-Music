@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart';
 import '../../../shared/services/audio_player_service.dart';
 
 /// A like/favorite button for the current song.
@@ -95,11 +96,17 @@ class _SongLikeButtonState extends State<SongLikeButton>
                   child: Center(
                     child: Transform.scale(
                       scale: _scaleAnimation.value,
-                      child: Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? widget.likedColor : widget.unlikedColor,
-                        size: widget.size,
-                      ),
+                      child: isLiked
+                          ? HeartSolid(
+                              color: widget.likedColor,
+                              width: widget.size,
+                              height: widget.size,
+                            )
+                          : Heart(
+                              color: widget.unlikedColor,
+                              width: widget.size,
+                              height: widget.size,
+                            ),
                     ),
                   ),
                 );

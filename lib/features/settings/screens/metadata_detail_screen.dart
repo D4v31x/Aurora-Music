@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:flutter/services.dart';
 import 'package:audiotags/audiotags.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -738,7 +739,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Iconoir.NavArrowLeft(color: Colors.white, width: 28, height: 28),
             onPressed: () {
               if (_hasChanges) {
                 _showSaveDialog();

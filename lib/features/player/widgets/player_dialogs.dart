@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
@@ -79,8 +80,8 @@ void showAddToPlaylistDialog(
                       itemBuilder: (context, index) {
                         final playlist = audioPlayerService.playlists[index];
                         return ListTile(
-                          leading: const Icon(Icons.playlist_play,
-                              color: Colors.white),
+                          leading: const Iconoir.PlaylistPlay(
+                              color: Colors.white, width: 24, height: 24),
                           title: Text(
                             playlist.name,
                             style: const TextStyle(color: Colors.white),
@@ -184,8 +185,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
           color: Colors.red.withValues(alpha: 0.75),
           borderRadius: BorderRadius.circular(14),
         ),
-        child: const Icon(Icons.delete_outline_rounded,
-            color: Colors.white, size: 22),
+        child: const Iconoir.Trash(color: Colors.white, width: 22, height: 22),
       ),
       onDismissed: (_) async {
         await audio.removeFromQueue(playlistIndex);
@@ -267,8 +267,8 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                         color: Colors.blue.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.queue_music_rounded,
-                          color: Colors.blue, size: 20),
+                      child: const Iconoir.Playlist(
+                          color: Colors.blue, width: 20, height: 20),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -295,8 +295,8 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                     ),
                     if (audio.hasUpcoming)
                       IconButton(
-                        icon: const Icon(Icons.clear_all_rounded,
-                            color: Colors.white54),
+                        icon: const Iconoir.Trash(
+                            color: Colors.white54, width: 24, height: 24),
                         tooltip: AppLocalizations.of(context)
                             .clearUpcoming,
                         onPressed: () async {
@@ -305,8 +305,10 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                         },
                       ),
                     IconButton(
-                      icon: Icon(Icons.close_rounded,
-                          color: Colors.white.withValues(alpha: 0.7)),
+                    icon: Iconoir.Xmark(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        width: 24,
+                        height: 24),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -321,9 +323,10 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.queue_music_rounded,
+                            Iconoir.Playlist(
                                 color: Colors.white.withValues(alpha: 0.2),
-                                size: 48),
+                                width: 48,
+                                height: 48),
                             const SizedBox(height: 12),
                             Text(
                               AppLocalizations.of(context)
@@ -542,8 +545,13 @@ class _QueueSongTile extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.52),
                           ),
-                          child: const Icon(Icons.play_arrow_rounded,
-                              color: Colors.white, size: 24),
+                            child: const Center(
+                              child: Iconoir.Play(
+                                color: Colors.white,
+                                width: 24,
+                                height: 24,
+                              ),
+                            ),
                         ),
                     ],
                   ),
@@ -598,8 +606,10 @@ class _QueueSongTile extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.07),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.close_rounded,
-                        color: Colors.white.withValues(alpha: 0.45), size: 16),
+                    child: Iconoir.Xmark(
+                        color: Colors.white.withValues(alpha: 0.45),
+                        width: 16,
+                        height: 16),
                   ),
                 ),
               // Drag handle
@@ -607,8 +617,10 @@ class _QueueSongTile extends StatelessWidget {
                 const SizedBox(width: 8),
                 ReorderableDragStartListener(
                   index: reorderIndex!,
-                  child: Icon(Icons.drag_handle_rounded,
-                      color: Colors.white.withValues(alpha: 0.3), size: 20),
+                  child: Iconoir.Drag(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 20,
+                      height: 20),
                 ),
               ],
             ],
@@ -676,7 +688,7 @@ void showSongInfoDialog(
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white),
+                          icon: const Iconoir.Xmark(color: Colors.white, width: 24, height: 24),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],

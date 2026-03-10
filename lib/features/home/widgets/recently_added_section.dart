@@ -91,7 +91,7 @@ class RecentlyAddedSection extends StatelessWidget {
                   title: song.title,
                   artist: splitArtists(song.artist ?? '').first,
                   artworkService: _artworkService,
-                  badge: const CardBadge(text: 'NEW'),
+                  badge: CardBadge(text: AppLocalizations.of(context).badgeNew),
                   onTap: () {
                     // Play from full playlist, starting at the correct index
                     audioPlayerService.setPlaylist(

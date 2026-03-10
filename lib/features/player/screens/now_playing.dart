@@ -26,6 +26,9 @@ import '../../library/screens/artist_detail_screen.dart';
 import '../widgets/player_widgets.dart';
 import 'fullscreen_artwork.dart';
 import 'fullscreen_lyrics.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+
+
 
 // MARK: - Now Playing Screen
 
@@ -227,10 +230,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       centerTitle: true,
       title: PlayingFromHeader(audioPlayerService: audioPlayerService),
       leading: IconButton(
-        icon: const Icon(
-          Icons.keyboard_arrow_down,
+        icon: const Iconoir.NavArrowDown(
           color: Colors.white,
-          size: 32,
+          width: 32,
+          height: 32,
         ),
         onPressed: _handleClose,
       ),
@@ -531,10 +534,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     }
     return ColoredBox(
       color: Colors.white.withValues(alpha: 0.1),
-      child: Icon(
-        Icons.music_note_rounded,
-        color: Colors.white.withValues(alpha: 0.3),
-        size: 64,
+      child: Center(
+        child: Iconoir.MusicNote(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 64,
+          height: 64,
+        ),
       ),
     );
   }
@@ -765,10 +770,10 @@ class _ArtistSelectionSheet extends StatelessWidget {
                           color: Colors.white.withValues(alpha: 0.15),
                         ),
                       ),
-                      child: const Icon(
-                        Icons.people_rounded,
+                      child: Iconoir.Group(
                         color: Colors.white,
-                        size: 20,
+                        width: 20,
+                        height: 20,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -813,10 +818,10 @@ class _ArtistSelectionSheet extends StatelessWidget {
                                 color: Colors.white.withValues(alpha: 0.12),
                               ),
                             ),
-                            child: const Icon(
-                              Icons.person_rounded,
+                            child: Iconoir.User(
                               color: Colors.white,
-                              size: 22,
+                              width: 22,
+                              height: 22,
                             ),
                           ),
                           const SizedBox(width: 14),
@@ -830,9 +835,10 @@ class _ArtistSelectionSheet extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Icon(
-                            Icons.chevron_right_rounded,
+                          Iconoir.NavArrowRight(
                             color: Colors.white.withValues(alpha: 0.4),
+                            width: 24,
+                            height: 24,
                           ),
                         ],
                       ),

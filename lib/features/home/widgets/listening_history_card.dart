@@ -6,6 +6,7 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/background_manager_service.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 /// Glassmorphic card showing current/last played song
@@ -62,7 +63,7 @@ class ListeningHistoryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Ready to play',
+                    AppLocalizations.of(context).readyToPlay,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       fontFamily: FontConstants.fontFamily,
@@ -70,7 +71,7 @@ class ListeningHistoryCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Tap a song to start listening',
+                    AppLocalizations.of(context).tapSongToStartListening,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       fontFamily: FontConstants.fontFamily,
@@ -133,7 +134,7 @@ class ListeningHistoryCard extends StatelessWidget {
                           valueListenable: audioPlayerService.isPlayingNotifier,
                           builder: (context, isPlaying, _) {
                             return Text(
-                              isPlaying ? 'Now Playing' : 'Paused',
+                              isPlaying ? AppLocalizations.of(context).nowPlaying : AppLocalizations.of(context).paused,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.primary,
                                 fontWeight: FontWeight.w600,
@@ -154,7 +155,7 @@ class ListeningHistoryCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          splitArtists(song.artist ?? 'Unknown').join(', '),
+                          splitArtists(song.artist ?? AppLocalizations.of(context).unknownArtist).join(', '),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurface
                                 .withValues(alpha: 0.6),

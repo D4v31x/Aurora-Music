@@ -1030,6 +1030,13 @@ class AppLocalizationsCs extends AppLocalizations {
   String get playbackSpeedDesc => 'Upravit rychlost přehrávání';
 
   @override
+  String get adjustPitchWithSpeed => 'Přizpůsobit výšku tónu s rychlostí';
+
+  @override
+  String get adjustPitchWithSpeedDesc =>
+      'Při vypnutí se tempo mění bez změny výšky tónu';
+
+  @override
   String get settingsPlayback => 'Přehrávání';
 
   @override
@@ -1421,4 +1428,28 @@ class AppLocalizationsCs extends AppLocalizations {
   String songCount(int count) {
     return '$count skladeb';
   }
+
+  @override
+  String get badgeNew => 'NOVÉ';
+
+  @override
+  String get paused => 'Pozastaveno';
+
+  @override
+  String get readyToPlay => 'Připraveno k přehrávání';
+
+  @override
+  String get tapSongToStartListening =>
+      'Klepněte na skladbu a začněte poslouchat';
+
+  @override
+  String get clearCachedLyrics => 'Vymazat mezipaměť textu';
+
+  @override
+  String lyricsCleared(String title) {
+    return 'Mezipaměť textu pro „$title“ vymazána';
+  }
+
+  @override
+  String get noLyricsCached => 'Pro tuto skladbu není uložen žádný text';
 }

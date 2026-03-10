@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:provider/provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
@@ -107,10 +108,10 @@ class _SleepTimerIndicatorState extends State<SleepTimerIndicator> {
                                 strokeWidth: 1.5,
                               ),
                             ),
-                            const Icon(
-                              Icons.bedtime_outlined,
+                            const Iconoir.HalfMoon(
                               color: Colors.white,
-                              size: 16,
+                              width: 16,
+                              height: 16,
                             ),
                           ],
                         ),
@@ -129,10 +130,10 @@ class _SleepTimerIndicatorState extends State<SleepTimerIndicator> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
-                              Icons.bedtime_outlined,
+                            const Iconoir.HalfMoon(
                               color: Colors.white,
-                              size: 16,
+                              width: 16,
+                              height: 16,
                             ),
                             const SizedBox(width: 4),
                             Flexible(
@@ -276,7 +277,11 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _CounterButton(
-                          icon: Icons.remove_rounded,
+                          icon: const Iconoir.Minus(
+                            color: Colors.white,
+                            width: 22,
+                            height: 22,
+                          ),
                           onTap: () {
                             if (picked > 1) {
                               setDialogState(() => picked--);
@@ -307,7 +312,11 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                           ),
                         ),
                         _CounterButton(
-                          icon: Icons.add_rounded,
+                          icon: const Iconoir.Plus(
+                            color: Colors.white,
+                            width: 22,
+                            height: 22,
+                          ),
                           onTap: () {
                             if (picked < 480) {
                               setDialogState(() => picked++);
@@ -398,10 +407,10 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                           color: Colors.white.withValues(alpha: 0.15),
                         ),
                       ),
-                      child: const Icon(
-                        Icons.bedtime_rounded,
+                      child: const Iconoir.HalfMoon(
                         color: Colors.white,
-                        size: 22,
+                        width: 22,
+                        height: 22,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -454,10 +463,10 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
-                                Icons.timer_rounded,
+                              const Iconoir.Timer(
                                 color: Colors.redAccent,
-                                size: 13,
+                                width: 13,
+                                height: 13,
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -538,10 +547,10 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.tune_rounded,
+                        Iconoir.FilterAlt(
                           color: Colors.white.withValues(alpha: 0.7),
-                          size: 17,
+                          width: 17,
+                          height: 17,
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -580,10 +589,10 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                                 timer.cancelTimer();
                                 Navigator.pop(context);
                               },
-                              icon: const Icon(
-                                Icons.timer_off_rounded,
+                              icon: const Iconoir.TimerOff(
                                 color: Colors.redAccent,
-                                size: 18,
+                                width: 18,
+                                height: 18,
                               ),
                               label: Text(
                                 AppLocalizations.of(context)
@@ -658,7 +667,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
 
 /// A small circular +/- button for the custom time picker.
 class _CounterButton extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final VoidCallback onTap;
 
   const _CounterButton({required this.icon, required this.onTap});
@@ -677,7 +686,7 @@ class _CounterButton extends StatelessWidget {
             color: Colors.white.withValues(alpha: 0.25),
           ),
         ),
-        child: Icon(icon, color: Colors.white, size: 22),
+        child: Center(child: icon),
       ),
     );
   }

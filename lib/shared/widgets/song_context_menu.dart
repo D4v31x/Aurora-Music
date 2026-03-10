@@ -14,6 +14,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../models/artist_utils.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/audio_player_service.dart';
+import '../services/lyrics_service.dart';
 
 // ---------------------------------------------------------------------------
 // Public entry-point
@@ -123,6 +124,12 @@ class _SongContextMenu extends StatelessWidget {
                   icon: Icons.person_rounded,
                   label: 'Go to artist',
                   onTap: () => _goToArtist(context),
+                ),
+                _item(
+                  context,
+                  icon: Icons.lyrics_rounded,
+                  label: AppLocalizations.of(context).clearCachedLyrics,
+                  onTap: () => _clearCachedLyrics(context),
                 ),
                 const Divider(color: Colors.white12, height: 1),
                 _item(
@@ -284,6 +291,28 @@ class _SongContextMenu extends StatelessWidget {
       context,
       MaterialPageRoute(
           builder: (_) => ArtistDetailsScreen(artistName: artist)),
+    );
+  }
+
+  Future<void> _clearCachedLyrics(BuildContext context) async {
+    Navigator.pop(context);
+    final artist = song.artist?.trim().isNotEmpty == true
+        ? song.artist!.trim()
+        : 'Unknown';
+    final title =
+        song.title.trim().isNotEmpty ? song.title.trim() : 'Unknown';
+    final deleted =
+        await TimedLyricsService().deleteCachedLyricsForSong(artist, title);
+    if (!context.mounted) return;
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          deleted
+              ? l10n.lyricsCleared(song.title)
+              : l10n.noLyricsCached,
+        ),
+      ),
     );
   }
 

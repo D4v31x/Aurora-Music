@@ -326,6 +326,8 @@
   "settingsNormalizationDesc": "Konzistentní úroveň hlasitosti",
   "playbackSpeed": "Rychlost přehrávání",
   "playbackSpeedDesc": "Upravit rychlost přehrávání",
+  "adjustPitchWithSpeed": "Přizpůsobit výšku tónu s rychlostí",
+  "adjustPitchWithSpeedDesc": "Při vypnutí se tempo mění bez změny výšky tónu",
   "settingsPlayback": "Přehrávání",
   "settingsStorage": "Úložiště",
   "settingsUpdateAvailable": "Aktualizace k dispozici!",
@@ -490,5 +492,17 @@
     "placeholders": {
       "count": {"type": "int"}
     }
-  }
+  },
+  "badgeNew": "NOVÉ",
+  "paused": "Pozastaveno",
+  "readyToPlay": "Připraveno k přehrávání",
+  "tapSongToStartListening": "Klepněte na skladbu a začněte poslouchat",
+  "clearCachedLyrics": "Vymazat mezipaměť textu",
+  "lyricsCleared": "Mezipaměť textu pro \u201e{title}\u201c vymazána",
+  "@lyricsCleared": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "noLyricsCached": "Pro tuto skladbu není uložen žádný text"
 }

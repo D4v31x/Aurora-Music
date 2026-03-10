@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:provider/provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/sleep_timer_controller.dart';
@@ -20,7 +21,7 @@ const _kMenuBorderOpacity = 0.15;
 ///
 /// Used internally to build consistent menu item rows with icon and label.
 class _MenuItemRow extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final String label;
 
   const _MenuItemRow({
@@ -32,7 +33,7 @@ class _MenuItemRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: Colors.white),
+        icon,
         const SizedBox(width: _kIconSpacing),
         Text(
           label,
@@ -55,10 +56,9 @@ class _SleepTimerRow extends StatelessWidget {
       builder: (context, sleepTimer, child) {
         return Row(
           children: [
-            Icon(
-              sleepTimer.isActive ? Icons.timer : Icons.timer_outlined,
-              color: Colors.white,
-            ),
+            sleepTimer.isActive
+                ? const Iconoir.Alarm(color: Colors.white)
+                : const Iconoir.Timer(color: Colors.white),
             const SizedBox(width: _kIconSpacing),
             Text(
               AppLocalizations.of(context).sleepTimer,
@@ -95,7 +95,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert, color: Colors.white),
+      icon: const Iconoir.MoreVert(color: Colors.white),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(_kMenuBorderRadius),
         side: BorderSide(
@@ -113,7 +113,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
         PopupMenuItem<String>(
           value: 'view_artist',
           child: _MenuItemRow(
-            icon: Icons.person_outline,
+            icon: const Iconoir.User(color: Colors.white),
             label: l10n.viewArtist,
           ),
         ),
@@ -121,7 +121,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
         PopupMenuItem<String>(
           value: 'lyrics',
           child: _MenuItemRow(
-            icon: Icons.lyrics_outlined,
+            icon: const Iconoir.MusicNote(color: Colors.white),
             label: l10n.lyrics,
           ),
         ),
@@ -129,7 +129,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
         PopupMenuItem<String>(
           value: 'add_playlist',
           child: _MenuItemRow(
-            icon: Icons.playlist_add,
+            icon: const Iconoir.PlaylistPlus(color: Colors.white),
             label: l10n.addToPlaylist,
           ),
         ),
@@ -137,7 +137,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
         PopupMenuItem<String>(
           value: 'share',
           child: _MenuItemRow(
-            icon: Icons.share_outlined,
+            icon: const Iconoir.ShareAndroid(color: Colors.white),
             label: l10n.share,
           ),
         ),
@@ -145,7 +145,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
         PopupMenuItem<String>(
           value: 'queue',
           child: _MenuItemRow(
-            icon: Icons.queue_music_outlined,
+            icon: const Iconoir.Playlist(color: Colors.white),
             label: l10n.queue,
           ),
         ),
@@ -153,7 +153,7 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
         PopupMenuItem<String>(
           value: 'info',
           child: _MenuItemRow(
-            icon: Icons.info_outline,
+            icon: const Iconoir.InfoCircle(color: Colors.white),
             label: l10n.songInfo,
           ),
         ),

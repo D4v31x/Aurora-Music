@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../../shared/services/audio_player_service.dart';
 
@@ -43,11 +44,11 @@ class PlayerControls extends StatelessWidget {
         return IconButton(
           padding: const EdgeInsets.all(8),
           constraints: const BoxConstraints(),
-          icon: Icon(
-            Icons.shuffle_rounded,
+          icon: Shuffle(
             color:
                 isShuffle ? Colors.white : Colors.white.withValues(alpha: 0.5),
-            size: iconSize,
+            width: iconSize,
+            height: iconSize,
           ),
           onPressed: audioPlayerService.toggleShuffle,
         );
@@ -59,10 +60,10 @@ class PlayerControls extends StatelessWidget {
     return IconButton(
       padding: const EdgeInsets.all(4),
       constraints: const BoxConstraints(),
-      icon: Icon(
-        Icons.skip_previous_rounded,
+      icon: SkipPrevSolid(
         color: Colors.white,
-        size: iconSize,
+        width: iconSize,
+        height: iconSize,
       ),
       onPressed: audioPlayerService.back,
     );
@@ -75,11 +76,9 @@ class PlayerControls extends StatelessWidget {
         return IconButton(
           padding: const EdgeInsets.all(4),
           constraints: const BoxConstraints(),
-          icon: Icon(
-            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-            color: Colors.white,
-            size: iconSize,
-          ),
+          icon: isPlaying
+              ? PauseSolid(color: Colors.white, width: iconSize, height: iconSize)
+              : PlaySolid(color: Colors.white, width: iconSize, height: iconSize),
           onPressed: () {
             if (isPlaying) {
               audioPlayerService.pause();
@@ -96,10 +95,10 @@ class PlayerControls extends StatelessWidget {
     return IconButton(
       padding: const EdgeInsets.all(4),
       constraints: const BoxConstraints(),
-      icon: Icon(
-        Icons.skip_next_rounded,
+      icon: SkipNextSolid(
         color: Colors.white,
-        size: iconSize,
+        width: iconSize,
+        height: iconSize,
       ),
       onPressed: audioPlayerService.skip,
     );
@@ -109,28 +108,36 @@ class PlayerControls extends StatelessWidget {
     return ValueListenableBuilder<LoopMode>(
       valueListenable: audioPlayerService.loopModeNotifier,
       builder: (context, loopMode, _) {
-        IconData icon;
-        Color color;
+        Widget icon;
 
         switch (loopMode) {
           case LoopMode.off:
-            icon = Icons.repeat_rounded;
-            color = Colors.white.withValues(alpha: 0.5);
+            icon = Repeat(
+              color: Colors.white.withValues(alpha: 0.5),
+              width: iconSize,
+              height: iconSize,
+            );
             break;
           case LoopMode.one:
-            icon = Icons.repeat_one_rounded;
-            color = Colors.white;
+            icon = RepeatOnce(
+              color: Colors.white,
+              width: iconSize,
+              height: iconSize,
+            );
             break;
           case LoopMode.all:
-            icon = Icons.repeat_rounded;
-            color = Colors.white;
+            icon = Repeat(
+              color: Colors.white,
+              width: iconSize,
+              height: iconSize,
+            );
             break;
         }
 
         return IconButton(
           padding: const EdgeInsets.all(4),
           constraints: const BoxConstraints(),
-          icon: Icon(icon, color: color, size: iconSize),
+          icon: icon,
           onPressed: audioPlayerService.toggleRepeat,
         );
       },
@@ -167,11 +174,9 @@ class PlayPauseButton extends StatelessWidget {
         color: backgroundColor ?? Colors.white.withValues(alpha: 0.1),
       ),
       child: IconButton(
-        icon: Icon(
-          isPlaying ? Icons.pause : Icons.play_arrow,
-          color: color,
-          size: size * 0.5,
-        ),
+        icon: isPlaying
+            ? Pause(color: color, width: size * 0.5, height: size * 0.5)
+            : Play(color: color, width: size * 0.5, height: size * 0.5),
         onPressed: onPressed,
       ),
     );

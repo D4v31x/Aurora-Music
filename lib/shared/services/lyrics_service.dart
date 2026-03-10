@@ -442,6 +442,25 @@ class TimedLyricsService {
     await _saveLyricsToFile(artist, title, content);
   }
 
+  /// Deletes the cached lyrics (disk + memory) for a specific song.
+  /// Returns true if a file was found and deleted, false if nothing was cached.
+  Future<bool> deleteCachedLyricsForSong(String artist, String title) async {
+    final cacheKey = md5.convert(utf8.encode('$artist-$title')).toString();
+    _memoryCache.remove(cacheKey);
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/lyrics/$cacheKey.lrc');
+      if (await file.exists()) {
+        await file.delete();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      _log('✗ Error deleting cached lyrics: $e');
+      return false;
+    }
+  }
+
   List<TimedLyric> _parseLrc(String lrcContent) {
     _log('  Parsing LRC content...');
     final List<TimedLyric> timedLyrics = [];

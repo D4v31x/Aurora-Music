@@ -197,7 +197,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
           const SizedBox(width: 8),
           buildActionButton(
             icon: Icons.queue_music_rounded,
-            label: 'Queue',
+            label: AppLocalizations.of(context).queue,
             onTap: addAllToQueue,
           ),
         ],

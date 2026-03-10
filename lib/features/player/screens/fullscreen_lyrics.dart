@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -311,8 +312,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.keyboard_arrow_down,
-                color: Colors.white, size: 32),
+            icon: const Iconoir.NavArrowDown(
+                color: Colors.white, width: 32, height: 32),
             onPressed: () => Navigator.pop(context),
           ),
           Expanded(

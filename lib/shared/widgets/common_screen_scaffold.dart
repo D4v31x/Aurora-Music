@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/services.dart';
 import './app_background.dart';
@@ -37,8 +38,8 @@ class CommonScreenScaffold extends StatelessWidget {
               systemOverlayStyle: SystemUiOverlayStyle.light,
               leading: showBackButton
                   ? IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white),
+                      icon: const Iconoir.NavArrowLeft(
+                          color: Colors.white, width: 28, height: 28),
                       onPressed: () => Navigator.pop(context),
                     )
                   : null,

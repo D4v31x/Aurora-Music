@@ -25,6 +25,7 @@ import '../screens/artist_separator_settings.dart';
 import '../screens/home_layout_settings.dart';
 import '../../../shared/utils/responsive_utils.dart';
 import '../../../shared/widgets/expanding_player.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 
 /// A glassmorphic settings tab with translations.
 class SettingsTab extends StatefulWidget {
@@ -108,7 +109,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
   // Glassmorphic Switch Tile
   Widget _buildSwitchTile({
-    required IconData icon,
+    required Widget icon,
     required String title,
     String? subtitle,
     required bool value,
@@ -135,11 +136,7 @@ class _SettingsTabState extends State<SettingsTab> {
               color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            child: icon,
           ),
           title: Text(
             title,
@@ -175,7 +172,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
   // Glassmorphic Action Tile
   Widget _buildActionTile({
-    required IconData icon,
+    required Widget icon,
     required String title,
     String? subtitle,
     Widget? trailing,
@@ -206,11 +203,7 @@ class _SettingsTabState extends State<SettingsTab> {
               color: effectiveIconColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: effectiveIconColor,
-            ),
+            child: icon,
           ),
           title: Text(
             title,
@@ -238,14 +231,10 @@ class _SettingsTabState extends State<SettingsTab> {
                 )
               : null,
           trailing: trailing ??
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 16,
-                color: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.color
-                    ?.withValues(alpha: 0.5),
+              Iconoir.NavArrowRight(
+                color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.5) ?? Colors.white54,
+                width: 16,
+                height: 16,
               ),
           onTap: onTap,
         ),
@@ -255,7 +244,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
   // Glassmorphic Slider Tile using classic Flutter Slider
   Widget _buildSliderTile({
-    required IconData icon,
+    required Widget icon,
     required String title,
     String? subtitle,
     required double value,
@@ -297,7 +286,7 @@ class _SettingsTabState extends State<SettingsTab> {
   }
 
   Widget _buildSliderTileContent({
-    required IconData icon,
+    required Widget icon,
     required String title,
     String? subtitle,
     required double value,
@@ -358,11 +347,7 @@ class _SettingsTabState extends State<SettingsTab> {
                       .withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                child: icon,
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -931,7 +916,7 @@ class _SettingsTabState extends State<SettingsTab> {
                       : null,
                 ),
                 child: isSelected
-                    ? const Icon(Icons.check, color: Colors.white, size: 22)
+                    ? const Iconoir.Check(color: Colors.white, width: 22, height: 22)
                     : null,
               ),
             );
@@ -1054,10 +1039,10 @@ class _SettingsTabState extends State<SettingsTab> {
               color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              Icons.language_rounded,
-              size: 20,
+            child: Iconoir.Language(
               color: Theme.of(context).colorScheme.primary,
+              width: 20,
+              height: 20,
             ),
           ),
           title: Text(
@@ -1161,7 +1146,7 @@ class _SettingsTabState extends State<SettingsTab> {
         _buildGlassmorphicCard(
           children: [
             _buildSwitchTile(
-              icon: Icons.palette_rounded,
+              icon: Iconoir.Palette(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
               title: l10n.settingsMaterialYou,
               subtitle: l10n.settingsMaterialYouDesc,
               value: themeProvider.useDynamicColor,
@@ -1170,7 +1155,7 @@ class _SettingsTabState extends State<SettingsTab> {
             ),
             if (!themeProvider.useDynamicColor)
               _buildActionTile(
-                icon: Icons.color_lens_rounded,
+                icon: Iconoir.ColorPicker(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
                 title: 'Accent Color',
                 subtitle: 'Choose the app accent color',
                 trailing: Row(
@@ -1189,14 +1174,10 @@ class _SettingsTabState extends State<SettingsTab> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 16,
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.color
-                          ?.withValues(alpha: 0.5),
+                    Iconoir.NavArrowRight(
+                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.5) ?? Colors.white54,
+                      width: 16,
+                      height: 16,
                     ),
                   ],
                 ),
@@ -1207,7 +1188,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 final isHighEnd =
                     performanceProvider.currentMode == PerformanceLevel.high;
                 return _buildSwitchTile(
-                  icon: Icons.speed_rounded,
+                  icon: Iconoir.DashboardSpeed(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
                   title: l10n.settingsHighendUi,
                   subtitle: l10n.settingsHighendUiDesc,
                   value: isHighEnd,
@@ -1225,7 +1206,7 @@ class _SettingsTabState extends State<SettingsTab> {
                   return const SizedBox.shrink();
                 }
                 return _buildSliderTile(
-                  icon: Icons.blur_on_rounded,
+                  icon: Iconoir.Fog(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
                   title: 'Background Blur',
                   subtitle: 'Artwork blur intensity',
                   value: themeProvider.blurIntensity,
@@ -1244,7 +1225,7 @@ class _SettingsTabState extends State<SettingsTab> {
                   return const SizedBox.shrink();
                 }
                 return _buildSliderTile(
-                  icon: Icons.brightness_4_rounded,
+                  icon: Iconoir.Brightness(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
                   title: 'Background Darkness',
                   subtitle: 'Overlay opacity on artwork',
                   value: themeProvider.overlayOpacity,
@@ -1259,7 +1240,7 @@ class _SettingsTabState extends State<SettingsTab> {
             ),
             _buildLanguageTile(),
             _buildActionTile(
-              icon: Icons.dashboard_rounded,
+              icon: Iconoir.Dashboard(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
               title: l10n.homeLayout,
               subtitle: l10n.homeLayoutDesc,
               onTap: () {
@@ -1280,7 +1261,7 @@ class _SettingsTabState extends State<SettingsTab> {
         _buildGlassmorphicCard(
           children: [
             _buildSwitchTile(
-              icon: Icons.call_split_rounded,
+              icon: Iconoir.GitFork(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
               title: l10n.settingsGapless,
               subtitle: l10n.settingsGaplessDesc,
               value: audioPlayerService.gaplessPlayback,
@@ -1289,7 +1270,7 @@ class _SettingsTabState extends State<SettingsTab> {
               isFirst: true,
             ),
             _buildSwitchTile(
-              icon: Icons.volume_up_rounded,
+              icon: Iconoir.SoundHigh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
               title: l10n.settingsNormalization,
               subtitle: l10n.settingsNormalizationDesc,
               value: audioPlayerService.volumeNormalization,
@@ -1297,7 +1278,7 @@ class _SettingsTabState extends State<SettingsTab> {
                   audioPlayerService.setVolumeNormalization(value),
             ),
             _buildSliderTile(
-              icon: Icons.speed_rounded,
+              icon: Iconoir.DashboardSpeed(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
               title: l10n.playbackSpeed,
               subtitle: l10n.playbackSpeedDesc,
               value: audioPlayerService.playbackSpeed,
@@ -1314,15 +1295,15 @@ class _SettingsTabState extends State<SettingsTab> {
               },
             ),
             _buildSwitchTile(
-              icon: Icons.music_note_rounded,
-              title: 'Adjust pitch with speed',
-              subtitle: 'When off, tempo changes without pitch shift',
+              icon: Iconoir.MusicNote(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+              title: l10n.adjustPitchWithSpeed,
+              subtitle: l10n.adjustPitchWithSpeedDesc,
               value: audioPlayerService.pitchWithSpeed,
               onChanged: (value) =>
                   audioPlayerService.setPitchWithSpeed(value),
             ),
             _buildActionTile(
-              icon: Icons.people_rounded,
+              icon: Iconoir.Group(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
               title: l10n.artistSeparation,
               subtitle: l10n.artistSeparationDesc,
               onTap: () {
@@ -1343,14 +1324,14 @@ class _SettingsTabState extends State<SettingsTab> {
         _buildGlassmorphicCard(
           children: [
             _buildActionTile(
-              icon: Icons.storage_rounded,
+              icon: Iconoir.Database(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
               title: l10n.settingsCacheInfo,
               subtitle: l10n.settingsCacheInfoDesc,
               onTap: _showCacheInfo,
               isFirst: true,
             ),
             _buildActionTile(
-              icon: Icons.delete_rounded,
+              icon: Iconoir.Trash(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
               title: l10n.settingsClearCache,
               subtitle: l10n.settingsClearCacheDesc,
               onTap: _showClearCacheDialog,
@@ -1364,7 +1345,7 @@ class _SettingsTabState extends State<SettingsTab> {
         _buildGlassmorphicCard(
           children: [
             _buildActionTile(
-              icon: Icons.info_rounded,
+              icon: Iconoir.InfoCircle(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
               title: l10n.settingsAboutApp,
               subtitle:
                   '${l10n.settingsVersion} $_currentVersion',
@@ -1372,28 +1353,28 @@ class _SettingsTabState extends State<SettingsTab> {
               isFirst: true,
             ),
             _buildActionTile(
-              icon: Icons.notifications_rounded,
+              icon: Iconoir.Bell(color: Colors.blue, width: 20, height: 20),
               title: l10n.whatsNew,
               subtitle: l10n.view_changelog,
               onTap: _showChangelogDialog,
               iconColor: Colors.blue,
             ),
             _buildActionTile(
-              icon: Icons.favorite_rounded,
+              icon: Iconoir.HeartSolid(color: Colors.pink, width: 20, height: 20),
               title: l10n.supportAurora,
               subtitle: l10n.supportAuroraDescShort,
               onTap: () => DonationService.showDonationDialog(context),
               iconColor: Colors.pink,
             ),
             _buildActionTile(
-              icon: Icons.chat_bubble_outline_rounded,
+              icon: Iconoir.ChatBubble(color: Colors.green, width: 20, height: 20),
               title: l10n.send_feedback,
               subtitle: l10n.send_feedback_desc,
               onTap: () => _showFeedbackDialog(),
               iconColor: Colors.green,
             ),
             _buildActionTile(
-              icon: Icons.restart_alt_rounded,
+              icon: Iconoir.Refresh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
               title: l10n.settingsCheckUpdates,
               subtitle: l10n.settingsCheckUpdatesDesc,
               onTap: () async {

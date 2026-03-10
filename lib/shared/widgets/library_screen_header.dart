@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 
 /// A rich [SliverAppBar] header for library list screens (Tracks, Albums,
@@ -347,10 +348,10 @@ class LibraryScreenHeader extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.18),
             ),
           ),
-          child: const Icon(
-            Icons.arrow_back,
+          child: const Iconoir.NavArrowLeft(
             color: Colors.white,
-            size: 20,
+            width: 20,
+            height: 20,
           ),
         ),
       ),
