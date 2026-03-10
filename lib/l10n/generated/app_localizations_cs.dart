@@ -18,6 +18,11 @@ class AppLocalizationsCs extends AppLocalizations {
   String get addedToPlaylist => 'Přidáno do playlistu';
 
   @override
+  String addedToNamedPlaylist(String name) {
+    return 'Přidáno do $name';
+  }
+
+  @override
   String get addExclusion => 'Přidat výjimku';
 
   @override
@@ -507,6 +512,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get onboardingChooseLanguage => 'Vyberte si jazyk';
 
   @override
+  String get languageNotListedHint =>
+      'Váš jazyk není v seznamu? Vyberte angličtinu a pokračujte na další stránku.';
+
+  @override
   String get onboardingCompletionSubtitle => 'Začněte si užívat svou hudbu';
 
   @override
@@ -523,12 +532,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get alwaysOn => 'Vždy zapnuto';
-
-  @override
-  String get onboardingDownloadsSubtitle => 'Nastavte automatické stahování';
-
-  @override
-  String get onboardingDownloadsTitle => 'Nastavení stahování';
 
   @override
   String get onboardingDynamicColors => 'Dynamické barvy';
@@ -1255,51 +1258,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get continueButton => 'Pokračovat';
 
   @override
-  String get downloadPreferences => 'Předvolby stahování';
-
-  @override
-  String get downloadPreferencesSubtitle =>
-      'Vyberte, co stáhnout pro vaši hudbu';
-
-  @override
-  String get downloadAlbumArt => 'Stáhnout obaly alb';
-
-  @override
-  String get downloadAlbumArtDesc =>
-      'Automaticky stahovat obaly alb pro všechny skladby';
-
-  @override
-  String get downloadLyricsTitle => 'Stáhnout texty';
-
-  @override
-  String get downloadLyricsDesc =>
-      'Stahovat synchronizované texty, pokud jsou k dispozici';
-
-  @override
-  String get wifiOnly => 'Pouze Wi-Fi';
-
-  @override
-  String get wifiOnlyDesc => 'Stahovat obsah pouze při připojení k Wi-Fi';
-
-  @override
-  String get autoDownloadNewSongs => 'Automatické stahování pro nové skladby';
-
-  @override
-  String get autoDownloadNewSongsDesc =>
-      'Automaticky stahovat obsah při přidávání nových skladeb';
-
-  @override
-  String get downloadSettingsNote =>
-      'Tato nastavení můžete později změnit v předvolbách aplikace.';
-
-  @override
-  String get downloadContent => 'Stáhnout obsah?';
-
-  @override
-  String get downloadContentSubtitle =>
-      'Obsah bude stahován při používání aplikace';
-
-  @override
   String get skip => 'Přeskočit';
 
   @override
@@ -1326,6 +1284,24 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get send_feedback_desc => 'Nahlásit chyby nebo navrhnout funkce';
+
+  @override
+  String get contributeTranslations => 'Přispět překlady';
+
+  @override
+  String get contributeTranslationsDesc =>
+      'Pomoci přeložit Aurora Music na Crowdin';
+
+  @override
+  String get contributeTranslationsTitle =>
+      'Přeložte aplikaci do vašeho jazyka';
+
+  @override
+  String get contributeTranslationsSubtitle =>
+      'Aurora Music je dostupná ve více jazycích díky naší úžasné komunitě. Pomozte nám oslovit ještě více uživatelů překladem aplikace do svého jazyka — začít trvá jen pár minut.';
+
+  @override
+  String get contributeTranslationsOpenCrowdin => 'Otevřít Crowdin';
 
   @override
   String get close => 'Zavřít';
@@ -1452,4 +1428,22 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get noLyricsCached => 'Pro tuto skladbu není uložen žádný text';
+
+  @override
+  String get setAsRingtone => 'Nastavit jako vyzváněcí tón';
+
+  @override
+  String get songInfoEdit => 'Informace / Upravit';
+
+  @override
+  String get goToAlbum => 'Přejít na album';
+
+  @override
+  String get goToArtist => 'Přejít na umělce';
+
+  @override
+  String get deleteFromDevice => 'Smazat ze zařízení';
+
+  @override
+  String get checkOutThisSong => 'Poslechněte si tuto skladbu!';
 }

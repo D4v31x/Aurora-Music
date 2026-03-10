@@ -97,3 +97,13 @@ When new strings are added to the English template (`app_en.arb`), your translat
 ## Need help?
 
 Open a [GitHub Discussion](https://github.com/D4v31x/Aurora-Music/discussions) or reach out via our community channels. We appreciate every contribution!
+
+
+
+# MY NOTES
+
+# 4. After translators have worked... download translations
+crowdin download
+
+# 5. Regenerate Dart files
+flutter gen-l10n

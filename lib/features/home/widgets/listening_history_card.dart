@@ -6,6 +6,7 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/background_manager_service.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
+import '../../../shared/widgets/song_context_menu.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -95,18 +96,20 @@ class ListeningHistoryCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GlassmorphicContainer(
-        borderRadius: BorderRadius.circular(16),
-        blur: 15,
-        child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  // Artwork
+      child: GestureDetector(
+        onLongPress: () => showSongContextMenu(context, song),
+        child: GlassmorphicContainer(
+          borderRadius: BorderRadius.circular(16),
+          blur: 15,
+          child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    // Artwork
                   Hero(
                     tag: 'nowPlayingArtwork_home',
                     child: Container(
@@ -247,6 +250,7 @@ class ListeningHistoryCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
         ),
       ),

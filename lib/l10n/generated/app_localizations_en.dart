@@ -18,6 +18,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addedToPlaylist => 'Added to playlist';
 
   @override
+  String addedToNamedPlaylist(String name) {
+    return 'Added to $name';
+  }
+
+  @override
   String get addExclusion => 'Add Exclusion';
 
   @override
@@ -507,6 +512,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingChooseLanguage => 'Choose Your Language';
 
   @override
+  String get languageNotListedHint =>
+      'Your language isn\'t listed? Select English and continue to the next page.';
+
+  @override
   String get onboardingCompletionSubtitle => 'Start enjoying your music';
 
   @override
@@ -523,12 +532,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alwaysOn => 'Always On';
-
-  @override
-  String get onboardingDownloadsSubtitle => 'Configure automatic downloads';
-
-  @override
-  String get onboardingDownloadsTitle => 'Download Settings';
 
   @override
   String get onboardingDynamicColors => 'Dynamic Colors';
@@ -1252,50 +1255,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get continueButton => 'Continue';
 
   @override
-  String get downloadPreferences => 'Download Preferences';
-
-  @override
-  String get downloadPreferencesSubtitle =>
-      'Choose what to download for your music';
-
-  @override
-  String get downloadAlbumArt => 'Download Album Art';
-
-  @override
-  String get downloadAlbumArtDesc =>
-      'Automatically fetch album covers for all songs';
-
-  @override
-  String get downloadLyricsTitle => 'Download Lyrics';
-
-  @override
-  String get downloadLyricsDesc => 'Fetch synchronized lyrics when available';
-
-  @override
-  String get wifiOnly => 'Wi-Fi Only';
-
-  @override
-  String get wifiOnlyDesc => 'Download assets only when connected to Wi-Fi';
-
-  @override
-  String get autoDownloadNewSongs => 'Auto-Download for New Songs';
-
-  @override
-  String get autoDownloadNewSongsDesc =>
-      'Automatically download assets when adding new songs';
-
-  @override
-  String get downloadSettingsNote =>
-      'You can change these settings later in the app preferences.';
-
-  @override
-  String get downloadContent => 'Download Content?';
-
-  @override
-  String get downloadContentSubtitle =>
-      'Assets will be downloaded as you use the app';
-
-  @override
   String get skip => 'Skip';
 
   @override
@@ -1322,6 +1281,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get send_feedback_desc => 'Report bugs or suggest features';
+
+  @override
+  String get contributeTranslations => 'Contribute Translations';
+
+  @override
+  String get contributeTranslationsDesc =>
+      'Help translate Aurora Music on Crowdin';
+
+  @override
+  String get contributeTranslationsTitle => 'Help Us Translate';
+
+  @override
+  String get contributeTranslationsSubtitle =>
+      'Aurora Music is available in multiple languages thanks to our amazing community. Help us reach even more users by translating the app into your language — it only takes a few minutes to get started.';
+
+  @override
+  String get contributeTranslationsOpenCrowdin => 'Open Crowdin';
 
   @override
   String get close => 'Close';
@@ -1447,4 +1423,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noLyricsCached => 'No cached lyrics found for this song';
+
+  @override
+  String get setAsRingtone => 'Set as ringtone';
+
+  @override
+  String get songInfoEdit => 'Song info / Edit';
+
+  @override
+  String get goToAlbum => 'Go to album';
+
+  @override
+  String get goToArtist => 'Go to artist';
+
+  @override
+  String get deleteFromDevice => 'Delete from device';
+
+  @override
+  String get checkOutThisSong => 'Check out this song!';
 }

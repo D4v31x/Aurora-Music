@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/user_preferences.dart';
 import '../../../shared/providers/theme_provider.dart';
-import '../../../l10n/generated/app_localizations.dart';
 import '../../home/screens/home_screen.dart';
 import '../pages/welcome_page.dart';
 import '../pages/beta_welcome_page.dart';
@@ -12,10 +10,10 @@ import '../pages/app_info_page.dart';
 import '../pages/language_selection_page.dart';
 import '../pages/theme_selection_page.dart';
 import '../pages/internet_usage_page.dart';
-import '../pages/asset_download_page.dart';
 import '../pages/permissions_page.dart';
 import '../pages/completion_page.dart';
 import '../pages/donation_page.dart';
+import '../pages/translation_contribution_page.dart';
 import '../../../shared/widgets/grainy_gradient_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 
@@ -27,7 +25,6 @@ class OnboardingScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final currentPage = useState(0);
-    final skippedToPermissions = useState(false);
 
     final transitionController = useAnimationController(
       duration: const Duration(milliseconds: 400),
@@ -59,20 +56,6 @@ class OnboardingScreen extends HookWidget {
       }
     }
 
-    Future<void> skipToPermissions() async {
-      await transitionController.reverse();
-      skippedToPermissions.value = true;
-      currentPage.value = 4; // Permissions page
-      await transitionController.forward();
-    }
-
-    // Function to go to completion page (used after permissions when skipped)
-    Future<void> goToCompletion() async {
-      await transitionController.reverse();
-      currentPage.value = _totalPages - 1; // Completion page
-      await transitionController.forward();
-    }
-
     Widget getCurrentPage() {
       switch (currentPage.value) {
         case 0:
@@ -83,32 +66,32 @@ class OnboardingScreen extends HookWidget {
             onBack: previousPage,
           );
         case 2:
-          return BetaWelcomePage(
+          return TranslationContributionPage(
             onContinue: nextPage,
             onBack: previousPage,
           );
         case 3:
-          return AppInfoPage(
+          return BetaWelcomePage(
             onContinue: nextPage,
             onBack: previousPage,
           );
         case 4:
-          return PermissionsPage(
-            onContinue: skippedToPermissions.value ? goToCompletion : nextPage,
+          return AppInfoPage(
+            onContinue: nextPage,
             onBack: previousPage,
           );
         case 5:
-          return ThemeSelectionPage(
+          return PermissionsPage(
             onContinue: nextPage,
             onBack: previousPage,
           );
         case 6:
-          return InternetUsagePage(
+          return ThemeSelectionPage(
             onContinue: nextPage,
             onBack: previousPage,
           );
         case 7:
-          return AssetDownloadPage(
+          return InternetUsagePage(
             onContinue: nextPage,
             onBack: previousPage,
           );
@@ -138,44 +121,6 @@ class OnboardingScreen extends HookWidget {
               opacity: AlwaysStoppedAnimation(fadeAnimation),
               child: getCurrentPage(),
             ),
-
-            // Top bar with skip button (except on first, permissions, and last page)
-            if (currentPage.value > 0 &&
-                currentPage.value != 4 &&
-                currentPage.value < _totalPages - 1)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24.0, vertical: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: skipToPermissions,
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white.withValues(alpha: 0.7),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                          ),
-                          child: Text(
-                            AppLocalizations.of(context)
-                                .onboardingSkip,
-                            style: const TextStyle(
-                              fontFamily: FontConstants.fontFamily,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
 
             // Page indicator
             if (currentPage.value > 0 && currentPage.value < _totalPages - 1)

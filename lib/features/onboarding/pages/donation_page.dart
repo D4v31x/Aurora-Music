@@ -5,6 +5,7 @@ import '../../../shared/providers/theme_provider.dart';
 import '../../../shared/services/donation_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 
 class DonationPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -120,7 +121,22 @@ class _DonationPageState extends State<DonationPage>
 
               return Column(
                 children: [
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 48),
+
+                  // Page icon
+                  SlideTransition(
+                    position: slidePos,
+                    child: FadeTransition(
+                      opacity: fadeOp,
+                      child: const Iconoir.Heart(
+                        color: Color(0xFF3B82F6),
+                        height: 56,
+                        width: 56,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
 
                   // Title
                   SlideTransition(

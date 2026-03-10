@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../services/audio_player_service.dart';
+import '../services/notification_manager.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../widgets/expanding_player.dart';
 
@@ -76,12 +78,9 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
         Provider.of<AudioPlayerService>(context, listen: false);
     await audioService.addMultipleToQueue(allSongs);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              '${allSongs.length} song${allSongs.length == 1 ? '' : 's'} added to queue'),
-          duration: const Duration(seconds: 2),
-        ),
+      NotificationManager.showMessage(
+        context,
+        AppLocalizations.of(context).songsAddedToQueue(allSongs.length),
       );
     }
   }
@@ -124,7 +123,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
 
   /// Build an action button (play all, shuffle, etc.).
   Widget buildActionButton({
-    required IconData icon,
+    required Widget icon,
     required String label,
     required VoidCallback onTap,
     bool isPrimary = false,
@@ -154,7 +153,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white, size: 22),
+            icon,
             const SizedBox(width: 8),
             Flexible(
               child: Text(
@@ -182,7 +181,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
         children: [
           Expanded(
             child: buildActionButton(
-              icon: Icons.play_arrow_rounded,
+              icon: const Iconoir.Play(color: Colors.white, width: 22, height: 22),
               label: AppLocalizations.of(context).playAll,
               onTap: playAllSongs,
               isPrimary: true,
@@ -190,13 +189,13 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
           ),
           const SizedBox(width: 8),
           buildActionButton(
-            icon: Icons.shuffle_rounded,
+            icon: const Iconoir.Shuffle(color: Colors.white, width: 22, height: 22),
             label: AppLocalizations.of(context).shuffle,
             onTap: shuffleAllSongs,
           ),
           const SizedBox(width: 8),
           buildActionButton(
-            icon: Icons.queue_music_rounded,
+            icon: const Iconoir.Playlist(color: Colors.white, width: 22, height: 22),
             label: AppLocalizations.of(context).queue,
             onTap: addAllToQueue,
           ),

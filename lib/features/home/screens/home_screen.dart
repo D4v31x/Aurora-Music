@@ -18,6 +18,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_dialog.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/widgets/feedback_reminder_dialog.dart';
+import '../../../shared/widgets/translation_reminder_dialog.dart';
 import '../widgets/home_tab.dart';
 import '../../search/widgets/search_tab.dart';
 import '../../settings/widgets/settings_tab.dart';
@@ -94,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     _showWelcomeMessage();
     _checkAndShowFeedbackReminder();
+    _checkAndShowTranslationReminder();
   }
 
   // Initialize the home screen and check permissions
@@ -157,6 +159,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     await Future.delayed(const Duration(seconds: 10));
     if (mounted) {
       await FeedbackReminderDialog.showIfNeeded(context);
+    }
+  }
+
+  Future<void> _checkAndShowTranslationReminder() async {
+    // Show after feedback reminder delay to avoid overlap
+    await Future.delayed(const Duration(seconds: 20));
+    if (mounted) {
+      await TranslationReminderDialog.showIfNeeded(context);
     }
   }
 
@@ -869,8 +879,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: SettingsTab(
                             notificationManager: _notificationManager,
                             onUpdateCheck: () async {
-                              await launchUrl(Uri.parse(
-                                  'https://github.com/D4v31x/Aurora-Music/releases/latest'));
+                              await launchUrl(
+                                Uri.parse(
+                                  'https://play.google.com/store/apps/details?id=com.aurorasoftware.music',
+                                ),
+                                mode: LaunchMode.externalApplication,
+                              );
                             },
                             onResetSetup: () {
                               Navigator.pushReplacement(

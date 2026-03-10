@@ -47,6 +47,17 @@ class NotificationManager {
     }
   }
 
+  /// Show a toast-style notification from anywhere in the app.
+  /// Uses the same pill-shaped glassmorphic style as the Aurora Music notification system.
+  static void showMessage(
+    BuildContext context,
+    String message, {
+    Duration duration = const Duration(seconds: 3),
+    IconData? icon,
+  }) {
+    ToastNotification.show(context, message, duration: duration, icon: icon);
+  }
+
   Stream<NotificationState> get notificationStream =>
       _notificationController.stream;
 

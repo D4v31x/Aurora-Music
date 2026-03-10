@@ -11,6 +11,7 @@ class GlassmorphicCard extends StatelessWidget {
   final String title;
   final String? subtitle;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final Widget? badge;
   final double width;
   final double artworkSize;
@@ -21,6 +22,7 @@ class GlassmorphicCard extends StatelessWidget {
     required this.title,
     this.subtitle,
     required this.onTap,
+    this.onLongPress,
     this.badge,
     this.width = 130,
     this.artworkSize = 130,
@@ -33,6 +35,7 @@ class GlassmorphicCard extends StatelessWidget {
     required String title,
     required String artist,
     required VoidCallback onTap,
+    VoidCallback? onLongPress,
     Widget? badge,
     ArtworkCacheService? artworkService,
     double size = 130,
@@ -44,6 +47,7 @@ class GlassmorphicCard extends StatelessWidget {
       title: title,
       subtitle: artist,
       onTap: onTap,
+      onLongPress: onLongPress,
       badge: badge,
       width: size,
       artworkSize: size,
@@ -319,6 +323,7 @@ class GlassmorphicCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6.0),
       child: GestureDetector(
         onTap: onTap,
+        onLongPress: onLongPress,
         child: RepaintBoundary(
           child: cardContent,
         ),

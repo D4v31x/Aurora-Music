@@ -7,6 +7,7 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
+import '../../../shared/widgets/song_context_menu.dart';
 
 class MostPlayedSection extends StatefulWidget {
   const MostPlayedSection({super.key});
@@ -131,6 +132,7 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
                     const PlaybackSourceInfo(source: PlaybackSource.mostPlayed),
               );
             },
+            onLongPress: () => showSongContextMenu(context, song),
           ),
         );
       }).toList(),
@@ -143,12 +145,14 @@ class _MostPlayedTile extends StatelessWidget {
   final int rank;
   final ArtworkCacheService artworkService;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const _MostPlayedTile({
     required this.song,
     required this.rank,
     required this.artworkService,
     required this.onTap,
+    this.onLongPress,
   });
 
   @override
@@ -157,6 +161,7 @@ class _MostPlayedTile extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: GestureDetector(
         onTap: onTap,
+        onLongPress: onLongPress,
         child: glassmorphicContainer(
           child: Padding(
             padding: const EdgeInsets.all(8.0),

@@ -26,6 +26,7 @@ import '../screens/home_layout_settings.dart';
 import '../../../shared/utils/responsive_utils.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:url_launcher/url_launcher.dart';
 
 /// A glassmorphic settings tab with translations.
 class SettingsTab extends StatefulWidget {
@@ -1372,6 +1373,16 @@ class _SettingsTabState extends State<SettingsTab> {
               subtitle: l10n.send_feedback_desc,
               onTap: () => _showFeedbackDialog(),
               iconColor: Colors.green,
+            ),
+            _buildActionTile(
+              icon: Iconoir.Language(color: Colors.purple, width: 20, height: 20),
+              title: l10n.contributeTranslations,
+              subtitle: l10n.contributeTranslationsDesc,
+              onTap: () => launchUrl(
+                Uri.parse('https://crowdin.com/project/aurora-music'),
+                mode: LaunchMode.externalApplication,
+              ),
+              iconColor: Colors.purple,
             ),
             _buildActionTile(
               icon: Iconoir.Refresh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),

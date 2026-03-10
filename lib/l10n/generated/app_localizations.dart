@@ -116,6 +116,12 @@ abstract class AppLocalizations {
   /// **'Added to playlist'**
   String get addedToPlaylist;
 
+  /// No description provided for @addedToNamedPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to {name}'**
+  String addedToNamedPlaylist(String name);
+
   /// No description provided for @addExclusion.
   ///
   /// In en, this message translates to:
@@ -1064,6 +1070,12 @@ abstract class AppLocalizations {
   /// **'Choose Your Language'**
   String get onboardingChooseLanguage;
 
+  /// No description provided for @languageNotListedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your language isn\'t listed? Select English and continue to the next page.'**
+  String get languageNotListedHint;
+
   /// No description provided for @onboardingCompletionSubtitle.
   ///
   /// In en, this message translates to:
@@ -1099,18 +1111,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Always On'**
   String get alwaysOn;
-
-  /// No description provided for @onboardingDownloadsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Configure automatic downloads'**
-  String get onboardingDownloadsSubtitle;
-
-  /// No description provided for @onboardingDownloadsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Download Settings'**
-  String get onboardingDownloadsTitle;
 
   /// No description provided for @onboardingDynamicColors.
   ///
@@ -2492,84 +2492,6 @@ abstract class AppLocalizations {
   /// **'Continue'**
   String get continueButton;
 
-  /// No description provided for @downloadPreferences.
-  ///
-  /// In en, this message translates to:
-  /// **'Download Preferences'**
-  String get downloadPreferences;
-
-  /// No description provided for @downloadPreferencesSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose what to download for your music'**
-  String get downloadPreferencesSubtitle;
-
-  /// No description provided for @downloadAlbumArt.
-  ///
-  /// In en, this message translates to:
-  /// **'Download Album Art'**
-  String get downloadAlbumArt;
-
-  /// No description provided for @downloadAlbumArtDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatically fetch album covers for all songs'**
-  String get downloadAlbumArtDesc;
-
-  /// No description provided for @downloadLyricsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Download Lyrics'**
-  String get downloadLyricsTitle;
-
-  /// No description provided for @downloadLyricsDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Fetch synchronized lyrics when available'**
-  String get downloadLyricsDesc;
-
-  /// No description provided for @wifiOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Wi-Fi Only'**
-  String get wifiOnly;
-
-  /// No description provided for @wifiOnlyDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Download assets only when connected to Wi-Fi'**
-  String get wifiOnlyDesc;
-
-  /// No description provided for @autoDownloadNewSongs.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto-Download for New Songs'**
-  String get autoDownloadNewSongs;
-
-  /// No description provided for @autoDownloadNewSongsDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatically download assets when adding new songs'**
-  String get autoDownloadNewSongsDesc;
-
-  /// No description provided for @downloadSettingsNote.
-  ///
-  /// In en, this message translates to:
-  /// **'You can change these settings later in the app preferences.'**
-  String get downloadSettingsNote;
-
-  /// No description provided for @downloadContent.
-  ///
-  /// In en, this message translates to:
-  /// **'Download Content?'**
-  String get downloadContent;
-
-  /// No description provided for @downloadContentSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Assets will be downloaded as you use the app'**
-  String get downloadContentSubtitle;
-
   /// No description provided for @skip.
   ///
   /// In en, this message translates to:
@@ -2623,6 +2545,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Report bugs or suggest features'**
   String get send_feedback_desc;
+
+  /// No description provided for @contributeTranslations.
+  ///
+  /// In en, this message translates to:
+  /// **'Contribute Translations'**
+  String get contributeTranslations;
+
+  /// No description provided for @contributeTranslationsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Help translate Aurora Music on Crowdin'**
+  String get contributeTranslationsDesc;
+
+  /// No description provided for @contributeTranslationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help Us Translate'**
+  String get contributeTranslationsTitle;
+
+  /// No description provided for @contributeTranslationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Aurora Music is available in multiple languages thanks to our amazing community. Help us reach even more users by translating the app into your language — it only takes a few minutes to get started.'**
+  String get contributeTranslationsSubtitle;
+
+  /// No description provided for @contributeTranslationsOpenCrowdin.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Crowdin'**
+  String get contributeTranslationsOpenCrowdin;
 
   /// No description provided for @close.
   ///
@@ -2827,6 +2779,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No cached lyrics found for this song'**
   String get noLyricsCached;
+
+  /// No description provided for @setAsRingtone.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as ringtone'**
+  String get setAsRingtone;
+
+  /// No description provided for @songInfoEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Song info / Edit'**
+  String get songInfoEdit;
+
+  /// No description provided for @goToAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to album'**
+  String get goToAlbum;
+
+  /// No description provided for @goToArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to artist'**
+  String get goToArtist;
+
+  /// No description provided for @deleteFromDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete from device'**
+  String get deleteFromDevice;
+
+  /// No description provided for @checkOutThisSong.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out this song!'**
+  String get checkOutThisSong;
 }
 
 class _AppLocalizationsDelegate

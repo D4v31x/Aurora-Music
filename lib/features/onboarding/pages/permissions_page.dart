@@ -7,6 +7,7 @@ import 'dart:io';
 import '../../../shared/providers/theme_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 
 class PermissionsPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -272,7 +273,28 @@ class _PermissionsPageState extends State<PermissionsPage>
             builder: (context, child) {
               return Column(
                 children: [
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 48),
+
+                  // Page icon
+                  SlideTransition(
+                    position: _exitController.isAnimating ||
+                            _exitController.isCompleted
+                        ? _exitSlideAnimation
+                        : _titleSlideAnimation,
+                    child: FadeTransition(
+                      opacity: _exitController.isAnimating ||
+                              _exitController.isCompleted
+                          ? _exitFadeAnimation
+                          : _titleFadeAnimation,
+                      child: const Iconoir.Shield(
+                        color: Color(0xFF3B82F6),
+                        height: 56,
+                        width: 56,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
 
                   // Title
                   SlideTransition(

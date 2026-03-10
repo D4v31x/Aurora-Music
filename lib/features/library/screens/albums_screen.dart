@@ -4,6 +4,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -685,11 +686,9 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     if (albumSongs.isNotEmpty) {
       await audioPlayerService.addMultipleToQueue(albumSongs);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context).songsAddedToQueue(albumSongs.length)),
-            behavior: SnackBarBehavior.floating,
-          ),
+        NotificationManager.showMessage(
+          context,
+          AppLocalizations.of(context).songsAddedToQueue(albumSongs.length),
         );
       }
     }

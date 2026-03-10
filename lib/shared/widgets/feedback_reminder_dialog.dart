@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -97,10 +98,12 @@ class FeedbackReminderDialog extends StatelessWidget {
                       Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  Icons.favorite_rounded,
-                  size: 32,
-                  color: Theme.of(context).colorScheme.primary,
+                child: Center(
+                  child: Iconoir.Heart(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 44,
+                    height: 44,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -136,7 +139,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _FeedbackButton(
-                      icon: Icons.bug_report_rounded,
+                      icon: const Iconoir.Bug(color: Colors.orange, width: 28, height: 28),
                       label: l10n.report_bug,
                       color: Colors.orange,
                       onTap: () {
@@ -148,7 +151,7 @@ class FeedbackReminderDialog extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _FeedbackButton(
-                      icon: Icons.lightbulb_rounded,
+                      icon: const Iconoir.LightBulb(color: Colors.blue, width: 28, height: 28),
                       label: l10n.suggest_feature,
                       color: Colors.blue,
                       onTap: () {
@@ -217,7 +220,7 @@ class FeedbackReminderDialog extends StatelessWidget {
 }
 
 class _FeedbackButton extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final String label;
   final Color color;
   final VoidCallback onTap;
@@ -247,11 +250,7 @@ class _FeedbackButton extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Icon(
-                icon,
-                color: color,
-                size: 28,
-              ),
+              icon,
               const SizedBox(height: 8),
               Text(
                 label,

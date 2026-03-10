@@ -10,6 +10,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../shared/models/timed_lyrics.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/lyrics_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -542,12 +543,9 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
         if (syncedResults.isEmpty) {
           setState(() => _isLoadingLyrics = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  AppLocalizations.of(context).noLyricsFound),
-              backgroundColor: Colors.grey.shade800,
-            ),
+          NotificationManager.showMessage(
+            context,
+            AppLocalizations.of(context).noLyricsFound,
           );
           return;
         }
@@ -558,24 +556,18 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       } else {
         setState(() => _isLoadingLyrics = false);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content:
-                  Text(AppLocalizations.of(context).searchFailed),
-              backgroundColor: Colors.grey.shade800,
-            ),
+          NotificationManager.showMessage(
+            context,
+            AppLocalizations.of(context).searchFailed,
           );
         }
       }
     } catch (e) {
       setState(() => _isLoadingLyrics = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-                Text(AppLocalizations.of(context).searchFailed),
-            backgroundColor: Colors.grey.shade800,
-          ),
+        NotificationManager.showMessage(
+          context,
+          AppLocalizations.of(context).searchFailed,
         );
       }
     }

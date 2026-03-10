@@ -15,6 +15,7 @@ import '../models/artist_utils.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/audio_player_service.dart';
 import '../services/lyrics_service.dart';
+import '../services/notification_manager.dart';
 
 // ---------------------------------------------------------------------------
 // Public entry-point
@@ -86,43 +87,43 @@ class _SongContextMenu extends StatelessWidget {
                 _item(
                   context,
                   icon: Icons.playlist_add_rounded,
-                  label: 'Add to playlist',
+                  label: AppLocalizations.of(context).addToPlaylist,
                   onTap: () => _addToPlaylist(context, audioService),
                 ),
                 _item(
                   context,
                   icon: Icons.queue_music_rounded,
-                  label: 'Add to queue',
+                  label: AppLocalizations.of(context).addToQueue,
                   onTap: () => _addToQueue(context, audioService),
                 ),
                 _item(
                   context,
                   icon: Icons.notifications_active_rounded,
-                  label: 'Set as ringtone',
+                  label: AppLocalizations.of(context).setAsRingtone,
                   onTap: () => _setAsRingtone(context),
                 ),
                 _item(
                   context,
                   icon: Icons.share_rounded,
-                  label: 'Share',
+                  label: AppLocalizations.of(context).share,
                   onTap: () => _share(context),
                 ),
                 _item(
                   context,
                   icon: Icons.edit_rounded,
-                  label: 'Song info / Edit',
+                  label: AppLocalizations.of(context).songInfoEdit,
                   onTap: () => _editInfo(context),
                 ),
                 _item(
                   context,
                   icon: Icons.album_rounded,
-                  label: 'Go to album',
+                  label: AppLocalizations.of(context).goToAlbum,
                   onTap: () => _goToAlbum(context),
                 ),
                 _item(
                   context,
                   icon: Icons.person_rounded,
-                  label: 'Go to artist',
+                  label: AppLocalizations.of(context).goToArtist,
                   onTap: () => _goToArtist(context),
                 ),
                 _item(
@@ -135,7 +136,7 @@ class _SongContextMenu extends StatelessWidget {
                 _item(
                   context,
                   icon: Icons.delete_outline_rounded,
-                  label: 'Delete from device',
+                  label: AppLocalizations.of(context).deleteFromDevice,
                   color: Colors.redAccent,
                   onTap: () => _deleteSong(context),
                 ),
@@ -175,7 +176,7 @@ class _SongContextMenu extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  splitArtists(song.artist ?? 'Unknown Artist').join(', '),
+                  splitArtists(song.artist ?? AppLocalizations.of(context).unknownArtist).join(', '),
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.65),
                     fontFamily: FontConstants.fontFamily,
@@ -227,9 +228,7 @@ class _SongContextMenu extends StatelessWidget {
     Navigator.pop(context);
     await audioService.addToQueue(song);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).songAddedToQueue(song.title))),
-      );
+      NotificationManager.showMessage(context, AppLocalizations.of(context).songAddedToQueue(song.title));
     }
   }
 
@@ -238,23 +237,14 @@ class _SongContextMenu extends StatelessWidget {
     try {
       await _channel.invokeMethod('setAsRingtone', {'path': song.data});
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).songSetAsRingtone(song.title))),
-        );
+        NotificationManager.showMessage(context, AppLocalizations.of(context).songSetAsRingtone(song.title));
       }
     } on PlatformException catch (e) {
       if (!context.mounted) return;
       if (e.code == 'PERMISSION_NEEDED') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context).modifySystemSettingsPermission),
-            duration: const Duration(seconds: 5),
-          ),
-        );
+        NotificationManager.showMessage(context, AppLocalizations.of(context).modifySystemSettingsPermission);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).failedToSetRingtone(e.message ?? ''))),
-        );
+        NotificationManager.showMessage(context, AppLocalizations.of(context).failedToSetRingtone(e.message ?? ''));
       }
     }
   }
@@ -262,8 +252,8 @@ class _SongContextMenu extends StatelessWidget {
   void _share(BuildContext context) {
     Navigator.pop(context);
     final text =
-        '${song.title} — ${splitArtists(song.artist ?? 'Unknown Artist').join(', ')}';
-    Share.share(text, subject: 'Check out this song!');
+        '${song.title} — ${splitArtists(song.artist ?? AppLocalizations.of(context).unknownArtist).join(', ')}';
+    Share.share(text, subject: AppLocalizations.of(context).checkOutThisSong);
   }
 
   void _editInfo(BuildContext context) {
@@ -286,7 +276,7 @@ class _SongContextMenu extends StatelessWidget {
 
   void _goToArtist(BuildContext context) {
     Navigator.pop(context);
-    final artist = splitArtists(song.artist ?? 'Unknown Artist').first;
+    final artist = splitArtists(song.artist ?? AppLocalizations.of(context).unknownArtist).first;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -298,21 +288,16 @@ class _SongContextMenu extends StatelessWidget {
     Navigator.pop(context);
     final artist = song.artist?.trim().isNotEmpty == true
         ? song.artist!.trim()
-        : 'Unknown';
+        : AppLocalizations.of(context).unknown;
     final title =
-        song.title.trim().isNotEmpty ? song.title.trim() : 'Unknown';
+        song.title.trim().isNotEmpty ? song.title.trim() : AppLocalizations.of(context).unknown;
     final deleted =
         await TimedLyricsService().deleteCachedLyricsForSong(artist, title);
     if (!context.mounted) return;
     final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          deleted
-              ? l10n.lyricsCleared(song.title)
-              : l10n.noLyricsCached,
-        ),
-      ),
+    NotificationManager.showMessage(
+      context,
+      deleted ? l10n.lyricsCleared(song.title) : l10n.noLyricsCached,
     );
   }
 
@@ -376,15 +361,11 @@ class _SongContextMenu extends StatelessWidget {
     try {
       await _channel.invokeMethod('deleteSong', {'path': song.data});
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).songDeleted(song.title))),
-        );
+        NotificationManager.showMessage(context, AppLocalizations.of(context).songDeleted(song.title));
       }
     } on PlatformException catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).failedToDelete(e.message ?? ''))),
-        );
+        NotificationManager.showMessage(context, AppLocalizations.of(context).failedToDelete(e.message ?? ''));
       }
     }
   }
@@ -469,10 +450,9 @@ class _SongContextMenu extends StatelessWidget {
                               audioService.addSongToPlaylist(
                                   playlist.id, song);
                               Navigator.pop(ctx);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text(
-                                        'Added to ${playlist.name}')),
+                              NotificationManager.showMessage(
+                                context,
+                                AppLocalizations.of(context).addedToNamedPlaylist(playlist.name),
                               );
                             },
                           );

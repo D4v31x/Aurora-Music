@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/providers/theme_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 
 class CompletionPage extends StatefulWidget {
   final VoidCallback onComplete;
@@ -78,6 +79,21 @@ class _CompletionPageState extends State<CompletionPage>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
+
+              // Page icon
+              SlideTransition(
+                position: _slideAnimation,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: const Iconoir.Check(
+                    color: Color(0xFF3B82F6),
+                    height: 56,
+                    width: 56,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
 
               // Title
               SlideTransition(

@@ -7,6 +7,7 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/widgets/glassmorphic_card.dart';
+import '../../../shared/widgets/song_context_menu.dart';
 
 class RecentlyPlayedSection extends StatefulWidget {
   const RecentlyPlayedSection({super.key});
@@ -132,6 +133,7 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
                       source: PlaybackSource.recentlyPlayed),
                 );
               },
+              onLongPress: () => showSongContextMenu(context, song),
             ),
           );
         },

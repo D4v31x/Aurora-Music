@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/models/playlist_model.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/expanding_player.dart';
@@ -13,6 +15,7 @@ import '../../../shared/widgets/song_picker_sheet.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/detail_header.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
+import '../../../shared/widgets/song_context_menu.dart';
 import '../../../shared/models/artist_utils.dart';
 import 'dart:typed_data';
 
@@ -209,10 +212,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                     color: Colors.white.withValues(alpha: 0.2),
                                   ),
                                 ),
-                                child: const Icon(
-                                  Icons.more_vert,
+                                child: const Iconoir.MoreVert(
                                   color: Colors.white,
-                                  size: 20,
+                                  width: 20,
+                                  height: 20,
                                 ),
                           ),
                         ),
@@ -314,8 +317,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.play_arrow_rounded,
-                        color: Colors.white, size: 22),
+                    const Iconoir.Play(color: Colors.white, width: 22, height: 22),
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
@@ -358,12 +360,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.shuffle_rounded,
+                    Iconoir.Shuffle(
                       color: playlist.songs.isEmpty
                           ? Colors.white30
                           : Colors.white,
-                      size: 20,
+                      width: 20,
+                      height: 20,
                     ),
                     const SizedBox(width: 6),
                     Flexible(
@@ -394,20 +396,19 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 : () async {
                     await audioService.addMultipleToQueue(playlist.songs);
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                            '${playlist.songs.length} song${playlist.songs.length == 1 ? '' : 's'} added to queue'),
-                        duration: const Duration(seconds: 2),
-                      ));
+                      NotificationManager.showMessage(
+                        context,
+                        AppLocalizations.of(context).songsAddedToQueue(playlist.songs.length),
+                      );
                     }
                   },
             child: GlassmorphicContainer(
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-              child: Icon(
-                Icons.queue_music_rounded,
+              child: Iconoir.Playlist(
                 color:
                     playlist.songs.isEmpty ? Colors.white30 : Colors.white,
-                size: 22,
+                width: 22,
+                height: 22,
               ),
             ),
           ),
@@ -430,10 +431,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     color: color.withValues(alpha: 0.4),
                   ),
                 ),
-                child: Icon(
-                  Icons.add_rounded,
+                child: Iconoir.PlusCircle(
                   color: color,
-                  size: 24,
+                  width: 24,
+                  height: 24,
                 ),
               ),
             ),
@@ -518,7 +519,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
         color: Colors.red.withValues(alpha: 0.15),
-        child: Icon(Icons.delete_rounded, color: Colors.red.withValues(alpha: 0.8)),
+        child: Iconoir.Trash(color: Colors.red.withValues(alpha: 0.8), width: 24, height: 24),
       ),
       confirmDismiss: (_) async {
         if (!_isAutoPlaylist) {
@@ -539,6 +540,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             ),
           );
         },
+        onLongPress: () => showSongContextMenu(context, song),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: GlassmorphicContainer(
@@ -550,10 +552,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   SizedBox(
                     width: 32,
                     child: isPlaying
-                        ? Icon(
-                            Icons.equalizer_rounded,
+                        ? Iconoir.SoundHigh(
                             color: theme.colorScheme.primary,
-                            size: 18,
+                            width: 18,
+                            height: 18,
                           )
                         : Text(
                             '${index + 1}',
@@ -610,10 +612,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   ),
                   // More button
                   const SizedBox(width: 4),
-                  Icon(
-                    Icons.more_vert,
+                  Iconoir.MoreVert(
                     color: Colors.white.withValues(alpha: 0.5),
-                    size: 20,
+                    width: 20,
+                    height: 20,
                   ),
                 ],
               ),
@@ -630,10 +632,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.music_note_outlined,
-            size: 56,
+          Iconoir.MusicNote(
             color: isDark ? Colors.white24 : Colors.black12,
+            width: 56,
+            height: 56,
           ),
           const SizedBox(height: 16),
           Text(
@@ -808,7 +810,11 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 // Rename
                 _buildOptionTile(
                   context,
-                  Icons.edit_rounded,
+                  Iconoir.Edit(
+                    color: isDark ? Colors.white70 : Colors.black54,
+                    width: 22,
+                    height: 22,
+                  ),
                   localizations.rename,
                   isDark,
                   () {
@@ -819,7 +825,11 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 // Delete
                 _buildOptionTile(
                   context,
-                  Icons.delete_outline_rounded,
+                  const Iconoir.Trash(
+                    color: Colors.red,
+                    width: 22,
+                    height: 22,
+                  ),
                   localizations.delete,
                   isDark,
                   () {
@@ -836,7 +846,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
   Widget _buildOptionTile(
     BuildContext context,
-    IconData icon,
+    Widget icon,
     String label,
     bool isDark,
     VoidCallback onTap, {
@@ -855,13 +865,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: isDestructive
-                  ? Colors.red
-                  : (isDark ? Colors.white70 : Colors.black54),
-              size: 22,
-            ),
+            icon,
             const SizedBox(width: 14),
             Text(
               label,
@@ -904,10 +908,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.delete_outline_rounded,
+                  Iconoir.Trash(
                     color: Colors.red.withValues(alpha: 0.8),
-                    size: 44,
+                    width: 44,
+                    height: 44,
                   ),
                   const SizedBox(height: 14),
                   Text(

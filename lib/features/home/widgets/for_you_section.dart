@@ -12,6 +12,7 @@ import '../../playlists/screens/playlist_detail_screen.dart';
 import '../../library/screens/album_detail_screen.dart';
 import '../../library/screens/artist_detail_screen.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/widgets/song_context_menu.dart';
 
 /// A "For You" section with a 2-row fixed grid of personalized content
 /// Based on currently playing, recently played, liked songs, and listening habits
@@ -223,6 +224,9 @@ class _ForYouSectionState extends State<ForYouSection> {
                               artworkService: _artworkService,
                               onTap: () =>
                                   _handleItemTap(_cachedItems[0], audioService),
+                              onLongPress: _cachedItems[0].type == _ForYouItemType.song && _cachedItems[0].song != null
+                                  ? () => showSongContextMenu(context, _cachedItems[0].song!)
+                                  : null,
                             )
                           : const SizedBox(),
                     ),
@@ -235,6 +239,9 @@ class _ForYouSectionState extends State<ForYouSection> {
                               artworkService: _artworkService,
                               onTap: () =>
                                   _handleItemTap(_cachedItems[1], audioService),
+                              onLongPress: _cachedItems[1].type == _ForYouItemType.song && _cachedItems[1].song != null
+                                  ? () => showSongContextMenu(context, _cachedItems[1].song!)
+                                  : null,
                             )
                           : const SizedBox(),
                     ),
@@ -252,6 +259,9 @@ class _ForYouSectionState extends State<ForYouSection> {
                         artworkService: _artworkService,
                         onTap: () =>
                             _handleItemTap(_cachedItems[2], audioService),
+                        onLongPress: _cachedItems[2].type == _ForYouItemType.song && _cachedItems[2].song != null
+                            ? () => showSongContextMenu(context, _cachedItems[2].song!)
+                            : null,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -263,6 +273,9 @@ class _ForYouSectionState extends State<ForYouSection> {
                               artworkService: _artworkService,
                               onTap: () =>
                                   _handleItemTap(_cachedItems[3], audioService),
+                              onLongPress: _cachedItems[3].type == _ForYouItemType.song && _cachedItems[3].song != null
+                                  ? () => showSongContextMenu(context, _cachedItems[3].song!)
+                                  : null,
                             )
                           : const SizedBox(),
                     ),
@@ -452,12 +465,14 @@ class _ForYouItemCard extends StatelessWidget {
   final _ForYouItem item;
   final ArtworkCacheService artworkService;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const _ForYouItemCard({
     super.key,
     required this.item,
     required this.artworkService,
     required this.onTap,
+    this.onLongPress,
   });
 
   @override
@@ -467,6 +482,7 @@ class _ForYouItemCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: SizedBox(
         height: 64,
         child: GlassmorphicContainer(

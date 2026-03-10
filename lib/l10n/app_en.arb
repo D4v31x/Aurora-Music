@@ -3,6 +3,12 @@
   "aboutArtist": "About artist",
   "add": "Add",
   "addedToPlaylist": "Added to playlist",
+  "addedToNamedPlaylist": "Added to {name}",
+  "@addedToNamedPlaylist": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
   "addExclusion": "Add Exclusion",
   "addSeparator": "Add Separator",
   "addSongs": "Add Songs",
@@ -161,14 +167,13 @@
   "onboardingBluetooth": "Bluetooth",
   "onboardingBluetoothDesc": "Needed to connect to bluetooth devices",
   "onboardingChooseLanguage": "Choose Your Language",
+  "languageNotListedHint": "Your language isn't listed? Select English and continue to the next page.",
   "onboardingCompletionSubtitle": "Start enjoying your music",
   "onboardingCompletionTitle": "You're All Set!",
   "onboardingContinue": "Continue",
   "onboardingDarkMode": "Dark Mode",
   "onboardingDarkModeDesc": "Easy on the eyes in low light",
   "alwaysOn": "Always On",
-  "onboardingDownloadsSubtitle": "Configure automatic downloads",
-  "onboardingDownloadsTitle": "Download Settings",
   "onboardingDynamicColors": "Dynamic Colors",
   "onboardingDynamicColorsDesc": "Match system wallpaper colors",
   "onboardingGrantPermissions": "Grant Permissions",
@@ -399,19 +404,6 @@
   "libraryStats": "Library Stats",
   "back": "Back",
   "continueButton": "Continue",
-  "downloadPreferences": "Download Preferences",
-  "downloadPreferencesSubtitle": "Choose what to download for your music",
-  "downloadAlbumArt": "Download Album Art",
-  "downloadAlbumArtDesc": "Automatically fetch album covers for all songs",
-  "downloadLyricsTitle": "Download Lyrics",
-  "downloadLyricsDesc": "Fetch synchronized lyrics when available",
-  "wifiOnly": "Wi-Fi Only",
-  "wifiOnlyDesc": "Download assets only when connected to Wi-Fi",
-  "autoDownloadNewSongs": "Auto-Download for New Songs",
-  "autoDownloadNewSongsDesc": "Automatically download assets when adding new songs",
-  "downloadSettingsNote": "You can change these settings later in the app preferences.",
-  "downloadContent": "Download Content?",
-  "downloadContentSubtitle": "Assets will be downloaded as you use the app",
   "skip": "Skip",
   "feedback_title": "Enjoying Aurora Music?",
   "feedback_description": "Your feedback helps make Aurora Music better! Found a bug or have an idea? We'd love to hear from you.",
@@ -421,6 +413,11 @@
   "dont_ask_again": "Don't ask again",
   "send_feedback": "Send Feedback",
   "send_feedback_desc": "Report bugs or suggest features",
+  "contributeTranslations": "Contribute Translations",
+  "contributeTranslationsDesc": "Help translate Aurora Music on Crowdin",
+  "contributeTranslationsTitle": "Help Us Translate",
+  "contributeTranslationsSubtitle": "Aurora Music is available in multiple languages thanks to our amazing community. Help us reach even more users by translating the app into your language — it only takes a few minutes to get started.",
+  "contributeTranslationsOpenCrowdin": "Open Crowdin",
   "close": "Close",
   "settingsHighendUi": "High-end UI",
   "settingsHighendUiDesc": "Enable advanced visual effects and animations",
@@ -504,5 +501,11 @@
       "title": {"type": "String"}
     }
   },
-  "noLyricsCached": "No cached lyrics found for this song"
+  "noLyricsCached": "No cached lyrics found for this song",
+  "setAsRingtone": "Set as ringtone",
+  "songInfoEdit": "Song info / Edit",
+  "goToAlbum": "Go to album",
+  "goToArtist": "Go to artist",
+  "deleteFromDevice": "Delete from device",
+  "checkOutThisSong": "Check out this song!"
 }

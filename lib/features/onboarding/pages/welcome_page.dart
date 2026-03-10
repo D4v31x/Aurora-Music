@@ -346,6 +346,22 @@ class _WelcomePageState extends State<WelcomePage>
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // Page icon
+                        SlideTransition(
+                          position: _exitController.isAnimating ||
+                                  _exitController.isCompleted
+                              ? _exitSlideAnimation
+                              : _slideAnimation,
+                          child: FadeTransition(
+                            opacity: _exitController.isAnimating ||
+                                    _exitController.isCompleted
+                                ? _exitFadeAnimation
+                                : _fadeAnimation,
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
                         // Animated "Welcome to Aurora Music" text that cycles through languages
                         Transform.translate(
                           offset: Offset(0, _slideUpAnimation.value),

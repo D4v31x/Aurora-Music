@@ -8,6 +8,7 @@ import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/widgets/music_metadata_widget.dart';
 
@@ -15,10 +16,9 @@ import '../../../shared/widgets/music_metadata_widget.dart';
 void showAddToPlaylistDialog(
     BuildContext context, AudioPlayerService audioPlayerService) {
   if (audioPlayerService.currentSong == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content:
-              Text(AppLocalizations.of(context).noSongPlaying)),
+    NotificationManager.showMessage(
+      context,
+      AppLocalizations.of(context).noSongPlaying,
     );
     return;
   }
@@ -96,13 +96,9 @@ void showAddToPlaylistDialog(
                               audioPlayerService.currentSong!,
                             );
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  AppLocalizations.of(context)
-                                      .addedToPlaylist,
-                                ),
-                              ),
+                            NotificationManager.showMessage(
+                              context,
+                              AppLocalizations.of(context).addedToPlaylist,
                             );
                           },
                         );
@@ -635,10 +631,9 @@ class _QueueSongTile extends StatelessWidget {
 void showSongInfoDialog(
     BuildContext context, AudioPlayerService audioPlayerService) {
   if (audioPlayerService.currentSong == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content:
-              Text(AppLocalizations.of(context).noSongPlaying)),
+    NotificationManager.showMessage(
+      context,
+      AppLocalizations.of(context).noSongPlaying,
     );
     return;
   }

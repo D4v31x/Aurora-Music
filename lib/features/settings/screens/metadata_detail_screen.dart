@@ -8,6 +8,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/metadata_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -326,10 +327,9 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
           _pendingCoverArt = Uint8List.fromList(bytes);
           _hasChanges = true;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  AppLocalizations.of(context).coverArtUpdated)),
+        NotificationManager.showMessage(
+          context,
+          AppLocalizations.of(context).coverArtUpdated,
         );
       }
     }
@@ -494,11 +494,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             await tempFile.delete();
           } catch (_) {}
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(loc.storagePermissionNeeded),
-              backgroundColor: Colors.orange[700],
-              behavior: SnackBarBehavior.floating,
-            ));
+            NotificationManager.showMessage(context, loc.storagePermissionNeeded);
           }
           return;
         }
@@ -565,21 +561,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 12),
-                Text(loc.metadataSaved),
-              ],
-            ),
-            backgroundColor: Colors.green[700],
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
+        NotificationManager.showMessage(context, loc.metadataSaved);
       }
     } catch (e) {
       setState(() => _isSaving = false);
@@ -717,12 +699,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   void _copyToClipboard(String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
     final loc = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${loc.copied}: $label'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    NotificationManager.showMessage(context, '${loc.copied}: $label');
   }
 
   @override
@@ -1438,11 +1415,10 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   void _openInFileManager() async {
     final loc = AppLocalizations.of(context);
     // This would require platform-specific implementation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(loc.openFolderInfo),
-        duration: const Duration(seconds: 2),
-      ),
+    NotificationManager.showMessage(
+      context,
+      loc.openFolderInfo,
+      duration: const Duration(seconds: 2),
     );
   }
 }

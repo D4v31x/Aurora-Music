@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -236,7 +238,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                         Expanded(
                           child: _buildActionButton(
                             context,
-                            Icons.play_arrow_rounded,
+                            const Iconoir.Play(color: Colors.white, width: 22, height: 22),
                             localizations.playAll,
                             () => _playAllSongs(context),
                             isPrimary: true,
@@ -245,14 +247,14 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                         const SizedBox(width: 10),
                         _buildActionButton(
                           context,
-                          Icons.shuffle_rounded,
+                          const Iconoir.Shuffle(color: Colors.white, width: 22, height: 22),
                           localizations.shuffle,
                           () => _shuffleAllSongs(context),
                         ),
                         const SizedBox(width: 10),
                         _buildActionButton(
                           context,
-                          Icons.queue_music_rounded,
+                          const Iconoir.Playlist(color: Colors.white, width: 22, height: 22),
                           'Queue',
                           () => _addAllToQueue(context),
                         ),
@@ -272,7 +274,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                           child: _buildCategoryTab(
                             '${localizations.songs} (${_allSongs.length})',
                             0,
-                            Icons.music_note_rounded,
+                            const Iconoir.MusicNote(color: Colors.white, width: 18, height: 18),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -280,7 +282,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                           child: _buildCategoryTab(
                             '${localizations.albums} (${_albums.length})',
                             1,
-                            Icons.album_rounded,
+                            const Iconoir.Album(color: Colors.white, width: 18, height: 18),
                           ),
                         ),
                       ],
@@ -313,7 +315,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     );
   }
 
-  Widget _buildCategoryTab(String label, int index, IconData icon) {
+  Widget _buildCategoryTab(String label, int index, Widget icon) {
     final isSelected = _selectedCategory == index;
     return GestureDetector(
       onTap: () {
@@ -349,11 +351,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: Colors.white,
-              size: 18,
-            ),
+            icon,
             const SizedBox(width: 8),
             Flexible(
               child: Text(
@@ -381,7 +379,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.album, size: 64, color: Colors.white.withValues(alpha: 0.3)),
+              Iconoir.Album(color: Colors.white.withValues(alpha: 0.3), width: 64, height: 64),
               const SizedBox(height: 16),
               Text(
                 AppLocalizations.of(context).noAlbumsFound,
@@ -546,7 +544,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             ),
             const Divider(color: Colors.white24),
             ListTile(
-              leading: const Icon(Icons.play_arrow, color: Colors.white),
+              leading: const Iconoir.Play(color: Colors.white, width: 24, height: 24),
               title: Text(loc.play, style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
@@ -563,7 +561,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.shuffle, color: Colors.white),
+              leading: const Iconoir.Shuffle(color: Colors.white, width: 24, height: 24),
               title:
                   Text(loc.shuffle, style: const TextStyle(color: Colors.white)),
               onTap: () {
@@ -582,7 +580,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.info_outline, color: Colors.white),
+              leading: const Iconoir.InfoCircle(color: Colors.white, width: 24, height: 24),
               title: Text(loc.viewAlbum,
                   style: const TextStyle(color: Colors.white)),
               onTap: () {
@@ -736,10 +734,10 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                             const SizedBox(width: 4),
                             GestureDetector(
                               onTap: () => showSongContextMenu(context, song),
-                              child: Icon(
-                                Icons.more_vert,
+                              child: Iconoir.MoreVert(
                                 color: Colors.white.withValues(alpha: 0.5),
-                                size: 20,
+                                width: 20,
+                                height: 20,
                               ),
                             ),
                           ],
@@ -778,12 +776,9 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
         Provider.of<AudioPlayerService>(context, listen: false);
     await audioService.addMultipleToQueue(_allSongs);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              '${_allSongs.length} song${_allSongs.length == 1 ? '' : 's'} added to queue'),
-          duration: const Duration(seconds: 2),
-        ),
+      NotificationManager.showMessage(
+        context,
+        AppLocalizations.of(context).songsAddedToQueue(_allSongs.length),
       );
     }
   }
@@ -806,7 +801,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
 
   Widget _buildActionButton(
     BuildContext context,
-    IconData icon,
+    Widget icon,
     String label,
     VoidCallback onTap, {
     bool isPrimary = false,
@@ -836,7 +831,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white, size: 22),
+            icon,
             const SizedBox(width: 8),
             Flexible(
               child: Text(

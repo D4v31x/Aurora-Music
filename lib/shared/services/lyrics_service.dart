@@ -144,23 +144,32 @@ class TimedLyricsService {
           final foundTrack = directData['trackName'] ?? 'Unknown';
           final foundArtist = directData['artistName'] ?? 'Unknown';
 
-          _log('✓ FOUND synced lyrics in direct match!');
-          _log('📍 Searched: "$searchTitle" by "$searchArtist"');
-          _log('📍 Got: "$foundTrack" by "$foundArtist"');
-          _log('Album: ${directData['albumName'] ?? 'N/A'}');
+          final titleScore = _titleSimilarity(searchTitle, foundTrack as String);
+          final artistScore = _artistSimilarity(searchArtist, foundArtist as String);
 
-          final lrcContent = directData['syncedLyrics'] as String;
-          final normalizedContent = utf8
-              .decode(utf8.encode(lrcContent), allowMalformed: true)
-              .replaceAll(RegExp(r'[\uFFFD]'), '');
+          _log('✓ Direct match candidate: "$foundTrack" by "$foundArtist"');
+          _log('  Title score: ${titleScore.toStringAsFixed(2)}, Artist score: ${artistScore.toStringAsFixed(2)}');
 
-          final lyrics = _parseLrc(normalizedContent);
-          _log('✓ Parsed ${lyrics.length} lyric lines');
+          if (titleScore >= 0.6 && artistScore >= 0.5) {
+            _log('📍 Searched: "$searchTitle" by "$searchArtist"');
+            _log('📍 Got: "$foundTrack" by "$foundArtist"');
+            _log('Album: ${directData['albumName'] ?? 'N/A'}');
 
-          await _saveLyricsToFile(artist, title, normalizedContent);
-          _log('✓ USING direct match result');
-          _log('=' * 60);
-          return lyrics;
+            final lrcContent = directData['syncedLyrics'] as String;
+            final normalizedContent = utf8
+                .decode(utf8.encode(lrcContent), allowMalformed: true)
+                .replaceAll(RegExp(r'[\uFFFD]'), '');
+
+            final lyrics = _parseLrc(normalizedContent);
+            _log('✓ Parsed ${lyrics.length} lyric lines');
+
+            await _saveLyricsToFile(artist, title, normalizedContent);
+            _log('✓ USING direct match result');
+            _log('=' * 60);
+            return lyrics;
+          } else {
+            _log('✗ Direct match rejected: title or artist score too low');
+          }
         }
       }
 
@@ -190,22 +199,39 @@ class TimedLyricsService {
           final syncedResults =
               searchResults.where((r) => r['syncedLyrics'] != null).toList();
 
-          if (syncedResults.isEmpty) {
+          // Strict filter: title must match reasonably, artist must match at least partially
+          final strictResults = syncedResults.where((r) {
+            final titleScore = _titleSimilarity(searchTitle, r['trackName'] as String? ?? '');
+            final artistScore = _artistSimilarity(searchArtist, r['artistName'] as String? ?? '');
+            return titleScore >= 0.6 && artistScore >= 0.5;
+          }).toList();
+
+          _log('  Strict filter: ${syncedResults.length} synced → ${strictResults.length} passing title+artist threshold');
+          final filteredResults = strictResults.isNotEmpty ? strictResults : syncedResults;
+
+          if (filteredResults.isEmpty) {
             _log('✗ No results with synced lyrics');
           } else {
-            _log('Found ${syncedResults.length} results with synced lyrics');
+            _log('Found ${filteredResults.length} results with synced lyrics');
 
-            // Sort results by relevance: exact artist match, then duration match, then similarity
-            syncedResults.sort((a, b) {
+            // Sort results by relevance: title match first, then artist match, then duration
+            filteredResults.sort((a, b) {
               // Score based on artist match
               final aArtistMatch =
                   _artistSimilarity(searchArtist, a['artistName'] ?? '');
               final bArtistMatch =
                   _artistSimilarity(searchArtist, b['artistName'] ?? '');
+              final aTitleMatch =
+                  _titleSimilarity(searchTitle, a['trackName'] ?? '');
+              final bTitleMatch =
+                  _titleSimilarity(searchTitle, b['trackName'] ?? '');
 
-              if (aArtistMatch != bArtistMatch) {
-                return bArtistMatch
-                    .compareTo(aArtistMatch); // Higher score first
+              // Combined score: title weighted higher than artist
+              final aScore = aTitleMatch * 0.6 + aArtistMatch * 0.4;
+              final bScore = bTitleMatch * 0.6 + bArtistMatch * 0.4;
+
+              if ((aScore - bScore).abs() > 0.05) {
+                return bScore.compareTo(aScore); // Higher score first
               }
 
               // If artist scores are equal, sort by duration match
@@ -223,20 +249,22 @@ class TimedLyricsService {
             });
 
             _log('After sorting by relevance:');
-            for (var i = 0; i < min(5, syncedResults.length); i++) {
-              final r = syncedResults[i];
+            for (var i = 0; i < min(5, filteredResults.length); i++) {
+              final r = filteredResults[i];
               final dur = _parseApproximateDuration(r['syncedLyrics']);
               final artistScore =
                   _artistSimilarity(searchArtist, r['artistName'] ?? '');
+              final titleScore =
+                  _titleSimilarity(searchTitle, r['trackName'] ?? '');
               _log(
-                  '  #${i + 1}: "${r['trackName']}" by "${r['artistName']}" - Artist match: ${artistScore.toStringAsFixed(2)} - Duration: ${dur.inMinutes}:${(dur.inSeconds % 60).toString().padLeft(2, '0')}');
+                  '  #${i + 1}: "${r['trackName']}" by "${r['artistName']}" - Title: ${titleScore.toStringAsFixed(2)}, Artist: ${artistScore.toStringAsFixed(2)} - Duration: ${dur.inMinutes}:${(dur.inSeconds % 60).toString().padLeft(2, '0')}');
             }
 
             // If we have multiple good results and a callback, let user choose
-            if (syncedResults.length > 1 && onMultipleResults != null) {
+            if (filteredResults.length > 1 && onMultipleResults != null) {
               _log('Multiple results found - asking user to choose...');
               final userChoice = await onMultipleResults(
-                  syncedResults.cast<Map<String, dynamic>>());
+                  filteredResults.cast<Map<String, dynamic>>());
 
               if (userChoice != null) {
                 final lrcContent = userChoice['syncedLyrics'] as String;
@@ -258,10 +286,10 @@ class TimedLyricsService {
           }
 
           // Auto-select if only one result or if top result is valid
-          if (syncedResults.isNotEmpty) {
+          if (filteredResults.isNotEmpty) {
             _log('Evaluating top results for duration validity...');
-            for (var i = 0; i < min(3, syncedResults.length); i++) {
-              final result = syncedResults[i];
+            for (var i = 0; i < min(3, filteredResults.length); i++) {
+              final result = filteredResults[i];
               final lrcContent = result['syncedLyrics'] as String;
               final lyrics = _parseLrc(lrcContent);
 
@@ -284,9 +312,9 @@ class TimedLyricsService {
               }
             }
 
-            // If no exact match but we have results, use the best one
-            if (syncedResults.isNotEmpty) {
-              final bestResult = syncedResults[0];
+            // If no exact duration match but we have strict results, use the best one
+            if (filteredResults.isNotEmpty) {
+              final bestResult = filteredResults[0];
               final lrcContent = bestResult['syncedLyrics'] as String;
               final lyrics = _parseLrc(lrcContent);
               final foundTrack = bestResult['trackName'] ?? 'Unknown';
@@ -349,8 +377,18 @@ class TimedLyricsService {
               });
             }
 
-            for (var i = 0; i < min(3, fallbackSynced.length); i++) {
-              final result = fallbackSynced[i];
+            // Strict filter on fallback: title must match, artist must match at least loosely
+            final strictFallback = fallbackSynced.where((r) {
+              final titleScore = _titleSimilarity(searchTitle, r['trackName'] as String? ?? '');
+              final artistScore = _artistSimilarity(searchArtist, r['artistName'] as String? ?? '');
+              return titleScore >= 0.6 && artistScore >= 0.4;
+            }).toList();
+
+            _log('Fallback strict filter: ${fallbackSynced.length} → ${strictFallback.length} passing threshold');
+            final candidates = strictFallback.isNotEmpty ? strictFallback : <dynamic>[];
+
+            for (var i = 0; i < min(3, candidates.length); i++) {
+              final result = candidates[i];
               final lrcContent = result['syncedLyrics'] as String;
               final lyrics = _parseLrc(lrcContent);
               if (_isLyricsDurationValid(lyrics, songDuration)) {
@@ -363,15 +401,19 @@ class TimedLyricsService {
               }
             }
 
-            // If duration check fails, still use the best fallback result
-            final best = fallbackSynced[0];
-            final lrcContent = best['syncedLyrics'] as String;
-            final lyrics = _parseLrc(lrcContent);
-            _log('⚠️ Fallback: using best result without duration match');
-            _log('📍 Got: "${best['trackName']}" by "${best['artistName']}"');
-            await _saveLyricsToFile(artist, title, lrcContent);
-            _log('=' * 60);
-            return lyrics;
+            // Use top strict candidate even without duration match
+            if (candidates.isNotEmpty) {
+              final best = candidates[0];
+              final lrcContent = best['syncedLyrics'] as String;
+              final lyrics = _parseLrc(lrcContent);
+              _log('⚠️ Fallback: using best strict result without duration match');
+              _log('📍 Got: "${best['trackName']}" by "${best['artistName']}"');
+              await _saveLyricsToFile(artist, title, lrcContent);
+              _log('=' * 60);
+              return lyrics;
+            }
+
+            _log('✗ Fallback: no results passed title+artist threshold');
           }
         }
       } catch (e) {
@@ -637,6 +679,40 @@ class TimedLyricsService {
     final seconds = int.parse(lastMatch.group(2)!);
 
     return Duration(minutes: minutes, seconds: seconds);
+  }
+
+  /// Calculate similarity score between two track titles (0.0 to 1.0).
+  /// Normalises both strings before comparison.
+  double _titleSimilarity(String searchTitle, String resultTitle) {
+    String normalise(String s) => s
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+
+    final a = normalise(searchTitle);
+    final b = normalise(resultTitle);
+
+    if (a == b) return 1.0;
+    if (a.isEmpty || b.isEmpty) return 0.0;
+
+    // Substring containment
+    if (b.contains(a) || a.contains(b)) return 0.9;
+
+    // Word overlap
+    final aWords = a.split(' ').where((w) => w.length >= 2).toSet();
+    final bWords = b.split(' ').where((w) => w.length >= 2).toSet();
+    final intersection = aWords.intersection(bWords).length;
+    final union = aWords.union(bWords).length;
+    if (union > 0) {
+      final jaccard = intersection / union;
+      if (jaccard >= 0.5) return 0.6 + jaccard * 0.3;
+    }
+
+    // Levenshtein fallback
+    final dist = _levenshteinDistance(a, b);
+    final maxLen = max(a.length, b.length);
+    return max(0.0, 1.0 - dist / maxLen);
   }
 
   /// Calculate similarity score between two artist names (0.0 to 1.0)

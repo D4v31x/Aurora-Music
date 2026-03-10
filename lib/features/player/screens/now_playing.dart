@@ -15,6 +15,7 @@ import '../../../shared/models/timed_lyrics.dart';
 import '../../../shared/services/artist_separator_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/background_manager_service.dart';
 import '../../../shared/services/lyrics_service.dart';
 import '../../../shared/utils/responsive_utils.dart';
@@ -664,22 +665,18 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       BuildContext context, AudioPlayerService audioPlayerService) {
     final artistString = audioPlayerService.currentSong?.artist;
     if (artistString == null || artistString.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text(AppLocalizations.of(context).noArtistInfo),
-        ),
+      NotificationManager.showMessage(
+        context,
+        AppLocalizations.of(context).noArtistInfo,
       );
       return;
     }
 
     final artists = ArtistSeparatorService().splitArtists(artistString);
     if (artists.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text(AppLocalizations.of(context).noArtistInfo),
-        ),
+      NotificationManager.showMessage(
+        context,
+        AppLocalizations.of(context).noArtistInfo,
       );
       return;
     }

@@ -8,6 +8,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../l10n/supported_languages.dart';
 import '../../../shared/providers/theme_provider.dart';
 import '../../../shared/widgets/pill_button.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 
 class LanguageSelectionPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -177,7 +178,28 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
             builder: (context, child) {
               return Column(
                 children: [
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 48),
+
+                  // Page icon
+                  SlideTransition(
+                    position: _exitController.isAnimating ||
+                            _exitController.isCompleted
+                        ? _exitSlideAnimation
+                        : _titleSlideAnimation,
+                    child: FadeTransition(
+                      opacity: _exitController.isAnimating ||
+                              _exitController.isCompleted
+                          ? _exitFadeAnimation
+                          : _titleFadeAnimation,
+                      child: const Iconoir.Language(
+                        color: Color(0xFF3B82F6),
+                        height: 56,
+                        width: 56,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
 
                   // Title
                   SlideTransition(
@@ -338,6 +360,28 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                             );
                           },
                         ),
+                      ),
+                    ),
+                  ),
+
+                  // "Language not listed" hint
+                  FadeTransition(
+                    opacity: _exitController.isAnimating ||
+                            _exitController.isCompleted
+                        ? _exitFadeAnimation
+                        : _subtitleFadeAnimation,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
+                      child: Text(
+                        localizations.languageNotListedHint,
+                        style: TextStyle(
+                          fontFamily: FontConstants.fontFamily,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: subtitleColor,
+                          height: 1.4,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),

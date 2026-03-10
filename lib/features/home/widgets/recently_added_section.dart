@@ -7,6 +7,7 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/artist_utils.dart';
 import '../../../shared/widgets/glassmorphic_card.dart';
+import '../../../shared/widgets/song_context_menu.dart';
 
 /// Horizontal scrollable glassmorphic section showing recently added songs
 class RecentlyAddedSection extends StatelessWidget {
@@ -101,6 +102,7 @@ class RecentlyAddedSection extends StatelessWidget {
                           source: PlaybackSource.recentlyAdded),
                     );
                   },
+                  onLongPress: () => showSongContextMenu(context, song),
                 ),
               );
             },

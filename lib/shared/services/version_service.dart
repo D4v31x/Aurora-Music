@@ -1,49 +1,32 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
-import 'package:pub_semver/pub_semver.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VersionCheckResult {
   final bool isUpdateAvailable;
-  final Version? latestVersion;
+  final String? latestVersion;
 
   VersionCheckResult({required this.isUpdateAvailable, this.latestVersion});
 }
 
 class VersionService {
-  static const String _githubApiUrl =
-      'https://api.github.com/repos/D4v31x/Aurora-Music/releases/latest';
-  static const String _currentVersionString = '0.0.9';
-
   static Future<VersionCheckResult> checkForNewVersion() async {
+    debugPrint('[VersionService] Starting version check via Play Core API...');
     try {
-      final response = await http.get(Uri.parse(_githubApiUrl));
+      final info = await InAppUpdate.checkForUpdate();
+      debugPrint('[VersionService] updateAvailability: ${info.updateAvailability}');
+      debugPrint('[VersionService] availableVersionCode: ${info.availableVersionCode}');
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final versionString = data['tag_name'];
-
-        final regex = RegExp(r'^v?(\d+\.\d+\.\d+(-[a-zA-Z0-9.\-]+)?)$');
-        final match = regex.firstMatch(versionString);
-        if (match != null && match.groupCount > 0) {
-          final latestVersionString = match.group(1)!;
-          final latestVersion = Version.parse(latestVersionString);
-
-          final currentVersion = Version.parse(_currentVersionString);
-
-          if (latestVersion > currentVersion) {
-            return VersionCheckResult(
-              isUpdateAvailable: true,
-              latestVersion: latestVersion,
-            );
-          }
-        }
+      if (info.updateAvailability == UpdateAvailability.updateAvailable) {
+        final versionCode = info.availableVersionCode?.toString();
+        debugPrint('[VersionService] Update available! Version code: $versionCode');
+        return VersionCheckResult(isUpdateAvailable: true, latestVersion: versionCode);
       }
     } catch (e) {
-      debugPrint('Version check error: $e');
+      debugPrint('[VersionService] Play Core check error: $e');
     }
+    debugPrint('[VersionService] No update available.');
     return VersionCheckResult(isUpdateAvailable: false);
   }
 
