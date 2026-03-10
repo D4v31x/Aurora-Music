@@ -1446,4 +1446,44 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get checkOutThisSong => 'Poslechněte si tuto skladbu!';
+
+  @override
+  String get backgroundLowEndStyle => 'Styl pozadí';
+
+  @override
+  String get backgroundLowEndStyleDesc => 'Jak vypadá pozadí aplikace';
+
+  @override
+  String get backgroundBlobs => 'Animované tvary';
+
+  @override
+  String get backgroundSolid => 'Jednobarevné';
+
+  @override
+  String get backgroundHighEndStyle => 'Pozadí přehrávání';
+
+  @override
+  String get backgroundHighEndStyleDesc =>
+      'Styl pozadí na obrazovce přehrávání';
+
+  @override
+  String get backgroundBlurredArtwork => 'Rozmazaný obal';
+
+  @override
+  String get accentColor => 'Barva zvýraznění';
+
+  @override
+  String get accentColorDesc => 'Vyberte barvu zvýraznění aplikace';
+
+  @override
+  String get backgroundBlur => 'Rozostření pozadí';
+
+  @override
+  String get backgroundBlurDesc => 'Intenzita rozostření obalu';
+
+  @override
+  String get backgroundDarkness => 'Tmavost pozadí';
+
+  @override
+  String get backgroundDarknessDesc => 'Průhlednost překrytí na obalu';
 }

@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum LowEndBackground { blobs, solid }
+enum HighEndBackground { blurredArtwork, solid }
+
 class ThemeProvider with ChangeNotifier {
   static const String _useDynamicColorKey = 'use_dynamic_color';
   static const String _customSeedColorKey = 'custom_seed_color';
   static const String _blurIntensityKey = 'blur_intensity';
   static const String _overlayOpacityKey = 'overlay_opacity';
+  static const String _lowEndBackgroundKey = 'low_end_background';
+  static const String _highEndBackgroundKey = 'high_end_background';
 
   // App is dark mode only
   bool get isDarkMode => true;
@@ -16,12 +21,16 @@ class ThemeProvider with ChangeNotifier {
   Color _customSeedColor = Colors.deepPurple;
   double _blurIntensity = 25.0;
   double _overlayOpacity = 0.3;
+  LowEndBackground _lowEndBackground = LowEndBackground.solid;
+  HighEndBackground _highEndBackground = HighEndBackground.blurredArtwork;
 
   bool get useDynamicColor => _useDynamicColor;
   ThemeMode get themeMode => ThemeMode.dark;
   Color get customSeedColor => _customSeedColor;
   double get blurIntensity => _blurIntensity;
   double get overlayOpacity => _overlayOpacity;
+  LowEndBackground get lowEndBackground => _lowEndBackground;
+  HighEndBackground get highEndBackground => _highEndBackground;
 
   ColorScheme? get darkDynamicColorScheme => _darkDynamicColorScheme;
 
@@ -132,6 +141,14 @@ class ThemeProvider with ChangeNotifier {
     }
     _blurIntensity = (prefs.getDouble(_blurIntensityKey) ?? 25.0).clamp(5.0, 40.0);
     _overlayOpacity = prefs.getDouble(_overlayOpacityKey) ?? 0.3;
+    final lowEndBgIndex = prefs.getInt(_lowEndBackgroundKey);
+    if (lowEndBgIndex != null && lowEndBgIndex < LowEndBackground.values.length) {
+      _lowEndBackground = LowEndBackground.values[lowEndBgIndex];
+    }
+    final highEndBgIndex = prefs.getInt(_highEndBackgroundKey);
+    if (highEndBgIndex != null && highEndBgIndex < HighEndBackground.values.length) {
+      _highEndBackground = HighEndBackground.values[highEndBgIndex];
+    }
     notifyListeners();
   }
 
@@ -188,6 +205,20 @@ class ThemeProvider with ChangeNotifier {
     _overlayOpacity = value.clamp(0.0, 0.8);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(_overlayOpacityKey, _overlayOpacity);
+    notifyListeners();
+  }
+
+  Future<void> setLowEndBackground(LowEndBackground value) async {
+    _lowEndBackground = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_lowEndBackgroundKey, value.index);
+    notifyListeners();
+  }
+
+  Future<void> setHighEndBackground(HighEndBackground value) async {
+    _highEndBackground = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_highEndBackgroundKey, value.index);
     notifyListeners();
   }
 

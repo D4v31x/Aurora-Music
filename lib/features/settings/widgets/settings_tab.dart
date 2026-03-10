@@ -472,6 +472,116 @@ class _SettingsTabState extends State<SettingsTab> {
     );
   }
 
+  // Glassmorphic Segmented Choice Tile
+  Widget _buildSegmentedChoiceTile({
+    required Widget icon,
+    required String title,
+    required String subtitle,
+    required List<String> options,
+    required int selectedIndex,
+    required ValueChanged<int> onChanged,
+    bool isFirst = false,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      children: [
+        if (!isFirst)
+          Divider(
+            height: 1,
+            indent: 56,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
+          ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: icon,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: FontConstants.fontFamily,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontFamily: FontConstants.fontFamily,
+                            color: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.color
+                                ?.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<int>(
+                  segments: options.asMap().entries.map((entry) {
+                    return ButtonSegment<int>(
+                      value: entry.key,
+                      label: Text(entry.value),
+                    );
+                  }).toList(),
+                  selected: {selectedIndex},
+                  onSelectionChanged: (selection) {
+                    if (selection.isNotEmpty) onChanged(selection.first);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Animates a tile's height and opacity when [visible] changes.
+  Widget _buildAnimatedTile({required bool visible, required Widget child}) {
+    return ClipRect(
+      child: AnimatedAlign(
+        alignment: Alignment.topCenter,
+        heightFactor: visible ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeInOut,
+        child: AnimatedOpacity(
+          opacity: visible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          child: child,
+        ),
+      ),
+    );
+  }
+
   // Cache Management
   Future<void> _clearAllCaches() async {
     try {
@@ -1154,8 +1264,9 @@ class _SettingsTabState extends State<SettingsTab> {
               onChanged: (value) => themeProvider.toggleDynamicColor(),
               isFirst: true,
             ),
-            if (!themeProvider.useDynamicColor)
-              _buildActionTile(
+            _buildAnimatedTile(
+              visible: !themeProvider.useDynamicColor,
+              child: _buildActionTile(
                 icon: Iconoir.ColorPicker(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
                 title: 'Accent Color',
                 subtitle: 'Choose the app accent color',
@@ -1184,6 +1295,64 @@ class _SettingsTabState extends State<SettingsTab> {
                 ),
                 onTap: () => _showColorPickerDialog(themeProvider),
               ),
+            ),
+            Consumer<PerformanceModeProvider>(
+              builder: (context, performanceProvider, _) {
+                if (!performanceProvider.isLowEndDevice) {
+                  return const SizedBox.shrink();
+                }
+                return _buildSegmentedChoiceTile(
+                  icon: Iconoir.MultiWindow(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 20,
+                      height: 20),
+                  title: l10n.backgroundLowEndStyle,
+                  subtitle: l10n.backgroundLowEndStyleDesc,
+                  options: [l10n.backgroundBlobs, l10n.backgroundSolid],
+                  selectedIndex: themeProvider.lowEndBackground ==
+                          LowEndBackground.blobs
+                      ? 0
+                      : 1,
+                  onChanged: (index) {
+                    themeProvider.setLowEndBackground(
+                      index == 0
+                          ? LowEndBackground.blobs
+                          : LowEndBackground.solid,
+                    );
+                  },
+                );
+              },
+            ),
+            Consumer<PerformanceModeProvider>(
+              builder: (context, performanceProvider, _) {
+                if (!performanceProvider.shouldEnableBlur) {
+                  return const SizedBox.shrink();
+                }
+                return _buildSegmentedChoiceTile(
+                  icon: Iconoir.MediaImage(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 20,
+                      height: 20),
+                  title: l10n.backgroundHighEndStyle,
+                  subtitle: l10n.backgroundHighEndStyleDesc,
+                  options: [
+                    l10n.backgroundBlurredArtwork,
+                    l10n.backgroundSolid
+                  ],
+                  selectedIndex: themeProvider.highEndBackground ==
+                          HighEndBackground.blurredArtwork
+                      ? 0
+                      : 1,
+                  onChanged: (index) {
+                    themeProvider.setHighEndBackground(
+                      index == 0
+                          ? HighEndBackground.blurredArtwork
+                          : HighEndBackground.solid,
+                    );
+                  },
+                );
+              },
+            ),
             Consumer<PerformanceModeProvider>(
               builder: (context, performanceProvider, _) {
                 final isHighEnd =
@@ -1203,39 +1372,43 @@ class _SettingsTabState extends State<SettingsTab> {
             ),
             Consumer<PerformanceModeProvider>(
               builder: (context, performanceProvider, _) {
-                if (!performanceProvider.shouldEnableBlur) {
-                  return const SizedBox.shrink();
-                }
-                return _buildSliderTile(
-                  icon: Iconoir.Fog(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-                  title: 'Background Blur',
-                  subtitle: 'Artwork blur intensity',
-                  value: themeProvider.blurIntensity,
-                  min: 5.0,
-                  max: 40.0,
-                  defaultValue: 25.0,
-                  valueFormatter: (v) => v.toStringAsFixed(0),
-                  onChanged: (value) => themeProvider.updateBlurIntensity(value),
-                  onChangeEnd: (value) => themeProvider.setBlurIntensity(value),
+                final showBlur = performanceProvider.shouldEnableBlur &&
+                    themeProvider.highEndBackground != HighEndBackground.solid;
+                return _buildAnimatedTile(
+                  visible: showBlur,
+                  child: _buildSliderTile(
+                    icon: Iconoir.Fog(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+                    title: l10n.backgroundBlur,
+                    subtitle: l10n.backgroundBlurDesc,
+                    value: themeProvider.blurIntensity,
+                    min: 5.0,
+                    max: 40.0,
+                    defaultValue: 25.0,
+                    valueFormatter: (v) => v.toStringAsFixed(0),
+                    onChanged: (value) => themeProvider.updateBlurIntensity(value),
+                    onChangeEnd: (value) => themeProvider.setBlurIntensity(value),
+                  ),
                 );
               },
             ),
             Consumer<PerformanceModeProvider>(
               builder: (context, performanceProvider, _) {
-                if (performanceProvider.isLowEndDevice) {
-                  return const SizedBox.shrink();
-                }
-                return _buildSliderTile(
-                  icon: Iconoir.Brightness(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-                  title: 'Background Darkness',
-                  subtitle: 'Overlay opacity on artwork',
-                  value: themeProvider.overlayOpacity,
-                  min: 0.0,
-                  max: 0.8,
-                  defaultValue: 0.3,
-                  valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
-                  onChanged: (value) => themeProvider.updateOverlayOpacity(value),
-                  onChangeEnd: (value) => themeProvider.setOverlayOpacity(value),
+                final showDarkness = !performanceProvider.isLowEndDevice &&
+                    themeProvider.highEndBackground != HighEndBackground.solid;
+                return _buildAnimatedTile(
+                  visible: showDarkness,
+                  child: _buildSliderTile(
+                    icon: Iconoir.Brightness(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+                    title: l10n.backgroundDarkness,
+                    subtitle: l10n.backgroundDarknessDesc,
+                    value: themeProvider.overlayOpacity,
+                    min: 0.0,
+                    max: 0.8,
+                    defaultValue: 0.3,
+                    valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
+                    onChanged: (value) => themeProvider.updateOverlayOpacity(value),
+                    onChangeEnd: (value) => themeProvider.setOverlayOpacity(value),
+                  ),
                 );
               },
             ),

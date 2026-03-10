@@ -2815,6 +2815,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check out this song!'**
   String get checkOutThisSong;
+
+  /// No description provided for @backgroundLowEndStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Style'**
+  String get backgroundLowEndStyle;
+
+  /// No description provided for @backgroundLowEndStyleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'How the app background looks'**
+  String get backgroundLowEndStyleDesc;
+
+  /// No description provided for @backgroundBlobs.
+  ///
+  /// In en, this message translates to:
+  /// **'Animated Blobs'**
+  String get backgroundBlobs;
+
+  /// No description provided for @backgroundSolid.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid Color'**
+  String get backgroundSolid;
+
+  /// No description provided for @backgroundHighEndStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Now Playing Background'**
+  String get backgroundHighEndStyle;
+
+  /// No description provided for @backgroundHighEndStyleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Background style in the Now Playing screen'**
+  String get backgroundHighEndStyleDesc;
+
+  /// No description provided for @backgroundBlurredArtwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Blurred Artwork'**
+  String get backgroundBlurredArtwork;
+
+  /// No description provided for @accentColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent Color'**
+  String get accentColor;
+
+  /// No description provided for @accentColorDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the app accent color'**
+  String get accentColorDesc;
+
+  /// No description provided for @backgroundBlur.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Blur'**
+  String get backgroundBlur;
+
+  /// No description provided for @backgroundBlurDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Artwork blur intensity'**
+  String get backgroundBlurDesc;
+
+  /// No description provided for @backgroundDarkness.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Darkness'**
+  String get backgroundDarkness;
+
+  /// No description provided for @backgroundDarknessDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Overlay opacity on artwork'**
+  String get backgroundDarknessDesc;
 }
 
 class _AppLocalizationsDelegate

@@ -81,10 +81,12 @@ extension AudioPlayCountsExtension on AudioPlayerService {
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
-    final sortedTracks = allSongs
+    final playedSongs = allSongs
+        .where((song) => (_trackPlayCounts[song.id.toString()] ?? 0) > 0)
+        .toList()
       ..sort((a, b) => (_trackPlayCounts[b.id.toString()] ?? 0)
           .compareTo(_trackPlayCounts[a.id.toString()] ?? 0));
-    return sortedTracks.take(10).toList();
+    return playedSongs.take(10).toList();
   }
 
   Future<List<AlbumModel>> getMostPlayedAlbums() async {

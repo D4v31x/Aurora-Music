@@ -502,5 +502,18 @@
   "goToAlbum": "Přejít na album",
   "goToArtist": "Přejít na umělce",
   "deleteFromDevice": "Smazat ze zařízení",
-  "checkOutThisSong": "Poslechněte si tuto skladbu!"
+  "checkOutThisSong": "Poslechněte si tuto skladbu!",
+  "backgroundLowEndStyle": "Styl pozadí",
+  "backgroundLowEndStyleDesc": "Jak vypadá pozadí aplikace",
+  "backgroundBlobs": "Animované tvary",
+  "backgroundSolid": "Jednobarevné",
+  "backgroundHighEndStyle": "Pozadí přehrávání",
+  "backgroundHighEndStyleDesc": "Styl pozadí na obrazovce přehrávání",
+  "backgroundBlurredArtwork": "Rozmazaný obal",
+  "accentColor": "Barva zvýraznění",
+  "accentColorDesc": "Vyberte barvu zvýraznění aplikace",
+  "backgroundBlur": "Rozostření pozadí",
+  "backgroundBlurDesc": "Intenzita rozostření obalu",
+  "backgroundDarkness": "Tmavost pozadí",
+  "backgroundDarknessDesc": "Průhlednost překrytí na obalu"
 }

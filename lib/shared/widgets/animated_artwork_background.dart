@@ -133,6 +133,18 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
     final blurIntensity = themeProvider.blurIntensity;
     final overlayOpacity = themeProvider.overlayOpacity;
 
+    // High-end: if user chose solid background, skip blurred artwork
+    if (shouldBlur &&
+        themeProvider.highEndBackground == HighEndBackground.solid) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(color: backgroundColor),
+          widget.child,
+        ],
+      );
+    }
+
     // For low-end mode, use extracted colors as gradient instead of artwork
     if (isLowEndMode && widget.currentArtwork != null) {
       return _buildColorGradientBackground(context, backgroundColor);
@@ -292,6 +304,18 @@ class SimpleBlurredBackground extends StatelessWidget {
         Provider.of<PerformanceModeProvider>(context, listen: false);
     final shouldBlur = performanceProvider.shouldEnableBlur;
     final isLowEndMode = !shouldBlur;
+
+    // High-end: if user chose solid background, show surface color
+    if (shouldBlur) {
+      final themeProvider =
+          Provider.of<ThemeProvider>(context, listen: false);
+      if (themeProvider.highEndBackground == HighEndBackground.solid) {
+        return ColoredBox(
+          color: surfaceColor,
+          child: child,
+        );
+      }
+    }
 
     // For low-end mode, use animated color points instead of artwork
     if (isLowEndMode) {

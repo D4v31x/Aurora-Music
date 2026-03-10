@@ -507,5 +507,18 @@
   "goToAlbum": "Go to album",
   "goToArtist": "Go to artist",
   "deleteFromDevice": "Delete from device",
-  "checkOutThisSong": "Check out this song!"
+  "checkOutThisSong": "Check out this song!",
+  "backgroundLowEndStyle": "Background Style",
+  "backgroundLowEndStyleDesc": "How the app background looks",
+  "backgroundBlobs": "Animated Blobs",
+  "backgroundSolid": "Solid Color",
+  "backgroundHighEndStyle": "Now Playing Background",
+  "backgroundHighEndStyleDesc": "Background style in the Now Playing screen",
+  "backgroundBlurredArtwork": "Blurred Artwork",
+  "accentColor": "Accent Color",
+  "accentColorDesc": "Choose the app accent color",
+  "backgroundBlur": "Background Blur",
+  "backgroundBlurDesc": "Artwork blur intensity",
+  "backgroundDarkness": "Background Darkness",
+  "backgroundDarknessDesc": "Overlay opacity on artwork"
 }

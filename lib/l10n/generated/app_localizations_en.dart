@@ -1441,4 +1441,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkOutThisSong => 'Check out this song!';
+
+  @override
+  String get backgroundLowEndStyle => 'Background Style';
+
+  @override
+  String get backgroundLowEndStyleDesc => 'How the app background looks';
+
+  @override
+  String get backgroundBlobs => 'Animated Blobs';
+
+  @override
+  String get backgroundSolid => 'Solid Color';
+
+  @override
+  String get backgroundHighEndStyle => 'Now Playing Background';
+
+  @override
+  String get backgroundHighEndStyleDesc =>
+      'Background style in the Now Playing screen';
+
+  @override
+  String get backgroundBlurredArtwork => 'Blurred Artwork';
+
+  @override
+  String get accentColor => 'Accent Color';
+
+  @override
+  String get accentColorDesc => 'Choose the app accent color';
+
+  @override
+  String get backgroundBlur => 'Background Blur';
+
+  @override
+  String get backgroundBlurDesc => 'Artwork blur intensity';
+
+  @override
+  String get backgroundDarkness => 'Background Darkness';
+
+  @override
+  String get backgroundDarknessDesc => 'Overlay opacity on artwork';
 }

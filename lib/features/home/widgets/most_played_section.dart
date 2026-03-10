@@ -124,13 +124,23 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
             onTap: () {
               final audioPlayerService =
                   Provider.of<AudioPlayerService>(context, listen: false);
-              // Play from full playlist, starting at the correct index
-              audioPlayerService.setPlaylist(
-                fullPlaylist,
-                fullPlaylistIndex >= 0 ? fullPlaylistIndex : index,
-                source:
-                    const PlaybackSourceInfo(source: PlaybackSource.mostPlayed),
-              );
+              // Use the full playlist when the song is in it; otherwise
+              // fall back to the displayed top songs so the index is always valid.
+              if (fullPlaylistIndex >= 0 && fullPlaylist.isNotEmpty) {
+                audioPlayerService.setPlaylist(
+                  fullPlaylist,
+                  fullPlaylistIndex,
+                  source: const PlaybackSourceInfo(
+                      source: PlaybackSource.mostPlayed),
+                );
+              } else {
+                audioPlayerService.setPlaylist(
+                  topSongs,
+                  index,
+                  source: const PlaybackSourceInfo(
+                      source: PlaybackSource.mostPlayed),
+                );
+              }
             },
             onLongPress: () => showSongContextMenu(context, song),
           ),

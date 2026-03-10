@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/providers/theme_provider.dart';
+import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
@@ -231,14 +232,6 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                             : _contentFadeAnimation,
                         child: Column(
                           children: [
-                            // Dark mode info card (not a toggle - app is dark mode only)
-                            _buildDarkModeInfoCard(
-                              context: context,
-                              isDark: isDark,
-                            ),
-
-                            const SizedBox(height: 24),
-
                             // Dynamic color toggle
                             Material(
                               color: Colors.transparent,
@@ -309,6 +302,26 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                 ),
                               ),
                             ),
+
+                            // Accent color picker (when Material You is OFF)
+                            if (!themeProvider.useDynamicColor) ...
+                              _buildAccentColorSection(
+                                context: context,
+                                isDark: isDark,
+                                textColor: textColor,
+                                subtitleColor: subtitleColor,
+                                themeProvider: themeProvider,
+                              ),
+
+                            // Background style option
+                            const SizedBox(height: 16),
+                            _buildBackgroundStyleSection(
+                              context: context,
+                              isDark: isDark,
+                              textColor: textColor,
+                              subtitleColor: subtitleColor,
+                              themeProvider: themeProvider,
+                            ),
                           ],
                         ),
                       ),
@@ -338,51 +351,46 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
     );
   }
 
-  /// Non-interactive info card showing dark mode is always enabled
-  Widget _buildDarkModeInfoCard({
+  List<Widget> _buildAccentColorSection({
     required BuildContext context,
     required bool isDark,
+    required Color textColor,
+    required Color subtitleColor,
+    required ThemeProvider themeProvider,
   }) {
-    final textColor = isDark ? Colors.white : Colors.black;
-    final subtitleColor =
-        isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.6);
+    final presetColors = [
+      Colors.deepPurple,
+      Colors.blue,
+      Colors.teal,
+      Colors.green,
+      Colors.orange,
+      Colors.red,
+      Colors.pink,
+    ];
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.03)
-            : Colors.black.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
+    return [
+      const SizedBox(height: 16),
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
           color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.08),
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.dark_mode_rounded,
-              size: 24,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
+                const Iconoir.ColorPicker(
+                  color: Color(0xFF3B82F6),
+                  height: 24,
+                  width: 24,
+                ),
+                const SizedBox(width: 12),
                 Text(
-                  AppLocalizations.of(context)
-                      .onboardingDarkMode,
+                  AppLocalizations.of(context).accentColor,
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     fontSize: 16,
@@ -390,37 +398,151 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                     color: textColor,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  AppLocalizations.of(context)
-                      .onboardingDarkModeDesc,
-                  style: TextStyle(
-                    fontFamily: FontConstants.fontFamily,
-                    fontSize: 14,
-                    color: subtitleColor,
-                  ),
-                ),
               ],
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              AppLocalizations.of(context).alwaysOn,
+            const SizedBox(height: 4),
+            Text(
+              AppLocalizations.of(context).accentColorDesc,
               style: TextStyle(
                 fontFamily: FontConstants.fontFamily,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.primary,
+                fontSize: 14,
+                color: subtitleColor,
               ),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: presetColors.map((color) {
+                final isSelected = themeProvider.customSeedColor.toARGB32() ==
+                    color.toARGB32();
+                return GestureDetector(
+                  onTap: () => themeProvider.setCustomSeedColor(color),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: isSelected
+                          ? Border.all(color: Colors.white, width: 3)
+                          : Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              width: 1.5),
+                    ),
+                    child: isSelected
+                        ? const Icon(Icons.check, color: Colors.white, size: 18)
+                        : null,
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  Widget _buildBackgroundStyleSection({
+    required BuildContext context,
+    required bool isDark,
+    required Color textColor,
+    required Color subtitleColor,
+    required ThemeProvider themeProvider,
+  }) {
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final isLowEnd = performanceProvider.isLowEndDevice;
+    final isHighEnd = performanceProvider.shouldEnableBlur;
+
+    if (!isLowEnd && !isHighEnd) return const SizedBox.shrink();
+
+    final String title = isLowEnd
+        ? AppLocalizations.of(context).backgroundLowEndStyle
+        : AppLocalizations.of(context).backgroundHighEndStyle;
+    final String subtitle = isLowEnd
+        ? AppLocalizations.of(context).backgroundLowEndStyleDesc
+        : AppLocalizations.of(context).backgroundHighEndStyleDesc;
+    final List<String> options = isLowEnd
+        ? [
+            AppLocalizations.of(context).backgroundBlobs,
+            AppLocalizations.of(context).backgroundSolid,
+          ]
+        : [
+            AppLocalizations.of(context).backgroundBlurredArtwork,
+            AppLocalizations.of(context).backgroundSolid,
+          ];
+    final int selectedIndex = isLowEnd
+        ? (themeProvider.lowEndBackground == LowEndBackground.blobs ? 0 : 1)
+        : (themeProvider.highEndBackground == HighEndBackground.blurredArtwork
+            ? 0
+            : 1);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontFamily: FontConstants.fontFamily,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontFamily: FontConstants.fontFamily,
+              fontSize: 14,
+              color: subtitleColor,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<int>(
+              segments: options.asMap().entries.map((entry) {
+                return ButtonSegment<int>(
+                  value: entry.key,
+                  label: Text(
+                    entry.value,
+                    style: const TextStyle(
+                      fontFamily: FontConstants.fontFamily,
+                    ),
+                  ),
+                );
+              }).toList(),
+              selected: {selectedIndex},
+              onSelectionChanged: (selection) {
+                if (selection.isEmpty) return;
+                final idx = selection.first;
+                if (isLowEnd) {
+                  themeProvider.setLowEndBackground(
+                    idx == 0 ? LowEndBackground.blobs : LowEndBackground.solid,
+                  );
+                } else {
+                  themeProvider.setHighEndBackground(
+                    idx == 0
+                        ? HighEndBackground.blurredArtwork
+                        : HighEndBackground.solid,
+                  );
+                }
+              },
             ),
           ),
         ],
       ),
     );
   }
+
 }
