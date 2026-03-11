@@ -147,7 +147,18 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
 
     // For low-end mode, use extracted colors as gradient instead of artwork
     if (isLowEndMode && widget.currentArtwork != null) {
-      return _buildColorGradientBackground(context, backgroundColor);
+      if (themeProvider.lowEndBackground == LowEndBackground.blobs) {
+        return _buildColorGradientBackground(context, backgroundColor);
+      } else {
+        // Solid color preference — show plain surface color
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(color: backgroundColor),
+            widget.child,
+          ],
+        );
+      }
     }
 
     return Stack(
@@ -319,16 +330,25 @@ class SimpleBlurredBackground extends StatelessWidget {
 
     // For low-end mode, use animated color points instead of artwork
     if (isLowEndMode) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          Container(color: Colors.black),
-          AnimatedColorPointsBackground(
-            fallbackColor: surfaceColor,
-          ),
-          child,
-        ],
-      );
+      final themeProvider =
+          Provider.of<ThemeProvider>(context, listen: false);
+      if (themeProvider.lowEndBackground == LowEndBackground.blobs) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(color: Colors.black),
+            AnimatedColorPointsBackground(
+              fallbackColor: surfaceColor,
+            ),
+            child,
+          ],
+        );
+      } else {
+        return ColoredBox(
+          color: surfaceColor,
+          child: child,
+        );
+      }
     }
 
     return Stack(

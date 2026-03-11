@@ -1286,7 +1286,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get send_feedback_desc => 'Nahlásit chyby nebo navrhnout funkce';
 
   @override
-  String get contributeTranslations => 'Přispět překlady';
+  String get contributeTranslations => 'Přeložit aplikaci';
 
   @override
   String get contributeTranslationsDesc =>

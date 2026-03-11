@@ -98,6 +98,11 @@ class LyricsSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: _kLyricsContainerOpacity),
             borderRadius: BorderRadius.circular(_kBorderRadius),
+            border: Border.all(
+              color: isLowEnd
+                  ? colorScheme.outlineVariant
+                  : Colors.white.withValues(alpha: 0.15),
+            ),
           ),
           child: hasLyrics
               ? _buildLyricsContent(context, screenWidth)

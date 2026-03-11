@@ -287,7 +287,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     if (audioPlayerService.currentSong == null) return;
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const FullscreenLyricsScreen()),
+      MaterialPageRoute(
+        builder: (context) => FullscreenLyricsScreen(
+          onLyricsChanged: (lyrics) {
+            if (mounted) setState(() => _timedLyrics = lyrics);
+          },
+        ),
+      ),
     );
   }
 
@@ -410,6 +416,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(2),
                 bottom: Radius.circular(16),
+              ),
+              border: Border.all(
+                color: isLowEnd
+                    ? colorScheme.outlineVariant
+                    : Colors.white.withValues(alpha: 0.15),
               ),
             ),
             padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),

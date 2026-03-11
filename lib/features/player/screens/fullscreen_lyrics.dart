@@ -14,10 +14,11 @@ import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/lyrics_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../shared/models/artist_utils.dart';
 
 class FullscreenLyricsScreen extends StatefulWidget {
-  const FullscreenLyricsScreen({super.key});
+  final void Function(List<TimedLyric>)? onLyricsChanged;
+
+  const FullscreenLyricsScreen({super.key, this.onLyricsChanged});
 
   @override
   State<FullscreenLyricsScreen> createState() => _FullscreenLyricsScreenState();
@@ -733,12 +734,17 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         Provider.of<AudioPlayerService>(context, listen: false);
     final song = audioService.currentSong;
     if (song != null) {
+      final artistRaw = song.artist ?? '';
+      final artist = artistRaw.trim().isEmpty ? 'Unknown' : artistRaw.trim();
       timedLyricsService.saveLyricsToCache(
-        splitArtists(song.artist ?? 'Unknown').first,
+        artist,
         song.title,
         lrcContent,
       );
     }
+
+    // Notify now-playing screen so it updates its mini lyrics view
+    widget.onLyricsChanged?.call(lyrics);
   }
 
   void _showSyncAdjustDialog() {

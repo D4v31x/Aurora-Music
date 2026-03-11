@@ -48,13 +48,17 @@ class GrainyGradientBackground extends HookWidget {
       useSimpleBackground = !performanceProvider.shouldEnableAnimatedGradients;
     }
 
+    // Always call hooks unconditionally (Flutter hooks rule).
+    final controller = useAnimationController(
+      duration: const Duration(seconds: 12),
+    );
+
     if (useSimpleBackground) {
+      controller.stop();
       return _buildSimpleBackground(context);
     }
 
-    final controller = useAnimationController(
-      duration: const Duration(seconds: 12),
-    )..repeat();
+    controller.repeat();
 
     // Use AnimatedBuilder instead of useAnimation to avoid rebuilding the
     // entire widget tree (including `child`) on every animation frame.

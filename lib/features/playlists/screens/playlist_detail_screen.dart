@@ -283,165 +283,138 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          // Play Button
-          Expanded(
-            child: GestureDetector(
-              onTap: playlist.songs.isEmpty
-                  ? null
-                  : () => audioService.setPlaylist(
-                        playlist.songs,
-                        0,
-                        source: PlaybackSourceInfo(
-                          source: PlaybackSource.playlist,
-                          name: playlist.name,
-                        ),
-                      ),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  color: playlist.songs.isEmpty
-                      ? theme.colorScheme.primary.withValues(alpha: 0.3)
-                      : theme.colorScheme.primary,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: playlist.songs.isNotEmpty
-                      ? [
-                          BoxShadow(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
+              // Play Button — always expanded with full label
+              Expanded(
+                child: GestureDetector(
+                  onTap: playlist.songs.isEmpty
+                      ? null
+                      : () => audioService.setPlaylist(
+                            playlist.songs,
+                            0,
+                            source: PlaybackSourceInfo(
+                              source: PlaybackSource.playlist,
+                              name: playlist.name,
+                            ),
                           ),
-                        ]
-                      : null,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Iconoir.Play(color: Colors.white, width: 22, height: 22),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        localizations.playAll,
-                        style: const TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          // Shuffle Button
-          Expanded(
-            child: GestureDetector(
-              onTap: playlist.songs.isEmpty
-                  ? null
-                  : () {
-                      final shuffled = List.of(playlist.songs)..shuffle();
-                      audioService.setPlaylist(
-                        shuffled,
-                        0,
-                        source: PlaybackSourceInfo(
-                          source: PlaybackSource.playlist,
-                          name: playlist.name,
-                        ),
-                      );
-                    },
-              child: GlassmorphicContainer(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Iconoir.Shuffle(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
                       color: playlist.songs.isEmpty
-                          ? Colors.white30
-                          : Colors.white,
-                      width: 20,
-                      height: 20,
+                          ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                          : theme.colorScheme.primary,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: playlist.songs.isNotEmpty
+                          ? [
+                              BoxShadow(
+                                color: theme.colorScheme.primary.withValues(alpha: 0.4),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                          : null,
                     ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        localizations.shuffle,
-                        style: TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          color: playlist.songs.isEmpty
-                              ? Colors.white30
-                              : Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Iconoir.Play(color: Colors.white, width: 22, height: 22),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            localizations.playAll,
+                            style: const TextStyle(
+                              fontFamily: FontConstants.fontFamily,
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          // Queue Button
-          GestureDetector(
-            onTap: playlist.songs.isEmpty
-                ? null
-                : () async {
-                    await audioService.addMultipleToQueue(playlist.songs);
-                    if (context.mounted) {
-                      NotificationManager.showMessage(
-                        context,
-                        AppLocalizations.of(context).songsAddedToQueue(playlist.songs.length),
-                      );
-                    }
-                  },
-            child: GlassmorphicContainer(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-              child: Iconoir.Playlist(
-                color:
-                    playlist.songs.isEmpty ? Colors.white30 : Colors.white,
-                width: 22,
-                height: 22,
-              ),
-            ),
-          ),
-          if (!_isAutoPlaylist) ...[
-            const SizedBox(width: 10),
-            // Add Button
-            GestureDetector(
-              onTap: () async {
-                await SongPickerSheet.show(context, playlist);
-                _refreshSongs();
-                unawaited(_loadArtwork()); // Refresh artwork after adding songs
-              },
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: color.withValues(alpha: 0.4),
                   ),
                 ),
-                child: Iconoir.PlusCircle(
-                  color: color,
-                  width: 24,
-                  height: 24,
+              ),
+              const SizedBox(width: 10),
+              // Shuffle Button — always icon-only
+              GestureDetector(
+                onTap: playlist.songs.isEmpty
+                    ? null
+                    : () {
+                        final shuffled = List.of(playlist.songs)..shuffle();
+                        audioService.setPlaylist(
+                          shuffled,
+                          0,
+                          source: PlaybackSourceInfo(
+                            source: PlaybackSource.playlist,
+                            name: playlist.name,
+                          ),
+                        );
+                      },
+                child: GlassmorphicContainer(
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+                  child: Iconoir.Shuffle(
+                    color: playlist.songs.isEmpty ? Colors.white30 : Colors.white,
+                    width: 20,
+                    height: 20,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ],
-      ),
-    );
+              const SizedBox(width: 10),
+              // Queue Button — always icon-only
+              GestureDetector(
+                onTap: playlist.songs.isEmpty
+                    ? null
+                    : () async {
+                        await audioService.addMultipleToQueue(playlist.songs);
+                        if (context.mounted) {
+                          NotificationManager.showMessage(
+                            context,
+                            AppLocalizations.of(context).songsAddedToQueue(playlist.songs.length),
+                          );
+                        }
+                      },
+                child: GlassmorphicContainer(
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+                  child: Iconoir.Playlist(
+                    color: playlist.songs.isEmpty ? Colors.white30 : Colors.white,
+                    width: 22,
+                    height: 22,
+                  ),
+                ),
+              ),
+              if (!_isAutoPlaylist) ...[
+                const SizedBox(width: 10),
+                // Add Button
+                GestureDetector(
+                  onTap: () async {
+                    await SongPickerSheet.show(context, playlist);
+                    _refreshSongs();
+                    unawaited(_loadArtwork());
+                  },
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: color.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Iconoir.PlusCircle(
+                      color: color,
+                      width: 24,
+                      height: 24,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
   }
 
   Widget _buildSongsList(

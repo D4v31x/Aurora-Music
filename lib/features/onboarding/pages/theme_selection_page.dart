@@ -230,7 +230,8 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                 _exitController.isCompleted
                             ? _exitFadeAnimation
                             : _contentFadeAnimation,
-                        child: Column(
+                        child: SingleChildScrollView(
+                          child: Column(
                           children: [
                             // Dynamic color toggle
                             Material(
@@ -323,6 +324,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                               themeProvider: themeProvider,
                             ),
                           ],
+                        ),
                         ),
                       ),
                     ),

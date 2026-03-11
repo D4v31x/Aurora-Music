@@ -234,7 +234,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
 
                 // Action row (play, search, shuffle)
                 SliverToBoxAdapter(
-                  child: _buildActionRow(localizations),
+                  child: buildActionButtonsRow(),
                 ),
 
                 // Songs list
@@ -329,132 +329,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildActionRow(AppLocalizations localizations) {
-    final color = dominantColor == Colors.deepPurple.shade900
-        ? Colors.blue
-        : dominantColor;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Play button
-          GestureDetector(
-            onTap: playAllSongs,
-            child: Container(
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.play_arrow_rounded,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Play',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: FontConstants.fontFamily,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Shuffle button
-          GestureDetector(
-            onTap: shuffleAllSongs,
-            child: Container(
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                ),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.shuffle_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Shuffle',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: FontConstants.fontFamily,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Add to Queue button
-          GestureDetector(
-            onTap: addAllToQueue,
-            child: Container(
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                ),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.queue_music_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Queue',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: FontConstants.fontFamily,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

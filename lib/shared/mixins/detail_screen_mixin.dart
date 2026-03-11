@@ -127,12 +127,16 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
     required String label,
     required VoidCallback onTap,
     bool isPrimary = false,
+    bool iconOnly = false,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+        padding: EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: iconOnly ? 14 : 20,
+        ),
         decoration: BoxDecoration(
           gradient: isPrimary
               ? LinearGradient(
@@ -154,19 +158,22 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
           mainAxisSize: MainAxisSize.min,
           children: [
             icon,
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+            if (!iconOnly) ...
+              [
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+              ],
           ],
         ),
       ),
@@ -174,6 +181,8 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
   }
 
   /// Build the action buttons row with Play All, Shuffle, and Add to Queue.
+  /// Play All is always fully visible. Shuffle and Queue collapse to icon-only
+  /// on narrow screens (< 360 dp) and show labels on wider screens (≥ 360 dp).
   Widget buildActionButtonsRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -192,12 +201,14 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
             icon: const Iconoir.Shuffle(color: Colors.white, width: 22, height: 22),
             label: AppLocalizations.of(context).shuffle,
             onTap: shuffleAllSongs,
+            iconOnly: true,
           ),
           const SizedBox(width: 8),
           buildActionButton(
             icon: const Iconoir.Playlist(color: Colors.white, width: 22, height: 22),
             label: AppLocalizations.of(context).queue,
             onTap: addAllToQueue,
+            iconOnly: true,
           ),
         ],
       ),

@@ -250,6 +250,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                           const Iconoir.Shuffle(color: Colors.white, width: 22, height: 22),
                           localizations.shuffle,
                           () => _shuffleAllSongs(context),
+                          iconOnly: true,
                         ),
                         const SizedBox(width: 10),
                         _buildActionButton(
@@ -257,6 +258,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                           const Iconoir.Playlist(color: Colors.white, width: 22, height: 22),
                           'Queue',
                           () => _addAllToQueue(context),
+                          iconOnly: true,
                         ),
                       ],
                     ),
@@ -805,12 +807,16 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     String label,
     VoidCallback onTap, {
     bool isPrimary = false,
+    bool iconOnly = false,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+        padding: EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: iconOnly ? 14 : 20,
+        ),
         decoration: BoxDecoration(
           gradient: isPrimary
               ? LinearGradient(
@@ -832,20 +838,23 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             icon,
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontFamily: FontConstants.fontFamily,
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+            if (!iconOnly) ...
+              [
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontFamily: FontConstants.fontFamily,
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+              ],
           ],
         ),
       ),

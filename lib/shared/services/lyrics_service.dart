@@ -150,7 +150,17 @@ class TimedLyricsService {
           _log('✓ Direct match candidate: "$foundTrack" by "$foundArtist"');
           _log('  Title score: ${titleScore.toStringAsFixed(2)}, Artist score: ${artistScore.toStringAsFixed(2)}');
 
-          if (titleScore >= 0.6 && artistScore >= 0.5) {
+          // Strict: title ≥ 0.85 AND primary-artist ≥ 0.85
+          // Relaxed: title ≥ 0.80 AND any individual artist from the tag ≥ 0.75
+          final strictDirect = titleScore >= 0.85 && artistScore >= 0.85;
+          final relaxedDirect = !strictDirect &&
+              titleScore >= 0.80 &&
+              _extractAllArtists(artist).any(
+                (a) => _artistSimilarity(a, foundArtist) >= 0.75,
+              );
+
+          if (strictDirect || relaxedDirect) {
+            if (relaxedDirect) _log('  (accepted via relaxed artist match)');
             _log('📍 Searched: "$searchTitle" by "$searchArtist"');
             _log('📍 Got: "$foundTrack" by "$foundArtist"');
             _log('Album: ${directData['albumName'] ?? 'N/A'}');
@@ -199,15 +209,27 @@ class TimedLyricsService {
           final syncedResults =
               searchResults.where((r) => r['syncedLyrics'] != null).toList();
 
-          // Strict filter: title must match reasonably, artist must match at least partially
+          // Tier 1 – strict: title ≥ 0.85 AND primary-artist ≥ 0.85
           final strictResults = syncedResults.where((r) {
             final titleScore = _titleSimilarity(searchTitle, r['trackName'] as String? ?? '');
             final artistScore = _artistSimilarity(searchArtist, r['artistName'] as String? ?? '');
-            return titleScore >= 0.6 && artistScore >= 0.5;
+            return titleScore >= 0.85 && artistScore >= 0.85;
           }).toList();
 
-          _log('  Strict filter: ${syncedResults.length} synced → ${strictResults.length} passing title+artist threshold');
-          final filteredResults = strictResults.isNotEmpty ? strictResults : syncedResults;
+          // Tier 2 – relaxed: title ≥ 0.80 AND any individual artist from the
+          // tag (e.g. "Koven" out of "Koven and Aeon Mode") scores ≥ 0.75
+          final filteredResults = strictResults.isNotEmpty
+              ? strictResults
+              : syncedResults.where((r) {
+                  final titleScore = _titleSimilarity(searchTitle, r['trackName'] as String? ?? '');
+                  if (titleScore < 0.80) return false;
+                  final resultArtist = r['artistName'] as String? ?? '';
+                  return _extractAllArtists(artist).any(
+                    (a) => _artistSimilarity(a, resultArtist) >= 0.75,
+                  );
+                }).toList();
+
+          _log('  Strict: ${strictResults.length} / Relaxed total: ${filteredResults.length} passing filter');
 
           if (filteredResults.isEmpty) {
             _log('✗ No results with synced lyrics');
@@ -331,96 +353,7 @@ class TimedLyricsService {
         }
       }
 
-      _log('✗ No lyrics found with artist+title search');
-
-      // Fallback: search by title only (catches tracks where the artist tag
-      // in the local file differs significantly from the lrclib database).
-      _log('─' * 60);
-      _log('FALLBACK: Title-only search');
-      try {
-        final fallbackUrl =
-            Uri.parse('$apiBaseUrl/search').replace(queryParameters: {
-          'track_name': searchTitle,
-        });
-        _log('Fallback URL: $fallbackUrl');
-        final fallbackResponse = await http.get(
-          fallbackUrl,
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'AuroraMusic v0.0.85'
-          },
-        ).timeout(_apiTimeout, onTimeout: () => http.Response('', 408));
-
-        if (fallbackResponse.statusCode == 200 &&
-            fallbackResponse.body.isNotEmpty) {
-          final List fallbackResults =
-              json.decode(utf8.decode(fallbackResponse.bodyBytes));
-          final fallbackSynced =
-              fallbackResults.where((r) => r['syncedLyrics'] != null).toList();
-
-          _log('Fallback: ${fallbackResults.length} results, '
-              '${fallbackSynced.length} with synced lyrics');
-
-          if (fallbackSynced.isNotEmpty) {
-            // Sort by duration proximity when available
-            if (songDuration != null) {
-              fallbackSynced.sort((a, b) {
-                final aDiff = (_parseApproximateDuration(
-                              a['syncedLyrics'] as String?) -
-                          songDuration)
-                      .abs();
-                final bDiff = (_parseApproximateDuration(
-                              b['syncedLyrics'] as String?) -
-                          songDuration)
-                      .abs();
-                return aDiff.compareTo(bDiff);
-              });
-            }
-
-            // Strict filter on fallback: title must match, artist must match at least loosely
-            final strictFallback = fallbackSynced.where((r) {
-              final titleScore = _titleSimilarity(searchTitle, r['trackName'] as String? ?? '');
-              final artistScore = _artistSimilarity(searchArtist, r['artistName'] as String? ?? '');
-              return titleScore >= 0.6 && artistScore >= 0.4;
-            }).toList();
-
-            _log('Fallback strict filter: ${fallbackSynced.length} → ${strictFallback.length} passing threshold');
-            final candidates = strictFallback.isNotEmpty ? strictFallback : <dynamic>[];
-
-            for (var i = 0; i < min(3, candidates.length); i++) {
-              final result = candidates[i];
-              final lrcContent = result['syncedLyrics'] as String;
-              final lyrics = _parseLrc(lrcContent);
-              if (_isLyricsDurationValid(lyrics, songDuration)) {
-                _log('✓ Fallback result #${i + 1} VALID');
-                _log(
-                    '📍 Got: "${result['trackName']}" by "${result['artistName']}"');
-                await _saveLyricsToFile(artist, title, lrcContent);
-                _log('=' * 60);
-                return lyrics;
-              }
-            }
-
-            // Use top strict candidate even without duration match
-            if (candidates.isNotEmpty) {
-              final best = candidates[0];
-              final lrcContent = best['syncedLyrics'] as String;
-              final lyrics = _parseLrc(lrcContent);
-              _log('⚠️ Fallback: using best strict result without duration match');
-              _log('📍 Got: "${best['trackName']}" by "${best['artistName']}"');
-              await _saveLyricsToFile(artist, title, lrcContent);
-              _log('=' * 60);
-              return lyrics;
-            }
-
-            _log('✗ Fallback: no results passed title+artist threshold');
-          }
-        }
-      } catch (e) {
-        _log('✗ Fallback search error: $e');
-      }
-
-      _log('✗ No lyrics found (including fallback)');
+      _log('✗ No lyrics found matching title+artist criteria');
       _log('=' * 60);
       return null;
     } catch (e) {
@@ -431,13 +364,13 @@ class TimedLyricsService {
   }
 
   /// Extracts the primary (first) artist from a potentially multi-artist tag.
-  /// Splits on common separators: `,` `;` `&` ` feat.` ` feat ` ` ft.` ` ft `
+  /// Splits on common separators: `,` `;` `&` ` and ` ` feat.` ` feat ` ` ft.` ` ft `
   /// ` x ` (case-insensitive) and returns the first non-empty segment.
   String _extractFirstArtist(String artist) {
     final cleaned = artist
         .splitMapJoin(
           RegExp(
-              r',|;|&|\bfeat\.?\b|\bft\.?\b|\bversus\b|\bvs\.?\b|\bx\b',
+              r',|;|&|\band\b|\bfeat\.?\b|\bft\.?\b|\bversus\b|\bvs\.?\b|\bx\b',
               caseSensitive: false),
           onMatch: (_) => '\x00',
           onNonMatch: (s) => s,
@@ -447,6 +380,24 @@ class TimedLyricsService {
         .where((s) => s.isNotEmpty)
         .firstOrNull;
     return cleaned ?? artist.trim();
+  }
+
+  /// Extracts ALL individual artists from a potentially multi-artist tag.
+  /// Used for relaxed matching: if ANY split artist matches a result, accept it.
+  List<String> _extractAllArtists(String artist) {
+    final parts = artist
+        .splitMapJoin(
+          RegExp(
+              r',|;|&|\band\b|\bfeat\.?\b|\bft\.?\b|\bversus\b|\bvs\.?\b|\bx\b',
+              caseSensitive: false),
+          onMatch: (_) => '\x00',
+          onNonMatch: (s) => s,
+        )
+        .split('\x00')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+    return parts.isEmpty ? [artist.trim()] : parts;
   }
 
   /// Strips common decorative suffixes from a track title so the API can
