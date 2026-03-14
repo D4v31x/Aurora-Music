@@ -4,30 +4,38 @@ class ChangelogContent {
     '0.1.84': [
       {
         'UI': [
-          'Added translating lyrics in Now Playing screen',
           'Added option to contribute to translate app via Crowdin in settings',
-          'Replaced some material you icons to icons from Iconoir library',
+          'Replaced most Material icons with Iconoir icon library throughout the app',
           'Added more customization options in settings',
+          'Playback speed slider now has step arrow buttons (±0.05) and max speed capped at 2.0×',
           'Various UI improvements',
         ],
       },
       {
+        'Lyrics':[
+          'Lyrics translation — translate button lets you translate lyrics to your app language using online service'
+        ],
+      },
+      {
         'Performance Fixes': [
-          'Improved performance ',
-          'Various performance optimizations',
+          'Improved performance on high-end devices',
+          'Fixed performance issues on all devices - users now have option to reduce the performance demand by reducing effects in settings',
+          'Various performance and state management optimizations',
         ],
       },
       {
         'Under the Hood': [
-          'Upgrade to AGP 9.0.0',
-          'Upgrade to ndk 29',
-          'Recompiled native libraries to work with 16KB page size devices',
-          'Fixed issues with state management for updating UI',
+          'Refactored audio_player_service',
+          'Introduced error and performance tracking via Sentry service',
+          'Removed redundant packages and files',
+          'Added support for community translated strings via Crowdin',
+          'Adjusted Spotify API usage for ToS compilance',
+          'Minor code optimizations and refactoring',
         ],
       },
       {
         'Others': [
-          'Various fixes and optimizations',
+          'In-app update support via Google Play version checking'
         ],
       },
     ],
