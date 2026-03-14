@@ -286,8 +286,8 @@ class _PermissionsPageState extends State<PermissionsPage>
                               _exitController.isCompleted
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
-                      child: const Iconoir.Shield(
-                        color: Color(0xFF3B82F6),
+                      child: Iconoir.Shield(
+                        color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
                       ),
@@ -364,7 +364,11 @@ class _PermissionsPageState extends State<PermissionsPage>
                               if (_shouldShowAudioPermission) ...[
                                 _buildPermissionItem(
                                   context: context,
-                                  icon: Icons.music_note_rounded,
+                                  icon: Iconoir.MusicNote(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    width: 24,
+                                    height: 24,
+                                  ),
                                   title: AppLocalizations.of(context)
                                       .onboardingAudioAccess,
                                   description: AppLocalizations.of(context)
@@ -381,7 +385,11 @@ class _PermissionsPageState extends State<PermissionsPage>
                               if (_shouldShowStoragePermission) ...[
                                 _buildPermissionItem(
                                   context: context,
-                                  icon: Icons.folder_rounded,
+                                  icon: Iconoir.Folder(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    width: 24,
+                                    height: 24,
+                                  ),
                                   title: AppLocalizations.of(context)
                                       .onboardingStorageAccess,
                                   description: AppLocalizations.of(context)
@@ -396,7 +404,11 @@ class _PermissionsPageState extends State<PermissionsPage>
 
                               _buildPermissionItem(
                                 context: context,
-                                icon: Icons.bluetooth_rounded,
+                                icon: Iconoir.Bluetooth(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 24,
+                                  height: 24,
+                                ),
                                 title: AppLocalizations.of(context)
                                     .onboardingBluetooth,
                                 description: AppLocalizations.of(context)
@@ -411,7 +423,11 @@ class _PermissionsPageState extends State<PermissionsPage>
 
                               _buildPermissionItem(
                                 context: context,
-                                icon: Icons.notifications_rounded,
+                                icon: Iconoir.Bell(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 24,
+                                  height: 24,
+                                ),
                                 title: AppLocalizations.of(context)
                                     .onboardingNotifications,
                                 description: AppLocalizations.of(context)
@@ -435,7 +451,11 @@ class _PermissionsPageState extends State<PermissionsPage>
                                       ? null
                                       : _requestAllPermissions,
                                   isLoading: _isChecking,
-                                  icon: Icons.shield_rounded,
+                                  iconWidget: Iconoir.ShieldCheck(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    width: 20,
+                                    height: 20,
+                                  ),
                                   width: double.infinity,
                                 ),
                             ],
@@ -495,7 +515,7 @@ class _PermissionsPageState extends State<PermissionsPage>
 
   Widget _buildPermissionItem({
     required BuildContext context,
-    required IconData icon,
+    required Widget icon,
     required String title,
     required String description,
     required bool isGranted,
@@ -544,12 +564,15 @@ class _PermissionsPageState extends State<PermissionsPage>
                           : Colors.black.withValues(alpha: 0.1)),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  size: 24,
-                  color: isGranted
-                      ? Theme.of(context).colorScheme.primary
-                      : iconColor,
+                child: Center(
+                  child: IconTheme(
+                    data: IconThemeData(
+                      color: isGranted
+                          ? Theme.of(context).colorScheme.primary
+                          : iconColor,
+                    ),
+                    child: icon,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -605,15 +628,19 @@ class _PermissionsPageState extends State<PermissionsPage>
                 ),
               ),
               const SizedBox(width: 12),
-              Icon(
-                isGranted ? Icons.check_circle : Icons.circle_outlined,
-                color: isGranted
-                    ? Theme.of(context).colorScheme.primary
-                    : (isDark
-                        ? Colors.white.withValues(alpha: 0.3)
-                        : Colors.black.withValues(alpha: 0.3)),
-                size: 24,
-              ),
+              isGranted
+                  ? Iconoir.CheckCircle(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 24,
+                      height: 24,
+                    )
+                  : Iconoir.Circle(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.3)
+                          : Colors.black.withValues(alpha: 0.3),
+                      width: 24,
+                      height: 24,
+                    ),
             ],
           ),
         ),

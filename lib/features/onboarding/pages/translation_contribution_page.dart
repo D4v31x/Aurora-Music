@@ -132,8 +132,8 @@ class _TranslationContributionPageState
                     position: slidePos,
                     child: FadeTransition(
                       opacity: fadeOp,
-                      child: const Iconoir.Globe(
-                        color: Color(0xFF3B82F6),
+                      child: Iconoir.Globe(
+                        color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
                       ),

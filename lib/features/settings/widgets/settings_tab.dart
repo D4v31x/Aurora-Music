@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import '../../../shared/services/audio_player_service.dart';
@@ -256,6 +256,8 @@ class _SettingsTabState extends State<SettingsTab> {
     String Function(double)? valueFormatter,
     bool isFirst = false,
     double? defaultValue,
+    bool showArrows = false,
+    double arrowStep = 0.05,
   }) {
     // _draft[0] tracks the live drag value so the label updates while dragging.
     final draft = <double?>[null];
@@ -281,6 +283,8 @@ class _SettingsTabState extends State<SettingsTab> {
           valueFormatter: valueFormatter,
           isFirst: isFirst,
           defaultValue: defaultValue,
+          showArrows: showArrows,
+          arrowStep: arrowStep,
         );
       },
     );
@@ -299,6 +303,8 @@ class _SettingsTabState extends State<SettingsTab> {
     String Function(double)? valueFormatter,
     bool isFirst = false,
     double? defaultValue,
+    bool showArrows = false,
+    double arrowStep = 0.05,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final displayValue =
@@ -409,58 +415,112 @@ class _SettingsTabState extends State<SettingsTab> {
                         thumbShape:
                             const RoundSliderThumbShape(enabledThumbRadius: 8),
                       ),
-                      child: defaultValue != null
-                          ? LayoutBuilder(
-                              builder: (context, constraints) {
-                                // Thumb travel range: 8 px padding on each side
-                                // (matches Flutter's default thumb overlay radius)
-                                const double thumbRadius = 8.0;
-                                final trackWidth =
-                                    constraints.maxWidth - thumbRadius * 2;
-                                final fraction =
-                                    (defaultValue - min) / (max - min);
-                                final markerLeft =
-                                    thumbRadius + fraction * trackWidth;
-                                return Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    Slider(
-                                      value: (draft ?? value).clamp(min, max),
-                                      min: min,
-                                      max: max,
-                                      onChanged: wrappedOnChanged,
-                                      onChangeEnd: wrappedOnChangeEnd,
-                                    ),
-                                    Positioned(
-                                      left: markerLeft - 1,
-                                      top: 0,
-                                      bottom: 0,
-                                      child: Center(
-                                        child: Container(
-                                          width: 2,
-                                          height: 10,
-                                          decoration: BoxDecoration(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary
-                                                .withValues(alpha: 0.5),
-                                            borderRadius:
-                                                BorderRadius.circular(1),
+                      child: () {
+                        // Build the core slider widget (with optional default-value marker)
+                        Widget sliderWidget = defaultValue != null
+                            ? LayoutBuilder(
+                                builder: (context, constraints) {
+                                  // Flutter's Slider pads the thumb by the overlay radius
+                                  // (default RoundSliderOverlayShape = 24 px), NOT the
+                                  // thumb radius. Using 24 keeps the marker exactly
+                                  // aligned with the thumb position.
+                                  const double thumbPadding = 24.0;
+                                  final trackWidth =
+                                      constraints.maxWidth - thumbPadding * 2;
+                                  final fraction =
+                                      (defaultValue - min) / (max - min);
+                                  final markerLeft =
+                                      thumbPadding + fraction * trackWidth;
+                                  return Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      Slider(
+                                        value: (draft ?? value).clamp(min, max),
+                                        min: min,
+                                        max: max,
+                                        onChanged: wrappedOnChanged,
+                                        onChangeEnd: wrappedOnChangeEnd,
+                                      ),
+                                      Positioned(
+                                        left: markerLeft - 1,
+                                        top: 0,
+                                        bottom: 0,
+                                        child: Center(
+                                          child: Container(
+                                            width: 2,
+                                            height: 10,
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                                  .withValues(alpha: 0.5),
+                                              borderRadius:
+                                                  BorderRadius.circular(1),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                );
+                                    ],
+                                  );
+                                },
+                              )
+                            : Slider(
+                                value: (draft ?? value).clamp(min, max),
+                                min: min,
+                                max: max,
+                                onChanged: wrappedOnChanged,
+                                onChangeEnd: wrappedOnChangeEnd,
+                              );
+
+                        if (!showArrows) return sliderWidget;
+
+                        // Wrap slider with Iconoir arrow step buttons
+                        final arrowColor =
+                            Theme.of(context).colorScheme.primary;
+                        return Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                final cur =
+                                    (draft ?? value).clamp(min, max);
+                                final newVal =
+                                    (cur - arrowStep).clamp(min, max);
+                                wrappedOnChanged(newVal);
+                                wrappedOnChangeEnd?.call(newVal);
                               },
-                            )
-                          : Slider(
-                              value: (draft ?? value).clamp(min, max),
-                              min: min,
-                              max: max,
-                              onChanged: wrappedOnChanged,
-                              onChangeEnd: wrappedOnChangeEnd,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4),
+                                child: Iconoir.NavArrowLeft(
+                                  color: arrowColor,
+                                  width: 20,
+                                  height: 20,
+                                ),
+                              ),
                             ),
+                            Expanded(child: sliderWidget),
+                            GestureDetector(
+                              onTap: () {
+                                final cur =
+                                    (draft ?? value).clamp(min, max);
+                                final newVal =
+                                    (cur + arrowStep).clamp(min, max);
+                                wrappedOnChanged(newVal);
+                                wrappedOnChangeEnd?.call(newVal);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4),
+                                child: Iconoir.NavArrowRight(
+                                  color: arrowColor,
+                                  width: 20,
+                                  height: 20,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }(),
                     ),
                   ],
                 ),
@@ -934,7 +994,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
   void _showAboutDialog() async {
     final packageInfo = await PackageInfo.fromPlatform();
-    final codename = dotenv.env['CODE_NAME'] ?? 'Unknown';
+    const codename = String.fromEnvironment('CODE_NAME', defaultValue: 'Unknown');
 
     if (!mounted) return;
 
@@ -1200,7 +1260,6 @@ class _SettingsTabState extends State<SettingsTab> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final themeProvider = Provider.of<ThemeProvider>(context);
     final isTablet = ResponsiveUtils.isTablet(context);
     final horizontalPadding = ResponsiveUtils.getHorizontalPadding(context);
 
@@ -1210,15 +1269,12 @@ class _SettingsTabState extends State<SettingsTab> {
         final audioPlayerService =
             Provider.of<AudioPlayerService>(context, listen: false);
 
-        final settingsContent = _buildSettingsContent(
+        final sections = _buildSectionWidgets(
           l10n: l10n,
-          themeProvider: themeProvider,
           audioPlayerService: audioPlayerService,
-          hasCurrentSong: hasCurrentSong,
-          isTablet: isTablet,
         );
 
-        return ListView(
+        return ListView.builder(
           padding: EdgeInsets.only(
             top: isTablet ? 20.0 : 10.0,
             bottom: hasCurrentSong
@@ -1227,372 +1283,375 @@ class _SettingsTabState extends State<SettingsTab> {
             left: horizontalPadding,
             right: horizontalPadding,
           ),
-          children: [
-            Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: isTablet ? 800 : double.infinity,
+          itemCount: sections.length,
+          itemBuilder: (context, index) {
+            final item = sections[index];
+            if (isTablet) {
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 800),
+                  child: item,
                 ),
-                child: settingsContent,
-              ),
-            ),
-          ],
+              );
+            }
+            return item;
+          },
         );
       },
     );
   }
 
-  Widget _buildSettingsContent({
+  List<Widget> _buildSectionWidgets({
     required AppLocalizations l10n,
-    required ThemeProvider themeProvider,
     required AudioPlayerService audioPlayerService,
-    required bool hasCurrentSong,
-    required bool isTablet,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // APPEARANCE
-        _buildSectionHeader(l10n.settingsAppearance),
-        _buildGlassmorphicCard(
-          children: [
-            _buildSwitchTile(
-              icon: Iconoir.Palette(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-              title: l10n.settingsMaterialYou,
-              subtitle: l10n.settingsMaterialYouDesc,
-              value: themeProvider.useDynamicColor,
-              onChanged: (value) => themeProvider.toggleDynamicColor(),
-              isFirst: true,
-            ),
-            _buildAnimatedTile(
-              visible: !themeProvider.useDynamicColor,
-              child: _buildActionTile(
-                icon: Iconoir.ColorPicker(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-                title: 'Accent Color',
-                subtitle: 'Choose the app accent color',
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: themeProvider.customSeedColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
+    return [
+      _buildSectionHeader(l10n.settingsAppearance),
+      RepaintBoundary(child: _buildAppearanceCard(l10n: l10n)),
+      _buildSectionHeader(l10n.settingsPlayback),
+      Consumer<AudioPlayerService>(
+        builder: (context, svc, _) => RepaintBoundary(
+          child: _buildPlaybackCard(
+            l10n: l10n,
+            audioPlayerService: svc,
+          ),
+        ),
+      ),
+      _buildSectionHeader(l10n.settingsStorage),
+      RepaintBoundary(child: _buildStorageCard(l10n: l10n)),
+      _buildSectionHeader(l10n.settingsAbout),
+      RepaintBoundary(child: _buildAboutCard(l10n: l10n)),
+      const SizedBox(height: 32),
+    ];
+  }
+
+  Widget _buildAppearanceCard({required AppLocalizations l10n}) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) => _buildGlassmorphicCard(
+        children: [
+          _buildSwitchTile(
+            icon: Iconoir.Palette(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+            title: l10n.settingsMaterialYou,
+            subtitle: l10n.settingsMaterialYouDesc,
+            value: themeProvider.useDynamicColor,
+            onChanged: (value) => themeProvider.toggleDynamicColor(),
+            isFirst: true,
+          ),
+          _buildAnimatedTile(
+            visible: !themeProvider.useDynamicColor,
+            child: _buildActionTile(
+              icon: Iconoir.ColorPicker(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+              title: 'Accent Color',
+              subtitle: 'Choose the app accent color',
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: themeProvider.customSeedColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1.5,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Iconoir.NavArrowRight(
-                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.5) ?? Colors.white54,
-                      width: 16,
-                      height: 16,
-                    ),
-                  ],
+                  ),
+                  const SizedBox(width: 8),
+                  Iconoir.NavArrowRight(
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.5) ?? Colors.white54,
+                    width: 16,
+                    height: 16,
+                  ),
+                ],
+              ),
+              onTap: () => _showColorPickerDialog(themeProvider),
+            ),
+          ),
+          Consumer<PerformanceModeProvider>(
+            builder: (context, performanceProvider, _) {
+              if (!performanceProvider.isLowEndDevice) {
+                return const SizedBox.shrink();
+              }
+              return _buildSegmentedChoiceTile(
+                icon: Iconoir.MultiWindow(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 20,
+                    height: 20),
+                title: l10n.backgroundLowEndStyle,
+                subtitle: l10n.backgroundLowEndStyleDesc,
+                options: [l10n.backgroundBlobs, l10n.backgroundSolid],
+                selectedIndex:
+                    themeProvider.lowEndBackground == LowEndBackground.blobs
+                        ? 0
+                        : 1,
+                onChanged: (index) {
+                  themeProvider.setLowEndBackground(
+                    index == 0 ? LowEndBackground.blobs : LowEndBackground.solid,
+                  );
+                },
+              );
+            },
+          ),
+          Consumer<PerformanceModeProvider>(
+            builder: (context, performanceProvider, _) {
+              if (!performanceProvider.shouldEnableBlur) {
+                return const SizedBox.shrink();
+              }
+              return _buildSegmentedChoiceTile(
+                icon: Iconoir.MediaImage(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 20,
+                    height: 20),
+                title: l10n.backgroundHighEndStyle,
+                subtitle: l10n.backgroundHighEndStyleDesc,
+                options: [l10n.backgroundBlurredArtwork, l10n.backgroundSolid],
+                selectedIndex: themeProvider.highEndBackground ==
+                        HighEndBackground.blurredArtwork
+                    ? 0
+                    : 1,
+                onChanged: (index) {
+                  themeProvider.setHighEndBackground(
+                    index == 0
+                        ? HighEndBackground.blurredArtwork
+                        : HighEndBackground.solid,
+                  );
+                },
+              );
+            },
+          ),
+          Consumer<PerformanceModeProvider>(
+            builder: (context, performanceProvider, _) {
+              final isHighEnd =
+                  performanceProvider.currentMode == PerformanceLevel.high;
+              return _buildSwitchTile(
+                icon: Iconoir.DashboardSpeed(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+                title: l10n.settingsHighendUi,
+                subtitle: l10n.settingsHighendUiDesc,
+                value: isHighEnd,
+                onChanged: (value) => _showRestartDialog(value),
+              );
+            },
+          ),
+          Consumer<PerformanceModeProvider>(
+            builder: (context, performanceProvider, _) {
+              final showBlur = performanceProvider.shouldEnableBlur &&
+                  themeProvider.highEndBackground != HighEndBackground.solid;
+              return _buildAnimatedTile(
+                visible: showBlur,
+                child: _buildSliderTile(
+                  icon: Iconoir.Fog(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+                  title: l10n.backgroundBlur,
+                  subtitle: l10n.backgroundBlurDesc,
+                  value: themeProvider.blurIntensity,
+                  min: 5.0,
+                  max: 40.0,
+                  defaultValue: 25.0,
+                  valueFormatter: (v) => v.toStringAsFixed(0),
+                  onChanged: (value) => themeProvider.updateBlurIntensity(value),
+                  onChangeEnd: (value) => themeProvider.setBlurIntensity(value),
                 ),
-                onTap: () => _showColorPickerDialog(themeProvider),
+              );
+            },
+          ),
+          Consumer<PerformanceModeProvider>(
+            builder: (context, performanceProvider, _) {
+              final showDarkness = !performanceProvider.isLowEndDevice &&
+                  themeProvider.highEndBackground != HighEndBackground.solid;
+              return _buildAnimatedTile(
+                visible: showDarkness,
+                child: _buildSliderTile(
+                  icon: Iconoir.Brightness(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+                  title: l10n.backgroundDarkness,
+                  subtitle: l10n.backgroundDarknessDesc,
+                  value: themeProvider.overlayOpacity,
+                  min: 0.0,
+                  max: 0.8,
+                  defaultValue: 0.3,
+                  valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
+                  onChanged: (value) => themeProvider.updateOverlayOpacity(value),
+                  onChangeEnd: (value) => themeProvider.setOverlayOpacity(value),
+                ),
+              );
+            },
+          ),
+          _buildLanguageTile(),
+          _buildActionTile(
+            icon: Iconoir.Dashboard(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+            title: l10n.homeLayout,
+            subtitle: l10n.homeLayoutDesc,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HomeLayoutSettingsScreen(),
+                ),
+              );
+            },
+            isLast: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaybackCard({
+    required AppLocalizations l10n,
+    required AudioPlayerService audioPlayerService,
+  }) {
+    return _buildGlassmorphicCard(
+      children: [
+        _buildSwitchTile(
+          icon: Iconoir.GitFork(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          title: l10n.settingsGapless,
+          subtitle: l10n.settingsGaplessDesc,
+          value: audioPlayerService.gaplessPlayback,
+          onChanged: (value) => audioPlayerService.setGaplessPlayback(value),
+          isFirst: true,
+        ),
+        _buildSwitchTile(
+          icon: Iconoir.SoundHigh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          title: l10n.settingsNormalization,
+          subtitle: l10n.settingsNormalizationDesc,
+          value: audioPlayerService.volumeNormalization,
+          onChanged: (value) => audioPlayerService.setVolumeNormalization(value),
+        ),
+        _buildSliderTile(
+          icon: Iconoir.DashboardSpeed(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          title: l10n.playbackSpeed,
+          subtitle: l10n.playbackSpeedDesc,
+          value: audioPlayerService.playbackSpeed.clamp(0.25, 2.0),
+          min: 0.25,
+          max: 2.0,
+          defaultValue: 1.0,
+          valueFormatter: (v) => '${v.toStringAsFixed(2)}x',
+          showArrows: true,
+          arrowStep: 0.05,
+          onChanged: (value) => audioPlayerService.setPlaybackSpeed(value),
+          onChangeEnd: (value) {
+            final rounded = (value * 20).round() / 20;
+            audioPlayerService.setPlaybackSpeed(rounded);
+          },
+        ),
+        _buildSwitchTile(
+          icon: Iconoir.MusicNote(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          title: l10n.adjustPitchWithSpeed,
+          subtitle: l10n.adjustPitchWithSpeedDesc,
+          value: audioPlayerService.pitchWithSpeed,
+          onChanged: (value) => audioPlayerService.setPitchWithSpeed(value),
+        ),
+        _buildActionTile(
+          icon: Iconoir.Group(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          title: l10n.artistSeparation,
+          subtitle: l10n.artistSeparationDesc,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ArtistSeparatorSettingsScreen(),
               ),
-            ),
-            Consumer<PerformanceModeProvider>(
-              builder: (context, performanceProvider, _) {
-                if (!performanceProvider.isLowEndDevice) {
-                  return const SizedBox.shrink();
-                }
-                return _buildSegmentedChoiceTile(
-                  icon: Iconoir.MultiWindow(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 20,
-                      height: 20),
-                  title: l10n.backgroundLowEndStyle,
-                  subtitle: l10n.backgroundLowEndStyleDesc,
-                  options: [l10n.backgroundBlobs, l10n.backgroundSolid],
-                  selectedIndex: themeProvider.lowEndBackground ==
-                          LowEndBackground.blobs
-                      ? 0
-                      : 1,
-                  onChanged: (index) {
-                    themeProvider.setLowEndBackground(
-                      index == 0
-                          ? LowEndBackground.blobs
-                          : LowEndBackground.solid,
-                    );
-                  },
-                );
-              },
-            ),
-            Consumer<PerformanceModeProvider>(
-              builder: (context, performanceProvider, _) {
-                if (!performanceProvider.shouldEnableBlur) {
-                  return const SizedBox.shrink();
-                }
-                return _buildSegmentedChoiceTile(
-                  icon: Iconoir.MediaImage(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 20,
-                      height: 20),
-                  title: l10n.backgroundHighEndStyle,
-                  subtitle: l10n.backgroundHighEndStyleDesc,
-                  options: [
-                    l10n.backgroundBlurredArtwork,
-                    l10n.backgroundSolid
-                  ],
-                  selectedIndex: themeProvider.highEndBackground ==
-                          HighEndBackground.blurredArtwork
-                      ? 0
-                      : 1,
-                  onChanged: (index) {
-                    themeProvider.setHighEndBackground(
-                      index == 0
-                          ? HighEndBackground.blurredArtwork
-                          : HighEndBackground.solid,
-                    );
-                  },
-                );
-              },
-            ),
-            Consumer<PerformanceModeProvider>(
-              builder: (context, performanceProvider, _) {
-                final isHighEnd =
-                    performanceProvider.currentMode == PerformanceLevel.high;
-                return _buildSwitchTile(
-                  icon: Iconoir.DashboardSpeed(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-                  title: l10n.settingsHighendUi,
-                  subtitle: l10n.settingsHighendUiDesc,
-                  value: isHighEnd,
-                  onChanged: (value) {
-                    // Don't change mode here - show dialog first
-                    // Mode will only change when user confirms restart
-                    _showRestartDialog(value);
-                  },
-                );
-              },
-            ),
-            Consumer<PerformanceModeProvider>(
-              builder: (context, performanceProvider, _) {
-                final showBlur = performanceProvider.shouldEnableBlur &&
-                    themeProvider.highEndBackground != HighEndBackground.solid;
-                return _buildAnimatedTile(
-                  visible: showBlur,
-                  child: _buildSliderTile(
-                    icon: Iconoir.Fog(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-                    title: l10n.backgroundBlur,
-                    subtitle: l10n.backgroundBlurDesc,
-                    value: themeProvider.blurIntensity,
-                    min: 5.0,
-                    max: 40.0,
-                    defaultValue: 25.0,
-                    valueFormatter: (v) => v.toStringAsFixed(0),
-                    onChanged: (value) => themeProvider.updateBlurIntensity(value),
-                    onChangeEnd: (value) => themeProvider.setBlurIntensity(value),
-                  ),
-                );
-              },
-            ),
-            Consumer<PerformanceModeProvider>(
-              builder: (context, performanceProvider, _) {
-                final showDarkness = !performanceProvider.isLowEndDevice &&
-                    themeProvider.highEndBackground != HighEndBackground.solid;
-                return _buildAnimatedTile(
-                  visible: showDarkness,
-                  child: _buildSliderTile(
-                    icon: Iconoir.Brightness(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-                    title: l10n.backgroundDarkness,
-                    subtitle: l10n.backgroundDarknessDesc,
-                    value: themeProvider.overlayOpacity,
-                    min: 0.0,
-                    max: 0.8,
-                    defaultValue: 0.3,
-                    valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
-                    onChanged: (value) => themeProvider.updateOverlayOpacity(value),
-                    onChangeEnd: (value) => themeProvider.setOverlayOpacity(value),
-                  ),
-                );
-              },
-            ),
-            _buildLanguageTile(),
-            _buildActionTile(
-              icon: Iconoir.Dashboard(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-              title: l10n.homeLayout,
-              subtitle: l10n.homeLayoutDesc,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const HomeLayoutSettingsScreen(),
-                  ),
-                );
-              },
-              isLast: true,
-            ),
-          ],
+            );
+          },
+          isLast: true,
         ),
+      ],
+    );
+  }
 
-        // PLAYBACK
-        _buildSectionHeader(l10n.settingsPlayback),
-        _buildGlassmorphicCard(
-          children: [
-            _buildSwitchTile(
-              icon: Iconoir.GitFork(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-              title: l10n.settingsGapless,
-              subtitle: l10n.settingsGaplessDesc,
-              value: audioPlayerService.gaplessPlayback,
-              onChanged: (value) =>
-                  audioPlayerService.setGaplessPlayback(value),
-              isFirst: true,
-            ),
-            _buildSwitchTile(
-              icon: Iconoir.SoundHigh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-              title: l10n.settingsNormalization,
-              subtitle: l10n.settingsNormalizationDesc,
-              value: audioPlayerService.volumeNormalization,
-              onChanged: (value) =>
-                  audioPlayerService.setVolumeNormalization(value),
-            ),
-            _buildSliderTile(
-              icon: Iconoir.DashboardSpeed(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-              title: l10n.playbackSpeed,
-              subtitle: l10n.playbackSpeedDesc,
-              value: audioPlayerService.playbackSpeed,
-              min: 0.25,
-              max: 5.0,
-              defaultValue: 1.0,
-              valueFormatter: (v) => '${v.toStringAsFixed(2)}x',
-              onChanged: (value) {
-                audioPlayerService.setPlaybackSpeed(value);
-              },
-              onChangeEnd: (value) {
-                final rounded = (value * 20).round() / 20;
-                audioPlayerService.setPlaybackSpeed(rounded);
-              },
-            ),
-            _buildSwitchTile(
-              icon: Iconoir.MusicNote(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-              title: l10n.adjustPitchWithSpeed,
-              subtitle: l10n.adjustPitchWithSpeedDesc,
-              value: audioPlayerService.pitchWithSpeed,
-              onChanged: (value) =>
-                  audioPlayerService.setPitchWithSpeed(value),
-            ),
-            _buildActionTile(
-              icon: Iconoir.Group(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-              title: l10n.artistSeparation,
-              subtitle: l10n.artistSeparationDesc,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ArtistSeparatorSettingsScreen(),
-                  ),
-                );
-              },
-              isLast: true,
-            ),
-          ],
+  Widget _buildStorageCard({required AppLocalizations l10n}) {
+    return _buildGlassmorphicCard(
+      children: [
+        _buildActionTile(
+          icon: Iconoir.Database(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          title: l10n.settingsCacheInfo,
+          subtitle: l10n.settingsCacheInfoDesc,
+          onTap: _showCacheInfo,
+          isFirst: true,
         ),
-
-        // STORAGE
-        _buildSectionHeader(l10n.settingsStorage),
-        _buildGlassmorphicCard(
-          children: [
-            _buildActionTile(
-              icon: Iconoir.Database(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-              title: l10n.settingsCacheInfo,
-              subtitle: l10n.settingsCacheInfoDesc,
-              onTap: _showCacheInfo,
-              isFirst: true,
-            ),
-            _buildActionTile(
-              icon: Iconoir.Trash(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-              title: l10n.settingsClearCache,
-              subtitle: l10n.settingsClearCacheDesc,
-              onTap: _showClearCacheDialog,
-              isLast: true,
-            ),
-          ],
+        _buildActionTile(
+          icon: Iconoir.Trash(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          title: l10n.settingsClearCache,
+          subtitle: l10n.settingsClearCacheDesc,
+          onTap: _showClearCacheDialog,
+          isLast: true,
         ),
+      ],
+    );
+  }
 
-        // ABOUT
-        _buildSectionHeader(l10n.settingsAbout),
-        _buildGlassmorphicCard(
-          children: [
-            _buildActionTile(
-              icon: Iconoir.InfoCircle(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-              title: l10n.settingsAboutApp,
-              subtitle:
-                  '${l10n.settingsVersion} $_currentVersion',
-              onTap: _showAboutDialog,
-              isFirst: true,
-            ),
-            _buildActionTile(
-              icon: Iconoir.Bell(color: Colors.blue, width: 20, height: 20),
-              title: l10n.whatsNew,
-              subtitle: l10n.view_changelog,
-              onTap: _showChangelogDialog,
-              iconColor: Colors.blue,
-            ),
-            _buildActionTile(
-              icon: Iconoir.HeartSolid(color: Colors.pink, width: 20, height: 20),
-              title: l10n.supportAurora,
-              subtitle: l10n.supportAuroraDescShort,
-              onTap: () => DonationService.showDonationDialog(context),
-              iconColor: Colors.pink,
-            ),
-            _buildActionTile(
-              icon: Iconoir.ChatBubble(color: Colors.green, width: 20, height: 20),
-              title: l10n.send_feedback,
-              subtitle: l10n.send_feedback_desc,
-              onTap: () => _showFeedbackDialog(),
-              iconColor: Colors.green,
-            ),
-            _buildActionTile(
-              icon: Iconoir.Language(color: Colors.purple, width: 20, height: 20),
-              title: l10n.contributeTranslations,
-              subtitle: l10n.contributeTranslationsDesc,
-              onTap: () => launchUrl(
-                Uri.parse('https://crowdin.com/project/aurora-music'),
-                mode: LaunchMode.externalApplication,
-              ),
-              iconColor: Colors.purple,
-            ),
-            _buildActionTile(
-              icon: Iconoir.Refresh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-              title: l10n.settingsCheckUpdates,
-              subtitle: l10n.settingsCheckUpdatesDesc,
-              onTap: () async {
-                widget.notificationManager.showNotification(
-                  l10n.settingsCheckingUpdates,
-                  duration: const Duration(seconds: 2),
-                );
-
-                final result = await VersionService.checkForNewVersion();
-
-                if (result.isUpdateAvailable && result.latestVersion != null) {
-                  widget.notificationManager.showNotification(
-                    l10n.settingsUpdateAvailable,
-                    duration: const Duration(seconds: 2),
-                    onComplete: () {
-                      _showUpdateAvailableDialog(result.latestVersion!);
-                      widget.notificationManager.showDefaultTitle();
-                    },
-                  );
-                } else {
-                  widget.notificationManager.showNotification(
-                    l10n.settingsUpToDate,
-                    duration: const Duration(seconds: 2),
-                    onComplete: () =>
-                        widget.notificationManager.showDefaultTitle(),
-                  );
-                }
-              },
-              isLast: true,
-            ),
-          ],
+  Widget _buildAboutCard({required AppLocalizations l10n}) {
+    return _buildGlassmorphicCard(
+      children: [
+        _buildActionTile(
+          icon: Iconoir.InfoCircle(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          title: l10n.settingsAboutApp,
+          subtitle: '${l10n.settingsVersion} $_currentVersion',
+          onTap: _showAboutDialog,
+          isFirst: true,
         ),
+        _buildActionTile(
+          icon: Iconoir.Bell(color: Colors.blue, width: 20, height: 20),
+          title: l10n.whatsNew,
+          subtitle: l10n.view_changelog,
+          onTap: _showChangelogDialog,
+          iconColor: Colors.blue,
+        ),
+        _buildActionTile(
+          icon: Iconoir.HeartSolid(color: Colors.pink, width: 20, height: 20),
+          title: l10n.supportAurora,
+          subtitle: l10n.supportAuroraDescShort,
+          onTap: () => DonationService.showDonationDialog(context),
+          iconColor: Colors.pink,
+        ),
+        _buildActionTile(
+          icon: Iconoir.ChatBubble(color: Colors.green, width: 20, height: 20),
+          title: l10n.send_feedback,
+          subtitle: l10n.send_feedback_desc,
+          onTap: () => _showFeedbackDialog(),
+          iconColor: Colors.green,
+        ),
+        _buildActionTile(
+          icon: Iconoir.Language(color: Colors.purple, width: 20, height: 20),
+          title: l10n.contributeTranslations,
+          subtitle: l10n.contributeTranslationsDesc,
+          onTap: () => launchUrl(
+            Uri.parse('https://crowdin.com/project/aurora-music'),
+            mode: LaunchMode.externalApplication,
+          ),
+          iconColor: Colors.purple,
+        ),
+        _buildActionTile(
+          icon: Iconoir.Refresh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          title: l10n.settingsCheckUpdates,
+          subtitle: l10n.settingsCheckUpdatesDesc,
+          onTap: () async {
+            widget.notificationManager.showNotification(
+              l10n.settingsCheckingUpdates,
+              duration: const Duration(seconds: 2),
+            );
 
-        const SizedBox(height: 32),
+            final result = await VersionService.checkForNewVersion();
+
+            if (result.isUpdateAvailable && result.latestVersion != null) {
+              widget.notificationManager.showNotification(
+                l10n.settingsUpdateAvailable,
+                duration: const Duration(seconds: 2),
+                onComplete: () {
+                  _showUpdateAvailableDialog(result.latestVersion!);
+                  widget.notificationManager.showDefaultTitle();
+                },
+              );
+            } else {
+              widget.notificationManager.showNotification(
+                l10n.settingsUpToDate,
+                duration: const Duration(seconds: 2),
+                onComplete: () => widget.notificationManager.showDefaultTitle(),
+              );
+            }
+          },
+          isLast: true,
+        ),
       ],
     );
   }

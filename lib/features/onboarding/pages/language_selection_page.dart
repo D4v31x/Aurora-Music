@@ -191,8 +191,8 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                               _exitController.isCompleted
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
-                      child: const Iconoir.Language(
-                        color: Color(0xFF3B82F6),
+                      child: Iconoir.Language(
+                        color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
                       ),

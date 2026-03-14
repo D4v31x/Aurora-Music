@@ -328,7 +328,7 @@
   "settingsMaterialYou": "Material You",
   "settingsMaterialYouDesc": "Dynamic colors from wallpaper",
   "settingsNormalization": "Volume Normalization",
-  "settingsNormalizationDesc": "Consistent volume levels",
+  "settingsNormalizationDesc": "Consistent volume levels · Requires ReplayGain tags in your files",
   "playbackSpeed": "Playback Speed",
   "playbackSpeedDesc": "Adjust audio playback rate",
   "adjustPitchWithSpeed": "Adjust pitch with speed",

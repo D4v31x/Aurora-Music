@@ -159,8 +159,8 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                               _exitController.isCompleted
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
-                      child: const Iconoir.Palette(
-                        color: Color(0xFF3B82F6),
+                      child: Iconoir.Palette(
+                        color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
                       ),
@@ -251,9 +251,9 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                   ),
                                   child: Row(
                                     children: [
-                                      Icon(
-                                        Icons.palette_rounded,
-                                        size: 28,
+                                      Iconoir.Palette(
+                                        width: 28,
+                                        height: 28,
                                         color: Theme.of(context)
                                             .colorScheme
                                             .primary,
@@ -385,8 +385,8 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
           children: [
             Row(
               children: [
-                const Iconoir.ColorPicker(
-                  color: Color(0xFF3B82F6),
+                Iconoir.ColorPicker(
+                  color: Theme.of(context).colorScheme.primary,
                   height: 24,
                   width: 24,
                 ),

@@ -1,6 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:clarity_flutter/clarity_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -47,13 +47,18 @@ void main() async {
     // Ensure Flutter bindings are initialized
     WidgetsFlutterBinding.ensureInitialized();
 
+    // Silence all debug output in release builds — kDebugMode is a
+    // compile-time constant so the AOT compiler eliminates this in debug.
+    if (!kDebugMode) {
+      debugPrint = (String? message, {int? wrapWidth}) {};
+    }
+
     // Configure memory management early for better startup memory usage
     ImageCache().maximumSize = AppConfig.imageCacheMaxSize;
     ImageCache().maximumSizeBytes = AppConfig.imageCacheMaxSizeBytes;
 
     // Start parallel initialization for faster startup
     final parallelInit = Future.wait([
-      dotenv.load(),
       SharedPreferences.getInstance(),
       ArtistSeparatorService().initialize(),
       HomeLayoutService().initialize(),
@@ -64,7 +69,7 @@ void main() async {
 
     // Wait for parallel initialization
     final results = await parallelInit;
-    final prefs = results[1] as SharedPreferences;
+    final prefs = results[0] as SharedPreferences;
     final languageCode =
         prefs.getString('languageCode') ?? AppConfig.defaultLanguageCode;
 
@@ -86,21 +91,18 @@ void main() async {
     );
 
     // Initialize Clarity
+    const clarityProjectId = String.fromEnvironment('CLARITY_PROJECT_ID');
     final clarityConfig = ClarityConfig(
-      projectId: 'us5vyzjpfa',
+      projectId: clarityProjectId,
       logLevel: LogLevel.None,
     );
 
     // Launch the application with all required providers
     await SentryFlutter.init(
     (options) {
-      options.dsn = 'https://86ff8421c86fa4e9a3094cb5d154a538@o4511016367030272.ingest.de.sentry.io/4511016369848400';
-      // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
-      // We recommend adjusting this value in production.
-      options.tracesSampleRate = 1.0;
-      // The sampling rate for profiling is relative to tracesSampleRate
-      // Setting to 1.0 will profile 100% of sampled transactions:
-      options.profilesSampleRate = 1.0;
+      options.dsn = const String.fromEnvironment('SENTRY_DSN');
+      options.tracesSampleRate = 0.2;
+      options.profilesSampleRate = 0.2;
     },
     appRunner: () => runApp(SentryWidget(child: 
       ClarityWidget(

@@ -85,8 +85,8 @@ class _CompletionPageState extends State<CompletionPage>
                 position: _slideAnimation,
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-                  child: const Iconoir.Check(
-                    color: Color(0xFF3B82F6),
+                  child: Iconoir.Check(
+                    color: Theme.of(context).colorScheme.primary,
                     height: 56,
                     width: 56,
                   ),

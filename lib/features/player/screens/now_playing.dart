@@ -452,22 +452,28 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             height: artworkSize,
             child: Hero(
               tag: 'songArtwork',
+              createRectTween: (begin, end) {
+                return MaterialRectCenterArcTween(begin: begin, end: end);
+              },
               child: Material(
                 color: Colors.transparent,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: _buildArtworkImage(),
+                child: GestureDetector(
+                  onTap: _openFullscreenArtwork,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: _buildArtworkImage(),
+                    ),
                   ),
                 ),
               ),

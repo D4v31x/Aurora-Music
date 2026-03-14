@@ -24,11 +24,6 @@ extension AudioPlayerServiceSelectors on BuildContext {
     return select<AudioPlayerService, bool>((s) => s.isShuffle);
   }
 
-  /// Get repeat state efficiently
-  bool watchIsRepeat() {
-    return select<AudioPlayerService, bool>((s) => s.isRepeat);
-  }
-
   /// Get the playlist without listening to all changes
   List<SongModel> watchPlaylist() {
     return select<AudioPlayerService, List<SongModel>>((s) => s.playlist);

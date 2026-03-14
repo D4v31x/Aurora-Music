@@ -11,6 +11,7 @@ class PillButton extends StatelessWidget {
   final bool isPrimary;
   final bool isLoading;
   final IconData? icon;
+  final Widget? iconWidget;
   final Color? backgroundColor;
   final Color? foregroundColor;
   final double? width;
@@ -23,6 +24,7 @@ class PillButton extends StatelessWidget {
     this.isPrimary = true,
     this.isLoading = false,
     this.icon,
+    this.iconWidget,
     this.backgroundColor,
     this.foregroundColor,
     this.width,
@@ -35,7 +37,7 @@ class PillButton extends StatelessWidget {
     final isDark = themeProvider.isDarkMode;
 
     final effectiveBackgroundColor = backgroundColor ??
-        (isPrimary ? const Color(0xFF3B82F6) : Colors.transparent);
+        (isPrimary ? Theme.of(context).colorScheme.primary : Colors.transparent);
 
     final effectiveForegroundColor =
         foregroundColor ?? (isDark ? Colors.white : Colors.black);
@@ -83,6 +85,24 @@ class PillButton extends StatelessWidget {
           strokeWidth: 2,
           color: effectiveForegroundColor,
         ),
+      );
+    } else if (iconWidget != null) {
+      buttonChild = Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          iconWidget!,
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: const TextStyle(
+              fontFamily: FontConstants.fontFamily,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
       );
     } else if (icon != null) {
       buttonChild = Row(

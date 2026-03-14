@@ -15,6 +15,7 @@ import 'background_manager_service.dart';
 import 'artwork_cache_service.dart';
 import 'home_screen_widget_service.dart';
 import 'smart_suggestions_service.dart';
+import 'audio/replay_gain_reader.dart';
 import '../../main.dart' show audioHandler;
 
 part 'audio/playback_controller.dart';
@@ -111,8 +112,6 @@ class AudioPlayerService extends ChangeNotifier {
   bool get isPlaying => _isPlaying;
   bool get isShuffle => _isShuffle;
   LoopMode get loopMode => _loopMode;
-  // Deprecated: kept for compatibility, use loopMode instead
-  bool get isRepeat => _loopMode != LoopMode.off;
   SongModel? get currentSong =>
       _currentIndex >= 0 && _currentIndex < _playlist.length
           ? _playlist[_currentIndex]
@@ -159,8 +158,6 @@ class AudioPlayerService extends ChangeNotifier {
 
   final _currentSongController = StreamController<SongModel?>.broadcast();
   Stream<SongModel?> get currentSongStream => _currentSongController.stream;
-  List<SpotifySongModel> _spotifyPlaylist = [];
-  int _currentSpotifyIndex = 0;
   final _errorController = StreamController<String>.broadcast();
   Stream<String> get errorStream => _errorController.stream;
 
@@ -305,6 +302,13 @@ class AudioPlayerService extends ChangeNotifier {
     // Listen to song changes to update home screen widget
     currentSongNotifier.addListener(_onSongChangedForWidget);
     isPlayingNotifier.addListener(_onPlayStateChangedForWidget);
+
+    // Apply volume normalization whenever the current song changes
+    currentSongNotifier.addListener(() {
+      if (_volumeNormalization) {
+        unawaited(_applyNormalizationForCurrentSong());
+      }
+    });
 
     _audioPlayer.playerStateStream.listen((playerState) {
       _isPlaying = playerState.playing;
@@ -520,36 +524,5 @@ class AudioPlayerService extends ChangeNotifier {
     _errorController.close();
     _sleepTimer?.cancel();
     super.dispose();
-  }
-}
-
-class SpotifySongModel {
-  final String id;
-  final String title;
-  final String artist;
-  final String album;
-  final int duration;
-  final String uri;
-  final String artworkUrl;
-
-  SpotifySongModel({
-    required this.id,
-    required this.title,
-    required this.artist,
-    required this.album,
-    required this.duration,
-    required this.uri,
-    required this.artworkUrl,
-  });
-
-  MediaItem toMediaItem() {
-    return MediaItem(
-      id: id,
-      album: album,
-      title: title,
-      artist: artist,
-      duration: Duration(milliseconds: duration),
-      artUri: Uri.parse(artworkUrl),
-    );
   }
 }

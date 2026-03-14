@@ -2039,7 +2039,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsNormalizationDesc.
   ///
   /// In en, this message translates to:
-  /// **'Consistent volume levels'**
+  /// **'Consistent volume levels · Requires ReplayGain tags in your files'**
   String get settingsNormalizationDesc;
 
   /// No description provided for @playbackSpeed.

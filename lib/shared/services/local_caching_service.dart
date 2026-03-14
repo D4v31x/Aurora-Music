@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
@@ -15,8 +14,8 @@ class LocalCachingArtistService {
   final http.Client _client = http.Client();
   late Directory cacheDir;
   String? _accessToken;
-  final String? _clientId = dotenv.env['SPOTIFY_CLIENT_ID'];
-  final String? _clientSecret = dotenv.env['SPOTIFY_CLIENT_SECRET'];
+  static const String _clientId = String.fromEnvironment('SPOTIFY_CLIENT_ID');
+  static const String _clientSecret = String.fromEnvironment('SPOTIFY_CLIENT_SECRET');
   final Map<String, String?> _imageCache = {};
   bool _isInitialized = false;
   bool _spotifyEnabled = false;
@@ -39,10 +38,7 @@ class LocalCachingArtistService {
     }
 
     try {
-      _spotifyEnabled = _clientId != null &&
-          _clientSecret != null &&
-          _clientId.isNotEmpty &&
-          _clientSecret.isNotEmpty;
+      _spotifyEnabled = _clientId.isNotEmpty && _clientSecret.isNotEmpty;
 
       await _createCacheDirectory();
       await _loadCacheMetadata();
@@ -155,7 +151,7 @@ class LocalCachingArtistService {
   }
 
   Future<void> _getSpotifyAccessToken() async {
-    if (!_spotifyEnabled || _clientId == null || _clientSecret == null) {
+    if (!_spotifyEnabled) {
       return;
     }
 

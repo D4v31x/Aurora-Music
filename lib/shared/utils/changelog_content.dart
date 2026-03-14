@@ -1,6 +1,36 @@
 class ChangelogContent {
   static const Map<String, List<Map<String, List<String>>>> versions = {
     // Latest version at the top
+    '0.1.84': [
+      {
+        'UI': [
+          'Added translating lyrics in Now Playing screen',
+          'Added option to contribute to translate app via Crowdin in settings',
+          'Replaced some material you icons to icons from Iconoir library',
+          'Added more customization options in settings',
+          'Various UI improvements',
+        ],
+      },
+      {
+        'Performance Fixes': [
+          'Improved performance ',
+          'Various performance optimizations',
+        ],
+      },
+      {
+        'Under the Hood': [
+          'Upgrade to AGP 9.0.0',
+          'Upgrade to ndk 29',
+          'Recompiled native libraries to work with 16KB page size devices',
+          'Fixed issues with state management for updating UI',
+        ],
+      },
+      {
+        'Others': [
+          'Various fixes and optimizations',
+        ],
+      },
+    ],
     '0.1.21': [
       {
         'Screens': [

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'dart:convert';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -12,8 +11,11 @@ import '../../../shared/models/timed_lyrics.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/lyrics_service.dart';
-import '../../../shared/services/artwork_cache_service.dart';
+import '../../../shared/services/lyrics_translation_service.dart';
+import '../../../shared/widgets/app_background.dart';
 import '../../../l10n/generated/app_localizations.dart';
+
+enum _TranslationState { idle, loading, done, error }
 
 class FullscreenLyricsScreen extends StatefulWidget {
   final void Function(List<TimedLyric>)? onLyricsChanged;
@@ -25,9 +27,8 @@ class FullscreenLyricsScreen extends StatefulWidget {
 }
 
 class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
-  final ArtworkCacheService _artworkService = ArtworkCacheService();
 
   int _currentLyricIndex = 0;
   StreamSubscription<Duration>? _positionSubscription;
@@ -42,8 +43,12 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   int? _lastSongId;
   bool _isLoadingLyrics = false;
 
-  ImageProvider? _artworkProvider;
-  bool _hasArtwork = false;
+  // Translation
+  _TranslationState _translationState = _TranslationState.idle;
+  List<String?> _translatedLines = [];
+  bool _showTranslated = false;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnim;
 
   // Settings
   double _fontSize = 1.0; // Multiplier: 0.8, 1.0, 1.2, 1.4
@@ -62,11 +67,18 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       vsync: this,
     )..forward();
 
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _pulseAnim = Tween<double>(begin: 1.0, end: 0.25).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final audioService =
           Provider.of<AudioPlayerService>(context, listen: false);
       _loadLyricsForCurrentSong(audioService);
-      _loadArtwork(audioService);
 
       _positionSubscription =
           audioService.audioPlayer.positionStream.listen((position) {
@@ -76,7 +88,6 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       _songChangeSubscription = audioService.currentSongStream.listen((song) {
         if (mounted && song != null && song.id != _lastSongId) {
           _loadLyricsForCurrentSong(audioService);
-          _loadArtwork(audioService);
         }
       });
     });
@@ -100,26 +111,6 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_syncOffsetKey, offset);
     setState(() => _syncOffset = offset);
-  }
-
-  Future<void> _loadArtwork(AudioPlayerService audioService) async {
-    final song = audioService.currentSong;
-    if (song == null) return;
-
-    try {
-      final provider = await _artworkService.getCachedImageProvider(song.id,
-          highQuality: true);
-      if (!mounted) return;
-
-      setState(() {
-        _artworkProvider = provider;
-        _hasArtwork = provider is! AssetImage;
-      });
-    } catch (e) {
-      if (mounted) {
-        setState(() => _hasArtwork = false);
-      }
-    }
   }
 
   Future<void> _loadLyricsForCurrentSong(
@@ -146,11 +137,18 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     lyrics ??= await timedLyricsService.fetchTimedLyrics(artist, title);
     if (!mounted || audioService.currentSong?.id != song.id) return;
 
+    // Reset translation whenever new lyrics are loaded for a different song.
+    _pulseController.stop();
+    _pulseController.reset();
+
     setState(() {
       _currentLyrics = lyrics;
       _currentLyricIndex = 0;
       _isLoadingLyrics = false;
       _lyricKeys = {};
+      _translationState = _TranslationState.idle;
+      _translatedLines = [];
+      _showTranslated = false;
       if (_currentLyrics != null) {
         for (int i = 0; i < _currentLyrics!.length; i++) {
           _lyricKeys[i] = GlobalKey();
@@ -220,6 +218,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     _songChangeSubscription?.cancel();
     _scrollController.dispose();
     _fadeController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -232,20 +231,17 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           _loadLyricsForCurrentSong(audioService);
-          _loadArtwork(audioService);
         }
       });
     }
 
-    return Scaffold(
-      backgroundColor: Colors.black,
+    return AppBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background
-          _buildBackground(),
-
           // Content
           SafeArea(
             child: Column(
@@ -265,46 +261,17 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               ],
             ),
           ),
+
+          // Translate button — bottom-right, above controls
+          if (_currentLyrics != null && _currentLyrics!.isNotEmpty)
+            Positioned(
+              right: 16,
+              bottom: MediaQuery.of(context).padding.bottom + 152,
+              child: _buildFloatingTranslateButton(),
+            ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBackground() {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Artwork blur or gradient.
-        // PERF: Reduced sigma from 60→30. At sigma=60 the blur covers an area
-        // of ~360 px radius, which is far beyond what's perceptibly different
-        // from sigma=30. Halving sigma reduces the Gaussian kernel area by 4×,
-        // making the initial compositing significantly cheaper.
-        if (_hasArtwork && _artworkProvider != null)
-          RepaintBoundary(
-            child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-              child: Image(
-                image: _artworkProvider!,
-                fit: BoxFit.cover,
-              ),
-            ),
-          )
-        else
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.grey.shade900,
-                  Colors.black,
-                ],
-              ),
-            ),
-          ),
-        // Dark overlay
-        Container(color: Colors.black.withValues(alpha: 0.6)),
-      ],
+      ),
     );
   }
 
@@ -416,6 +383,57 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       case 'font_size':
         _showFontSizeDialog();
         break;
+    }
+  }
+
+  Future<void> _handleTranslateButton() async {
+    final lyrics = _currentLyrics;
+    if (lyrics == null || lyrics.isEmpty) return;
+
+    // Already translated — just toggle visibility.
+    if (_translationState == _TranslationState.done) {
+      setState(() => _showTranslated = !_showTranslated);
+      return;
+    }
+
+    if (_translationState == _TranslationState.loading) return;
+
+    setState(() => _translationState = _TranslationState.loading);
+    _pulseController.repeat(reverse: true);
+
+    try {
+      final targetLang = Localizations.localeOf(context).languageCode;
+      final audioService =
+          Provider.of<AudioPlayerService>(context, listen: false);
+      final song = audioService.currentSong;
+      final lyricsTexts = lyrics.map((l) => l.text).toList();
+      final lyricsFingerprint = lyricsTexts.join().hashCode;
+      final cacheKey = '${song?.artist ?? ""}|${song?.title ?? ""}|$lyricsFingerprint';
+
+      final translated = await LyricsTranslationService.translateLines(
+        texts: lyricsTexts,
+        targetLang: targetLang,
+        cacheKey: cacheKey,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _translatedLines = translated;
+        _translationState = _TranslationState.done;
+        _showTranslated = true;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _translationState = _TranslationState.error);
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted && _translationState == _TranslationState.error) {
+          setState(() => _translationState = _TranslationState.idle);
+        }
+      });
+    } finally {
+      _pulseController
+        ..stop()
+        ..reset();
     }
   }
 
@@ -952,11 +970,109 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             horizontal: 24,
             vertical: MediaQuery.of(context).size.height * 0.3,
           ),
-          itemCount: _currentLyrics!.length,
+          itemCount: _currentLyrics!.length + (_showTranslated ? 1 : 0),
           // Optimize list performance with cacheExtent
           cacheExtent: 1000,
-          itemBuilder: (context, index) => _buildLyricLine(index),
+          itemBuilder: (context, index) {
+            if (_showTranslated && index == 0) {
+              return _buildTranslationDisclaimerHeader();
+            }
+            return _buildLyricLine(_showTranslated ? index - 1 : index);
+          },
         ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingTranslateButton() {
+    final isActive =
+        _translationState == _TranslationState.done && _showTranslated;
+    final isLoading = _translationState == _TranslationState.loading;
+    final isError = _translationState == _TranslationState.error;
+
+    return AnimatedBuilder(
+      animation: _pulseAnim,
+      builder: (context, child) => Opacity(
+        opacity: isLoading ? _pulseAnim.value : 1.0,
+        child: child,
+      ),
+      child: Tooltip(
+        message: isError
+            ? 'Translation failed — tap to retry'
+            : isActive
+                ? 'Show original'
+                : _translationState == _TranslationState.done
+                    ? 'Show translation'
+                    : 'Translate lyrics',
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: isActive
+                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.85)
+                : Colors.black.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isError
+                  ? Colors.orangeAccent.withValues(alpha: 0.6)
+                  : isActive
+                      ? Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.0)
+                      : Colors.white.withValues(alpha: 0.18),
+            ),
+          ),
+          child: isLoading
+              ? const Center(
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white70,
+                    ),
+                  ),
+                )
+              : InkWell(
+                  onTap: _handleTranslateButton,
+                  borderRadius: BorderRadius.circular(22),
+                  child: Center(
+                    child: Icon(
+                      isError
+                          ? Icons.warning_amber_rounded
+                          : Icons.translate_rounded,
+                      size: 20,
+                      color: isError ? Colors.orangeAccent : Colors.white,
+                    ),
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTranslationDisclaimerHeader() {    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.auto_awesome_rounded,
+              size: 12, color: Colors.white30),
+          const SizedBox(width: 5),
+          Text(
+            'AI translated \u00b7 accuracy may vary',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: FontConstants.fontFamily,
+              fontSize: 11,
+              color: Colors.white30,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -966,11 +1082,20 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     final isCurrent = index == _currentLyricIndex;
     final isPast = index < _currentLyricIndex;
 
-    // Apply font size multiplier
     final baseFontSize = isCurrent ? 24.0 : 18.0;
     final adjustedFontSize = baseFontSize * _fontSize;
 
-    // Wrap each line in RepaintBoundary to isolate repaints
+    final mainColor = isCurrent
+        ? Colors.white
+        : isPast
+            ? Colors.white.withValues(alpha: 0.4)
+            : Colors.white.withValues(alpha: 0.6);
+
+    final translatedText =
+        (_showTranslated && index < _translatedLines.length)
+            ? _translatedLines[index]
+            : null;
+
     return RepaintBoundary(
       child: GestureDetector(
         key: _lyricKeys[index],
@@ -979,23 +1104,61 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
           padding: EdgeInsets.symmetric(vertical: isCurrent ? 14 : 8),
-          child: AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 300),
-            style: TextStyle(
-              fontFamily: FontConstants.fontFamily,
-              fontSize: adjustedFontSize,
-              fontWeight: isCurrent ? FontWeight.bold : FontWeight.w400,
-              color: isCurrent
-                  ? Colors.white
-                  : isPast
-                      ? Colors.white.withValues(alpha: 0.4)
-                      : Colors.white.withValues(alpha: 0.6),
-              height: 1.4,
-            ),
-            child: Text(
-              lyric.text,
-              textAlign: TextAlign.center,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Main text: translated if available, otherwise original
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 300),
+                style: TextStyle(
+                  fontFamily: FontConstants.fontFamily,
+                  fontSize: adjustedFontSize,
+                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.w400,
+                  color: mainColor,
+                  height: 1.4,
+                ),
+                child: Text(
+                  translatedText ?? lyric.text,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              // Original subtitle — slides in/out when translation is active
+              AnimatedSize(
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeInOut,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 320),
+                  transitionBuilder: (child, anim) => FadeTransition(
+                    opacity: anim,
+                    child: SizeTransition(
+                      sizeFactor: anim,
+                      axisAlignment: -1,
+                      child: child,
+                    ),
+                  ),
+                  child: translatedText != null
+                      ? Padding(
+                          key: const ValueKey('orig'),
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Center(
+                            child: Text(
+                              lyric.text,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: FontConstants.fontFamily,
+                                fontSize:
+                                    (adjustedFontSize * 0.65).clamp(10.0, 14.0),
+                                fontStyle: FontStyle.italic,
+                                color: mainColor.withValues(alpha: 0.5),
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(key: ValueKey('empty')),
+                ),
+              ),
+            ],
           ),
         ),
       ),

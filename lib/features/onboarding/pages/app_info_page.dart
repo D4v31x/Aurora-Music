@@ -162,8 +162,8 @@ class _AppInfoPageState extends State<AppInfoPage>
                               _exitController.isCompleted
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
-                      child: const Iconoir.InfoCircle(
-                        color: Color(0xFF3B82F6),
+                      child: Iconoir.InfoCircle(
+                        color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
                       ),
@@ -234,7 +234,11 @@ class _AppInfoPageState extends State<AppInfoPage>
                         child: ListView(
                           children: [
                             _buildFeatureItem(
-                              icon: Icons.folder_open_rounded,
+                              icon: Iconoir.Folder(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
                               title: AppLocalizations.of(context)
                                   .onboardingLocalMusic,
                               description: AppLocalizations.of(context)
@@ -243,7 +247,11 @@ class _AppInfoPageState extends State<AppInfoPage>
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
-                              icon: Icons.image_rounded,
+                              icon: Iconoir.MediaImage(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
                               title: AppLocalizations.of(context)
                                   .onboardingBeautifulArtwork,
                               description: AppLocalizations.of(context)
@@ -252,7 +260,11 @@ class _AppInfoPageState extends State<AppInfoPage>
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
-                              icon: Icons.palette_rounded,
+                              icon: Iconoir.Palette(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
                               title: AppLocalizations.of(context)
                                   .onboardingMaterialDesign,
                               description: AppLocalizations.of(context)
@@ -261,7 +273,11 @@ class _AppInfoPageState extends State<AppInfoPage>
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
-                              icon: Icons.queue_music_rounded,
+                              icon: Iconoir.MusicDoubleNote(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
                               title: AppLocalizations.of(context)
                                   .onboardingSmartPlaylists,
                               description: AppLocalizations.of(context)
@@ -270,7 +286,11 @@ class _AppInfoPageState extends State<AppInfoPage>
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
-                              icon: Icons.lyrics_rounded,
+                              icon: Iconoir.TextSize(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
                               title: AppLocalizations.of(context)
                                   .onboardingLyricsSupport,
                               description: AppLocalizations.of(context)
@@ -310,7 +330,7 @@ class _AppInfoPageState extends State<AppInfoPage>
   }
 
   Widget _buildFeatureItem({
-    required IconData icon,
+    required Widget icon,
     required String title,
     required String description,
     required bool isDark,
@@ -342,11 +362,7 @@ class _AppInfoPageState extends State<AppInfoPage>
               color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: Theme.of(context).colorScheme.primary,
-              size: 24,
-            ),
+            child: Center(child: icon),
           ),
           const SizedBox(width: 16),
           Expanded(

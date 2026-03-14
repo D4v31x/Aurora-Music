@@ -127,8 +127,8 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                     position: slidePos,
                     child: FadeTransition(
                       opacity: fadeOp,
-                      child: const Iconoir.Flask(
-                        color: Color(0xFF3B82F6),
+                      child: Iconoir.Flask(
+                        color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
                       ),
@@ -187,28 +187,40 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                           children: [
                             _buildInfoCard(
                               context,
-                              icon: Icons.bug_report_outlined,
+                              icon: Iconoir.Bug(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
                               title: AppLocalizations.of(context).beta_expect_bugs_title,
                               description: AppLocalizations.of(context).beta_expect_bugs_desc,
-                              color: Colors.orange,
+                              color: Theme.of(context).colorScheme.primary,
                               isDark: isDark,
                             ),
                             const SizedBox(height: 12),
                             _buildInfoCard(
                               context,
-                              icon: Icons.feedback_outlined,
+                              icon: Iconoir.ChatLines(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
                               title: AppLocalizations.of(context).beta_feedback_title,
                               description: AppLocalizations.of(context).beta_feedback_desc,
-                              color: Colors.green,
+                              color: Theme.of(context).colorScheme.primary,
                               isDark: isDark,
                             ),
                             const SizedBox(height: 12),
                             _buildInfoCard(
                               context,
-                              icon: Icons.update_outlined,
+                              icon: Iconoir.Refresh(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
                               title: AppLocalizations.of(context).beta_updates_title,
                               description: AppLocalizations.of(context).beta_updates_desc,
-                              color: Colors.purple,
+                              color: Theme.of(context).colorScheme.primary,
                               isDark: isDark,
                             ),
                           ],
@@ -245,7 +257,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
 
   Widget _buildInfoCard(
     BuildContext context, {
-    required IconData icon,
+    required Widget icon,
     required String title,
     required String description,
     required Color color,
@@ -275,11 +287,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
               color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              size: 24,
-              color: color,
-            ),
+            child: Center(child: icon),
           ),
           const SizedBox(width: 16),
           Expanded(

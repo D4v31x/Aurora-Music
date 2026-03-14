@@ -157,8 +157,8 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                               _exitController.isCompleted
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
-                      child: const Iconoir.Globe(
-                        color: Color(0xFF3B82F6),
+                      child: Iconoir.Globe(
+                        color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
                       ),
@@ -232,7 +232,11 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                           children: [
                             _buildInfoCard(
                               context: context,
-                              icon: Icons.image_search_rounded,
+                              icon: Iconoir.MediaImage(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
                               title: AppLocalizations.of(context)
                                   .onboardingAlbumArtwork,
                               description: AppLocalizations.of(context)
@@ -243,7 +247,11 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                             const SizedBox(height: 16),
                             _buildInfoCard(
                               context: context,
-                              icon: Icons.info_outline_rounded,
+                              icon: Iconoir.InfoCircle(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
                               title: AppLocalizations.of(context)
                                   .onboardingMusicMetadata,
                               description: AppLocalizations.of(context)
@@ -254,7 +262,11 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                             const SizedBox(height: 16),
                             _buildInfoCard(
                               context: context,
-                              icon: Icons.lyrics_rounded,
+                              icon: Iconoir.TextSize(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
                               title: AppLocalizations.of(context)
                                   .onboardingLyrics,
                               description: AppLocalizations.of(context)
@@ -280,11 +292,10 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
-                                    Icons.lock_outline_rounded,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    size: 20,
+                                  Iconoir.Lock(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    width: 20,
+                                    height: 20,
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -335,7 +346,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
 
   Widget _buildInfoCard({
     required BuildContext context,
-    required IconData icon,
+    required Widget icon,
     required String title,
     required String description,
     required bool isOptional,
@@ -373,11 +384,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
               color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: Theme.of(context).colorScheme.primary,
-              size: 24,
-            ),
+            child: Center(child: icon),
           ),
           const SizedBox(width: 16),
           Expanded(

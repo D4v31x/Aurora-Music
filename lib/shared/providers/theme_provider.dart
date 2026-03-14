@@ -34,16 +34,17 @@ class ThemeProvider with ChangeNotifier {
 
   ColorScheme? get darkDynamicColorScheme => _darkDynamicColorScheme;
 
-  // Gradient colors for dark mode - Deep purple to teal
-  List<Color> get darkGradientColors => const [
-        Color(0xFF1A0B2E), // Deep purple
-        Color(0xFF2D1B4E), // Rich purple
-        Color(0xFF16213E), // Dark blue
-        Color(0xFF0F3460), // Deep teal blue
-      ];
-
-  // Get current gradient colors (always dark)
-  List<Color> get currentGradientColors => darkGradientColors;
+  // Get current gradient colors derived from the active accent/Material You color
+  List<Color> get currentGradientColors {
+    final scheme = _useDynamicColor && _darkDynamicColorScheme != null
+        ? _darkDynamicColorScheme!
+        : _defaultDarkColorScheme;
+    return [
+      scheme.surfaceContainerLowest,
+      scheme.primaryContainer,
+      scheme.secondaryContainer,
+    ];
+  }
 
   // Fallback color scheme when dynamic colors are not available
   ColorScheme get _defaultDarkColorScheme => ColorScheme.fromSeed(
@@ -61,12 +62,14 @@ class ThemeProvider with ChangeNotifier {
       useMaterial3: true,
       colorScheme: colorScheme,
       brightness: Brightness.dark,
+      fontFamily: FontConstants.fontFamily,
       scaffoldBackgroundColor: colorScheme.surface,
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: colorScheme.onSurface),
         titleTextStyle: TextStyle(
+          fontFamily: FontConstants.fontFamily,
           color: colorScheme.onSurface,
           fontSize: 20,
           fontWeight: FontWeight.bold,

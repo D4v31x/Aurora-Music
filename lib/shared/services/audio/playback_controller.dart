@@ -297,24 +297,6 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
     }
   }
 
-  void setSpotifyPlaylist(List<SpotifySongModel> playlist, int initialIndex) {
-    _spotifyPlaylist = playlist;
-    _currentSpotifyIndex = initialIndex;
-    _setAudioSource();
-  }
-
-  void _setAudioSource() {
-    if (_spotifyPlaylist.isEmpty) return;
-
-    audioPlayer.setAudioSources(
-      _spotifyPlaylist
-          .map((song) =>
-              AudioSource.uri(Uri.parse(song.uri), tag: song.toMediaItem()))
-          .toList(),
-      initialIndex: _currentSpotifyIndex,
-    );
-  }
-
   Future<void> pause() async {
     await _audioPlayer.pause();
     _isPlaying = false;

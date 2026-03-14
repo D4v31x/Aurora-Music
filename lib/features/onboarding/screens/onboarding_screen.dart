@@ -142,7 +142,7 @@ class OnboardingScreen extends HookWidget {
                           width: currentPage.value == pageIndex ? 24 : 8,
                           decoration: BoxDecoration(
                             color: currentPage.value == pageIndex
-                                ? const Color(0xFF3B82F6)
+                                ? Theme.of(context).colorScheme.primary
                                 : Colors.white.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(4),
                           ),

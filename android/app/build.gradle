@@ -29,6 +29,14 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def keyProperties = new Properties()
+def keyPropertiesFile = rootProject.file('key.properties')
+if (keyPropertiesFile.exists()) {
+    keyPropertiesFile.withReader('UTF-8') { reader ->
+        keyProperties.load(reader)
+    }
+}
+
 android {
     namespace "com.aurorasoftware.music"
     compileSdk 36
@@ -51,7 +59,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.aurorasoftware.music"
-        minSdk 30
+        minSdk 29
         targetSdk 35
         versionCode flutterVersionCode.toInteger()
         // You can update the following values to match your application needs.
@@ -72,24 +80,23 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            keyAlias keyProperties['keyAlias']
+            keyPassword keyProperties['keyPassword']
+            storeFile keyProperties['storeFile'] ? file(keyProperties['storeFile']) : null
+            storePassword keyProperties['storePassword']
+        }
+    }
+
     buildTypes {
         release {
             // Enable code shrinking, obfuscation, and optimization
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
             
-            // For production, you should use a proper signing config
-            // TODO: Add your own signing config for the release build
-            // Example:
-            // signingConfig signingConfigs.release
-            
-            // For now using debug keys
-            signingConfig signingConfigs.debug
-            
-            ndk {
-                debugSymbolLevel 'FULL'
-            }
             
             // Performance optimizations
             crunchPngs true

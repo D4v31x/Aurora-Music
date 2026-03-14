@@ -56,14 +56,6 @@ class DonationService {
     await prefs.setBool(_neverShowKey, true);
   }
 
-  /// Reset reminder preferences (for testing)
-  static Future<void> resetReminders() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_lastReminderKey);
-    await prefs.remove(_reminderCountKey);
-    await prefs.remove(_neverShowKey);
-  }
-
   /// Open Ko-fi donation page
   static Future<bool> openKofi() async {
     return _launchUrl(kofiUrl);

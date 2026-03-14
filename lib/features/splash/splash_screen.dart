@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'dart:ui';
 import 'dart:math' as math;
 import '../../shared/services/audio_player_service.dart';
@@ -14,6 +14,7 @@ import '../onboarding/screens/onboarding_screen.dart';
 import '../home/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../shared/widgets/expanding_player.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -136,10 +137,10 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _initializeServices() async {
     try {
-      // First check general internet connectivity
+      // Check network interface connectivity without pinging external hosts
       try {
-        final result = await InternetAddress.lookup('google.com');
-        if (result.isEmpty || result[0].rawAddress.isEmpty) {
+        final result = await Connectivity().checkConnectivity();
+        if (result.isEmpty || result.every((r) => r == ConnectivityResult.none)) {
           throw Exception('No internet connection');
         }
       } catch (e) {
@@ -153,19 +154,6 @@ class _SplashScreenState extends State<SplashScreen>
         return;
       }
 
-      // Test image service connectivity
-      try {
-        final result = await InternetAddress.lookup('api.discogs.com');
-        if (result.isEmpty || result[0].rawAddress.isEmpty) {
-          throw Exception('Image service unavailable');
-        }
-      } catch (e) {
-        // Single state update for default artwork warning
-        setState(() {
-          _warnings.add('Using default artwork');
-        });
-        await Future.delayed(const Duration(milliseconds: 800));
-      }
     } catch (e) {
       if (!_warnings.contains('Some features may be limited')) {
         // Batch update for error warnings
@@ -296,7 +284,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _loadVersionInfo() async {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    final String codeName = dotenv.env['CODE_NAME'] ?? 'Unknown';
+    const String codeName = String.fromEnvironment('CODE_NAME', defaultValue: 'Unknown');
 
     setState(() {
       _versionNumber = packageInfo.version;

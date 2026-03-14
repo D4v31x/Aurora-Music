@@ -128,8 +128,8 @@ class _DonationPageState extends State<DonationPage>
                     position: slidePos,
                     child: FadeTransition(
                       opacity: fadeOp,
-                      child: const Iconoir.Heart(
-                        color: Color(0xFF3B82F6),
+                      child: Iconoir.Heart(
+                        color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
                       ),
@@ -188,20 +188,28 @@ class _DonationPageState extends State<DonationPage>
                           children: [
                             _buildDonationOption(
                               context: context,
-                              icon: Icons.coffee_rounded,
+                              icon: Iconoir.CoffeeCup(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
+                              color: Theme.of(context).colorScheme.primary,
                               title: AppLocalizations.of(context)
                                   .buyMeACoffee,
-                              color: const Color(0xFFFFDD00),
                               isDark: isDark,
                               onTap: () => DonationService.openBuyMeACoffee(),
                             ),
                             const SizedBox(height: 12),
                             _buildDonationOption(
                               context: context,
-                              icon: Icons.favorite_rounded,
+                              icon: Iconoir.Heart(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
+                              color: Theme.of(context).colorScheme.primary,
                               title: AppLocalizations.of(context)
                                   .kofi,
-                              color: const Color(0xFFFF5E5B),
                               isDark: isDark,
                               onTap: () => DonationService.openKofi(),
                             ),
@@ -275,7 +283,7 @@ class _DonationPageState extends State<DonationPage>
 
   Widget _buildDonationOption({
     required BuildContext context,
-    required IconData icon,
+    required Widget icon,
     required String title,
     required Color color,
     required bool isDark,
@@ -308,11 +316,7 @@ class _DonationPageState extends State<DonationPage>
                     color: color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: 24,
-                  ),
+                  child: Center(child: icon),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
