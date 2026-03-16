@@ -4,7 +4,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:on_audio_query/on_audio_query.dart';
-import '../../../shared/models/artist_utils.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/artwork_cache_service.dart';

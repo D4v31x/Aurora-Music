@@ -15,7 +15,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/detail_header.dart';
 import '../../../shared/widgets/song_context_menu.dart';
-import '../../../shared/mixins/detail_screen_mixin.dart';
+import '../../../shared/mixins/mixins.dart';
 
 class AlbumDetailScreen extends StatefulWidget {
   final String albumName;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import '../../../shared/providers/theme_provider.dart';
+import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/pill_button.dart';
 import '../../../l10n/generated/app_localizations.dart';
 

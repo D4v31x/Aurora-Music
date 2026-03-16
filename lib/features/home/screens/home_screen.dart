@@ -9,14 +9,13 @@ import 'package:permission_handler/permission_handler.dart'
     as permissionhandler;
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../../shared/models/artist_utils.dart';
-import '../../../shared/models/separated_artist.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artist_aggregator_service.dart';
 import '../../../shared/services/artist_separator_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_dialog.dart';
-import '../../../shared/providers/performance_mode_provider.dart';
+import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/feedback_reminder_dialog.dart';
 import '../../../shared/widgets/translation_reminder_dialog.dart';
 import '../widgets/home_tab.dart';

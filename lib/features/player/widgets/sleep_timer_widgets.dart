@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/sleep_timer_controller.dart';
-import '../../../shared/providers/performance_mode_provider.dart';
+import '../../../shared/providers/providers.dart';
 
 /// Sleep timer indicator widget for the app bar.
 ///

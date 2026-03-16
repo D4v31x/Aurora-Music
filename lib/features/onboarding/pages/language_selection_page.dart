@@ -6,7 +6,7 @@ import 'dart:ui' as ui;
 import '../../../l10n/locale_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../l10n/supported_languages.dart';
-import '../../../shared/providers/theme_provider.dart';
+import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/pill_button.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 

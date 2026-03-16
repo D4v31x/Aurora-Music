@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/background_manager_service.dart';
-import '../../../shared/models/artist_utils.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/song_context_menu.dart';
 import '../../../l10n/generated/app_localizations.dart';

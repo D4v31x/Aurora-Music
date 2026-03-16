@@ -7,14 +7,14 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
 import '../../main.dart' show navigatorKey;
-import '../models/artist_utils.dart';
-import '../../features/player/screens/now_playing.dart';
+import '../models/models.dart';
+import '../../features/player/player_feature.dart';
 import '../services/audio_player_service.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/background_manager_service.dart';
 import '../services/sleep_timer_controller.dart';
 import '../utils/responsive_utils.dart';
-import '../providers/performance_mode_provider.dart';
+import '../providers/providers.dart';
 
 /// A beautiful, simple mini player that opens the Now Playing screen.
 class ExpandingPlayer extends StatefulWidget {

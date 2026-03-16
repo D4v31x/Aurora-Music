@@ -9,7 +9,7 @@ library;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import '../../../shared/models/timed_lyrics.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/lyrics_service.dart';

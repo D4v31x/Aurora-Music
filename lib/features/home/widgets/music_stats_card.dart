@@ -4,7 +4,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../shared/models/artist_utils.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 
 /// Holds computed library statistics

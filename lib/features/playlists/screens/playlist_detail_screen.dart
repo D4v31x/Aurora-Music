@@ -5,7 +5,7 @@ import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../../shared/models/playlist_model.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/artwork_cache_service.dart';
@@ -16,7 +16,6 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/detail_header.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/song_context_menu.dart';
-import '../../../shared/models/artist_utils.dart';
 import 'dart:typed_data';
 
 class PlaylistDetailScreen extends StatefulWidget {

@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import '../../../shared/models/artist_utils.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/local_caching_service.dart';
-import '../../../shared/models/playlist_model.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
-import '../../playlists/screens/playlist_detail_screen.dart';
-import '../../library/screens/album_detail_screen.dart';
-import '../../library/screens/artist_detail_screen.dart';
+import '../../playlists/playlists_feature.dart';
+import '../../library/library_feature.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/song_context_menu.dart';
 

@@ -7,7 +7,7 @@ import 'dart:io';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/artist_aggregator_service.dart';
-import '../../../shared/models/separated_artist.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/app_background.dart';

@@ -4,7 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import '../../../shared/providers/theme_provider.dart';
+import '../../../shared/providers/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
@@ -138,6 +138,7 @@ class _PermissionsPageState extends State<PermissionsPage>
   /// Storage permission is only needed for Android 12 (API 32) and below
   Future<void> _checkAndroidVersion() async {
     if (!Platform.isAndroid) {
+      if (!mounted) return;
       setState(() {
         _shouldShowStoragePermission = false;
       });
@@ -147,6 +148,7 @@ class _PermissionsPageState extends State<PermissionsPage>
     try {
       final deviceInfo = DeviceInfoPlugin();
       final androidInfo = await deviceInfo.androidInfo;
+      if (!mounted) return;
       setState(() {
         // Show storage permission only for Android 12 (API 32) and lower
         _shouldShowStoragePermission = androidInfo.version.sdkInt <= 32;
@@ -159,6 +161,7 @@ class _PermissionsPageState extends State<PermissionsPage>
     } catch (e) {
       debugPrint('⚠️ Error checking Android version: $e');
       // Fallback: show both permissions if we can't determine version
+      if (!mounted) return;
       setState(() {
         _shouldShowStoragePermission = true;
         _shouldShowBluetoothPermission = true;
@@ -187,6 +190,7 @@ class _PermissionsPageState extends State<PermissionsPage>
       storageStatus = await Permission.storage.status;
     }
 
+    if (!mounted) return;
     setState(() {
       _audioPermissionGranted = audioStatus?.isGranted ??
           true; // Auto-grant if not needed (Android < 13)
@@ -199,21 +203,29 @@ class _PermissionsPageState extends State<PermissionsPage>
   }
 
   Future<void> _requestAudioPermission() async {
+    if (_isChecking) return;
+    setState(() => _isChecking = true);
     await Permission.audio.request();
     await _checkPermissions();
   }
 
   Future<void> _requestStoragePermission() async {
+    if (_isChecking) return;
+    setState(() => _isChecking = true);
     await Permission.storage.request();
     await _checkPermissions();
   }
 
   Future<void> _requestBluetoothPermission() async {
+    if (_isChecking) return;
+    setState(() => _isChecking = true);
     await Permission.bluetoothConnect.request();
     await _checkPermissions();
   }
 
   Future<void> _requestNotificationPermission() async {
+    if (_isChecking) return;
+    setState(() => _isChecking = true);
     await Permission.notification.request();
     await _checkPermissions();
   }
@@ -537,7 +549,7 @@ class _PermissionsPageState extends State<PermissionsPage>
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: isGranted ? null : onTap,
+        onTap: (isGranted || _isChecking) ? null : onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(20),

@@ -7,7 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../shared/models/timed_lyrics.dart';
+import '../../../shared/models/models.dart';
+import '../widgets/lyrics/lyrics_widgets.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/lyrics_service.dart';
@@ -63,7 +64,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     _loadSettings();
 
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 400),
+      duration: kLyricsFadeDuration,
       vsync: this,
     )..forward();
 
@@ -967,7 +968,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           controller: _scrollController,
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.symmetric(
-            horizontal: 24,
+            horizontal: kLyricsHorizontalPadding,
             vertical: MediaQuery.of(context).size.height * 0.3,
           ),
           itemCount: _currentLyrics!.length + (_showTranslated ? 1 : 0),
@@ -1101,7 +1102,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         key: _lyricKeys[index],
         onTap: () => _seekToLyric(index),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
+          duration: kLyricsScrollDuration,
           curve: Curves.easeOut,
           padding: EdgeInsets.symmetric(vertical: isCurrent ? 14 : 8),
           child: Column(
@@ -1109,7 +1110,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             children: [
               // Main text: translated if available, otherwise original
               AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 300),
+                duration: kLyricsScrollDuration,
                 style: TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   fontSize: adjustedFontSize,

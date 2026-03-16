@@ -4,7 +4,7 @@ import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:provider/provider.dart';
 import '../../../shared/services/artist_separator_service.dart';
 import '../../../shared/services/audio_player_service.dart';
-import '../../../shared/providers/performance_mode_provider.dart';
+import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../l10n/generated/app_localizations.dart';

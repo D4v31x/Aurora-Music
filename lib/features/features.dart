@@ -12,7 +12,7 @@
 library;
 
 // Home screens
-export 'home/home.dart';
+export 'home/home_feature.dart';
 
 // Splash screen
 export 'splash/splash_screen.dart';

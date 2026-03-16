@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/user_preferences.dart';
-import '../../../shared/providers/theme_provider.dart';
+import '../../../shared/providers/providers.dart';
 import '../../home/screens/home_screen.dart';
 import '../pages/welcome_page.dart';
 import '../pages/beta_welcome_page.dart';

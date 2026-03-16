@@ -10,10 +10,10 @@ import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:provider/provider.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../shared/models/timed_lyrics.dart';
+import '../../../shared/models/models.dart';
 import '../screens/fullscreen_lyrics.dart';
 import '../../../shared/services/audio_player_service.dart';
-import '../../../shared/providers/performance_mode_provider.dart';
+import '../../../shared/providers/providers.dart';
 import '../../../shared/services/lyrics_translation_service.dart';
 
 // MARK: - Constants

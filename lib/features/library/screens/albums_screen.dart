@@ -13,7 +13,7 @@ import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
 import '../../../core/constants/font_constants.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../shared/models/artist_utils.dart';
+import '../../../shared/models/models.dart';
 import 'album_detail_screen.dart';
 
 enum AlbumSortOption { name, artist, numSongs, year }

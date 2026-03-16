@@ -7,11 +7,10 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/constants/font_constants.dart';
-import '../../features/library/screens/album_detail_screen.dart';
-import '../../features/library/screens/artist_detail_screen.dart';
-import '../../features/settings/screens/metadata_detail_screen.dart';
+import '../../features/library/library_feature.dart';
+import '../../features/settings/settings_feature.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../models/artist_utils.dart';
+import '../models/models.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/audio_player_service.dart';
 import '../services/lyrics_service.dart';

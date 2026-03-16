@@ -12,7 +12,7 @@ import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/metadata_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../shared/providers/performance_mode_provider.dart';
+import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 

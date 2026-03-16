@@ -10,13 +10,12 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/music_search_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
-import '../../../shared/models/separated_artist.dart';
-import '../../library/screens/artist_detail_screen.dart';
-import '../../library/screens/album_detail_screen.dart';
+import '../../../shared/models/models.dart';
+import '../../library/library_feature.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/song_context_menu.dart';
-import '../../../shared/providers/performance_mode_provider.dart';
+import '../../../shared/providers/providers.dart';
 
 class SearchTab extends StatefulWidget {
   final List<SongModel> songs;
