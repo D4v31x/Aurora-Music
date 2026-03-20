@@ -24,7 +24,7 @@ class PackageInfo {
 class PackagesDialog extends StatelessWidget {
   const PackagesDialog({super.key});
 
-  /// List of all packages
+  /// List of all packages used in Aurora Music
   static const List<PackageInfo> packages = [
     PackageInfo(
       name: 'just_audio',
@@ -141,6 +141,12 @@ class PackagesDialog extends StatelessWidget {
       url: 'https://pub.dev/packages/device_info_plus',
     ),
     PackageInfo(
+      name: 'flutter_dotenv',
+      version: '^5.1.0',
+      description: 'Load environment variables from .env file',
+      url: 'https://pub.dev/packages/flutter_dotenv',
+    ),
+    PackageInfo(
       name: 'crypto',
       version: '^3.0.6',
       description: 'Cryptographic hashing functions',
@@ -165,34 +171,16 @@ class PackagesDialog extends StatelessWidget {
       url: 'https://pub.dev/packages/pub_semver',
     ),
     PackageInfo(
+      name: 'clarity_flutter',
+      version: '^1.6.0',
+      description: 'Microsoft Clarity analytics',
+      url: 'https://pub.dev/packages/clarity_flutter',
+    ),
+    PackageInfo(
       name: 'flutter_hooks',
       version: '^0.21.3+1',
       description: 'React-like hooks for Flutter',
       url: 'https://pub.dev/packages/flutter_hooks',
-    ),
-    PackageInfo(
-      name: 'sentry_flutter',
-      version: '^9.14.0',
-      description: 'Error tracking and performance monitoring',
-      url: 'https://pub.dev/packages/sentry_flutter',
-    ),
-    PackageInfo(
-      name: 'connectivity_plus',
-      version: '^6.0.0',
-      description: 'Network connectivity detection',
-      url: 'https://pub.dev/packages/connectivity_plus',
-    ),
-    PackageInfo(
-      name: 'iconoir_flutter',
-      version: '^7.11.0',
-      description: 'Iconoir icon set for Flutter',
-      url: 'https://pub.dev/packages/iconoir_flutter',
-    ),
-    PackageInfo(
-      name: 'in_app_update',
-      version: '^4.2.5',
-      description: 'Android in-app update support',
-      url: 'https://pub.dev/packages/in_app_update',
     ),
   ];
 

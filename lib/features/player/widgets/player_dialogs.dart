@@ -129,7 +129,7 @@ void shareSong(AudioPlayerService audioPlayerService) {
   );
 }
 
-/// Shows a dialog displaying the current playback queue
+/// Shows a dialog displaying the current playback queue with full management capabilities.
 void showQueueDialog(
     BuildContext context, AudioPlayerService audioPlayerService) {
   showModalBottomSheet(
@@ -144,7 +144,7 @@ void showQueueDialog(
   );
 }
 
-/// Widget for the queue bottom sheet to handle updates
+/// Stateful widget for the queue bottom sheet to handle updates
 class _QueueBottomSheet extends StatefulWidget {
   final AudioPlayerService audioPlayerService;
 
@@ -336,7 +336,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                       )
                     : CustomScrollView(
                         slivers: [
-                          // Now Playing 
+                          // ── Now Playing ────────────────────────────
                           if (currentSong != null) ...[
                             SliverToBoxAdapter(
                               child: Padding(
@@ -367,7 +367,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                             ),
                           ],
 
-                          // Queue (user-added songs)
+                          // ── Queue (user-added songs) ────────────────
                           if (queuedSongs.isNotEmpty) ...[
                             SliverToBoxAdapter(
                               child: Padding(
@@ -441,7 +441,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                             ),
                           ],
 
-                          // Next from Source 
+                          // ── Next from Source ─────────────────────────
                           if (sourceSongs.isNotEmpty) ...[
                             SliverToBoxAdapter(
                               child: Padding(
@@ -627,7 +627,7 @@ class _QueueSongTile extends StatelessWidget {
   }
 }
 
-/// Shows a dialog displaying detailed song information
+/// Shows a dialog displaying detailed song information.
 void showSongInfoDialog(
     BuildContext context, AudioPlayerService audioPlayerService) {
   if (audioPlayerService.currentSong == null) {

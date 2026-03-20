@@ -51,12 +51,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   AnimationController? _animationController;
   final ScrollController _scrollController = ScrollController();
   final ValueNotifier<bool> _isScrolledNotifier = ValueNotifier<bool>(false);
+  // Pull-to-refresh tracking
   double _pullProgress = 0.0;
   bool _isRefreshing = false;
-  static const double _pullThreshold = 380.0;
+  static const double _pullThreshold = 380.0; // pixels to pull for full refresh
   int _totalSongs = 0;
   List<SeparatedArtist> artists = [];
   List<AlbumModel> albums = [];
+  // Removed expandable bottom sheet in favor of simple Hero-based navigation
   bool _isInitialized = false;
   late final ScrollController _appBarTextController;
   final NotificationManager _notificationManager = NotificationManager();
@@ -70,7 +72,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _initializeControllers();
     _setupListeners();
 
+    // Initialize Bluetooth service
     _bluetoothService.initialize();
+
+    // Start monitoring downloads
     _downloadMonitor.startMonitoring();
     _downloadStatusSubscription =
         _downloadMonitor.downloadStatusStream.listen((status) {
@@ -82,6 +87,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     });
 
+    // Initialize immediately after frame callback to ensure context is available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeHomeScreen();
     });
@@ -91,19 +97,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _checkAndShowTranslationReminder();
   }
 
+  // Initialize the home screen and check permissions
   Future<void> _initializeHomeScreen() async {
     try {
+      // Set the toast context for notifications
       NotificationManager.setToastContext(context);
 
+      // Set initialized state
       if (mounted) {
         setState(() {
           _isInitialized = true;
         });
       }
 
+      // Check if we need to show permission UI
       await _checkPermissions();
     } catch (e) {
       debugPrint('Error initializing home screen: $e');
+      // Fallback initialization if something goes wrong
       if (mounted) {
         setState(() {
           _isInitialized = true;
@@ -127,6 +138,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _onArtistSeparatorChanged() {
+    // Separator config changed — reload artist list for search tab
     if (mounted) unawaited(_loadAlbumsAndArtists());
   }
 
@@ -142,6 +154,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _checkAndShowFeedbackReminder() async {
+    // Wait a bit before showing feedback reminder
     await Future.delayed(const Duration(seconds: 10));
     if (mounted) {
       await FeedbackReminderDialog.showIfNeeded(context);
@@ -149,6 +162,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _checkAndShowTranslationReminder() async {
+    // Show after feedback reminder delay to avoid overlap
     await Future.delayed(const Duration(seconds: 20));
     if (mounted) {
       await TranslationReminderDialog.showIfNeeded(context);
@@ -161,6 +175,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
 
+    // Get smart suggestions based on listening patterns
     final suggestedTracks = await audioPlayerService.getSuggestedTracks();
     final suggestedArtists =
         await audioPlayerService.getSuggestedArtists(count: 5);
@@ -177,11 +192,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   List<SongModel> _getFallbackSongs() {
+    // Fallback to random when no listening history
     final shuffled = List.from(songs)..shuffle();
     return shuffled.take(3).toList().cast<SongModel>();
   }
 
   List<String> _getFallbackArtists() {
+    // Fallback to random artists
     final uniqueArtists = songs
         .map((song) => splitArtists(song.artist ?? ''))
         .expand((artist) => artist)
@@ -217,6 +234,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final offset = _scrollController.offset;
     final isScrolled = offset > 180;
 
+    // Only update if state actually changed
     if (isScrolled != _isScrolledNotifier.value) {
       _isScrolledNotifier.value = isScrolled;
       // Update notification manager so toast only shows when app bar is hidden
@@ -239,6 +257,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  // Handle overscroll for pull-to-refresh
   bool _handleOverscroll(OverscrollNotification notification) {
     // Only handle overscroll at the top (negative overscroll)
     if (notification.overscroll < 0 && !_isRefreshing) {
@@ -250,7 +269,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return false;
   }
 
+  // Handle scroll updates to allow pulling back (reducing progress)
   bool _handleScrollUpdate(ScrollUpdateNotification notification) {
+    // If we have pull progress and user is scrolling down (releasing pull)
     if (_pullProgress > 0 &&
         !_isRefreshing &&
         notification.scrollDelta != null) {
@@ -265,10 +286,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return false;
   }
 
+  // Handle scroll end to trigger refresh or reset
   bool _handleScrollEnd(ScrollEndNotification notification) {
     if (_pullProgress >= 1.0 && !_isRefreshing) {
+      // Trigger refresh
       _triggerPullRefresh();
     } else if (!_isRefreshing) {
+      // Reset progress
       _pullProgress = 0.0;
       _notificationManager.clearPullProgress();
     }
@@ -297,19 +321,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
 
     try {
+      // Re-initialize the music library from AudioPlayerService
+      // Force rescan to truly re-query all songs from MediaStore
       final success =
           await audioPlayerService.initializeMusicLibrary(forceRescan: true);
 
       if (success) {
+        // Get the updated songs from the service
         final allSongs = audioPlayerService.songs;
         _totalSongs = allSongs.length;
 
+        // Update local state and trigger UI refresh
         if (mounted) {
           setState(() {
             songs = allSongs;
           });
 
+          // Reload smart suggestions for For You section
           await _loadSmartSuggestions();
+
+          // Reload albums and artists
           unawaited(_loadAlbumsAndArtists());
         }
 
@@ -340,9 +371,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  // Check for permissions and show appropriate UI
   Future<void> _checkPermissions({bool force = false}) async {
     if (!mounted) return;
 
+    // If forcing, go straight to the permission dialog
     if (force) {
       _showPermissionDialog();
       return;
@@ -361,6 +394,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             await permissionhandler.Permission.storage.status.isGranted;
 
         if (hasAudioPermission || hasStoragePermission) {
+          // If we already have permissions, initialize the library
           if (!mounted) return;
           _notificationManager.showNotification(
             localizations.loadingLibrary,
@@ -377,6 +411,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               onComplete: () => _notificationManager.showDefaultTitle(),
             );
 
+            // Get songs from the audio service
             setState(() {
               songs = audioPlayerService.songs;
               _randomizeContent();
@@ -386,9 +421,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             _showPermissionDialog();
           }
         } else {
+          // Show permission UI - don't automatically request
           _showPermissionDialog();
         }
       } else if (Platform.isWindows) {
+        // Initialize for Windows immediately - no permissions needed
         _notificationManager.showNotification(
           localizations.loadingLibrary,
           isProgress: true,
@@ -419,6 +456,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  // Show a dialog to request permissions
   void _showPermissionDialog() {
     if (!mounted) return;
 
@@ -447,10 +485,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: Text(AppLocalizations.of(dialogContext).cancel),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
+                // User denied permission - handle accordingly
                 setState(() {
                   songs = [];
                 });
 
+                // Show a snackbar explaining how to enable later
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(AppLocalizations.of(context)
@@ -474,6 +514,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Provider.of<AudioPlayerService>(dialogContext, listen: false);
                 final localizations = AppLocalizations.of(dialogContext);
                 Navigator.of(dialogContext).pop();
+                // Request permissions
                 final statuses = await [
                   permissionhandler.Permission.audio,
                   permissionhandler.Permission.storage,
@@ -489,6 +530,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         false;
 
                 if (hasAudioPermission || hasStoragePermission) {
+                  // Permissions granted, initialize library
                   _notificationManager.showNotification(
                     localizations.loadingLibrary,
                     isProgress: true,
@@ -505,6 +547,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       onComplete: () => _notificationManager.showDefaultTitle(),
                     );
 
+                    // Get songs from the audio service
                     setState(() {
                       songs = audioPlayerService.songs;
                       _randomizeContent();
@@ -522,6 +565,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     );
                   }
                 } else {
+                  // Still no permissions - handle accordingly
                   setState(() {
                     songs = [];
                   });
@@ -546,6 +590,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  // Note: This Windows code has been moved to AudioPlayerService
+  // and is no longer used directly in HomeScreen
+
+  // Windows file handling moved to AudioPlayerService
+
   Future<bool> _showExitConfirmation() async {
     // If the player is expanded, minimize it instead of showing exit dialog
     if (ExpandingPlayer.isExpanded) {
@@ -556,6 +605,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final audioService =
         Provider.of<AudioPlayerService>(context, listen: false);
 
+    // Show the exit dialog when user attempts to leave the app
     final shouldExit = await showGlassmorphicDialog<bool>(
           context: context,
           builder: (context) => GlassmorphicDialog(
@@ -578,9 +628,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         false;
 
     if (shouldExit) {
+      // Stop audio and exit the app properly
       await audioService.stop();
       audioService.dispose();
 
+      // Exit the app
       if (Platform.isAndroid) {
         unawaited(SystemNavigator.pop());
       } else if (Platform.isIOS) {
@@ -590,6 +642,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return shouldExit;
   }
 
+  // All library initialization is now handled by AudioPlayerService
   Widget buildAppBarTitle() {
     return ListenableBuilder(
       listenable: _bluetoothService,
@@ -647,6 +700,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 },
               ),
             ),
+            // Performance: Use AnimatedSize instead of AnimatedContainer
+            // and Visibility instead of AnimatedOpacity for the bluetooth indicator
             AnimatedSize(
               duration: const Duration(milliseconds: 400),
               curve: Curves.ease,
@@ -743,6 +798,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         floating: true,
                         pinned: true,
                         expandedHeight: 250,
+                        // Performance: Removed BackdropFilter - blur during scroll causes dropped frames
+                        // The app background already provides visual depth
                         flexibleSpace: LayoutBuilder(
                           builder: (context, constraints) {
                             // Calculate how collapsed the app bar is

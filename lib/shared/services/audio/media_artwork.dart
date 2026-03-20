@@ -128,6 +128,16 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
       // This is the primary mechanism for updating the background because this
       // function is confirmed to run on every song change.
       _backgroundManager?.pushArtwork(artwork, song);
+
+      // Also push artwork to home screen widget
+      if (artwork != null && artwork.isNotEmpty) {
+        unawaited(_homeWidgetService.updateSongInfo(
+          title: song.title,
+          artist: song.artist ?? 'Unknown Artist',
+          isPlaying: isPlayingNotifier.value,
+          artworkBytes: artwork,
+        ));
+      }
     } catch (e) {
       currentArtwork.value = null;
     }

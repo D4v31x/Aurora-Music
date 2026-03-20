@@ -1,4 +1,8 @@
-/// Settings Feature
+/// Aurora Music Settings Feature
+///
+/// This library exports the settings feature components:
+/// - Settings screens
+/// - Settings widgets
 library;
 
 // Screens

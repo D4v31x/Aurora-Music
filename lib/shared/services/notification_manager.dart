@@ -25,8 +25,15 @@ class NotificationManager {
   final StreamController<NotificationState> _notificationController =
       StreamController<NotificationState>.broadcast();
   bool _isShowingProgress = false;
+
+  /// The context to use for showing toast notifications
+  /// This should be set by the home screen
   static BuildContext? _toastContext;
+
+  /// Whether the app bar is currently visible (not scrolled)
   static bool _isAppBarVisible = true;
+
+  /// Set the context for toast notifications
   static void setToastContext(BuildContext context) {
     _toastContext = context;
   }
@@ -34,11 +41,14 @@ class NotificationManager {
   /// Update whether the app bar is visible
   static void setAppBarVisible(bool visible) {
     _isAppBarVisible = visible;
+    // If app bar becomes visible, hide any existing toast
     if (visible) {
       ToastNotification.hide();
     }
   }
 
+  /// Show a toast-style notification from anywhere in the app.
+  /// Uses the same pill-shaped glassmorphic style as the Aurora Music notification system.
   static void showMessage(
     BuildContext context,
     String message, {

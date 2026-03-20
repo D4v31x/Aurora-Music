@@ -12,8 +12,8 @@ class ArtworkCacheService {
   ArtworkCacheService._internal();
 
   // Cache size limits to prevent memory issues
-  static const int _maxArtworkCacheSize = 80;
-  static const int _maxArtistCacheSize = 40;
+  static const int _maxArtworkCacheSize = 80; // Reduced from 100
+  static const int _maxArtistCacheSize = 40; // Reduced from 50
 
   // Artwork quality settings
   static const int _thumbnailQuality = 100; // Full quality everywhere
@@ -89,8 +89,10 @@ class ArtworkCacheService {
         orderType: OrderType.DESC_OR_GREATER,
       );
 
+      // Preload fewer songs for faster startup
       final songsToPreload = songs.take(20).toList();
 
+      // Load artwork in parallel with smaller batch size for better responsiveness
       final chunks = <List<SongModel>>[];
       for (var i = 0; i < songsToPreload.length; i += 4) {
         chunks.add(songsToPreload.skip(i).take(4).toList());
@@ -169,6 +171,7 @@ class ArtworkCacheService {
   }
 
   Widget buildCachedArtwork(int id, {double size = 50}) {
+    // Use a unique key based on song ID to prevent unnecessary rebuilds
     return RepaintBoundary(
       key: ValueKey('artwork_$id'),
       child: _ArtworkWidget(
@@ -320,7 +323,8 @@ class ArtworkCacheService {
             size: 500,
           )
           .timeout(
-            const Duration(seconds: 3),
+            const Duration(
+                seconds: 3), // Reduced timeout for better performance
             onTimeout: () => null,
           );
 
@@ -348,7 +352,8 @@ class ArtworkCacheService {
             size: 500,
           )
           .timeout(
-            const Duration(seconds: 3),
+            const Duration(
+                seconds: 3), // Reduced timeout for better performance
             onTimeout: () => null,
           );
 
@@ -549,7 +554,7 @@ class _AlbumArtworkWidgetState extends State<_AlbumArtworkWidget> {
   }
 }
 
-/// Widget for displaying artwork
+/// Stateful widget for displaying artwork - prevents rebuilds in parent
 class _ArtworkWidget extends StatefulWidget {
   final int id;
   final double size;

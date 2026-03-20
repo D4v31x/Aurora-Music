@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart' as painting;
 
 /// Service responsible for optimizing shader performance
+/// Precaches commonly used shaders for better application performance
 class ShaderWarmupService {
   /// Precaches commonly used shaders to reduce initial render times
   /// This prevents jank when first rendering UI elements that use these shaders

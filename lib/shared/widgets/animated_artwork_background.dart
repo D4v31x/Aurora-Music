@@ -11,6 +11,10 @@ import '../services/background_manager_service.dart';
 /// with smooth transitions.
 /// Performance-aware: Respects device performance mode for blur effects.
 ///
+/// Optimized for:
+/// - Reduced GPU load by wrapping blur layers in RepaintBoundary
+/// - Throttled artwork updates to prevent excessive rebuilds
+/// - Cached image providers to reduce memory churn
 class AnimatedArtworkBackground extends StatefulWidget {
   final Uint8List? currentArtwork;
   final Widget child;
@@ -279,7 +283,8 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
   }
 }
 
-/// Blurred background widget.
+/// Optimized blurred background for when performance is critical.
+/// Performance-aware: Respects device performance mode for blur effects.
 class SimpleBlurredBackground extends StatelessWidget {
   final Uint8List? artwork;
   final double blurIntensity;

@@ -1,4 +1,8 @@
-/// Aurora Onboarding Features
+/// Aurora Music Onboarding Feature
+///
+/// This library exports the onboarding feature components:
+/// - Onboarding screen
+/// - Onboarding pages
 library;
 
 export 'screens/onboarding_screen.dart';

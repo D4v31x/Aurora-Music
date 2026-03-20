@@ -8,6 +8,24 @@ import '../../l10n/generated/app_localizations.dart';
 import '../widgets/expanding_player.dart';
 
 /// A mixin that provides common UI patterns for detail screens.
+///
+/// This mixin handles:
+/// - Building stat items (song count, duration, etc.)
+/// - Building action buttons (play all, shuffle)
+/// - Formatting durations
+/// - Building mini player padding
+///
+/// Usage:
+/// ```dart
+/// class _MyDetailScreenState extends State<MyDetailScreen>
+///     with DetailScreenMixin {
+///   @override
+///   Color get dominantColor => _dominantColor;
+///
+///   @override
+///   List<SongModel> get allSongs => _allSongs;
+/// }
+/// ```
 mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
   /// The dominant color for theming action buttons. Must be implemented.
   Color get dominantColor;

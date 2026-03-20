@@ -1,6 +1,7 @@
 part of '../audio_player_service.dart';
 
 extension AudioLibraryManagerExtension on AudioPlayerService {
+  // Check permissions safely without crashing the app
   Future<bool> _checkPermissionStatus() async {
     try {
       return await _audioQuery.permissionsStatus();
@@ -10,8 +11,10 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     }
   }
 
+  // Scan common music directories to update MediaStore with new files
   Future<void> _scanMusicDirectories() async {
     try {
+      // Common music directories on Android
       final musicPaths = [
         '/storage/emulated/0/Music',
         '/storage/emulated/0/Download',
@@ -37,6 +40,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
                 in dir.list(recursive: true, followLinks: false)) {
               if (entity is File) {
                 final path = entity.path.toLowerCase();
+                // Check for common audio file extensions
                 if (path.endsWith('.mp3') ||
                     path.endsWith('.m4a') ||
                     path.endsWith('.flac') ||
@@ -57,12 +61,15 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       }
 
       debugPrint('Scanned $scannedCount audio files');
+
+      // Give MediaStore a moment to process the scanned files
       await Future.delayed(const Duration(milliseconds: 500));
     } catch (e) {
       debugPrint('Error scanning music directories: $e');
     }
   }
 
+  // Public method to initialize music library - should be called only from HomeScreen
   Future<bool> initializeMusicLibrary({bool forceRescan = false}) async {
     try {
       final hasPermissions = await _checkPermissionStatus();
@@ -72,15 +79,21 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
         return false;
       }
 
+      // Only load from cache if not forcing a rescan
       if (!forceRescan) {
         await loadLibrary();
       } else {
+        // Clear the library set to force fresh query
         _librarySet.clear();
         debugPrint('Force rescan: cleared library cache');
+
+        // Scan common music directories to update MediaStore
         await _scanMusicDirectories();
       }
 
+      // Try to load songs - always query fresh from MediaStore
       try {
+        // Query with proper parameters to get all songs from external storage
         final songs = await _audioQuery.querySongs(
           orderType: OrderType.ASC_OR_SMALLER,
           uriType: UriType.EXTERNAL,
@@ -89,10 +102,12 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
         debugPrint('Queried ${songs.length} songs from storage');
         _updateSongs(songs);
 
+        // Save the updated library
         if (forceRescan) {
           await saveLibrary();
         }
 
+        // Initialize the liked songs playlist
         await loadLikedSongs();
         final likedSongs = songs
             .where((song) => _likedSongs.contains(song.id.toString()))
@@ -104,6 +119,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
           songs: likedSongs,
         );
 
+        // Update auto playlists (Most Played, Recently Added)
         _updateAutoPlaylists();
 
         _scheduleNotify();
@@ -118,13 +134,16 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     }
   }
 
+  // Public method to request permissions from UI
   Future<bool> requestPermissions() async {
     try {
       final permissionStatus = await _audioQuery.permissionsStatus();
 
       if (!permissionStatus) {
+        // Only request if needed
         final granted = await _audioQuery.permissionsRequest();
 
+        // If permissions were just granted, initialize the library
         if (granted) {
           await Future.delayed(const Duration(milliseconds: 500));
           await initializeMusicLibrary();
@@ -140,6 +159,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     }
   }
 
+  // Playlist Management
   Future<void> _loadPlaylists() async {
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/playlists.json');
@@ -172,6 +192,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
         .toList();
 
     await file.writeAsString(jsonEncode(json));
+    // Update the notifier for reactive widgets
     playlistsNotifier.value = List.from(_playlists);
   }
 
@@ -296,6 +317,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       final contents = await file.readAsString();
       final json = jsonDecode(contents);
       _likedSongs = Set<String>.from(json['liked_songs'] ?? []);
+      // Update notifier for reactive UI
       likedSongsNotifier.value = Set<String>.from(_likedSongs);
     }
   }
@@ -312,6 +334,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
   }
 
   void _updateLikedSongsPlaylist() {
+    // Don't try to query audio directly - just use the songs we already have
     if (_songs.isEmpty) {
       _likedSongsPlaylist = Playlist(
         id: AudioPlayerService.likedSongsPlaylistId,
@@ -334,6 +357,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
 
       _scheduleNotify();
     } catch (e) {
+      // Handle errors by keeping the current playlist or creating an empty one
       _likedSongsPlaylist ??= Playlist(
         id: AudioPlayerService.likedSongsPlaylistId,
         name: _likedPlaylistName,
@@ -354,6 +378,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       _likedSongs.add(song.id.toString());
     }
 
+    // Update notifier for reactive UI
     likedSongsNotifier.value = Set<String>.from(_likedSongs);
 
     await saveLikedSongs();
@@ -396,17 +421,22 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
   }
 
   void _updateAutoPlaylists() {
+    // Auto playlists are always enabled
+
+    // Create "Most Played" playlist
     unawaited(getMostPlayedTracks().then((tracks) {
       final existingIndex =
           _playlists.indexWhere((p) => p.id == kMostPlayedPlaylistId);
 
       if (existingIndex != -1) {
+        // Update existing playlist
         _playlists[existingIndex] = Playlist(
           id: kMostPlayedPlaylistId,
           name: 'Most Played',
           songs: tracks,
         );
       } else {
+        // Create new playlist
         _playlists.add(Playlist(
           id: kMostPlayedPlaylistId,
           name: 'Most Played',
@@ -419,6 +449,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       _scheduleNotify();
     }));
 
+    // Create "Recently Added" playlist
     unawaited(_audioQuery
         .querySongs(
       sortType: SongSortType.DATE_ADDED,
@@ -429,12 +460,14 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
           _playlists.indexWhere((p) => p.id == kRecentlyAddedPlaylistId);
 
       if (existingIndex != -1) {
+        // Update existing playlist
         _playlists[existingIndex] = Playlist(
           id: kRecentlyAddedPlaylistId,
           name: 'Recently Added',
           songs: tracks,
         );
       } else {
+        // Create new playlist
         _playlists.add(Playlist(
           id: kRecentlyAddedPlaylistId,
           name: 'Recently Added',
@@ -448,19 +481,23 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     }));
   }
 
+  // Ensure that _folderAccessCounts is correctly populated
   void _incrementFolderAccessCount(String folderPath) {
     _folderAccessCounts[folderPath] =
         (_folderAccessCounts[folderPath] ?? 0) + 1;
     _scheduleSavePlayCounts();
   }
 
+  // Call this method whenever a song from a folder is played
   void playSongFromFolder(SongModel song) {
     final folderPath = File(song.data).parent.path;
     _incrementFolderAccessCount(folderPath);
+    // Proceed to play the song
     setPlaylist([song], 0);
     unawaited(play());
   }
 
+  // Method to update playlist name when language changes
   void updateLikedPlaylistName(String newName) {
     _likedPlaylistName = newName;
     if (_likedSongsPlaylist != null) {
@@ -473,5 +510,6 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     }
   }
 
+  // Getter for the playlist name
   String get likedPlaylistName => _likedPlaylistName;
 }

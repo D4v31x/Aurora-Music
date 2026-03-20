@@ -1,7 +1,12 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 
-/// Performance optimization utilities
+/// Performance optimization utilities for Aurora Music
+/// 
+/// This file contains helper functions and classes to optimize
+/// rebuild behavior, state management, and rendering performance.
+
+/// Debouncer for expensive operations
 class Debouncer {
   final Duration delay;
   Timer? _timer;
@@ -75,6 +80,7 @@ class Memoizer<T> {
 }
 
 /// Granular notifier for a single field
+/// Use this to isolate state updates to specific fields
 class FieldNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
   T _value;
 
@@ -140,11 +146,12 @@ Future<T> computeIfNeeded<T>(
   bool forceIsolate = false,
 }) async {
   if (kIsWeb || !forceIsolate) {
+    // On web or if not forcing, run synchronously
     // In the future, we can measure time and decide
     return computation();
   }
 
-  // For now, run synchronously can be extended
+  // For now, run synchronously but this can be extended
   // to use compute() for heavy operations
   return computation();
 }

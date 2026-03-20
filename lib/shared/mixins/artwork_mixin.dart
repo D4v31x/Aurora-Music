@@ -5,6 +5,24 @@ import 'dart:io';
 import '../services/artwork_cache_service.dart';
 
 /// A mixin that provides common artwork and color extraction functionality.
+///
+/// This mixin handles:
+/// - Loading artwork with caching
+/// - Extracting dominant colors for theming
+/// - Background gradient generation
+///
+/// Usage:
+/// ```dart
+/// class _MyScreenState extends State<MyScreen> with ArtworkMixin {
+///   @override
+///   ArtworkCacheService get artworkService => _artworkService;
+///
+///   @override
+///   void onDominantColorChanged(Color color) {
+///     setState(() => _dominantColor = color);
+///   }
+/// }
+/// ```
 mixin ArtworkMixin<T extends StatefulWidget> on State<T> {
   /// The artwork cache service instance. Must be implemented.
   ArtworkCacheService get artworkService;

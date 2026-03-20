@@ -57,7 +57,9 @@ dependencies:
   dynamic_color: ^1.7.0
   audio_session: any
   audiotags: ^1.4.5
+  clarity_flutter: ^1.6.0
   flutter_hooks: ^0.21.3+1
+  home_widget: ^0.7.0
   iconoir_flutter: ^7.11.0
   in_app_update: ^4.2.5
   

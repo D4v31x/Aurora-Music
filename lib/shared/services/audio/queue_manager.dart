@@ -1,6 +1,7 @@
 part of '../audio_player_service.dart';
 
 extension AudioQueueManagerExtension on AudioPlayerService {
+  // MARK: - Queue Management
 
   /// Add a single song to the queue.
   ///

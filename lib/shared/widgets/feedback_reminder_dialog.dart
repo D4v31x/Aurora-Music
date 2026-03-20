@@ -10,6 +10,7 @@ import '../providers/performance_mode_provider.dart';
 import '../services/feedback_reminder_service.dart';
 
 /// A glassmorphic dialog to remind users to provide feedback.
+/// Performance-aware: Respects device performance mode for blur effects.
 class FeedbackReminderDialog extends StatelessWidget {
   const FeedbackReminderDialog({super.key});
 

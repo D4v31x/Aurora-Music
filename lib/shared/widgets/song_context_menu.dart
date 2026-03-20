@@ -16,6 +16,13 @@ import '../services/audio_player_service.dart';
 import '../services/lyrics_service.dart';
 import '../services/notification_manager.dart';
 
+// ---------------------------------------------------------------------------
+// Public entry-point
+// ---------------------------------------------------------------------------
+
+/// Shows the song context bottom sheet for [song].
+///
+/// Call this from any long-press or 3-dot button tap.
 Future<void> showSongContextMenu(BuildContext context, SongModel song) {
   return showModalBottomSheet(
     context: context,
@@ -27,7 +34,10 @@ Future<void> showSongContextMenu(BuildContext context, SongModel song) {
   );
 }
 
+// ---------------------------------------------------------------------------
 // Private bottom-sheet widget
+// ---------------------------------------------------------------------------
+
 class _SongContextMenu extends StatelessWidget {
   final SongModel song;
 
@@ -204,7 +214,7 @@ class _SongContextMenu extends StatelessWidget {
     );
   }
 
-  //Actions
+  // ---- Actions ----
 
   void _addToPlaylist(
       BuildContext context, AudioPlayerService audioService) {
@@ -359,7 +369,7 @@ class _SongContextMenu extends StatelessWidget {
     }
   }
 
-  //Playlist picker 
+  // ---- Playlist picker ----
 
   void _showPlaylistPicker(
       BuildContext context, AudioPlayerService audioService) {

@@ -1,4 +1,8 @@
-///Library Features
+/// Aurora Music Library Feature
+///
+/// This library exports the library feature components:
+/// - Library screens (albums, artists, tracks, folders)
+/// - Detail screens (album detail, artist detail, folder detail)
 library;
 
 // Screens

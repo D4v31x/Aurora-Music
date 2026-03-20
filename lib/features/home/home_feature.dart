@@ -1,4 +1,8 @@
-/// Home Features
+/// Aurora Music Home Feature
+///
+/// This library exports the home feature components:
+/// - Home screens
+/// - Home widgets (tabs, sections)
 library;
 
 // Screens

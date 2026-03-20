@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_description">Glassmorphic music player controls with album art</string>
+    <string name="widget_name">Aurora Music Player</string>
+</resources>

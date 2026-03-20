@@ -24,6 +24,7 @@ class LocalCachingArtistService {
   static const Duration _cacheTtl = Duration(days: 30);
 
   // Metadata file that tracks the download timestamp of each cached image.
+  // Format: { "Artist_Name.jpg": "2026-01-01T00:00:00.000Z", ... }
   static const String _metadataFileName = 'cache_metadata.json';
   Map<String, DateTime> _cacheTimestamps = {};
 
@@ -60,7 +61,10 @@ class LocalCachingArtistService {
     }
   }
 
+  // ──────────────────────────────────────────────────────────────
   // Cache metadata – tracks download timestamps per image file
+  // ──────────────────────────────────────────────────────────────
+
   File get _metadataFile => File('${cacheDir.path}/$_metadataFileName');
 
   /// Load the timestamp index from disk.
@@ -105,6 +109,7 @@ class LocalCachingArtistService {
   }
 
   /// Delete all cached images whose timestamp is older than [_cacheTtl].
+  /// Runs once on startup to enforce the Spotify ToS retention limit.
   Future<void> _expireStaleImages() async {
     final staleKeys = _cacheTimestamps.entries
         .where((e) => DateTime.now().difference(e.value) >= _cacheTtl)
@@ -123,7 +128,7 @@ class LocalCachingArtistService {
       _imageCache.remove(artistName);
     }
 
-    // Delete any .jpg on disk that has no metadata entry at all.
+    // Also delete any .jpg on disk that has no metadata entry at all.
     try {
       final files = await cacheDir.list().toList();
       for (final entity in files) {

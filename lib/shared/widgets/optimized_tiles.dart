@@ -4,7 +4,8 @@ import '../../core/constants/font_constants.dart';
 import '../services/artwork_cache_service.dart';
 import '../models/artist_utils.dart';
 
-/// Song tile widget
+/// Optimized song tile widget that prevents unnecessary rebuilds
+/// Uses RepaintBoundary and AutomaticKeepAliveClientMixin for performance
 class OptimizedSongTile extends StatefulWidget {
   final SongModel song;
   final VoidCallback? onTap;
@@ -108,7 +109,8 @@ class _OptimizedSongTileState extends State<OptimizedSongTile>
   }
 }
 
-/// Grid tile for albums/artists
+/// Optimized grid tile for albums/artists
+/// Uses const constructors where possible and RepaintBoundary
 class OptimizedGridTile extends StatefulWidget {
   final int id;
   final String title;

@@ -157,9 +157,9 @@ class _PermissionsPageState extends State<PermissionsPage>
         _shouldShowAudioPermission = androidInfo.version.sdkInt >= 33;
       });
       debugPrint(
-          'Android SDK: ${androidInfo.version.sdkInt}, Show storage permission: $_shouldShowStoragePermission, Show audio permission: $_shouldShowAudioPermission');
+          '📱 Android SDK: ${androidInfo.version.sdkInt}, Show storage permission: $_shouldShowStoragePermission, Show audio permission: $_shouldShowAudioPermission');
     } catch (e) {
-      debugPrint('Error checking Android version: $e');
+      debugPrint('⚠️ Error checking Android version: $e');
       // Fallback: show both permissions if we can't determine version
       if (!mounted) return;
       setState(() {

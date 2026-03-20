@@ -1021,6 +1021,12 @@ class AppLocalizationsCs extends AppLocalizations {
   String get settingsMaterialYouDesc => 'Dynamické barvy z tapety';
 
   @override
+  String get settingsNormalization => 'Normalizace hlasitosti';
+
+  @override
+  String get settingsNormalizationDesc => 'Konzistentní úroveň hlasitosti';
+
+  @override
   String get playbackSpeed => 'Rychlost přehrávání';
 
   @override

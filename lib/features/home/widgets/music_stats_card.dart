@@ -63,6 +63,7 @@ class _LibraryStats {
 }
 
 /// A minimalistic glassmorphic card showing music library statistics.
+/// Performance-aware: Respects device performance mode for blur effects.
 class MusicStatsCard extends StatelessWidget {
   const MusicStatsCard({super.key});
 
@@ -77,6 +78,7 @@ class MusicStatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
     // Check if blur should be enabled based on performance mode
     // Use Selector to only rebuild when songs or playlists count changes
     return Selector<AudioPlayerService, _LibraryStats>(

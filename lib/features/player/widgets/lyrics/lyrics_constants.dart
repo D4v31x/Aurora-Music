@@ -1,16 +1,18 @@
 /// Lyrics screen constants.
+///
+/// Contains styling constants for the fullscreen lyrics screen.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 
-// Colors
+// MARK: - Colors
 
 const Color kLyricsDialogBgColor = Colors.white24;
 const double kLyricsDialogBlur = 10.0;
 const double kLyricsBackgroundBlur = 50.0;
 
-// Sizes
+// MARK: - Sizes
 
 const double kLyricsFontSizeSmall = 0.8;
 const double kLyricsFontSizeNormal = 1.0;
@@ -20,19 +22,19 @@ const double kLyricsFontSizeExtraLarge = 1.4;
 const double kLyricsCurrentFontSize = 26.0;
 const double kLyricsOtherFontSize = 20.0;
 
-// Durations
+// MARK: - Durations
 
 const Duration kLyricsFadeDuration = Duration(milliseconds: 400);
 const Duration kLyricsScrollDuration = Duration(milliseconds: 300);
 const Duration kLyricsAnimationDuration = Duration(milliseconds: 500);
 
-// Spacing
+// MARK: - Spacing
 
 const double kLyricsLineSpacing = 20.0;
 const double kLyricsHorizontalPadding = 24.0;
 const double kLyricsVerticalPadding = 100.0;
 
-// Text Styles
+// MARK: - Text Styles
 
 TextStyle lyricsCurrentLineStyle({double sizeFactor = 1.0}) => TextStyle(
       fontSize: kLyricsCurrentFontSize * sizeFactor,
@@ -63,7 +65,7 @@ TextStyle lyricsDialogTextStyle() => TextStyle(
       fontFamily: FontConstants.fontFamily,
     );
 
-// Decorations
+// MARK: - Decorations
 
 BoxDecoration lyricsDialogDecoration() => BoxDecoration(
       color: Colors.grey[900]?.withValues(alpha: 0.95),
@@ -71,11 +73,11 @@ BoxDecoration lyricsDialogDecoration() => BoxDecoration(
       border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
     );
 
-// Settings Keys
+// MARK: - Settings Keys
 
 const String kLyricsFontSizeKey = 'lyrics_font_size';
 const String kLyricsSyncOffsetKey = 'lyrics_sync_offset';
 
-// API URLs
+// MARK: - API URLs
 
 const String kLyricsSearchApiUrl = 'https://lrclib.net/api/search';

@@ -1,4 +1,7 @@
 /// Home screen tab widgets.
+///
+/// This library exports all widgets used in the home screen tabs,
+/// including the main tabs and their sections.
 library;
 
 // Main tabs

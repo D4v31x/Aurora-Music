@@ -10,6 +10,7 @@ import '../providers/theme_provider.dart';
 import '../utils/changelog_content.dart';
 
 /// Changelog dialog with glassmorphic styling.
+/// Performance-aware: Respects device performance mode for blur effects.
 class ChangelogDialog extends StatelessWidget {
   final String currentVersion;
 

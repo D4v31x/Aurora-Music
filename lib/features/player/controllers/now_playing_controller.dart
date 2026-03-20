@@ -1,3 +1,11 @@
+/// Now Playing screen controller.
+///
+/// Manages business logic for the Now Playing screen including:
+/// - Lyrics loading and synchronization
+/// - Artwork management
+/// - Song change handling
+library;
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -6,11 +14,15 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/lyrics_service.dart';
 
-// Now Playing Controller
+// MARK: - Now Playing Controller
 
 /// Controller for managing Now Playing screen state and logic.
+///
+/// Handles lyrics loading, artwork caching, and song change detection.
+/// UI components should use this controller to avoid embedding business
+/// logic directly in widget classes.
 class NowPlayingController {
-  // Private Fields
+  // MARK: - Private Fields
 
   final AudioPlayerService _audioPlayerService;
   final ArtworkCacheService _artworkService;
@@ -21,14 +33,24 @@ class NowPlayingController {
   int? _lastSongId;
   int? _pendingSongLoadId;
 
-  // Public State
+  // MARK: - Public State
+
+  /// Current timed lyrics for the song.
   List<TimedLyric>? timedLyrics;
+
+  /// Current lyric index notifier for UI updates.
   final ValueNotifier<int> currentLyricIndexNotifier = ValueNotifier<int>(0);
+
+  /// Current artwork provider.
   ImageProvider<Object>? currentArtwork;
+
+  /// Callback when artwork changes.
   VoidCallback? onArtworkChanged;
+
+  /// Callback when lyrics change.
   VoidCallback? onLyricsChanged;
 
-  // Constructor
+  // MARK: - Constructor
 
   NowPlayingController({
     required AudioPlayerService audioPlayerService,
@@ -36,7 +58,7 @@ class NowPlayingController {
   })  : _audioPlayerService = audioPlayerService,
         _artworkService = artworkService ?? ArtworkCacheService();
 
-  // Public Methods
+  // MARK: - Public Methods
 
   /// Initializes the controller and starts listening for song changes.
   void initialize() {
@@ -73,7 +95,7 @@ class NowPlayingController {
   /// Whether lyrics are available.
   bool get hasLyrics => timedLyrics != null && timedLyrics!.isNotEmpty;
 
-  // Lyrics Management
+  // MARK: - Lyrics Management
 
   /// Loads and initializes timed lyrics for the current song.
   Future<void> _initializeTimedLyrics() async {
@@ -137,7 +159,7 @@ class NowPlayingController {
     }
   }
 
-  // Artwork Management
+  // MARK: - Artwork Management
 
   /// Updates artwork for a song.
   Future<void> _updateArtwork(SongModel song) async {

@@ -39,4 +39,15 @@ String formatDurationWithHours(Duration? duration) {
   return '${twoDigits(hours)}:${twoDigits(minutes)}:${twoDigits(seconds)}';
 }
 
+/// Format a [Duration] to a compact string (M:SS for < 10 min, MM:SS otherwise).
+String formatDurationCompact(Duration? duration) {
+  if (duration == null) return '-:--';
 
+  final minutes = duration.inMinutes.remainder(60);
+  final seconds = duration.inSeconds.remainder(60);
+
+  if (duration.inHours > 0) {
+    return '${duration.inHours}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+  return '$minutes:${seconds.toString().padLeft(2, '0')}';
+}

@@ -1,4 +1,7 @@
 /// Album section widget for the Now Playing screen.
+///
+/// Displays information about the current song's album with
+/// an album card and navigation to album details.
 library;
 
 import 'package:flutter/material.dart';
@@ -9,14 +12,25 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/widgets/album_card.dart';
 import '../../library/screens/album_detail_screen.dart';
 
-// Constants
+// MARK: - Constants
 
 const _kSectionTitleFontSize = 20.0;
 const _kHorizontalMargin = 20.0;
 const _kBottomPadding = 12.0;
 
-// Album Section Widget
+// MARK: - Album Section Widget
 
+/// A widget that displays the current song's album information.
+///
+/// Shows the "Album" header with an album card that can be tapped
+/// to navigate to the album details screen.
+///
+/// Usage:
+/// ```dart
+/// AlbumSection(
+///   audioPlayerService: audioService,
+/// )
+/// ```
 class AlbumSection extends StatelessWidget {
   /// The audio player service to get current song from.
   final AudioPlayerService audioPlayerService;

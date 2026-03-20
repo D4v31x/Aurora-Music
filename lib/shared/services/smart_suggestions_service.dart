@@ -10,6 +10,10 @@ import '../utils/performance_optimizations.dart';
 /// Smart suggestion service that analyzes user listening patterns
 /// to provide personalized track and artist recommendations
 ///
+/// Performance optimizations:
+/// - Memoized suggestions to avoid recomputation
+/// - Cached score calculations
+/// - Debounced data saving
 class SmartSuggestionsService {
   static final SmartSuggestionsService _instance =
       SmartSuggestionsService._internal();
@@ -44,6 +48,7 @@ class SmartSuggestionsService {
 
   bool _isLoaded = false;
 
+  // Performance optimizations
   final Memoizer<Future<List<SongModel>>> _suggestionsMemoizer =
       Memoizer<Future<List<SongModel>>>();
   final Debouncer _saveDebouncer = Debouncer(delay: const Duration(seconds: 5));
@@ -163,7 +168,7 @@ class SmartSuggestionsService {
         cacheKey, () => _computeSuggestedTracks(count));
   }
 
-  /// Internal method to compute suggestions
+  /// Internal method to compute suggestions (expensive operation)
   Future<List<SongModel>> _computeSuggestedTracks(int count) async {
     final allSongs = await _audioQuery.querySongs();
     if (allSongs.isEmpty) return [];

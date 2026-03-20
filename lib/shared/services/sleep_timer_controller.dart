@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 /// Specialized controller for sleep timer that prevents unnecessary rebuilds
+/// Only widgets specifically interested in timer updates will rebuild
 class SleepTimerController extends ChangeNotifier {
   Timer? _sleepTimer;
   Duration? _remainingTime;

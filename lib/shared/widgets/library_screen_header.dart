@@ -3,17 +3,45 @@ import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 
-
+/// A rich [SliverAppBar] header for library list screens (Tracks, Albums,
+/// Artists, Playlists, Folders).
+///
+/// Matches the visual language of [DetailHeader] — same blurred gradient
+/// background, badge pill, large title and metadata — but without any artwork.
+/// Instead it exposes a [searchField] and an optional [controlsRow] (sort /
+/// filter / view-mode chips) that live beneath the title and smoothly collapse
+/// as the user scrolls.
 class LibraryScreenHeader extends StatelessWidget {
+  /// Short section label shown in the badge pill (e.g. "TRACKS").
   final String badge;
+
+  /// Large title shown in the expanded header (e.g. "Tracks").
   final String title;
+
+  /// Secondary line below the title, typically an item count
+  /// (e.g. "243 songs").
   final String? subtitle;
+
+  /// Primary accent colour used for the gradient orbs.
   final Color accentColor;
+
+  /// The search [TextField] widget to embed below the title.
   final Widget searchField;
+
+  /// Optional row of controls (sort selector, order toggle, view-mode toggle).
+  /// Shown below the search field in the expanded state.
   final Widget? controlsRow;
+
+  /// Optional extra action buttons shown in the collapsed app bar row.
   final List<Widget>? actions;
+
+  /// Whether to show a back button (defaults to false for top-level screens).
   final bool showBackButton;
+
+  /// How tall the header is when fully expanded. Increase if [controlsRow]
+  /// is provided so there is enough room for both rows.
   final double expandedHeight;
+
   const LibraryScreenHeader({
     super.key,
     required this.badge,
@@ -65,15 +93,22 @@ class LibraryScreenHeader extends StatelessWidget {
             return Stack(
               fit: StackFit.expand,
               children: [
+                // ── Solid black base (always present, becomes the collapsed bar) ──
                 Container(color: Colors.black),
+
+                // ── Coloured gradient background — fades out as it collapses ──
                 Opacity(
                   opacity: (1.0 - collapseProgress).clamp(0.0, 1.0),
                   child: _buildBackground(),
                 ),
+
+                // ── Decorative colour orbs — fade out as it collapses ──────
                 Opacity(
                   opacity: (1.0 - collapseProgress).clamp(0.0, 1.0),
                   child: _buildOrbs(),
                 ),
+
+                // ── Gradient overlay (only visible when expanded) ───────────
                 Opacity(
                   opacity: (1.0 - collapseProgress).clamp(0.0, 1.0),
                   child: Container(
@@ -93,7 +128,7 @@ class LibraryScreenHeader extends StatelessWidget {
                   ),
                 ),
 
-                // Expanded content 
+                // ── Expanded content (vertically centred) ─────────────────
                 Opacity(
                   opacity: (1.0 - collapseProgress * 2.0).clamp(0.0, 1.0),
                   child: ClipRect(
@@ -155,7 +190,7 @@ class LibraryScreenHeader extends StatelessWidget {
                   ),
                 ),
 
-                // Collapsed toolbar title
+                // ── Collapsed toolbar title ────────────────────────────────
                 if (collapseProgress > 0.3)
                   Positioned(
                     left: 0,
@@ -205,7 +240,7 @@ class LibraryScreenHeader extends StatelessWidget {
     );
   }
 
-  // Helpers
+  // ─────────────────────────────── Helpers ─────────────────────────────────
 
   Widget _buildBackground() {
     return Container(
@@ -252,6 +287,11 @@ class LibraryScreenHeader extends StatelessWidget {
   }
 
   Widget _orb(Color color, double size) {
+    // PERF: RepaintBoundary caches the blurred circle as a GPU texture.
+    // Without this, the Opacity animation in the parent would cause the
+    // blur to re-execute on every scroll frame.
+    // Sigma reduced from the original 40 to 25: still a convincing soft
+    // glow but 2.56× cheaper (Gaussian kernel area scales as σ²).
     return RepaintBoundary(
       child: ImageFiltered(
         imageFilter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
@@ -291,6 +331,9 @@ class LibraryScreenHeader extends StatelessWidget {
   }
 
   Widget _buildBackButton(BuildContext context) {
+    // PERF: No BackdropFilter – the back button is a leading widget in a
+    // SliverAppBar that has scrolling content behind it, causing expensive
+    // blur recomputation on every scroll frame.
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: GestureDetector(
@@ -335,6 +378,11 @@ class LibrarySearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // PERF: No BackdropFilter – the search field sits in a pinned SliverAppBar
+    // whose background scrolls underneath it on every frame, forcing an
+    // expensive blur recomputation on each tick. A solid semi-transparent
+    // container gives an identical frosted appearance because the app
+    // background is already a blurred artwork image.
     return Container(
       height: 46,
       decoration: BoxDecoration(
@@ -388,6 +436,7 @@ class LibraryControlPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // PERF: No BackdropFilter – same reasoning as LibrarySearchField.
     return GestureDetector(
       onTap: onTap,
       child: Container(

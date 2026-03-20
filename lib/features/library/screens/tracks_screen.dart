@@ -376,7 +376,7 @@ class _TracksScreenState extends State<TracksScreen> {
                 child: AnimationConfiguration.staggeredList(
                   position: index,
                   duration: const Duration(
-                      milliseconds: 200), 
+                      milliseconds: 200), // Reduced for better performance
                   child: SlideAnimation(
                     verticalOffset: 50.0,
                     child: FadeInAnimation(
@@ -498,6 +498,7 @@ class _TracksScreenState extends State<TracksScreen> {
       );
     }
 
+    // Use OptimizedSongTile for better performance
     return glassmorphicContainer(
       child: OptimizedSongTile(
         key: ValueKey(song.id),

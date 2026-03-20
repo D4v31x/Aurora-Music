@@ -92,6 +92,25 @@
             </intent-filter>
         </activity>
 
+        <!-- Aurora Music Home Screen Widget -->
+        <receiver
+            android:name=".AuroraMusicWidgetProvider"
+            android:label="@string/widget_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.aurorasoftware.music.WIDGET_PLAY_PAUSE" />
+                <action android:name="com.aurorasoftware.music.WIDGET_NEXT" />
+                <action android:name="com.aurorasoftware.music.WIDGET_PREVIOUS" />
+                <action android:name="com.aurorasoftware.music.WIDGET_OPEN" />
+                <action android:name="com.aurorasoftware.music.WIDGET_UPDATE" />
+                <action android:name="es.antonborri.home_widget.action.BACKGROUND" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/aurora_music_widget_info" />
+        </receiver>
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

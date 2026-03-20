@@ -1,4 +1,7 @@
 /// Artist section widget for the Now Playing screen.
+///
+/// Displays information about the current song's artist with
+/// an artist card and navigation to artist details.
 library;
 
 import 'package:flutter/material.dart';
@@ -9,15 +12,27 @@ import '../../../shared/services/artist_separator_service.dart';
 import '../../../shared/widgets/artist_card.dart';
 import '../../library/screens/artist_detail_screen.dart';
 
-//Constants
+// MARK: - Constants
 
 const _kSectionTitleFontSize = 20.0;
 const _kHorizontalMargin = 20.0;
 const _kBottomPadding = 12.0;
 
-// Artist Section Widget
+// MARK: - Artist Section Widget
+
+/// A widget that displays the current song's artist information.
+///
+/// Shows the "About Artist" header with an artist card that can be tapped
+/// to navigate to the artist details screen.
+///
+/// Usage:
+/// ```dart
+/// ArtistSection(
+///   audioPlayerService: audioService,
+/// )
+/// ```
 class ArtistSection extends StatelessWidget {
-  /// The audio player service to get current song from
+  /// The audio player service to get current song from.
   final AudioPlayerService audioPlayerService;
 
   const ArtistSection({
@@ -44,6 +59,7 @@ class ArtistSection extends StatelessWidget {
     );
   }
 
+  /// Builds the section title.
   Widget _buildSectionTitle(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: _kBottomPadding),
@@ -60,6 +76,7 @@ class ArtistSection extends StatelessWidget {
     );
   }
 
+  /// Builds the artist card with navigation.
   Widget _buildArtistCard(BuildContext context, String artistName) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: _kHorizontalMargin),
@@ -69,6 +86,8 @@ class ArtistSection extends StatelessWidget {
       ),
     );
   }
+
+  /// Navigates to the artist details screen.
   void _navigateToArtistDetails(BuildContext context, String artistName) {
     Navigator.push(
       context,

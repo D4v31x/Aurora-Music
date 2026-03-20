@@ -13,6 +13,7 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
 /// Fullscreen album artwork player screen
+/// Shows edge-to-edge album art with auto-hiding controls overlay
 class FullscreenArtworkScreen extends StatefulWidget {
   const FullscreenArtworkScreen({super.key});
 
@@ -34,7 +35,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
   late AnimationController _controlsController;
   late Animation<double> _controlsAnimation;
 
-  // Controls visibility 
+  // Controls visibility - controls means the full controls (buttons)
   // Song info and progress bar are always visible
   bool _controlsVisible = true;
   Timer? _hideControlsTimer;
@@ -612,7 +613,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
           ),
         ),
 
-        // Play/Pause button
+        // Play/Pause button - modern icon, no circle
         ValueListenableBuilder<bool>(
           valueListenable: audioService.isPlayingNotifier,
           builder: (context, isPlaying, _) {

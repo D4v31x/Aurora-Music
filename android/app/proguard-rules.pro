@@ -9,6 +9,9 @@
 ## Audio service
 -keep class com.ryanheise.audioservice.** { *; }
 
+## Aurora Music Widget
+-keep class com.aurorasoftware.music.AuroraMusicWidgetProvider { *; }
+
 ## Just Audio
 -keep class com.ryanheise.just_audio.** { *; }
 
@@ -45,3 +48,6 @@
     public static *** v(...);
     public static *** i(...);
 }
+
+## Crashlytics (if you add it in future)
+-keepattributes SourceFile,LineNumberTable

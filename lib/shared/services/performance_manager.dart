@@ -19,10 +19,16 @@ class PerformanceManager {
   Timer? _cleanupTimer;
   final List<Map> _registeredCaches = [];
   final List<VoidCallback> _cleanupCallbacks = [];
+
+  // Frame rate monitoring
   int _frameCount = 0;
   DateTime? _fpsStartTime;
   double _currentFps = 60.0;
+
+  /// Current measured FPS
   double get currentFps => _currentFps;
+
+  /// Whether the app is experiencing performance issues (low FPS)
   bool get isPerformanceIssue => _currentFps < 30.0;
 
   /// Start automatic cache cleanup scheduling
@@ -33,23 +39,28 @@ class PerformanceManager {
     });
   }
 
+  /// Stop automatic cache cleanup
   void stopAutomaticCleanup() {
     _cleanupTimer?.cancel();
     _cleanupTimer = null;
   }
 
+  /// Register a cache for automatic cleanup
   void registerCache(Map cache, {int? maxSize}) {
     _registeredCaches.add(cache);
   }
 
+  /// Register a cleanup callback for custom cleanup logic
   void registerCleanupCallback(VoidCallback callback) {
     _cleanupCallbacks.add(callback);
   }
 
+  /// Unregister a cache from automatic cleanup
   void unregisterCache(Map cache) {
     _registeredCaches.remove(cache);
   }
 
+  /// Perform scheduled cleanup on all registered caches
   void _performScheduledCleanup() {
     for (final cache in _registeredCaches) {
       cleanupCache(cache);
@@ -63,6 +74,7 @@ class PerformanceManager {
     }
   }
 
+  /// Start FPS monitoring
   void startFpsMonitoring() {
     _fpsStartTime = DateTime.now();
     _frameCount = 0;
@@ -81,9 +93,12 @@ class PerformanceManager {
         _fpsStartTime = now;
       }
     }
+
+    // Continue monitoring
     SchedulerBinding.instance.addPostFrameCallback(_onFrame);
   }
 
+  /// Clean up oversized caches by removing oldest entries
   static void cleanupCache<K, V>(Map<K, V> cache, {int? maxSize}) {
     final limit = maxSize ?? maxCacheSize;
     if (cache.length > limit) {
@@ -105,6 +120,12 @@ class PerformanceManager {
   /// Check if a cache is getting too large
   static bool shouldCleanup(Map cache) {
     return cache.length > maxCacheSize * 0.8; // Clean when 80% full
+  }
+
+  /// Force garbage collection hint (does not guarantee GC)
+  static void requestGarbageCollection() {
+    // This is just a hint to the VM, it may or may not trigger GC
+    // The VM decides based on memory pressure
   }
 
   /// Get memory usage information (approximate)

@@ -11,16 +11,24 @@ enum DeviceType {
 
 /// Orientation-aware layout mode
 enum LayoutMode {
+  /// Single column layout (phones, tablets in portrait)
   singleColumn,
+
+  /// Two column layout (tablets in landscape)
   twoColumn,
+
+  /// Wide layout with side panel (large tablets in landscape)
   wideWithPanel,
 }
 
 /// Responsive breakpoints and utilities for adapting UI to different screen sizes
 class ResponsiveUtils {
+  /// Screen width breakpoints
   static const double phoneMaxWidth = 600;
   static const double tabletMaxWidth = 900;
   static const double largeTabletMaxWidth = 1200;
+
+  /// Minimum width to show split view (two columns)
   static const double splitViewMinWidth = 720;
 
   /// Get device type based on screen width
@@ -39,6 +47,8 @@ class ResponsiveUtils {
   static bool isTablet(BuildContext context) {
     return MediaQuery.of(context).size.width >= phoneMaxWidth;
   }
+
+  /// Check if the device is a large tablet
   static bool isLargeTablet(BuildContext context) {
     return MediaQuery.of(context).size.width >= tabletMaxWidth;
   }
@@ -64,6 +74,7 @@ class ResponsiveUtils {
   static int getGridColumns(BuildContext context,
       {int minColumns = 2, int maxColumns = 6}) {
     final width = MediaQuery.of(context).size.width;
+    // Aim for items around 150-200px wide
     final idealColumns = (width / 180).floor();
     return idealColumns.clamp(minColumns, maxColumns);
   }
@@ -237,11 +248,11 @@ class ResponsiveUtils {
 
     switch (deviceType) {
       case DeviceType.phone:
-        return shortestSide * 0.6;
+        return shortestSide * 0.6; // Reduced from 0.7
       case DeviceType.tablet:
-        return math.min(shortestSide * 0.45, 360.0);
+        return math.min(shortestSide * 0.45, 360.0); // Reduced from 0.5/400
       case DeviceType.largeTablet:
-        return math.min(shortestSide * 0.4, 400.0);
+        return math.min(shortestSide * 0.4, 400.0); // Reduced from 0.45/450
     }
   }
 
@@ -281,8 +292,13 @@ class ResponsiveUtils {
 
 /// A widget that builds different layouts based on screen size
 class ResponsiveBuilder extends StatelessWidget {
+  /// Builder for phone layout
   final Widget Function(BuildContext context) phone;
+
+  /// Builder for tablet layout (optional, falls back to phone)
   final Widget Function(BuildContext context)? tablet;
+
+  /// Builder for large tablet layout (optional, falls back to tablet or phone)
   final Widget Function(BuildContext context)? largeTablet;
 
   const ResponsiveBuilder({
@@ -309,8 +325,13 @@ class ResponsiveBuilder extends StatelessWidget {
 
 /// A widget that builds different layouts based on layout mode
 class LayoutModeBuilder extends StatelessWidget {
+  /// Builder for single column layout
   final Widget Function(BuildContext context) singleColumn;
+
+  /// Builder for two column layout (optional, falls back to singleColumn)
   final Widget Function(BuildContext context)? twoColumn;
+
+  /// Builder for wide layout with panel (optional, falls back to twoColumn or singleColumn)
   final Widget Function(BuildContext context)? wideWithPanel;
 
   const LayoutModeBuilder({
@@ -371,16 +392,35 @@ class ResponsiveContainer extends StatelessWidget {
 
 /// Extension methods for BuildContext to easily access responsive utilities
 extension ResponsiveContext on BuildContext {
+  /// Get device type
   DeviceType get deviceType => ResponsiveUtils.getDeviceType(this);
+
+  /// Check if device is tablet or larger
   bool get isTablet => ResponsiveUtils.isTablet(this);
+
+  /// Check if device is large tablet
   bool get isLargeTablet => ResponsiveUtils.isLargeTablet(this);
+
+  /// Get current layout mode
   LayoutMode get layoutMode => ResponsiveUtils.getLayoutMode(this);
+
+  /// Get responsive horizontal padding
   double get horizontalPadding => ResponsiveUtils.getHorizontalPadding(this);
+
+  /// Get number of grid columns
   int get gridColumns => ResponsiveUtils.getGridColumns(this);
+
+  /// Get number of card columns
   int get cardColumns => ResponsiveUtils.getCardColumns(this);
+
+  /// Get responsive spacing
   double responsiveSpacing([double base = 16.0]) =>
       ResponsiveUtils.getSpacing(this, base: base);
+
+  /// Get font scale
   double get fontScale => ResponsiveUtils.getFontScale(this);
+
+  /// Get icon scale
   double get iconScale => ResponsiveUtils.getIconScale(this);
 }
 

@@ -4,18 +4,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 class FeedbackReminderService {
   static const String _lastPromptKey = 'feedback_last_prompt';
   static const String _promptCountKey = 'feedback_prompt_count';
-  static const String _dismissedPermanentlyKey = 'feedback_dismissed_permanently';
+  static const String _dismissedPermanentlyKey =
+      'feedback_dismissed_permanently';
   static const String _appOpenCountKey = 'app_open_count';
+
+  /// Minimum days between feedback prompts
   static const int _minDaysBetweenPrompts = 7;
+
+  /// Minimum app opens before first prompt
   static const int _minOpensBeforeFirstPrompt = 5;
+
+  /// Record an app open and check if we should show feedback prompt
   static Future<bool> shouldShowFeedbackPrompt() async {
     final prefs = await SharedPreferences.getInstance();
+
     // Check if permanently dismissed
     if (prefs.getBool(_dismissedPermanentlyKey) ?? false) {
       return false;
     }
+
+    // Increment app open count
     final int openCount = (prefs.getInt(_appOpenCountKey) ?? 0) + 1;
     await prefs.setInt(_appOpenCountKey, openCount);
+
+    // Don't show before minimum opens
     if (openCount < _minOpensBeforeFirstPrompt) {
       return false;
     }

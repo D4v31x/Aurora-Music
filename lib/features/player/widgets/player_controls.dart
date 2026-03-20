@@ -4,6 +4,9 @@ import 'package:just_audio/just_audio.dart';
 import '../../../shared/services/audio_player_service.dart';
 
 /// Playback controls for the music player.
+///
+/// Displays shuffle, skip previous, play/pause, skip next, and repeat buttons.
+/// Uses ValueListenableBuilder for efficient updates when playback state changes.
 class PlayerControls extends StatelessWidget {
   final AudioPlayerService audioPlayerService;
   final bool isTablet;
@@ -142,7 +145,9 @@ class PlayerControls extends StatelessWidget {
   }
 }
 
-/// Play/pause button widget.
+/// A simple play/pause button widget.
+///
+/// Standalone button that can be used in various contexts.
 class PlayPauseButton extends StatelessWidget {
   final bool isPlaying;
   final VoidCallback onPressed;

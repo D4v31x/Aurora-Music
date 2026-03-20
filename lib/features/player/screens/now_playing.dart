@@ -1,3 +1,9 @@
+/// Now Playing screen.
+///
+/// Displays the currently playing song with artwork, controls, lyrics,
+/// and artist/album information.
+library;
+
 import 'dart:async';
 import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
@@ -24,11 +30,17 @@ import 'fullscreen_lyrics.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 
 
+
+// MARK: - Now Playing Screen
+
 /// The main Now Playing screen widget.
+///
 /// Displays the currently playing song with album artwork, playback controls,
 /// lyrics, and artist/album information. Supports both phone and tablet layouts.
 class NowPlayingScreen extends StatefulWidget {
+  /// Optional callback for when the down arrow is pressed.
   final VoidCallback? onClose;
+
   const NowPlayingScreen({super.key, this.onClose});
 
   @override
@@ -36,7 +48,7 @@ class NowPlayingScreen extends StatefulWidget {
 }
 
 class _NowPlayingScreenState extends State<NowPlayingScreen> {
-  //Private Fields
+  // MARK: - Private Fields
 
   static final _artworkService = ArtworkCacheService();
   ImageProvider<Object>? _currentArtwork;
@@ -49,7 +61,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   int? _pendingSongLoadId;
   StreamSubscription<SongModel?>? _songChangeSubscription;
 
-  //LifeCycle
+  // MARK: - Lifecycle
 
   @override
   void initState() {
@@ -66,7 +78,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     super.dispose();
   }
 
-  // Initialization
+  // MARK: - Initialization
 
   void _initializeScreen() {
     final audioPlayerService =
@@ -113,7 +125,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     }
   }
 
-  // Lyrics Loading
+  // MARK: - Lyrics Loading
 
   Future<void> _initializeTimedLyrics(
       AudioPlayerService audioPlayerService) async {
@@ -167,7 +179,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     }
   }
 
-  // Artwork Loading
+  // MARK: - Artwork Loading
 
   Future<void> _updateArtwork(SongModel song) async {
     try {
@@ -186,24 +198,31 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     }
   }
 
-  // Build Method
+  // MARK: - Build Method
 
   @override
   Widget build(BuildContext context) {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
 
-    return AppBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        appBar: _buildAppBar(audioPlayerService),
-        body: _buildBody(audioPlayerService),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop && widget.onClose != null) {
+          // Pop happened, callback for cleanup
+        }
+      },
+      child: AppBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          extendBodyBehindAppBar: true,
+          appBar: _buildAppBar(audioPlayerService),
+          body: _buildBody(audioPlayerService),
+        ),
       ),
     );
   }
 
-  //App Bar
+  // MARK: - App Bar
 
   AppBar _buildAppBar(AudioPlayerService audioPlayerService) {
     return AppBar(
@@ -278,7 +297,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  // Body Layout
+  // MARK: - Body Layout
 
   Widget _buildBody(AudioPlayerService audioPlayerService) {
     final isTablet = ResponsiveUtils.isTablet(context);
@@ -357,7 +376,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  //Artwork Section
+  // MARK: - Artwork Section
 
   Widget _buildArtworkWithInfo(
     AudioPlayerService audioPlayerService,
@@ -386,7 +405,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       clipBehavior: Clip.none,
       alignment: Alignment.topCenter,
       children: [
-        // Song info container: non-positioned so the Stack measures its full height
+        // Song info container: non-positioned so the Stack measures its full
+        // height, guaranteeing a fixed gap between the card and the progress bar.
         Padding(
           padding: EdgeInsets.only(top: artworkSize - 25),
           child: Container(
@@ -617,7 +637,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  //Lyrics Section
+  // MARK: - Lyrics Section
 
   Widget _buildLyricsSection(
       AudioPlayerService audioPlayerService, bool isTablet) {
@@ -656,7 +676,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  // Artist Options Dialog
+  // MARK: - Artist Options Dialog
 
   void _showArtistOptions(
       BuildContext context, AudioPlayerService audioPlayerService) {
@@ -712,7 +732,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   }
 }
 
-// Artist Selection Sheet
+// MARK: - Artist Selection Sheet
 
 class _ArtistSelectionSheet extends StatelessWidget {
   final List<String> artists;
@@ -764,7 +784,7 @@ class _ArtistSelectionSheet extends StatelessWidget {
                           color: Colors.white.withValues(alpha: 0.15),
                         ),
                       ),
-                      child: const Iconoir.Group(
+                      child: Iconoir.Group(
                         color: Colors.white,
                         width: 20,
                         height: 20,
@@ -812,7 +832,7 @@ class _ArtistSelectionSheet extends StatelessWidget {
                                 color: Colors.white.withValues(alpha: 0.12),
                               ),
                             ),
-                            child: const Iconoir.User(
+                            child: Iconoir.User(
                               color: Colors.white,
                               width: 22,
                               height: 22,
