@@ -1509,13 +1509,6 @@ class _SettingsTabState extends State<SettingsTab> {
           onChanged: (value) => audioPlayerService.setGaplessPlayback(value),
           isFirst: true,
         ),
-        _buildSwitchTile(
-          icon: Iconoir.SoundHigh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
-          title: l10n.settingsNormalization,
-          subtitle: l10n.settingsNormalizationDesc,
-          value: audioPlayerService.volumeNormalization,
-          onChanged: (value) => audioPlayerService.setVolumeNormalization(value),
-        ),
         _buildSliderTile(
           icon: Iconoir.DashboardSpeed(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
           title: l10n.playbackSpeed,

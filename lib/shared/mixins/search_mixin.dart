@@ -3,25 +3,6 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 
 /// A mixin that provides common search functionality with debouncing.
-///
-/// This mixin handles:
-/// - Debounced search queries
-/// - Search state management
-/// - Search text controller
-///
-/// Usage:
-/// ```dart
-/// class _MyScreenState extends State<MyScreen> with SearchMixin {
-///   @override
-///   void onSearchQuery(String query) {
-///     setState(() {
-///       _filteredItems = _allItems.where((item) =>
-///         item.title.toLowerCase().contains(query.toLowerCase())
-///       ).toList();
-///     });
-///   }
-/// }
-/// ```
 mixin SearchMixin<T extends StatefulWidget> on State<T> {
   /// The text controller for the search field.
   late TextEditingController searchController;

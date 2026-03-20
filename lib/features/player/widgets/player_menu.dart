@@ -1,6 +1,4 @@
 /// Popup menu items for the Now Playing screen.
-///
-/// Provides reusable menu item builders and the more options menu.
 library;
 
 import 'package:flutter/material.dart';
@@ -9,17 +7,13 @@ import 'package:provider/provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/sleep_timer_controller.dart';
 
-// MARK: - Constants
 
 const _kIconSpacing = 12.0;
 const _kMenuBorderRadius = 20.0;
 const _kMenuBorderOpacity = 0.15;
 
-// MARK: - Menu Item Row Builder
 
 /// A reusable row for popup menu items.
-///
-/// Used internally to build consistent menu item rows with icon and label.
 class _MenuItemRow extends StatelessWidget {
   final Widget icon;
   final String label;
@@ -44,7 +38,6 @@ class _MenuItemRow extends StatelessWidget {
   }
 }
 
-// MARK: - Sleep Timer Row (Dynamic Icon)
 
 /// Internal widget for the sleep timer row with dynamic icon.
 class _SleepTimerRow extends StatelessWidget {
@@ -71,16 +64,8 @@ class _SleepTimerRow extends StatelessWidget {
   }
 }
 
-// MARK: - Player More Options Menu
 
 /// The complete more options menu for the Now Playing screen.
-///
-/// Usage:
-/// ```dart
-/// PlayerMoreOptionsMenu(
-///   onSelected: (value) => handleMenuSelection(value),
-/// )
-/// ```
 class PlayerMoreOptionsMenu extends StatelessWidget {
   /// Callback when a menu item is selected.
   final void Function(String value) onSelected;

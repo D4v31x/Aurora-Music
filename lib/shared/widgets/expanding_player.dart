@@ -180,8 +180,7 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
   }
 }
 
-/// The beautiful floating mini player widget
-/// Performance-aware: Respects device performance mode for blur effects.
+/// Floating mini player widget
 class _MiniPlayerWidget extends StatelessWidget {
   final SongModel song;
   final VoidCallback onTap;
@@ -405,16 +404,7 @@ class _ArtworkThumbnail extends StatelessWidget {
 class _ProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final audioService =
-        Provider.of<AudioPlayerService>(context, listen: false);
-
-    // KEY PERF FIX: Use Selector so that only the color value is watched from
-    // BackgroundManagerService. When a new color arrives the Selector rebuilds,
-    // producing a new StreamBuilder widget with the updated colour captured in
-    // its builder closure. The StreamBuilder element is reused (same stream,
-    // same position in tree) and simply re-renders with the latest position
-    // snapshot – all without making _ProgressBar.build subscribe to every
-    // notifyListeners() call from BackgroundManagerService.
+    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
     return Selector<BackgroundManagerService, Color>(
       selector: (context, bm) => bm.currentColors.length > 2
           ? bm.currentColors[2]

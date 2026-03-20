@@ -1,8 +1,5 @@
-/// Aurora Music Playlists Feature
-///
-/// This library exports the playlists feature components:
-/// - Playlists screens
-/// - Playlist detail screen
+/// Playlists Feature
+
 library;
 
 export 'screens/playlists_screen.dart';

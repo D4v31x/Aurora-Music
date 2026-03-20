@@ -1,7 +1,6 @@
 part of '../audio_player_service.dart';
 
 extension AudioPlaybackControllerExtension on AudioPlayerService {
-  // Playback Control
   Future<void> setPlaylist(
     List<SongModel> songs,
     int startIndex, {
@@ -100,25 +99,16 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
           // Update current media item in notification (after index sync)
           audioHandler.updateNotificationMediaItem(startMediaItem);
 
-          // Batch all state updates
           _isPlaying = true;
           isPlayingNotifier.value = true;
           _incrementPlayCount(_playlist[_currentIndex]);
           _currentSongController.add(_playlist[_currentIndex]);
           currentSongNotifier.value = _playlist[_currentIndex];
-
-          // Fire and forget UI updates
           unawaited(updateCurrentArtwork());
           unawaited(_updateBackgroundColors());
-
-          // Load remaining artwork in background (non-blocking)
           unawaited(_loadRemainingArtworkInBackground(_playlist));
-
-          // Release guard AFTER all state is consistent — this prevents
-          // stale currentIndexStream events from overriding _currentIndex
+          // Release guard AFTER all state is consistent — prevents stale currentIndexStream events
           _isSettingPlaylist = false;
-
-          // Single debounced notification
           _scheduleNotify();
           unawaited(saveQueueState());
         } catch (e) {
@@ -269,18 +259,13 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
           await _audioPlayer.play();
         }
 
-        // Batch all state updates after playback starts
         _isPlaying = true;
         isPlayingNotifier.value = true;
         _incrementPlayCount(song);
         _currentSongController.add(song);
         currentSongNotifier.value = song;
-
-        // Fire and forget - don't await these UI updates
         unawaited(updateCurrentArtwork());
         unawaited(_updateBackgroundColors());
-
-        // Single notification at the end
         _scheduleNotify();
       } else {
         debugPrint('Invalid index or empty playlist');
@@ -301,7 +286,6 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
     await _audioPlayer.pause();
     _isPlaying = false;
     isPlayingNotifier.value = false;
-    // No need for notifyListeners - ValueNotifier handles UI updates
   }
 
   Future<void> resume() async {
@@ -309,30 +293,19 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
     await _audioPlayer.play();
     _isPlaying = true;
     isPlayingNotifier.value = true;
-    // No need for notifyListeners - ValueNotifier handles UI updates
   }
 
   Future<void> stop() async {
     await _audioPlayer.stop();
     _isPlaying = false;
     isPlayingNotifier.value = false;
-    // No need for notifyListeners - ValueNotifier handles UI updates
   }
 
-  /// Sync the internal playing state with the actual audio player state.
-  /// Call this when the app comes back to foreground to ensure UI reflects
-  /// any changes made via lock screen or notification controls.
-  /// Always forces a UI refresh since stream events may have been missed
-  /// while the Flutter engine was paused in the background.
+  /// Syncs internal playing state with actual player state. Call on foreground resume.
   void syncPlaybackState() {
     final actuallyPlaying = _audioPlayer.playing;
     _isPlaying = actuallyPlaying;
-    // Unconditionally assign the value. If it differs, ValueNotifier fires
-    // normally. If it is the same, we still call _scheduleNotify() below to
-    // refresh any Provider-based consumers that may be stale.
     isPlayingNotifier.value = actuallyPlaying;
-    // Force Provider listeners (e.g. Selector, Consumer) to re-evaluate even
-    // when ValueNotifier did not fire (value unchanged).
     _scheduleNotify();
   }
 
@@ -378,26 +351,19 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
 
     // If more than 3 seconds have elapsed, restart the current track.
     if (currentPosition > const Duration(seconds: kPreviousThresholdSeconds)) {
-      debugPrint(
-          '⏮️ [BACK] Past 3s — restarting current song (position: ${currentPosition.inSeconds}s)');
-      await _audioPlayer.seek(Duration.zero);
       return;
     }
 
     // Within 3 seconds: move to the previous track.
     if (_audioPlayer.hasPrevious) {
-      debugPrint('⏮️ [BACK] Within 3s and has previous — seeking to previous');
       await _audioPlayer.seekToPrevious();
     } else {
       // At the very first track in the queue.
       if (_loopMode == LoopMode.all && _playlist.isNotEmpty) {
-        // Repeat ALL: jump to the last track.
-        debugPrint('⏮️ [BACK] At first track, repeat ALL — jumping to last');
+        // Repeat all: jump to the last track.
         await _audioPlayer.seek(Duration.zero, index: _playlist.length - 1);
       } else {
-        // Repeat OFF / ONE at first track: restart.
-        debugPrint(
-            '⏮️ [BACK] At first track (position: ${currentPosition.inSeconds}s) — restarting');
+        // Repeat off or once at first track: restart.
         await _audioPlayer.seek(Duration.zero);
       }
     }

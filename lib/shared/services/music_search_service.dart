@@ -143,8 +143,7 @@ class MusicSearchService {
   }
 
   /// Search artists (using ArtistModel from on_audio_query)
-  /// Note: For separated artist search, use searchSeparatedArtists instead
-  static List<ArtistModel> searchArtists(
+   static List<ArtistModel> searchArtists(
     List<ArtistModel> artists,
     String query, {
     int limit = 30,
@@ -186,8 +185,6 @@ class MusicSearchService {
 
       if (aStartsWith && !bStartsWith) return -1;
       if (!aStartsWith && bStartsWith) return 1;
-
-      // If same relevance, sort by track count (more tracks first)
       return b.numberOfTracks.compareTo(a.numberOfTracks);
     });
 

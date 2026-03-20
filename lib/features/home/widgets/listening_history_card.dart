@@ -11,7 +11,6 @@ import '../../../l10n/generated/app_localizations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 /// Glassmorphic card showing current/last played song
-/// Performance: Removed BackdropFilter - blur is expensive for always-visible elements
 class ListeningHistoryCard extends StatelessWidget {
   static final ArtworkCacheService _artworkService = ArtworkCacheService();
 
@@ -204,11 +203,6 @@ class ListeningHistoryCard extends StatelessWidget {
               ),
             ),
             // Progress bar at bottom.
-            // KEY PERF FIX: BackgroundManagerService color and positionStream
-            // are subscribed independently so that neither causes the other to
-            // rebuild. Selector rebuilds on color change; StreamBuilder rebuilds
-            // on position change. Provider.of with listen:true is NOT called
-            // inside the StreamBuilder builder (which ran on every tick).
             Positioned(
               left: 0,
               right: 0,

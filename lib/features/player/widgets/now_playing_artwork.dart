@@ -1,13 +1,11 @@
 /// Album artwork widget for the Now Playing screen.
-///
-/// Displays the album art with hero animations, shadows, and optional
-/// tap-to-expand functionality.
+
 library;
 
 import 'package:flutter/material.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 
-// MARK: - Constants
+// Constants
 
 const _kDefaultBorderRadius = 16.0;
 const _kPhoneBorderRadius = 27.0;
@@ -16,49 +14,15 @@ const _kShadowOffset = 8.0;
 const _kShadowOpacity = 0.2;
 const _kFallbackArtworkPath = 'assets/images/UI/defaultAlbumArt.png';
 
-// MARK: - Now Playing Artwork Widget
-
-/// A widget that displays the album artwork for the current song.
-///
-/// Features:
-/// - Cached artwork loading for performance
-/// - Hero animations for smooth screen transitions
-/// - Configurable size and border radius
-/// - Shadow effects
-/// - Optional tap handler
-///
-/// Usage:
-/// ```dart
-/// NowPlayingArtwork(
-///   songId: currentSong.id,
-///   size: 280,
-///   onTap: () => openFullscreenArtwork(),
-/// )
-/// ```
+// Now Playing Artwork Widget
 class NowPlayingArtwork extends StatelessWidget {
-  /// The song ID to load artwork for.
   final int? songId;
-
-  /// The size of the artwork (width and height).
   final double size;
-
-  /// The border radius of the artwork.
   final double borderRadius;
-
-  /// Optional callback when the artwork is tapped.
   final VoidCallback? onTap;
-
-  /// The cached artwork image provider.
   final ImageProvider<Object>? artworkProvider;
-
-  /// Whether to show shadow effect.
   final bool showShadow;
-
-  /// Hero tag for animations.
   final String heroTag;
-
-  /// Optional artwork cache service for dependency injection.
-  /// If not provided, a new instance will be created.
   final ArtworkCacheService? artworkService;
 
   const NowPlayingArtwork({
@@ -151,7 +115,6 @@ class NowPlayingArtwork extends StatelessWidget {
   /// Loads artwork from cache.
   Future<ImageProvider?> _loadArtwork() async {
     if (songId == null) return null;
-    // Use injected service or create a new one
     final service = artworkService ?? ArtworkCacheService();
     final bytes = await service.getArtwork(songId!);
     if (bytes != null && bytes.isNotEmpty) {

@@ -18,8 +18,8 @@ class RecentlyPlayedSection extends StatefulWidget {
 
 class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
   static final ArtworkCacheService _artworkService = ArtworkCacheService();
-  List<SongModel>? _displaySongs; // Songs to display (limited)
-  List<SongModel>? _fullPlaylist; // Full playlist for playback
+  List<SongModel>? _displaySongs;
+  List<SongModel>? _fullPlaylist;
   bool _isLoading = true;
   AudioPlayerService? _audioPlayerService;
   int? _lastSongId;
@@ -44,7 +44,6 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
   void _onServiceChanged() {
     if (!mounted) return;
     final currentId = _audioPlayerService?.currentSong?.id;
-    // Only reload when the playing song actually changes, not on play/pause/seek.
     if (currentId != _lastSongId) {
       _lastSongId = currentId;
       if (!_isLoading) _loadData();
@@ -58,9 +57,7 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
   }
 
   Future<void> _loadData() async {
-    final audioPlayerService =
-        Provider.of<AudioPlayerService>(context, listen: false);
-    // Load display songs (limited to 3 for UI)
+    final audioPlayerService = Provider.of<AudioPlayerService>(context, listen: false);
     final displaySongs = await audioPlayerService.getRecentlyPlayed();
     // Load full playlist for playback
     final fullPlaylist = await audioPlayerService.getAllRecentlyPlayed();
@@ -108,7 +105,6 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: displaySongs.length,
-        // Performance: Pre-cache items beyond visible area for smoother scrolling
         cacheExtent: AppConfig.horizontalListCacheExtent,
         itemBuilder: (context, index) {
           final song = displaySongs[index];

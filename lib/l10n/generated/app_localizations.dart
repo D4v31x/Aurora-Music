@@ -2030,18 +2030,6 @@ abstract class AppLocalizations {
   /// **'Dynamic colors from wallpaper'**
   String get settingsMaterialYouDesc;
 
-  /// No description provided for @settingsNormalization.
-  ///
-  /// In en, this message translates to:
-  /// **'Volume Normalization'**
-  String get settingsNormalization;
-
-  /// No description provided for @settingsNormalizationDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Consistent volume levels · Requires ReplayGain tags in your files'**
-  String get settingsNormalizationDesc;
-
   /// No description provided for @playbackSpeed.
   ///
   /// In en, this message translates to:

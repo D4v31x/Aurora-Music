@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../shared/models/models.dart';
-import '../widgets/lyrics/lyrics_widgets.dart';
+import '../widgets/lyrics/lyrics_constants.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/lyrics_service.dart';
@@ -550,7 +550,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         searchUrl,
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'AuroraMusic v0.0.85'
+          'User-Agent': 'AuroraMusic'
         },
       );
 
@@ -1055,14 +1055,15 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     );
   }
 
-  Widget _buildTranslationDisclaimerHeader() {    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+  Widget _buildTranslationDisclaimerHeader() {    
+    return const Padding(
+      padding: EdgeInsets.only(bottom: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.auto_awesome_rounded,
+          Icon(Icons.auto_awesome_rounded,
               size: 12, color: Colors.white30),
-          const SizedBox(width: 5),
+          SizedBox(width: 5),
           Text(
             'AI translated \u00b7 accuracy may vary',
             textAlign: TextAlign.center,

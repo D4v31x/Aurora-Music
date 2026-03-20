@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../providers/performance_mode_provider.dart';
 
 /// Glassmorphic container using semi-transparent color + border + shadow.
-/// No BackdropFilter — only the root background layer carries a blur.
 class GlassmorphicContainer extends StatelessWidget {
   final Widget child;
   final double? width;
@@ -64,18 +63,11 @@ class GlassmorphicContainer extends StatelessWidget {
   }
 }
 
-/// Lightweight wrapper — blur removed; returns child unchanged.
-/// Kept for backward compatibility.
+/// Lightweight wrapper
 class PerformanceBlur extends StatelessWidget {
   final Widget child;
-
-  /// Retained for API compatibility; no longer has any effect.
   final double blur;
-
-  /// Retained for API compatibility; no longer has any effect.
   final bool forceBlur;
-
-  /// Retained for API compatibility; no longer has any effect.
   final BorderRadius? borderRadius;
 
   const PerformanceBlur({
@@ -90,8 +82,6 @@ class PerformanceBlur extends StatelessWidget {
   Widget build(BuildContext context) => child;
 }
 
-/// Returns [child] unchanged — blur removed.
-/// Kept for backward compatibility.
 Widget buildPerformanceAwareBlur({
   required BuildContext context,
   required Widget child,
@@ -101,11 +91,7 @@ Widget buildPerformanceAwareBlur({
 }) =>
     child;
 
-/// Always returns false — blur is no longer applied at the widget level.
-/// Kept for backward compatibility.
-bool shouldEnableBlur(BuildContext context, {bool listen = false}) => false;
 
-// Keep the function for backward compatibility but mark as deprecated
 @Deprecated('Use GlassmorphicContainer class instead')
 Widget glassmorphicContainer({
   required Widget child,

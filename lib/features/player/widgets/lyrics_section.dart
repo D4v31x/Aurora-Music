@@ -1,7 +1,4 @@
 /// Lyrics section widget for the Now Playing screen.
-///
-/// Displays synchronized lyrics with animated highlighting for the current line,
-/// and an optional translation powered by the MyMemory API.
 library;
 
 import 'dart:math';
@@ -16,7 +13,7 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/services/lyrics_translation_service.dart';
 
-// MARK: - Constants
+// Constants
 
 const _kLyricsSectionHeight = 250.0;
 const _kLyricsContainerOpacity = 0.1;
@@ -36,29 +33,14 @@ const _kMinLyricOpacity = 0.3;
 const _kOpacityDecayPerLine = 0.25;
 const _kScaleDecayPerLine = 0.05;
 
-// MARK: - Translation state
+// Translation state
 
 enum _TranslationState { idle, loading, done, error }
 
-// MARK: - Lyrics Section Widget
-
-/// A widget that displays synchronized lyrics for the current song.
-///
-/// Features:
-/// - Animated highlighting of current lyric
-/// - Opacity and scale transitions for surrounding lyrics
-/// - Tap to expand to fullscreen lyrics view
-/// - Translate button: fetches translation via MyMemory, shows translated line
-///   as main text with the original in smaller italic beneath — all animated
-/// - Placeholder when no lyrics are available
+// Lyrics Section Widget
 class LyricsSection extends StatefulWidget {
-  /// The list of timed lyrics for the song.
   final List<TimedLyric>? timedLyrics;
-
-  /// The current lyric index (from ValueNotifier).
   final int currentLyricIndex;
-
-  /// The audio player service.
   final AudioPlayerService audioPlayerService;
 
   const LyricsSection({
@@ -73,14 +55,12 @@ class LyricsSection extends StatefulWidget {
 }
 
 class _LyricsSectionState extends State<LyricsSection>
-    with SingleTickerProviderStateMixin {
-  _TranslationState _translationState = _TranslationState.idle;
-  List<String?> _translatedLines = [];
-  bool _showTranslated = false;
-
-  /// Controls the pulsing opacity of the translate button while fetching.
-  late final AnimationController _pulseController;
-  late final Animation<double> _pulseAnim;
+  with SingleTickerProviderStateMixin {
+    _TranslationState _translationState = _TranslationState.idle;
+    List<String?> _translatedLines = [];
+    bool _showTranslated = false;
+    late final AnimationController _pulseController;
+    late final Animation<double> _pulseAnim;
 
   @override
   void initState() {
@@ -124,14 +104,10 @@ class _LyricsSectionState extends State<LyricsSection>
   Future<void> _handleTranslateButton() async {
     final lyrics = widget.timedLyrics;
     if (lyrics == null || lyrics.isEmpty) return;
-
-    // Already translated — just toggle visibility.
     if (_translationState == _TranslationState.done) {
       setState(() => _showTranslated = !_showTranslated);
       return;
     }
-
-    // Ignore taps while a request is in flight.
     if (_translationState == _TranslationState.loading) return;
 
     setState(() => _translationState = _TranslationState.loading);
@@ -172,7 +148,7 @@ class _LyricsSectionState extends State<LyricsSection>
     }
   }
 
-  // MARK: - Build
+  // Build
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +201,7 @@ class _LyricsSectionState extends State<LyricsSection>
   }
 
   Widget _buildLyricsContent(BuildContext context, double screenWidth) {
-    // Dim the whole lyrics area while fetching — clear visual loading feedback.
+    // Dim the whole lyrics area while fetching
     return AnimatedOpacity(
       opacity: _translationState == _TranslationState.loading ? 0.45 : 1.0,
       duration: const Duration(milliseconds: 300),
@@ -299,16 +275,16 @@ class _LyricsSectionState extends State<LyricsSection>
     if (_showTranslated) {
       lines.insert(
         0,
-        Padding(
-          key: const ValueKey('ai-disclaimer'),
-          padding: const EdgeInsets.only(bottom: 6),
+        const Padding(
+          key: ValueKey('ai-disclaimer'),
+          padding: EdgeInsets.only(bottom: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.auto_awesome_rounded,
+              Icon(Icons.auto_awesome_rounded,
                   size: 10, color: Colors.white38),
-              const SizedBox(width: 4),
+                  SizedBox(width: 4),
               Text(
                 'AI translated \u00b7 accuracy may vary',
                 style: TextStyle(
@@ -352,7 +328,7 @@ class _LyricsSectionState extends State<LyricsSection>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ── Main text: translated if available, otherwise original ────
+              // Main text: translated if available, otherwise original
               AnimatedDefaultTextStyle(
                 duration: _kLyricAnimationDuration,
                 curve: Curves.easeOutCubic,
@@ -377,7 +353,7 @@ class _LyricsSectionState extends State<LyricsSection>
                 ),
               ),
 
-              // ── Original subtitle — animated in/out under the translation ─
+              // Original subtitle — animated in/out under the translation
               AnimatedSize(
                 duration: const Duration(milliseconds: 350),
                 curve: Curves.easeInOut,
@@ -449,7 +425,7 @@ class _LyricsSectionState extends State<LyricsSection>
     );
   }
 
-  // MARK: - Overlay buttons
+  // Overlay buttons
 
   Widget _buildExpandButton(BuildContext context) {
     final isLowEnd =

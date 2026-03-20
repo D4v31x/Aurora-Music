@@ -2,13 +2,9 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'audio_constants.dart';
 
-/// Custom audio handler that provides background playback with customized notification
-/// Shows only: previous, play/pause, next (NO stop button)
+/// Custom audio handler that provides background playback
 class AuroraAudioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer player;
-
-  /// Guard to prevent intermediate currentIndexStream events from
-  /// overriding the correct mediaItem during setAudioSource calls.
   bool _suppressIndexUpdates = false;
 
   AuroraAudioHandler(this.player) {

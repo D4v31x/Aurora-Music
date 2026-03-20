@@ -26,31 +26,19 @@ class LRUCache<K, V> {
     if (_cache.containsKey(key)) {
       _cache.remove(key);
     } else if (_cache.length >= maxSize) {
-      _cache.remove(_cache.keys.first); // Remove oldest
+      _cache.remove(_cache.keys.first);
     }
     _cache[key] = value;
   }
-
-  /// Removes a value from the cache
   V? remove(K key) {
     return _cache.remove(key);
   }
-
-  /// Clears all cached values
   void clear() {
     _cache.clear();
   }
-
-  /// Gets the current cache size
   int get length => _cache.length;
-
-  /// Checks if the cache contains a key
   bool containsKey(K key) => _cache.containsKey(key);
-
-  /// Gets all keys in the cache
   Iterable<K> get keys => _cache.keys;
-
-  /// Gets all values in the cache
   Iterable<V> get values => _cache.values;
 }
 
@@ -197,17 +185,6 @@ class CacheManager {
     };
   }
 
-  Map<String, double> getCacheHitRates() {
-    // This would require implementing hit/miss tracking
-    // For now, returning placeholder values
-    return {
-      'artwork': 0.0,
-      'lyrics': 0.0,
-      'metadata': 0.0,
-      'query': 0.0,
-    };
-  }
-
   /// Memory pressure handling
   void handleMemoryPressure() {
     LoggingService.warning(
@@ -270,26 +247,16 @@ class CacheManager {
     if (sizes.values.any((size) => size > AppConfig.maxCacheSize * 0.8)) {
       LoggingService.info(
           'Cache approaching limits, performing cleanup', 'CacheManager');
-      // Could implement more sophisticated cleanup logic here
     }
   }
 
-  /// Gets memory usage estimate (rough calculation)
+  /// Gets memory usage estimate
   int getEstimatedMemoryUsage() {
     int total = 0;
-
-    // Estimate artwork cache memory (assuming average 50KB per image)
     total += _artworkCache.length * 50 * 1024;
-
-    // Estimate lyrics cache memory (assuming average 5KB per lyrics)
     total += _lyricsCache.length * 5 * 1024;
-
-    // Estimate metadata cache memory (assuming average 1KB per metadata)
     total += _metadataCache.length * 1024;
-
-    // Estimate query cache memory (assuming average 10KB per query)
     total += _queryCache.length * 10 * 1024;
-
     return total;
   }
 }

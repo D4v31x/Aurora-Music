@@ -70,7 +70,6 @@ class _WelcomePageState extends State<WelcomePage>
       vsync: this,
     );
 
-    // Staggered fade animations for smoother appearance
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -82,7 +81,7 @@ class _WelcomePageState extends State<WelcomePage>
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.15), // Reduced distance for subtlety
+      begin: const Offset(0, 0.15),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
@@ -224,7 +223,7 @@ class _WelcomePageState extends State<WelcomePage>
       ),
     );
 
-    // Fade out and slide up for outgoing SUBTITLE text - starts slightly after title
+    // Fade out and slide up for outgoing SUBTITLE text
     _subtitleFadeOutAnimation = Tween<double>(
       begin: 1.0,
       end: 0.0,
@@ -245,7 +244,7 @@ class _WelcomePageState extends State<WelcomePage>
       ),
     );
 
-    // Fade in and slide up for incoming SUBTITLE text - starts slightly after title
+    // Fade in and slide up for incoming SUBTITLE text
     _subtitleFadeInAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -309,8 +308,6 @@ class _WelcomePageState extends State<WelcomePage>
   }
 
   Color _getRainbowColor(double value) {
-    // Create a subtle rainbow effect that shifts through colors
-    // Using HSL to create smooth transitions
     final hue = (value * 360) % 360;
     return HSLColor.fromAHSL(1.0, hue, 0.6, 0.7).toColor();
   }
@@ -438,7 +435,6 @@ class _WelcomePageState extends State<WelcomePage>
                         // Spacing
                         SizedBox(height: 12 * _fadeAnimation2.value),
 
-                        // Second text - "Let's set up your experience" - also cycles
                         SlideTransition(
                           position: _exitController.isAnimating ||
                                   _exitController.isCompleted
@@ -456,7 +452,6 @@ class _WelcomePageState extends State<WelcomePage>
                                 child: Stack(
                                   alignment: Alignment.center,
                                   children: [
-                                    // Current subtitle (fades out and slides up - slightly after title)
                                     Transform.translate(
                                       offset: Offset(
                                           0, _subtitleSlideOutAnimation.value),
@@ -478,7 +473,6 @@ class _WelcomePageState extends State<WelcomePage>
                                         ),
                                       ),
                                     ),
-                                    // Next subtitle (fades in and slides up from below - slightly after title)
                                     if (_textCycleController.value > 0.0)
                                       Transform.translate(
                                         offset: Offset(

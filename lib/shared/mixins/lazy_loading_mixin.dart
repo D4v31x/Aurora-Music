@@ -2,27 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 /// A mixin that provides common lazy loading functionality for song lists.
-///
-/// This mixin handles:
-/// - Pagination with configurable page size
-/// - Scroll-based loading
-/// - Loading state management
-///
-/// Usage:
-/// ```dart
-/// class _MyScreenState extends State<MyScreen> with LazyLoadingMixin {
-///   @override
-///   int get songsPerPage => 20;
-///
-///   @override
-///   List<SongModel> get allSongs => _allSongs;
-///
-///   @override
-///   void onSongsLoaded(List<SongModel> newSongs) {
-///     setState(() => _displayedSongs.addAll(newSongs));
-///   }
-/// }
-/// ```
 mixin LazyLoadingMixin<T extends StatefulWidget> on State<T> {
   /// The scroll controller for detecting when to load more items
   late ScrollController lazyLoadingScrollController;

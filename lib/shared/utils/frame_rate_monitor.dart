@@ -16,22 +16,13 @@ class FrameRateMonitor {
   int _frameCount = 0;
   double _currentFps = 0.0;
   bool _isMonitoring = false;
-
-  /// Current estimated FPS
   double get currentFps => _currentFps;
-
-  /// Whether monitoring is active
   bool get isMonitoring => _isMonitoring;
-
-  /// Start monitoring frame rate
   void startMonitoring() {
     if (_isMonitoring) return;
-
     _isMonitoring = true;
     _frameCount = 0;
     _frameTimes.clear();
-
-    // Start the monitoring using a timer-based approach
     _monitoringTimer =
         Timer.periodic(const Duration(milliseconds: 16), (timer) {
       if (_isMonitoring) {
@@ -55,8 +46,6 @@ class FrameRateMonitor {
     final now = Duration(microseconds: DateTime.now().microsecondsSinceEpoch);
     _frameCount++;
     _frameTimes.add(now);
-
-    // Keep only the last 60 frame times (approximately 1 second at 60fps)
     if (_frameTimes.length > 60) {
       _frameTimes.removeAt(0);
     }
@@ -101,11 +90,7 @@ class FrameRateMonitor {
       return PerformanceAssessment.poor;
     }
   }
-
-  /// Check if performance is acceptable (>= 30 FPS)
   bool get isPerformanceAcceptable => _currentFps >= 30;
-
-  /// Check if performance is smooth (>= 55 FPS)
   bool get isPerformanceSmooth => _currentFps >= 55;
 }
 

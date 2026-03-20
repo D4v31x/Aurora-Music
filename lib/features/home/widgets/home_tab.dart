@@ -218,7 +218,7 @@ class _HomeTabState extends State<HomeTab> {
   }
 }
 
-/// Optimized section title widget that prevents unnecessary rebuilds
+/// Section title widget
 class _SectionTitle extends StatelessWidget {
   final String title;
   final bool isTablet;

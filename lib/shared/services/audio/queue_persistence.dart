@@ -1,7 +1,6 @@
 part of '../audio_player_service.dart';
 
 extension AudioQueuePersistenceExtension on AudioPlayerService {
-  // MARK: - Queue State Persistence
 
   /// Persists the current queue (songs, index, position, shuffle/repeat state)
   /// to disk so it can be restored on the next app launch.

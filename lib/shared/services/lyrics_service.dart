@@ -87,10 +87,7 @@ class TimedLyricsService {
         _log('✗ No cached lyrics found');
       }
 
-      // Extract the first (primary) artist and clean the title for better
-      // API matching. Songs with multi-artist tags like "Artist1, Artist2" or
-      // "Artist1 feat. Artist2" confuse lrclib; sending only the primary artist
-      // yields far more reliable results.
+      // Extract the first (primary) artist and clean the title for better API matching.
       final searchArtist = _extractFirstArtist(artist);
       final searchTitle = _cleanTitleForSearch(title);
 
@@ -217,7 +214,6 @@ class TimedLyricsService {
           }).toList();
 
           // Tier 2 – relaxed: title ≥ 0.80 AND any individual artist from the
-          // tag (e.g. "Koven" out of "Koven and Aeon Mode") scores ≥ 0.75
           final filteredResults = strictResults.isNotEmpty
               ? strictResults
               : syncedResults.where((r) {
@@ -364,8 +360,6 @@ class TimedLyricsService {
   }
 
   /// Extracts the primary (first) artist from a potentially multi-artist tag.
-  /// Splits on common separators: `,` `;` `&` ` and ` ` feat.` ` feat ` ` ft.` ` ft `
-  /// ` x ` (case-insensitive) and returns the first non-empty segment.
   String _extractFirstArtist(String artist) {
     final cleaned = artist
         .splitMapJoin(
@@ -383,7 +377,6 @@ class TimedLyricsService {
   }
 
   /// Extracts ALL individual artists from a potentially multi-artist tag.
-  /// Used for relaxed matching: if ANY split artist matches a result, accept it.
   List<String> _extractAllArtists(String artist) {
     final parts = artist
         .splitMapJoin(
@@ -401,10 +394,6 @@ class TimedLyricsService {
   }
 
   /// Strips common decorative suffixes from a track title so the API can
-  /// match it more reliably.
-  /// Removes:
-  ///  - Parenthetical/bracketed suffixes: `(feat. ...)`, `[Remastered]`, etc.
-  ///  - Trailing `feat. Artist` / `ft. Artist` without brackets
   String _cleanTitleForSearch(String title) {
     var s = title.trim();
     // Remove (feat. ...) / [feat. ...] and similar bracketed extras

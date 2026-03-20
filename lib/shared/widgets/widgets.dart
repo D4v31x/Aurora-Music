@@ -1,17 +1,7 @@
-/// Aurora Music Widgets
-///
-/// This library exports all reusable UI components in the application,
-/// organized by category:
-/// - Core: Common UI components used throughout the app
-/// - Player: Player-specific reusable widgets (in features/player/widgets)
-/// - Common: Shared utility widgets
-/// - Home: Widgets specific to home screen tabs
-/// - Dialogs: Dialog and sheet components
-/// - Backgrounds: Background and visual effect widgets
+/// Widgets
 library;
 
 // Core widgets
-export 'common_screen_scaffold.dart';
 export 'glassmorphic_container.dart';
 export 'glassmorphic_card.dart';
 export 'pill_button.dart';
@@ -21,7 +11,6 @@ export 'outline_indicator.dart';
 export 'auto_scroll_text.dart';
 export 'artist_card.dart';
 export 'music_metadata_widget.dart';
-export 'responsive_scaffold.dart';
 export 'expanding_player.dart';
 export 'toast_notification.dart';
 export 'song_picker_sheet.dart';
@@ -32,7 +21,6 @@ export 'common/common.dart';
 
 // Dialogs and sheets
 export 'about_dialog.dart';
-export 'blur_dialog.dart';
 export 'changelog_dialog.dart';
 export 'glassmorphic_dialog.dart';
 export 'feedback_reminder_dialog.dart';
@@ -46,4 +34,3 @@ export 'animated_progress_line.dart';
 
 // Debug and performance
 export 'performance_debug_overlay.dart';
-export 'optimized_widgets.dart';

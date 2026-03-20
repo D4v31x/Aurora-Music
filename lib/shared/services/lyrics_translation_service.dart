@@ -2,49 +2,12 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-/// Translates song lyrics via the MyMemory free translation API.
-///
-/// MyMemory anonymous tier: 5 000 chars/day.
-/// With the `de` (email) parameter: 50 000 chars/day — no account required.
-///
-/// API format:
-///   GET https://api.mymemory.translated.net/get
-///     ?q=TEXT
-///     &langpair=autodetect|TARGET  ← autodetect source language
-///     &de=EMAIL              ← increases daily quota
-///
-/// Context-aware batching: each request includes surrounding lines from the
-/// rest of the song (within the char budget) so the API can resolve ambiguous
-/// words, metaphors, and pronouns in the right thematic context. Only the
-/// translated lines for the core batch are retained from the response.
-///
-/// Caching: in-memory map keyed by "$cacheKey|$targetLang".
-/// The cache is capped at 30 entries (LRU-free, just clears when full).
 class LyricsTranslationService {
   static const String _baseUrl =
       'https://api.mymemory.translated.net/get';
-
-  // MyMemory enforces a ~500 character limit per request.
   static const int _maxCharsPerRequest = 450;
-
-  // Maximum number of surrounding lines to include as context per batch.
   static const int _contextWindowSize = 5;
-
-  // In-memory cache: key = "$cacheKey|$targetLang"
   static final Map<String, List<String?>> _cache = {};
-
-  /// Translate [texts] into [targetLang] (BCP-47 code, e.g. "fr", "de", "ja").
-  ///
-  /// Texts are batched into newline-joined chunks ≤ [_maxCharsPerRequest] chars.
-  /// Any spare character budget after filling the core batch is used to prepend
-  /// and append surrounding lines from the full lyrics as context, so that each
-  /// batch is translated with awareness of the song's broader narrative.
-  ///
-  /// Returns a list parallel to [texts]; null entries indicate lines that could
-  /// not be translated.
-  ///
-  /// [cacheKey] should uniquely identify the song (e.g. "artist|title") so
-  /// the same translation is not re-fetched during the same session.
   static Future<List<String?>> translateLines({
     required List<String> texts,
     required String targetLang,
@@ -60,7 +23,7 @@ class LyricsTranslationService {
     // Build batches whose core text stays within the char limit.
     int i = 0;
     while (i < texts.length) {
-      // --- 1. Build the core batch (same logic as before) ---
+      // 1. Build the core batch
       var coreJoined = '';
       int j = i;
       while (j < texts.length) {
@@ -74,8 +37,7 @@ class LyricsTranslationService {
       }
       final batchLineCount = j - i;
 
-      // --- 2. Fill remaining char budget with surrounding context lines ---
-      // ~half the spare budget goes to lines before, half to lines after.
+      // 2. Fill remaining char budget with surrounding context lines
       final spare = _maxCharsPerRequest - coreJoined.length;
       final contextBeforeLines = <String>[];
       final contextAfterLines = <String>[];
@@ -103,7 +65,7 @@ class LyricsTranslationService {
         }
       }
 
-      // --- 3. Assemble the full request text ---
+      // 3. Assemble the full request text
       final allLines = [
         ...contextBeforeLines,
         ...texts.sublist(i, j),

@@ -1,6 +1,4 @@
 /// Playing From header widget for the Now Playing screen.
-///
-/// Displays the playback source (album, playlist, artist, etc.) in the app bar.
 library;
 
 import 'package:flutter/material.dart';
@@ -8,26 +6,14 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 
-// MARK: - Constants
 
 const _kHeaderFontSize = 12.0;
 const _kSourceFontSize = 15.0;
 const _kHeaderOpacity = 0.6;
 const _kLetterSpacing = 0.5;
 
-// MARK: - Playing From Header Widget
 
 /// A widget that displays where the current playback originated from.
-///
-/// Shows "Playing from" label with the source name below it.
-/// Source can be album, artist, playlist, folder, search, or library.
-///
-/// Usage:
-/// ```dart
-/// PlayingFromHeader(
-///   audioPlayerService: audioService,
-/// )
-/// ```
 class PlayingFromHeader extends StatelessWidget {
   /// The audio player service to get playback source from.
   final AudioPlayerService audioPlayerService;

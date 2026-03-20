@@ -5,15 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 
-/// A beautiful blurred-artwork header for detail screens (album, artist, playlist, folder).
-///
-/// Shows a full-width blurred artwork image with the title, subtitle and metadata
-/// centred on top. Includes a frosted pill badge at the top showing the content
-/// type (e.g. ALBUM, ARTIST) and a back button.
-///
-/// The title + metadata stay visible throughout scrolling — they smoothly
-/// crossfade from the large expanded layout into a compact pinned toolbar so
-/// there is never a gap where the name disappears.
+/// Blurred-artwork header for detail screens (album, artist, playlist, folder).
+
 class DetailHeader extends StatelessWidget {
   final Uint8List? artworkBytes;
   final String? artworkFilePath;

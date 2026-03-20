@@ -1,7 +1,4 @@
 /// Library-related screens.
-///
-/// This library exports all screens related to browsing and managing
-/// the music library, including albums, artists, folders, and tracks.
 library;
 
 export 'screens/album_detail_screen.dart';

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 
 /// A reusable pill-shaped button widget for consistent UI across the app
-/// Supports both filled and outlined variants
 class PillButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
@@ -35,16 +34,12 @@ class PillButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
-
     final effectiveBackgroundColor = backgroundColor ??
         (isPrimary ? Theme.of(context).colorScheme.primary : Colors.transparent);
-
     final effectiveForegroundColor =
         foregroundColor ?? (isDark ? Colors.white : Colors.black);
-
     final outlinedBorderColor =
         isDark ? Colors.white.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.3);
-
     final buttonStyle = isPrimary
         ? FilledButton.styleFrom(
             backgroundColor: effectiveBackgroundColor,
@@ -76,7 +71,6 @@ class PillButton extends StatelessWidget {
           );
 
     Widget buttonChild;
-
     if (isLoading) {
       buttonChild = SizedBox(
         width: 20,

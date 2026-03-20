@@ -1,7 +1,4 @@
-/// Settings-related screens.
-///
-/// This library exports all screens related to app settings
-/// and configuration.
+/// Settings-related screens
 library;
 
 export 'screens/home_layout_settings.dart';

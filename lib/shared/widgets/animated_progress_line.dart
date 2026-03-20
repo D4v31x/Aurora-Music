@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// An animated underline that shows below content when progress is active.
-/// The line animates with a "roaming" white segment effect for indeterminate progress,
-/// or shows a deterministic fill progress bar when [determinateProgress] is provided.
 class AnimatedProgressLine extends StatefulWidget {
   final Widget child;
   final bool isAnimating;
@@ -10,9 +7,6 @@ class AnimatedProgressLine extends StatefulWidget {
   final double lineHeight;
   final double lineWidth;
   final Duration animationDuration;
-
-  /// If provided (0.0 to 1.0), shows a deterministic progress bar instead of indeterminate animation.
-  /// When >= 1.0, the line turns green to indicate ready state.
   final double? determinateProgress;
 
   const AnimatedProgressLine({
@@ -168,19 +162,15 @@ class _ProgressLinePainter extends CustomPainter {
     double startX, endX;
 
     if (phase < 1.0) {
-      // Phase 1: Fill from left to right
       startX = 0;
       endX = size.width * phase;
     } else if (phase < 2.0) {
-      // Phase 2: Empty from left to right
       startX = size.width * (phase - 1.0);
       endX = size.width;
     } else if (phase < 3.0) {
-      // Phase 3: Fill from right to left
       startX = size.width * (1.0 - (phase - 2.0));
       endX = size.width;
     } else {
-      // Phase 4: Empty from right to left
       startX = 0;
       endX = size.width * (1.0 - (phase - 3.0));
     }

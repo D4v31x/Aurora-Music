@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../providers/performance_mode_provider.dart';
 
 /// A global toast notification manager that shows pill-shaped notifications
-/// at the bottom of the screen, above the mini player.
 class ToastNotification {
   static final ToastNotification _instance = ToastNotification._internal();
   factory ToastNotification() => _instance;
@@ -30,8 +29,6 @@ class ToastNotification {
       _resetTimer(duration, isProgress);
       return;
     }
-
-    // Remove any existing overlay
     hide();
 
     final overlay = Overlay.of(context);
@@ -77,8 +74,6 @@ class ToastNotification {
       });
     }
   }
-
-  /// Check if a toast is currently showing
   static bool get isShowing => _currentOverlay != null;
 }
 
@@ -161,7 +156,6 @@ class _ToastWidgetState extends State<_ToastWidget>
 
   @override
   Widget build(BuildContext context) {
-    // Position above mini player (approximately 100dp from bottom)
     final bottomPadding = MediaQuery.of(context).padding.bottom + 120;
     final colorScheme = Theme.of(context).colorScheme;
 
