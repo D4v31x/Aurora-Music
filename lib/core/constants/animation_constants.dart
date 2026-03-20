@@ -6,18 +6,18 @@ class AnimationConstants {
   static const Duration fastest = Duration(milliseconds: 150);
   static const Duration fast = Duration(milliseconds: 200);
   static const Duration normal = Duration(milliseconds: 300);
-  static const Duration normalDuration = normal; // Alias for compatibility
+  static const Duration normalDuration = normal; 
   static const Duration slow = Duration(milliseconds: 400);
   static const Duration pageTransition = Duration(milliseconds: 600);
   static const Duration splash = Duration(milliseconds: 2000);
 
-  // Player transition durations - optimized for snappy feel
+  // Player transition durations
   static const Duration playerExpand = Duration(milliseconds: 600);
   static const Duration playerCollapse = Duration(milliseconds: 550);
 
   // Standard animation curves for different use cases
   static const Curve easeInOut = Curves.easeInOut;
-  static const Curve easeInOutCurve = easeInOut; // Alias for compatibility
+  static const Curve easeInOutCurve = easeInOut;
   static const Curve easeOutQuart = Curves.easeOutQuart;
   static const Curve easeInOutCubic = Curves.easeInOutCubic;
   static const Curve bounceIn = Curves.bounceIn;
@@ -25,7 +25,7 @@ class AnimationConstants {
   static const Curve decelerate = Curves.decelerate;
   static const Curve fastOutSlowIn = Curves.fastOutSlowIn;
 
-  // Player-specific curves for natural transitions
+  // Player-specific curves
   static const Curve playerExpandCurve = Curves.easeInOutCubic;
   static const Curve playerCollapseCurve = Curves.easeInOutCubic;
 

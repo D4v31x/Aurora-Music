@@ -1,7 +1,4 @@
-/// Player-related screens and widgets.
-///
-/// This library exports all screens and widgets related to media playback,
-/// including the now playing screen, fullscreen lyrics, and player controls.
+/// Player-related screens and widgets
 library;
 
 // Screens

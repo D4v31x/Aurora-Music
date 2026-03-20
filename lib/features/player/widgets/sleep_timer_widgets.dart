@@ -9,9 +9,7 @@ import '../../../shared/services/sleep_timer_controller.dart';
 import '../../../shared/providers/providers.dart';
 
 /// Sleep timer indicator widget for the app bar.
-///
-/// Shows a countdown when the sleep timer is active, with tap-to-expand
-/// functionality for detailed time display.
+
 class SleepTimerIndicator extends StatefulWidget {
   final VoidCallback? onTimerSet;
 

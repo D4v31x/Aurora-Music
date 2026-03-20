@@ -1018,13 +1018,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsMaterialYouDesc => 'Dynamic colors from wallpaper';
 
   @override
-  String get settingsNormalization => 'Volume Normalization';
-
-  @override
-  String get settingsNormalizationDesc =>
-      'Consistent volume levels · Requires ReplayGain tags in your files';
-
-  @override
   String get playbackSpeed => 'Playback Speed';
 
   @override

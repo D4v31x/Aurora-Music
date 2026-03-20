@@ -8,17 +8,12 @@ import '../widgets/glassmorphic_container.dart';
 import '../../l10n/generated/app_localizations.dart';
 
 /// Service for handling donations via external platforms
-/// Uses free services like Ko-fi, Buy Me a Coffee, and PayPal
 class DonationService {
-  // Configure your donation links here
-  static const String kofiUsername =
-      'aurorasoftwarecz'; // Replace with your Ko-fi username
-  static const String buyMeCoffeeUsername = 
-      'aurorasoftwareCZ'; // Replace with your BMC username
+  static const String kofiUsername = 'aurorasoftwarecz';
+  static const String buyMeCoffeeUsername = 'aurorasoftwareCZ';
 
   static const String kofiUrl = 'https://ko-fi.com/$kofiUsername';
-  static const String buyMeCoffeeUrl =
-      'https://buymeacoffee.com/$buyMeCoffeeUsername';
+  static const String buyMeCoffeeUrl ='https://buymeacoffee.com/$buyMeCoffeeUsername';
 
   // Reminder settings
   static const String _lastReminderKey = 'donation_last_reminder';

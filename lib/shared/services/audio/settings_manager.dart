@@ -10,7 +10,6 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
       final json = jsonDecode(contents);
 
       _gaplessPlayback = json['gaplessPlayback'] ?? true;
-      _volumeNormalization = json['volumeNormalization'] ?? false;
       _playbackSpeed = (json['playbackSpeed'] ?? 1.0).toDouble();
       _pitchWithSpeed = json['pitchWithSpeed'] ?? false;
       _defaultSortOrder = json['defaultSortOrder'] ?? 'title';
@@ -28,7 +27,6 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
 
     final json = {
       'gaplessPlayback': _gaplessPlayback,
-      'volumeNormalization': _volumeNormalization,
       'playbackSpeed': _playbackSpeed,
       'pitchWithSpeed': _pitchWithSpeed,
       'defaultSortOrder': _defaultSortOrder,
@@ -44,12 +42,6 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
     await _audioPlayer.setSpeed(_playbackSpeed);
     // Apply pitch: locked to 1.0 unless pitchWithSpeed is enabled
     await _audioPlayer.setPitch(_pitchWithSpeed ? _playbackSpeed : 1.0);
-
-    // Volume normalization is applied per-song via a currentSongNotifier
-    // listener registered in _init().  Reset to 1.0 when disabled.
-    if (!_volumeNormalization) {
-      await _audioPlayer.setVolume(1.0);
-    }
 
     // Configure gapless playback
     if (_gaplessPlayback) {
@@ -83,32 +75,6 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
     _gaplessPlayback = value;
     await _saveSettings();
     _scheduleNotify();
-  }
-
-  Future<void> setVolumeNormalization(bool value) async {
-    _volumeNormalization = value;
-    _scheduleNotify();
-    if (value) {
-      await _applyNormalizationForCurrentSong();
-    } else {
-      await _audioPlayer.setVolume(1.0);
-    }
-    await _saveSettings();
-  }
-
-  /// Reads the REPLAYGAIN_TRACK_GAIN tag for the current song and applies
-  /// the corresponding volume to the audio player.
-  /// No-ops when no song is loaded or when the song changes before the
-  /// async file read completes.
-  Future<void> _applyNormalizationForCurrentSong() async {
-    final song = currentSong;
-    if (song == null) return;
-    final songId = song.id;
-    final volume = await ReplayGainReader.getVolumeMultiplier(song.data);
-    // Guard: only apply if the same song is still playing
-    if (currentSong?.id == songId) {
-      await _audioPlayer.setVolume(volume);
-    }
   }
 
   Future<void> setPlaybackSpeed(double value) async {

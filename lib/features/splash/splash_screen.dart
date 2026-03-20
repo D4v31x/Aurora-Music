@@ -75,7 +75,6 @@ class _SplashScreenState extends State<SplashScreen>
         if (!mounted) return;
 
         final task = tasks[i];
-        // Batch update: progress, current task, and completed tasks together
         setState(() {
           _currentTask = task.$1;
           _progress = i / tasks.length;
@@ -84,7 +83,6 @@ class _SplashScreenState extends State<SplashScreen>
         try {
           await task.$2;
           if (mounted) {
-            // Batch completed task update
             setState(() {
               _completedTasks.add(task.$1);
             });
@@ -94,7 +92,6 @@ class _SplashScreenState extends State<SplashScreen>
           // Only show warnings for critical errors
           if (task.$1 != 'Setting up Analytics') {
             if (mounted) {
-              // Batch update: warnings and connectivity issues together
               setState(() {
                 _warnings.add('Issue with ${task.$1.toLowerCase()}');
                 _hasConnectivityIssues = true;
@@ -111,7 +108,6 @@ class _SplashScreenState extends State<SplashScreen>
       }
 
       if (mounted) {
-        // Batch final state update
         setState(() {
           _currentTask = 'Complete';
           _progress = 1.0;
@@ -144,7 +140,6 @@ class _SplashScreenState extends State<SplashScreen>
           throw Exception('No internet connection');
         }
       } catch (e) {
-        // Batch update for connectivity warnings
         setState(() {
           _warnings.add('No internet connection');
           _warnings.add('Offline mode active');
@@ -156,7 +151,6 @@ class _SplashScreenState extends State<SplashScreen>
 
     } catch (e) {
       if (!_warnings.contains('Some features may be limited')) {
-        // Batch update for error warnings
         setState(() {
           _warnings.add('Some features may be limited');
           _hasConnectivityIssues = true;
@@ -215,10 +209,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _finalizeInitialization() async {
-    // Pre-warm home screen components for smooth transition
     await _preWarmHomeScreen();
-
-    // Reduced delay for faster initialization
     await Future.delayed(AnimationConstants.shortDelay);
   }
 
@@ -248,8 +239,7 @@ class _SplashScreenState extends State<SplashScreen>
       // Pre-initialize providers that home screen will need
       if (mounted) {
         final audioService = context.read<AudioPlayerService>();
-        // Ensure the service is ready
-        audioService.toString(); // Just access it to ensure it's initialized
+        audioService.toString();
       }
     } catch (e) {
       // Don't block transition if pre-warming fails
@@ -573,13 +563,11 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _warmupShaders() async {
-    // Simplified shader warmup for better performance on low-end devices
-    const size = Size(25, 25); // Even smaller size for faster warmup
+    const size = Size(25, 25);
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
     final paint = Paint();
 
-    // Simple gradient warmup - essential for UI performance
     paint.shader = LinearGradient(
       colors: [Colors.white, Colors.white.withValues(alpha: 0.0)],
       stops: const [0.8, 1.0],

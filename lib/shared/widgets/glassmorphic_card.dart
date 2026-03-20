@@ -5,7 +5,6 @@ import '../providers/performance_mode_provider.dart';
 import '../services/artwork_cache_service.dart';
 
 /// A unified glassmorphic card widget used across the app for songs, albums, artists, etc.
-/// This provides a consistent UI for all card-based displays.
 class GlassmorphicCard extends StatelessWidget {
   final Widget artwork;
   final String title;

@@ -4,9 +4,6 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/utils/formatters/duration_formatter.dart';
 
 /// A draggable progress bar for audio playback.
-///
-/// Displays current position and duration with a slider
-/// that supports tap and drag gestures for seeking.
 class PlayerProgressBar extends StatefulWidget {
   final AudioPlayerService audioService;
   final bool isTablet;

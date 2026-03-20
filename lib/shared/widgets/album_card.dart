@@ -6,7 +6,6 @@ import '../services/artwork_cache_service.dart';
 import '../providers/performance_mode_provider.dart';
 
 /// A card widget that displays album information with artwork
-/// Similar to ArtistCard but for albums - with cached artwork to prevent flickering
 class AlbumCard extends StatefulWidget {
   final String albumName;
   final String? artistName;

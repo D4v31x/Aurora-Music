@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:clarity_flutter/clarity_flutter.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +10,6 @@ import 'dart:ui' as ui;
 import 'core/constants/app_config.dart';
 import 'shared/services/audio_player_service.dart';
 import 'shared/services/audio_handler.dart';
-import 'shared/services/error_tracking_service.dart';
 import 'shared/services/shader_warmup_service.dart';
 import 'shared/services/background_manager_service.dart';
 import 'shared/services/sleep_timer_controller.dart';
@@ -25,57 +23,37 @@ import 'shared/widgets/performance_debug_overlay.dart';
 import 'shared/widgets/expanding_player.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-/// Global navigator key for accessing navigator from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-/// Global audio handler instance
 late AuroraAudioHandler audioHandler;
 
-/// Application entry point
+/// App entry point
 void main() async {
   try {
-    // Initialize error tracking
-    final errorTracker = ErrorTrackingService();
-
-    // Set up Flutter error handling
-    FlutterError.onError = (FlutterErrorDetails details) async {
-      FlutterError.dumpErrorToConsole(details);
-      await errorTracker.recordError(details.exception, details.stack);
-    };
-
-    // Ensure Flutter bindings are initialized
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Silence all debug output in release builds — kDebugMode is a
-    // compile-time constant so the AOT compiler eliminates this in debug.
+    // Silence debug output in release builds
     if (!kDebugMode) {
       debugPrint = (String? message, {int? wrapWidth}) {};
     }
 
-    // Configure memory management early for better startup memory usage
     ImageCache().maximumSize = AppConfig.imageCacheMaxSize;
     ImageCache().maximumSizeBytes = AppConfig.imageCacheMaxSizeBytes;
 
-    // Start parallel initialization for faster startup
     final parallelInit = Future.wait([
       SharedPreferences.getInstance(),
       ArtistSeparatorService().initialize(),
       HomeLayoutService().initialize(),
     ]);
 
-    // Warmup shaders in parallel with other initialization
     final shaderWarmup = ShaderWarmupService.warmupShaders();
-
-    // Wait for parallel initialization
     final results = await parallelInit;
     final prefs = results[0] as SharedPreferences;
     final languageCode =
         prefs.getString('languageCode') ?? AppConfig.defaultLanguageCode;
 
-    // Wait for shader warmup to complete
     await shaderWarmup;
 
-    // Initialize audio service with custom handler (no stop button in notification)
     final player = AudioPlayer();
     audioHandler = await AudioService.init(
       builder: () => AuroraAudioHandler(player),
@@ -84,16 +62,8 @@ void main() async {
         androidNotificationChannelName:
             AppConfig.androidNotificationChannelName,
         androidStopForegroundOnPause: false,
-        // Monochrome status-bar notification icon (white silhouette on transparent).
         androidNotificationIcon: 'drawable/ic_stat_music',
       ),
-    );
-
-    // Initialize Clarity
-    const clarityProjectId = String.fromEnvironment('CLARITY_PROJECT_ID');
-    final clarityConfig = ClarityConfig(
-      projectId: clarityProjectId,
-      logLevel: LogLevel.None,
     );
 
     // Launch the application with all required providers
@@ -104,37 +74,37 @@ void main() async {
       options.profilesSampleRate = 0.2;
     },
     appRunner: () => runApp(SentryWidget(child: 
-      ClarityWidget(
-        clarityConfig: clarityConfig,
-        app: MultiProvider(
+      MultiProvider(
           providers: [
-            // Use lazy initialization for better startup performance
-            ChangeNotifierProvider(create: (_) => AudioPlayerService()),
-            ChangeNotifierProvider(create: (_) => ThemeProvider(), lazy: false),
             ChangeNotifierProvider(
-                create: (_) => PerformanceModeProvider(), lazy: false),
+              create: (_) => AudioPlayerService()
+              ),
             ChangeNotifierProvider(
-                create: (_) => BackgroundManagerService(), lazy: false),
+              create: (_) => ThemeProvider(), lazy: false
+              ),
             ChangeNotifierProvider(
-                create: (_) => SleepTimerController(), lazy: true),
+              create: (_) => PerformanceModeProvider(), lazy: false
+              ),
+            ChangeNotifierProvider(
+              create: (_) => BackgroundManagerService(), lazy: false
+              ),
+            ChangeNotifierProvider(
+              create: (_) => SleepTimerController(), lazy: true
+              ),
             ChangeNotifierProvider.value(value: ArtistSeparatorService()),
             ChangeNotifierProvider.value(value: HomeLayoutService()),
-            Provider<ErrorTrackingService>.value(value: errorTracker),
           ],
           child: Builder(
-            builder: (context) {
-              // Connect the services after providers are initialized
-              final audioPlayerService =
+              builder: (context) {
+                final audioPlayerService =
                   Provider.of<AudioPlayerService>(context, listen: false);
               final backgroundManager =
                   Provider.of<BackgroundManagerService>(context, listen: false);
               final performanceProvider =
                   Provider.of<PerformanceModeProvider>(context, listen: false);
 
-              // Set the background manager in the audio player service
               audioPlayerService.setBackgroundManager(backgroundManager);
 
-              // Initialize performance provider
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 performanceProvider.initialize();
               });
@@ -145,18 +115,12 @@ void main() async {
             },
           ),
         ),
-      ),
     )));
   } catch (e, stack) {
-    final errorTracker = ErrorTrackingService();
-    await errorTracker.recordError(e, stack);
+    debugPrint('Fatal error during app initialization: $e\n$stack');
     rethrow;
   }
 }
-
-/// Navigator observer that hides the mini player whenever a [PopupRoute]
-/// (dialog, bottom sheet, menu) is on the stack, so popups always appear
-/// above the mini player which lives in the MaterialApp.builder Stack.
 class _MiniPlayerObserver extends NavigatorObserver {
   int _popupCount = 0;
 
@@ -240,7 +204,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
 
     // When app comes back to foreground, sync playback state
-    // This ensures UI reflects any changes made via lock screen controls
     if (state == AppLifecycleState.resumed) {
       try {
         final audioService =
@@ -303,7 +266,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             darkTheme: themeProvider.darkTheme,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            // Custom hero controller for faster, smoother transitions
             navigatorObservers: [_miniPlayerObserver],
             builder: (context, child) {
               return HeroControllerScope(
@@ -312,9 +274,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     return MaterialRectCenterArcTween(begin: begin, end: end);
                   },
                 ),
-                // Mini player overlaid above all routes. The _MiniPlayerObserver
-                // hides it automatically whenever a PopupRoute (dialog / bottom
-                // sheet) is active so popups always appear on top.
                 child: Stack(
                   children: [
                     child ?? const SizedBox.shrink(),
@@ -325,10 +284,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             },
             home: Builder(
               builder: (context) {
-                // Wrap the entire app with the performance debug overlay and AppBackground widget
-                return const PerformanceDebugOverlay(
-                  child: SplashScreen(),
-                );
+              return const PerformanceDebugOverlay(
+                child: SplashScreen(),
+              );
               },
             ),
           ),

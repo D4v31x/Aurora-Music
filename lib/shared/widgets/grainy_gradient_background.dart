@@ -60,9 +60,6 @@ class GrainyGradientBackground extends HookWidget {
 
     controller.repeat();
 
-    // Use AnimatedBuilder instead of useAnimation to avoid rebuilding the
-    // entire widget tree (including `child`) on every animation frame.
-    // Only the OMeshGradient sub-tree rebuilds at 60 fps.
     return Stack(
       children: [
         // Animated mesh gradient background

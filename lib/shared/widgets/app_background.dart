@@ -4,9 +4,6 @@ import 'package:provider/provider.dart';
 import '../services/background_manager_service.dart';
 import 'animated_artwork_background.dart';
 
-/// Centralized app background widget that provides consistent background across the app
-/// Shows blurred album artwork when a song with artwork is playing,
-/// otherwise falls back to solid Material You surface color
 class AppBackground extends StatelessWidget {
   final Widget child;
   final bool enableAnimation;
@@ -29,13 +26,12 @@ class AppBackground extends StatelessWidget {
         final shouldRebuild = !identical(prev, next);
         if (kDebugMode && shouldRebuild) {
           debugPrint(
-              '🎨 [APP_BG] Rebuild background (hasArtwork: ${next != null}, bytes: ${next?.length ?? 0}, animated: $enableAnimation)');
+              'APP_BG] Rebuild background (hasArtwork: ${next != null}, bytes: ${next?.length ?? 0}, animated: $enableAnimation)');
         }
         return shouldRebuild;
       },
       builder: (context, currentArtwork, _) {
         // Always use AnimatedArtworkBackground - it handles null artwork internally
-        // This keeps the widget tree stable and avoids remounting issues
         if (enableAnimation) {
           return AnimatedArtworkBackground(
             currentArtwork: currentArtwork,

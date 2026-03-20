@@ -4,8 +4,6 @@ import 'package:iconoir_flutter/iconoir_flutter.dart';
 import '../../../shared/services/audio_player_service.dart';
 
 /// A like/favorite button for the current song.
-///
-/// Plays a scale-bounce + particle-burst animation when liking a song.
 class SongLikeButton extends StatefulWidget {
   final AudioPlayerService audioPlayerService;
   final double size;

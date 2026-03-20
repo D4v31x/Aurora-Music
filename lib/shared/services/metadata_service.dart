@@ -80,8 +80,7 @@ class MetadataService {
     return [];
   }
 
-  /// Fetches the full track details from Deezer (`/track/{id}`) and enriches
-  /// the map with year, trackPosition, and genre from the album endpoint.
+ 
   Future<Map<String, dynamic>> fetchFullTrackDetails(
       Map<String, dynamic> basicTrack) async {
     final trackId = basicTrack['id'];

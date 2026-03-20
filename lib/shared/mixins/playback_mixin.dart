@@ -4,19 +4,6 @@ import 'package:on_audio_query/on_audio_query.dart';
 import '../services/audio_player_service.dart';
 
 /// A mixin that provides common playback functionality for song lists.
-///
-/// This mixin handles:
-/// - Playing all songs
-/// - Shuffling songs
-/// - Playing a specific song from a list
-///
-/// Usage:
-/// ```dart
-/// class _MyScreenState extends State<MyScreen> with PlaybackMixin {
-///   @override
-///   List<SongModel> get playableSongs => _allSongs;
-/// }
-/// ```
 mixin PlaybackMixin<T extends StatefulWidget> on State<T> {
   /// The list of songs that can be played. Must be implemented.
   List<SongModel> get playableSongs;

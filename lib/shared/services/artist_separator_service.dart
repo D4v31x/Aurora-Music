@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'artist_aggregator_service.dart';
 
 /// Service for parsing and splitting artist names from metadata.
-/// Provides configurable separators and exclusions that persist across app restarts.
 class ArtistSeparatorService extends ChangeNotifier {
   static final ArtistSeparatorService _instance =
       ArtistSeparatorService._internal();

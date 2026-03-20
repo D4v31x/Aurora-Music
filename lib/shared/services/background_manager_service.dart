@@ -8,11 +8,6 @@ import '../utils/performance_optimizations.dart';
 
 /// Service that manages background colors and artwork
 /// Provides artwork data for blurred backgrounds across the app
-///
-/// Performance optimizations:
-/// - Cached color extraction to avoid redundant palette generation
-/// - Throttled updates to prevent excessive rebuilds
-/// - Batch notifications to reduce listener calls
 class BackgroundManagerService extends ChangeNotifier {
   static const Duration _artworkRetryDelay = Duration(milliseconds: 450);
 
@@ -21,19 +16,17 @@ class BackgroundManagerService extends ChangeNotifier {
   List<Color> _currentColors = _getDefaultColors();
   bool _isDarkMode = true;
 
-  // Artwork data for blurred background
   Uint8List? _currentArtwork;
   Uint8List? _previousArtwork;
   bool _isTransitioning = false;
   SongModel? _currentSong;
   bool _isUpdating = false; // Prevent concurrent updates
-  int _updateCounter = 0; // Track update sequence
+  int _updateCounter = 0;
   // Prevent duplicate delayed artwork retries for the same song.
   int? _retryScheduledForSongId;
   Timer? _artworkRetryTimer;
 
-  // Performance optimizations
-  final Map<int, List<Color>> _colorCache = {}; // Cache colors by song ID
+  final Map<int, List<Color>> _colorCache = {};
   final Throttler _updateThrottler =
       Throttler(interval: const Duration(milliseconds: 300));
 
@@ -47,7 +40,6 @@ class BackgroundManagerService extends ChangeNotifier {
   static const Color _defaultLightTertiary = Color(0xFF90CAF9);
   static const Color _defaultLightQuaternary = Color(0xFF64B5F6);
 
-  // Getters
   List<Color> get currentColors => _currentColors;
   bool get isDarkMode => _isDarkMode;
   Uint8List? get currentArtwork => _currentArtwork;
@@ -57,11 +49,7 @@ class BackgroundManagerService extends ChangeNotifier {
   SongModel? get currentSong => _currentSong;
 
   /// Directly push artwork and song to the background without any guards.
-  /// Called from the audio service whenever artwork is successfully fetched so
-  /// the background always updates, regardless of [_isUpdating] state.
   void pushArtwork(Uint8List? artwork, SongModel song) {
-    // Invalidate any in-progress update — its result will be discarded
-    // by the stale-update counter check when it eventually finishes.
     _updateCounter++;
     _isUpdating = false;
 
@@ -77,7 +65,6 @@ class BackgroundManagerService extends ChangeNotifier {
         _isTransitioning = false;
         _previousArtwork = null;
       });
-      // Extract palette colors in background (does not affect the blurred artwork display)
       unawaited(updateColorsFromArtwork(artwork));
     }
   }
@@ -98,7 +85,6 @@ class BackgroundManagerService extends ChangeNotifier {
   void setDarkMode(bool darkMode) {
     if (_isDarkMode != darkMode) {
       _isDarkMode = darkMode;
-      // If no artwork colors are set, use default colors for the new theme
       if (_isUsingDefaultColors()) {
         _currentColors = _getDefaultColors();
         notifyListeners();
@@ -108,7 +94,6 @@ class BackgroundManagerService extends ChangeNotifier {
 
   /// Update colors based on artwork
   Future<void> updateColorsFromArtwork(Uint8List? artworkData) async {
-    // Throttle updates to prevent excessive rebuilds
     _updateThrottler.call(() async {
       await _updateColorsFromArtworkSilent(artworkData);
       notifyListeners();
@@ -160,7 +145,6 @@ class BackgroundManagerService extends ChangeNotifier {
   }
 
   /// Extract and update colors from song artwork
-  /// Also updates the artwork for blurred background
   Future<void> updateColorsFromSong(SongModel? song) async {
     if (song == null) {
       if (kDebugMode) {
@@ -171,7 +155,7 @@ class BackgroundManagerService extends ChangeNotifier {
       return;
     }
 
-    // Skip if same song AND we already have artwork
+    // Skip if same song and already have artwork
     if (_currentSong?.id == song.id && _currentArtwork != null) {
       if (kDebugMode) {
         debugPrint(
@@ -180,9 +164,7 @@ class BackgroundManagerService extends ChangeNotifier {
       return;
     }
 
-    // Only block concurrent updates when the in-progress update is for the
-    // SAME song. A different song should always proceed — the stale-update
-    // counter will discard the old result once it finishes.
+    // Only block concurrent updates when the in-progress update is for the same song.
     if (_isUpdating && _currentSong?.id == song.id) {
       if (kDebugMode) {
         debugPrint(
@@ -191,8 +173,7 @@ class BackgroundManagerService extends ChangeNotifier {
       return;
     }
 
-    // Invalidate any in-progress update for a different song so its result
-    // is discarded once it reaches the stale-update check.
+    // Invalidate any in-progress update for a different song so its result will be discarded by the stale-update counter check when it eventually finishes.
     if (_isUpdating) {
       _updateCounter++;
       if (kDebugMode) {
@@ -427,7 +408,6 @@ class BackgroundManagerService extends ChangeNotifier {
   }
 
   /// Set custom colors directly for the mesh gradient
-  /// This method allows setting colors from palette generators or other sources
   void setCustomColors(List<Color> colors) {
     if (colors.isEmpty) {
       _useDefaultColors();

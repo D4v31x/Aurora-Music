@@ -15,7 +15,7 @@ class RecentlyAddedSection extends StatelessWidget {
 
   static final ArtworkCacheService _artworkService = ArtworkCacheService();
 
-  /// Get recently added songs for display - sorted and limited to 10
+  /// Get recently added songs for display
   static List<SongModel> _getDisplaySongs(List<SongModel> songs) {
     if (songs.isEmpty) return [];
     final sorted = List<SongModel>.from(songs)
@@ -23,7 +23,7 @@ class RecentlyAddedSection extends StatelessWidget {
     return sorted.take(10).toList();
   }
 
-  /// Get full recently added playlist for playback - all songs sorted by date
+  /// Get full recently added playlist for playback 
   static List<SongModel> _getFullPlaylist(List<SongModel> songs) {
     if (songs.isEmpty) return [];
     final sorted = List<SongModel>.from(songs)
@@ -34,7 +34,6 @@ class RecentlyAddedSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Use Selector with songs hashCode to detect actual list changes
-    // This is more efficient than rebuilding on every notifyListeners call
     return Selector<AudioPlayerService, List<SongModel>>(
       selector: (_, service) => service.songs,
       // Rebuild when list length changes, ids change, or any title/artist changes
@@ -78,7 +77,6 @@ class RecentlyAddedSection extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             itemCount: displaySongs.length,
-            // Performance: Pre-cache items beyond visible area for smoother scrolling
             cacheExtent: AppConfig.horizontalListCacheExtent,
             itemBuilder: (context, index) {
               final song = displaySongs[index];

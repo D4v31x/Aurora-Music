@@ -3,16 +3,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 
 /// Performance levels for different device capabilities
-enum PerformanceLevel {
-  /// High-end devices: flagship SoC, ample RAM, GPU capable of blur/animations
-  high,
-
-  /// Mid-range devices: decent performance, effects enabled but at reduced speed
-  medium,
-
-  /// Low-end or older devices: limited GPU/CPU — effects disabled for smooth UX
-  low,
-}
+enum PerformanceLevel { high, medium, low }
 
 /// Service to detect device performance capabilities and recommend settings.
 ///
@@ -63,18 +54,14 @@ class DevicePerformanceService {
     return _cachedLevel!;
   }
 
-  // ─────────────────────────────────────────────────────────────────── Android
+  // Android
 
   PerformanceLevel _evaluateAndroid(AndroidDeviceInfo info) {
     final sdk = info.version.sdkInt;
     final brand = info.brand.toLowerCase();
     final model = info.model.toLowerCase();
     final abis = info.supportedAbis;
-
-    // 32-bit-only chips are definitively low-end (pre-2015 era hardware).
     if (!abis.contains('arm64-v8a')) return PerformanceLevel.low;
-
-    // Very old Android releases regardless of hardware.
     if (sdk < 21) return PerformanceLevel.low;
 
     switch (brand) {
@@ -209,7 +196,7 @@ class DevicePerformanceService {
     return PerformanceLevel.low;
   }
 
-  // ──────────────────────────────────────────────────────────────────────── iOS
+  // iOS
 
   /// iOS detection uses `utsname.machine` (e.g. "iPhone16,2") rather than
   /// `model` (which returns only the generic type string "iPhone"/"iPad" and
@@ -253,7 +240,7 @@ class DevicePerformanceService {
     return PerformanceLevel.low;
   }
 
-  // ──────────────────────────────────────────────────────────────── Animation
+  // Animation
 
   /// Get recommended animation settings for the detected performance level.
   AnimationSettings getAnimationSettings(PerformanceLevel level) {
