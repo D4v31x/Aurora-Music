@@ -38,20 +38,20 @@ class Playlist {
   // Create Playlist from JSON
   factory Playlist.fromJson(Map<String, dynamic> json) {
     return Playlist(
-      id: json['id'],
-      name: json['name'],
-      songs: (json['songs'] as List).map((songJson) {
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      songs: (json['songs'] as List?)?.map((songJson) {
         return SongModel({
-          'id': songJson['id'],
-          'title': songJson['title'],
-          'artist': songJson['artist'],
-          'album': songJson['album'],
-          'album_id': songJson['albumId'],
-          'duration': songJson['duration'],
-          'uri': songJson['uri'],
-          '_data': songJson['data'],
+          'id': songJson['id'] ?? 0,
+          'title': songJson['title'] ?? '',
+          'artist': songJson['artist'] ?? '',
+          'album': songJson['album'] ?? '',
+          'album_id': songJson['albumId'] ?? 0,
+          'duration': songJson['duration'] ?? 0,
+          'uri': songJson['uri'] ?? '',
+          '_data': songJson['data'] ?? '',
         });
-      }).toList(),
+      }).toList() ?? [],
     );
   }
 }

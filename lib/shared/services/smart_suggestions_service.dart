@@ -148,7 +148,7 @@ class SmartSuggestionsService {
   }
 
   /// Get suggested tracks based on current time and listening patterns
-  Future<List<SongModel>> getSuggestedTracks({int count = 3}) async {
+  Future<List<SongModel>> getSuggestedTracks({int count = 3, List<SongModel>? songs}) async {
     final now = DateTime.now();
     final cacheKey = '${now.hour}_${now.weekday}_$count';
 
@@ -157,7 +157,7 @@ class SmartSuggestionsService {
       final timeSinceLastSuggestion = now.difference(_lastSuggestionTime!);
       if (timeSinceLastSuggestion < _suggestionCacheDuration) {
         return _suggestionsMemoizer.call(
-            cacheKey, () => _computeSuggestedTracks(count));
+            cacheKey, () => _computeSuggestedTracks(count, songs: songs));
       }
     }
 
@@ -165,12 +165,12 @@ class SmartSuggestionsService {
     _suggestionsMemoizer.clear();
     _lastSuggestionTime = now;
     return _suggestionsMemoizer.call(
-        cacheKey, () => _computeSuggestedTracks(count));
+        cacheKey, () => _computeSuggestedTracks(count, songs: songs));
   }
 
-  /// Internal method to compute suggestions (expensive operation)
-  Future<List<SongModel>> _computeSuggestedTracks(int count) async {
-    final allSongs = await _audioQuery.querySongs();
+  /// Internal method to compute suggestions
+  Future<List<SongModel>> _computeSuggestedTracks(int count, {List<SongModel>? songs}) async {
+    final allSongs = (songs != null && songs.isNotEmpty) ? songs : await _audioQuery.querySongs();
     if (allSongs.isEmpty) return [];
 
     final now = DateTime.now();
@@ -272,8 +272,8 @@ class SmartSuggestionsService {
   }
 
   /// Get suggested artists based on current time and listening patterns
-  Future<List<String>> getSuggestedArtists({int count = 3}) async {
-    final allSongs = await _audioQuery.querySongs();
+  Future<List<String>> getSuggestedArtists({int count = 3, List<SongModel>? songs}) async {
+    final allSongs = (songs != null && songs.isNotEmpty) ? songs : await _audioQuery.querySongs();
     if (allSongs.isEmpty) return [];
 
     // Get all unique artists

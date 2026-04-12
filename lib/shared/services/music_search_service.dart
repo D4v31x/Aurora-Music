@@ -38,7 +38,8 @@ class MusicSearchService {
 
   /// Calculate search score for a song (higher is better)
   static double _calculateScore(SongModel song, String query) {
-    final title = song.title.toLowerCase();
+    final title = (song.title).toLowerCase();
+    if (title.isEmpty) return 0.0;
     final rawArtist = (song.artist ?? '').toLowerCase();
     final album = (song.album ?? '').toLowerCase();
     final queryLower = query.toLowerCase();
@@ -97,21 +98,25 @@ class MusicSearchService {
       }
     }
 
-    // Fuzzy match using Levenshtein distance
-    final titleDistance = _levenshteinDistance(title, queryLower);
-    final artistDistance = _levenshteinDistance(artist, queryLower);
+    // Fuzzy match using Levenshtein distance — only for songs that didn't
+    // score well from the fast checks above, to avoid O(n*m) matrix
+    // allocation for every song in the library.
+    if (score < 10) {
+      final titleDistance = _levenshteinDistance(title, queryLower);
+      final artistDistance = _levenshteinDistance(artist, queryLower);
 
-    // Normalize distance (smaller is better, convert to score where higher is better)
-    final maxLength =
-        title.length > queryLower.length ? title.length : queryLower.length;
-    if (maxLength > 0 && titleDistance < maxLength / 2) {
-      score += (1 - titleDistance / maxLength) * 25;
-    }
+      // Normalize distance (smaller is better, convert to score where higher is better)
+      final maxLength =
+          title.length > queryLower.length ? title.length : queryLower.length;
+      if (maxLength > 0 && titleDistance < maxLength / 2) {
+        score += (1 - titleDistance / maxLength) * 25;
+      }
 
-    final maxArtistLength =
-        artist.length > queryLower.length ? artist.length : queryLower.length;
-    if (maxArtistLength > 0 && artistDistance < maxArtistLength / 2) {
-      score += (1 - artistDistance / maxArtistLength) * 20;
+      final maxArtistLength =
+          artist.length > queryLower.length ? artist.length : queryLower.length;
+      if (maxArtistLength > 0 && artistDistance < maxArtistLength / 2) {
+        score += (1 - artistDistance / maxArtistLength) * 20;
+      }
     }
 
     return score;

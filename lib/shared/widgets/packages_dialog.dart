@@ -171,12 +171,6 @@ class PackagesDialog extends StatelessWidget {
       url: 'https://pub.dev/packages/pub_semver',
     ),
     PackageInfo(
-      name: 'clarity_flutter',
-      version: '^1.6.0',
-      description: 'Microsoft Clarity analytics',
-      url: 'https://pub.dev/packages/clarity_flutter',
-    ),
-    PackageInfo(
       name: 'flutter_hooks',
       version: '^0.21.3+1',
       description: 'React-like hooks for Flutter',

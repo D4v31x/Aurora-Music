@@ -4,4 +4,3 @@
 library;
 
 export 'lyrics_constants.dart';
-export 'lyric_line_widget.dart';

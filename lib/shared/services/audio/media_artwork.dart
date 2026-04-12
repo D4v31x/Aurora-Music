@@ -117,19 +117,46 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
     final song = currentSong;
     if (song == null) {
       currentArtwork.value = null;
+      currentArtworkProvider.value = null;
       return;
     }
-    try {
-      // Use cached artwork service for better performance
-      final artwork = await _artworkCache.getArtwork(song.id);
-      currentArtwork.value = artwork;
 
-      // Push artwork directly to the background manager, bypassing all guards.
-      // This is the primary mechanism for updating the background because this
-      // function is confirmed to run on every song change.
+    // ── Stage 1: synchronous, zero-latency publish from in-memory cache ──────
+    // If the cache already holds this song's artwork, publish it NOW before
+    // any await so that every listener (mini player, Now Playing, fullscreen
+    // artwork, home widget) sees the correct image on the very same Dart
+    // microtask turn as the song change — no visible blank frame.
+    final cachedBytes = _artworkCache.getCachedArtworkSync(song.id);
+    if (cachedBytes != null && cachedBytes.isNotEmpty) {
+      currentArtwork.value = cachedBytes;
+      currentArtworkProvider.value = MemoryImage(cachedBytes);
+      _backgroundManager?.pushArtwork(cachedBytes, song);
+      // With the current song covered, start warming up the next songs so
+      // any subsequent skip is also instant.
+      _prefetchUpcomingArtwork();
+      return; // No async round-trip needed.
+    }
+
+    // Cache miss — clear stale artwork from the previous song so listeners
+    // show a placeholder rather than the wrong image while we fetch.
+    currentArtwork.value = null;
+    currentArtworkProvider.value = null;
+
+    try {
+      // ── Stage 2: async fetch (MediaStore query via ArtworkCacheService) ──────
+      final artwork = await _artworkCache.getArtwork(song.id);
+
+      // Stale-update guard: if the user skipped while we were fetching,
+      // discard this result entirely so we never show the wrong artwork.
+      if (currentSong?.id != song.id) return;
+
+      currentArtwork.value = artwork;
+      currentArtworkProvider.value = (artwork != null && artwork.isNotEmpty)
+          ? MemoryImage(artwork)
+          : null;
+
       _backgroundManager?.pushArtwork(artwork, song);
 
-      // Also push artwork to home screen widget
       if (artwork != null && artwork.isNotEmpty) {
         unawaited(_homeWidgetService.updateSongInfo(
           title: song.title,
@@ -138,8 +165,23 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
           artworkBytes: artwork,
         ));
       }
+
+      // Pre-fetch the next few songs' artwork in the background so that the
+      // next skip is served instantly from cache (Stage 1 path above).
+      _prefetchUpcomingArtwork();
     } catch (e) {
+      if (currentSong?.id != song.id) return;
       currentArtwork.value = null;
+      currentArtworkProvider.value = null;
+    }
+  }
+
+  /// Kicks off background pre-loading for the upcoming songs in the queue
+  /// so their artwork is in cache before the user gets there.
+  void _prefetchUpcomingArtwork() {
+    final upcoming = upcomingQueue.take(3).toList();
+    for (final s in upcoming) {
+      unawaited(_artworkCache.preloadArtwork(s.id));
     }
   }
 

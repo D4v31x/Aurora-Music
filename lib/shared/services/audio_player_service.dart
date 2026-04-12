@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' show Random;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
@@ -14,6 +15,7 @@ import 'audio_constants.dart';
 import 'background_manager_service.dart';
 import 'artwork_cache_service.dart';
 import 'home_screen_widget_service.dart';
+import 'artist_aggregator_service.dart';
 import 'smart_suggestions_service.dart';
 import 'audio/replay_gain_reader.dart';
 import '../../main.dart' show audioHandler;
@@ -55,38 +57,34 @@ class PlaybackSourceInfo {
 }
 
 class AudioPlayerService extends ChangeNotifier {
-  // Use the audio player from the global audio handler
   AudioPlayer get _audioPlayer => audioHandler.player;
   final OnAudioQuery _audioQuery = OnAudioQuery();
   final ArtworkCacheService _artworkCache = ArtworkCacheService();
   final SmartSuggestionsService _smartSuggestions = SmartSuggestionsService();
   final HomeScreenWidgetService _homeWidgetService = HomeScreenWidgetService();
-
-  // Background manager for mesh gradient colors
   BackgroundManagerService? _backgroundManager;
 
-  // Playback source tracking
   PlaybackSourceInfo _playbackSource = PlaybackSourceInfo.unknown;
   PlaybackSourceInfo get playbackSource => _playbackSource;
 
   List<SongModel> _playlist = [];
-
-  /// Original (pre-shuffle) playlist order; non-empty only while shuffle is on.
   List<SongModel> _originalPlaylist = [];
   List<Playlist> _playlists = [];
   int _currentIndex = -1;
-
-  /// Number of songs immediately after [_currentIndex] that were explicitly
-  /// added to the queue via [addToQueue] or [playNext]. These are displayed
-  /// separately from the "source" (album/playlist) continuation songs.
   int _queueCount = 0;
   bool _isPlaying = false;
   bool _isShuffle = false;
-  LoopMode _loopMode = LoopMode.off; // Changed from bool to LoopMode
+  LoopMode _loopMode = LoopMode.off;
   bool _isLoading = false;
-  bool _isSettingPlaylist =
-      false; // Guard against currentIndexStream race condition
+  bool _isSettingPlaylist = false; // Guard against currentIndexStream race condition
+  bool _isDisposed = false;
   Set<String> _librarySet = {};
+
+  // Stream subscriptions from _init() — cancelled in dispose()
+  StreamSubscription<PlayerState>? _playerStateSub;
+  StreamSubscription<bool>? _playingSub;
+  StreamSubscription<int?>? _currentIndexSub;
+  StreamSubscription<ProcessingState>? _processingStateSub;
 
   // Debounce timer for batching notifications
   Timer? _notifyDebounceTimer;
@@ -97,12 +95,20 @@ class AudioPlayerService extends ChangeNotifier {
   bool _playcountsDirty = false;
   bool _playlistsDirty = false;
 
+  // Future-based mutex for serializing settings writes
+  Future<void> _settingsSaveLock = Future.value();
+
   // Play count tracking
   Map<String, int> _trackPlayCounts = {};
   Map<String, int> _albumPlayCounts = {};
   Map<String, int> _artistPlayCounts = {};
   Map<String, int> _playlistPlayCounts = {};
   Map<String, int> _folderAccessCounts = {};
+  Map<String, DateTime> _lastPlayedAt = {};
+
+  // Cached album/artist query results (populated once from MediaStore)
+  List<AlbumModel>? _cachedAlbums;
+  List<ArtistModel>? _cachedArtists;
 
   // Getters
   AudioPlayer get audioPlayer => _audioPlayer;
@@ -117,6 +123,12 @@ class AudioPlayerService extends ChangeNotifier {
           ? _playlist[_currentIndex]
           : null;
   final ValueNotifier<Uint8List?> currentArtwork = ValueNotifier(null);
+  /// Reactive [ImageProvider] for the current song's artwork.
+  /// Updated (at normal quality) by [updateCurrentArtwork] after every song
+  /// change; consumers can use it as an instant placeholder while fetching
+  /// a higher-quality version independently.
+  final ValueNotifier<ImageProvider<Object>?> currentArtworkProvider =
+      ValueNotifier<ImageProvider<Object>?>(null);
   final ValueNotifier<SongModel?> currentSongNotifier = ValueNotifier(null);
 
   /// Get the upcoming songs in the queue (songs after current)
@@ -174,6 +186,11 @@ class AudioPlayerService extends ChangeNotifier {
   void _updateSongs(List<SongModel> newSongs) {
     _songs = newSongs;
     songsNotifier.value = newSongs;
+    // Invalidate cached album/artist queries since library changed
+    _cachedAlbums = null;
+    _cachedArtists = null;
+    // Also invalidate the ArtistAggregatorService cache so new artists appear
+    ArtistAggregatorService().clearCache();
   }
 
   static const String likedSongsPlaylistId = 'liked_songs';
@@ -282,16 +299,16 @@ class AudioPlayerService extends ChangeNotifier {
       avAudioSessionMode: AVAudioSessionMode.defaultMode,
       androidAudioAttributes: AndroidAudioAttributes(
         contentType: AndroidAudioContentType.music,
-        flags: AndroidAudioFlags.audibilityEnforced,
+        flags: AndroidAudioFlags.none,
         usage: AndroidAudioUsage.media,
       ),
       androidWillPauseWhenDucked: true,
     ));
 
-    // Re-activate the audio session so audio focus is explicitly requested
-    // on startup. This prevents the system from silently reclaiming focus
-    // during a long playback session.
-    await session.setActive(true);
+    // Audio focus (setActive) is NOT requested here — it is acquired
+    // automatically by just_audio when play() is called. Requesting it at
+    // startup would stop other media apps before the user has chosen to
+    // play anything.
 
     await _loadPlayCounts();
     await _loadPlaylists();
@@ -304,13 +321,9 @@ class AudioPlayerService extends ChangeNotifier {
     isPlayingNotifier.addListener(_onPlayStateChangedForWidget);
 
     // Apply volume normalization whenever the current song changes
-    currentSongNotifier.addListener(() {
-      if (_volumeNormalization) {
-        unawaited(_applyNormalizationForCurrentSong());
-      }
-    });
+    currentSongNotifier.addListener(_onSongChangedForNormalization);
 
-    _audioPlayer.playerStateStream.listen((playerState) {
+    _playerStateSub = _audioPlayer.playerStateStream.listen((playerState) {
       _isPlaying = playerState.playing;
       isPlayingNotifier.value = _isPlaying;
       // ValueNotifier handles most UI updates, use debounced notify for other listeners
@@ -319,7 +332,7 @@ class AudioPlayerService extends ChangeNotifier {
 
     // Also listen to playingStream specifically - this is more reliable for
     // catching play/pause changes from external sources like lock screen controls
-    _audioPlayer.playingStream.listen((playing) {
+    _playingSub = _audioPlayer.playingStream.listen((playing) {
       if (_isPlaying != playing) {
         _isPlaying = playing;
         isPlayingNotifier.value = playing;
@@ -332,7 +345,7 @@ class AudioPlayerService extends ChangeNotifier {
     // IMPORTANT: Only process these events in gapless mode. In non-gapless mode,
     // we load a single song via setAudioSource, so the player's currentIndex is
     // always 0, which does NOT correspond to _currentIndex in _playlist.
-    _audioPlayer.currentIndexStream.listen((index) async {
+    _currentIndexSub = _audioPlayer.currentIndexStream.listen((index) async {
       debugPrint(
           '🎵 [INDEX_STREAM] Index changed: $index (previous: $_currentIndex, shuffle: ${_audioPlayer.shuffleModeEnabled}, loop: ${_audioPlayer.loopMode})');
       // Skip index updates while setPlaylist is in progress to avoid race condition
@@ -355,7 +368,7 @@ class AudioPlayerService extends ChangeNotifier {
         debugPrint('🎵 [INDEX_STREAM] Playing: ${song.title}');
 
         // Update all song-related state
-        _currentSongController.add(song);
+        if (!_currentSongController.isClosed) _currentSongController.add(song);
         currentSongNotifier.value = song;
         _incrementPlayCount(song);
 
@@ -372,7 +385,7 @@ class AudioPlayerService extends ChangeNotifier {
     });
 
     // Listen for when playback completes (end of playlist with no loop)
-    _audioPlayer.processingStateStream.listen((state) {
+    _processingStateSub = _audioPlayer.processingStateStream.listen((state) {
       debugPrint(
           '🎵 [PROCESSING_STATE] State changed: $state (loopMode: $_loopMode)');
       if (state == ProcessingState.completed) {
@@ -406,8 +419,10 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
+  Timer? _cacheCleanupTimer;
+
   void _startCacheCleanup() {
-    Timer.periodic(const Duration(hours: 24), (timer) async {
+    _cacheCleanupTimer = Timer.periodic(const Duration(hours: 24), (timer) async {
       await _manageCacheSize();
     });
   }
@@ -423,7 +438,10 @@ class AudioPlayerService extends ChangeNotifier {
         artist: song.artist ?? 'Unknown Artist',
         isPlaying: isPlayingNotifier.value,
         songId: song.id,
-        artworkBytes: currentArtwork.value,
+        // artwork is intentionally omitted here — currentArtwork.value still
+        // holds the previous song's bytes at this point.  The home widget
+        // will query the new song's art via songId, and updateCurrentArtwork()
+        // will follow up with the correct bytes once the fetch completes.
         source: _playbackSource.name != null
             ? 'Playing from ${_playbackSource.name}'
             : 'Aurora Music',
@@ -486,13 +504,47 @@ class AudioPlayerService extends ChangeNotifier {
     // ValueNotifier handles UI updates - no notifyListeners needed
   }
 
+  /// Named listener so it can be removed in dispose.
+  void _onSongChangedForNormalization() {
+    if (_volumeNormalization) {
+      unawaited(_applyNormalizationForCurrentSong());
+    }
+  }
+
   @override
   void dispose() {
-    // Cancel debounce timers
+    _isDisposed = true;
+
+    // 1. Cancel timers
     _notifyDebounceTimer?.cancel();
     _saveDebounceTimer?.cancel();
+    _cacheCleanupTimer?.cancel();
+    _sleepTimer?.cancel();
 
-    // Dispose notifiers
+    // 2. Remove listeners BEFORE disposing notifiers
+    currentSongNotifier.removeListener(_onSongChangedForWidget);
+    currentSongNotifier.removeListener(_onSongChangedForNormalization);
+    isPlayingNotifier.removeListener(_onPlayStateChangedForWidget);
+
+    // 3. Cancel stream subscriptions
+    _playerStateSub?.cancel();
+    _playingSub?.cancel();
+    _currentIndexSub?.cancel();
+    _processingStateSub?.cancel();
+
+    // 4. Save pending data while player is still alive
+    if (_playcountsDirty) {
+      _savePlayCounts();
+    }
+    if (_playlistsDirty) {
+      savePlaylists();
+    }
+    saveQueueState();
+
+    // 5. Dispose the player
+    _audioPlayer.dispose();
+
+    // 6. Dispose notifiers (now safe — no listeners attached)
     currentSongNotifier.dispose();
     isPlayingNotifier.dispose();
     isShuffleNotifier.dispose();
@@ -501,28 +553,12 @@ class AudioPlayerService extends ChangeNotifier {
     playlistsNotifier.dispose();
     songsNotifier.dispose();
     currentArtwork.dispose();
+    currentArtworkProvider.dispose();
 
-    _audioPlayer.dispose();
-
-    // Save any pending data synchronously before disposing
-    if (_playcountsDirty) {
-      _savePlayCounts();
-    }
-    if (_playlistsDirty) {
-      savePlaylists();
-    }
-
-    // Persist queue state synchronously so it is available on next launch.
-    saveQueueState();
-
-    // Clean up widget listeners and service
-    currentSongNotifier.removeListener(_onSongChangedForWidget);
-    isPlayingNotifier.removeListener(_onPlayStateChangedForWidget);
+    // 7. Close stream controllers and clean up widget service
     _homeWidgetService.dispose();
-
     _currentSongController.close();
     _errorController.close();
-    _sleepTimer?.cancel();
     super.dispose();
   }
 }

@@ -40,6 +40,12 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
   late Animation<double> _crossfadeAnimation;
   Uint8List? _previousArtworkCache;
 
+  // Cache decoded ImageProviders to avoid re-decoding Uint8List each frame
+  MemoryImage? _currentImageProvider;
+  MemoryImage? _previousImageProvider;
+  Uint8List? _currentProviderSource;
+  Uint8List? _previousProviderSource;
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +58,28 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
       parent: _crossfadeController,
       curve: Curves.easeInOut,
     );
+    _updateCurrentProvider(widget.currentArtwork);
+  }
+
+  /// Returns a cached MemoryImage for the given artwork, creating one only
+  /// when the underlying bytes change.
+  MemoryImage? _getOrCreateProvider(
+      Uint8List? data, MemoryImage? cached, Uint8List? cachedSource) {
+    if (data == null) return null;
+    if (identical(data, cachedSource) && cached != null) return cached;
+    return MemoryImage(data);
+  }
+
+  void _updateCurrentProvider(Uint8List? data) {
+    _currentImageProvider =
+        _getOrCreateProvider(data, _currentImageProvider, _currentProviderSource);
+    _currentProviderSource = data;
+  }
+
+  void _updatePreviousProvider(Uint8List? data) {
+    _previousImageProvider =
+        _getOrCreateProvider(data, _previousImageProvider, _previousProviderSource);
+    _previousProviderSource = data;
   }
 
   @override
@@ -63,43 +91,40 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
         !_areArtworksEqual(widget.currentArtwork, oldWidget.currentArtwork);
 
     if (artworkChanged) {
+      _updateCurrentProvider(widget.currentArtwork);
+
       if (oldWidget.currentArtwork == null && widget.currentArtwork != null) {
         // No animation when appearing for first time
-        if (mounted) {
-          setState(() {
-            _crossfadeController.value = 1.0;
-            _previousArtworkCache = null;
-          });
-        }
+        _crossfadeController.value = 1.0;
+        _previousArtworkCache = null;
+        _previousImageProvider = null;
+        _previousProviderSource = null;
       } else if (widget.currentArtwork != null) {
-        // Animate new artwork in
-        if (mounted) {
-          setState(() {
-            _previousArtworkCache = oldWidget.currentArtwork;
-          });
-          _crossfadeController.forward(from: 0.0).then((_) {
-            // Clear previous artwork after animation completes
-            if (mounted) {
-              setState(() {
-                _previousArtworkCache = null;
-              });
-            }
-          });
-        }
+        // Animate new artwork in — cache the outgoing provider
+        _previousArtworkCache = oldWidget.currentArtwork;
+        _updatePreviousProvider(oldWidget.currentArtwork);
+        _crossfadeController.forward(from: 0.0).then((_) {
+          if (mounted) {
+            setState(() {
+              _previousArtworkCache = null;
+              _previousImageProvider = null;
+              _previousProviderSource = null;
+            });
+          }
+        });
       } else {
         // Artwork removed - fade out
-        if (mounted) {
-          setState(() {
-            _previousArtworkCache = oldWidget.currentArtwork;
-          });
-          _crossfadeController.reverse(from: 1.0).then((_) {
-            if (mounted) {
-              setState(() {
-                _previousArtworkCache = null;
-              });
-            }
-          });
-        }
+        _previousArtworkCache = oldWidget.currentArtwork;
+        _updatePreviousProvider(oldWidget.currentArtwork);
+        _crossfadeController.reverse(from: 1.0).then((_) {
+          if (mounted) {
+            setState(() {
+              _previousArtworkCache = null;
+              _previousImageProvider = null;
+              _previousProviderSource = null;
+            });
+          }
+        });
       }
     }
   }
@@ -169,19 +194,25 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
           color: backgroundColor,
         ),
 
-        // Previous artwork (fading out) - only show during transition
-        if (_previousArtworkCache != null && _crossfadeController.isAnimating)
+        // Previous artwork (fading out) - skip BackdropFilter during
+        // crossfade to avoid two concurrent GPU blur passes.
+        if (_previousArtworkCache != null &&
+            _previousImageProvider != null &&
+            _crossfadeController.isAnimating)
           AnimatedBuilder(
             animation: _crossfadeAnimation,
             builder: (context, child) => Opacity(
               opacity: (1.0 - _crossfadeAnimation.value).clamp(0.0, 1.0),
               child: child!,
             ),
-            child: _buildBlurredArtwork(_previousArtworkCache!, shouldBlur, blurIntensity),
+            child: RepaintBoundary(
+              child: _buildBlurredArtwork(
+                  _previousImageProvider!, shouldBlur, blurIntensity),
+            ),
           ),
 
-        // Current artwork (always visible once loaded, no animation wrapper when stable)
-        if (widget.currentArtwork != null)
+        // Current artwork
+        if (widget.currentArtwork != null && _currentImageProvider != null)
           _crossfadeController.isAnimating
               ? AnimatedBuilder(
                   animation: _crossfadeAnimation,
@@ -191,12 +222,12 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
                   ),
                   child: RepaintBoundary(
                     child: _buildBlurredArtwork(
-                        widget.currentArtwork!, shouldBlur, blurIntensity),
+                        _currentImageProvider!, shouldBlur, blurIntensity),
                   ),
                 )
               : RepaintBoundary(
-                  child:
-                      _buildBlurredArtwork(widget.currentArtwork!, shouldBlur, blurIntensity),
+                  child: _buildBlurredArtwork(
+                      _currentImageProvider!, shouldBlur, blurIntensity),
                 ),
 
         // Overlay for better text readability
@@ -248,14 +279,14 @@ class _AnimatedArtworkBackgroundState extends State<AnimatedArtworkBackground>
     );
   }
 
-  Widget _buildBlurredArtwork(Uint8List artworkData, bool shouldBlur, double blurIntensity) {
+  Widget _buildBlurredArtwork(ImageProvider imageProvider, bool shouldBlur, double blurIntensity) {
     return RepaintBoundary(
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // The image layer
-          Image.memory(
-            artworkData,
+          // The image layer — cached ImageProvider avoids re-decoding each frame
+          Image(
+            image: imageProvider,
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
@@ -403,7 +434,7 @@ class AnimatedColorPointsBackground extends StatefulWidget {
 }
 
 class _AnimatedColorPointsBackgroundState
-    extends State<AnimatedColorPointsBackground> with TickerProviderStateMixin {
+    extends State<AnimatedColorPointsBackground> with TickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _positionController;
   late AnimationController _colorController;
 
@@ -420,14 +451,15 @@ class _AnimatedColorPointsBackgroundState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     // Initialize random positions
     _startPositions = _generateRandomPositions();
     _endPositions = _generateRandomPositions();
 
-    // Position animation - active movement
+    // Position animation - slow drift to save energy
     _positionController = AnimationController(
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 12),
       vsync: this,
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
@@ -519,7 +551,19 @@ class _AnimatedColorPointsBackgroundState
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _positionController.stop();
+    } else if (state == AppLifecycleState.resumed) {
+      if (!_positionController.isAnimating) {
+        _positionController.forward();
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _positionController.dispose();
     _colorController.dispose();
     super.dispose();

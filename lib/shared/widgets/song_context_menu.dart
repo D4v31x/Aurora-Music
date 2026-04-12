@@ -11,6 +11,7 @@ import '../../features/library/library_feature.dart';
 import '../../features/settings/settings_feature.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../models/models.dart';
+import '../providers/performance_mode_provider.dart';
 import '../services/artwork_cache_service.dart';
 import '../services/audio_player_service.dart';
 import '../services/lyrics_service.dart';
@@ -50,21 +51,20 @@ class _SongContextMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final audioService =
         Provider.of<AudioPlayerService>(context, listen: false);
+    final isLowEnd =
+        Provider.of<PerformanceModeProvider>(context, listen: false)
+            .isLowEndDevice;
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: Colors.grey[900]!.withValues(alpha: 0.88),
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
-            ),
-          ),
-          child: SafeArea(
+    Widget content = DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.grey[900]!.withValues(alpha: isLowEnd ? 0.97 : 0.88),
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+        ),
+      ),
+      child: SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -143,9 +143,19 @@ class _SongContextMenu extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
     );
+
+    if (!isLowEnd) {
+      content = ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: content,
+        ),
+      );
+    }
+
+    return content;
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -446,13 +456,16 @@ class _SongContextMenu extends StatelessWidget {
                               style: const TextStyle(color: Colors.white70),
                             ),
                             onTap: () {
+                              final message = AppLocalizations.of(context).addedToNamedPlaylist(playlist.name);
                               audioService.addSongToPlaylist(
                                   playlist.id, song);
                               Navigator.pop(ctx);
-                              NotificationManager.showMessage(
-                                context,
-                                AppLocalizations.of(context).addedToNamedPlaylist(playlist.name),
-                              );
+                              if (context.mounted) {
+                                NotificationManager.showMessage(
+                                  context,
+                                  message,
+                                );
+                              }
                             },
                           );
                         },

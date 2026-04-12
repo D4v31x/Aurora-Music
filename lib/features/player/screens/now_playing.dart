@@ -28,6 +28,8 @@ import '../widgets/player_widgets.dart';
 import 'fullscreen_artwork.dart';
 import 'fullscreen_lyrics.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import '../../../shared/services/audio_output_service.dart';
+import '../../../shared/widgets/audio_output_switcher.dart';
 
 
 
@@ -53,6 +55,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   static final _artworkService = ArtworkCacheService();
   ImageProvider<Object>? _currentArtwork;
   int? _lastSongId;
+  // Whether the high-quality local fetch has completed for the current song.
+  // Keeps the service-level thumbnail from overwriting a higher-res image.
+  bool _hasHighQualityArtwork = false;
+
+  /// Held so we can remove the [AudioPlayerService.currentArtworkProvider]
+  /// listener in [dispose] without needing to call Provider.of again.
+  AudioPlayerService? _audioService;
 
   List<TimedLyric>? _timedLyrics;
   final ValueNotifier<int> _currentLyricIndexNotifier = ValueNotifier<int>(0);
@@ -71,6 +80,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   @override
   void dispose() {
+    _audioService?.currentArtworkProvider
+        .removeListener(_onServiceArtworkChanged);
     _currentLyricIndexNotifier.dispose();
     _positionSub?.cancel();
     _songChangeSubscription?.cancel();
@@ -83,11 +94,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   void _initializeScreen() {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
+    _audioService = audioPlayerService;
+
+    // Subscribe to service-level artwork updates so that the thumbnail
+    // published synchronously by updateCurrentArtwork() (cache-hit path)
+    // is reflected here on the same frame as the song change.
+    audioPlayerService.currentArtworkProvider
+        .addListener(_onServiceArtworkChanged);
 
     // Initialize with current song
     final currentSong = audioPlayerService.currentSong;
     if (currentSong != null) {
       _lastSongId = currentSong.id;
+      // Seed with whatever the service already has (may be non-null if the
+      // song has been playing a moment before the screen opened).
+      _currentArtwork = audioPlayerService.currentArtworkProvider.value;
       _initializeTimedLyrics(audioPlayerService);
       _updateArtwork(currentSong);
     }
@@ -102,6 +123,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         audioPlayerService.currentSongStream.listen((song) {
       if (song != null && song.id != _lastSongId) {
         _lastSongId = song.id;
+        _hasHighQualityArtwork = false;
         _pendingSongLoadId = song.id;
         if (mounted) {
           _updateArtwork(song);
@@ -110,6 +132,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         }
       }
     });
+  }
+
+  /// Called whenever [AudioPlayerService.currentArtworkProvider] changes value.
+  /// Used as a quick-path placeholder while our own high-quality fetch runs.
+  void _onServiceArtworkChanged() {
+    if (!mounted || _hasHighQualityArtwork) return;
+    final provider = _audioService?.currentArtworkProvider.value;
+    final serviceSongId = _audioService?.currentSong?.id;
+    if (provider != null && serviceSongId == _lastSongId) {
+      setState(() => _currentArtwork = provider);
+    }
   }
 
   Future<void> _ensureBackgroundArtwork() async {
@@ -182,14 +215,29 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   // MARK: - Artwork Loading
 
   Future<void> _updateArtwork(SongModel song) async {
+    final songId = song.id;
+
+    // Immediate placeholder: prefer the sync-cached provider, then whatever
+    // AudioPlayerService has already computed (synchronous cache-hit path).
+    final quick = _artworkService.getCachedImageProviderSync(songId)
+        ?? _audioService?.currentArtworkProvider.value;
+    if (quick != null && mounted && _lastSongId == songId) {
+      setState(() => _currentArtwork = quick);
+    }
+
     try {
       final provider = await _artworkService.getCachedImageProvider(
-        song.id,
+        songId,
         highQuality: true,
       );
-      if (mounted) setState(() => _currentArtwork = provider);
+      // Stale-update guard: discard result if the song changed while loading.
+      if (mounted && _lastSongId == songId) {
+        _hasHighQualityArtwork = true;
+        setState(() => _currentArtwork = provider);
+      }
     } catch (e) {
-      if (mounted) {
+      if (mounted && _lastSongId == songId) {
+        _hasHighQualityArtwork = true;
         setState(() {
           _currentArtwork =
               const AssetImage('assets/images/logo/default_art.png');
@@ -239,6 +287,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         onPressed: _handleClose,
       ),
       actions: [
+
         const SleepTimerIndicator(),
         PlayerMoreOptionsMenu(
           onSelected: (value) =>
@@ -353,10 +402,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 ),
               ),
               SizedBox(height: isTablet ? 28 : 20),
-              Center(
-                child: SongLikeButton(
-                  audioPlayerService: audioPlayerService,
-                  size: isTablet ? 34 : 30,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: isTablet ? 60.0 : 32.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _AudioOutputButton(size: isTablet ? 34.0 : 30.0),
+                    SongLikeButton(
+                      audioPlayerService: audioPlayerService,
+                      size: isTablet ? 34 : 30,
+                    ),
+                  ],
                 ),
               ),
               _buildLyricsSection(audioPlayerService, isTablet),
@@ -728,6 +784,66 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           );
         },
       ),
+    );
+  }
+}
+
+// MARK: - Audio Output Button
+
+class _AudioOutputButton extends StatefulWidget {
+  final double size;
+
+  const _AudioOutputButton({required this.size});
+
+  @override
+  State<_AudioOutputButton> createState() => _AudioOutputButtonState();
+}
+
+class _AudioOutputButtonState extends State<_AudioOutputButton> {
+  final AudioOutputService _audioOutputService = AudioOutputService();
+  final GlobalKey _buttonKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _audioOutputService.initialize();
+  }
+
+  void _openSwitcher() {
+    showAudioOutputSwitcher(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: _audioOutputService,
+      builder: (context, _) {
+        final activeDevice = _audioOutputService.activeDevice;
+        final isBluetooth =
+            activeDevice?.type == AudioOutputType.bluetooth;
+
+        return GestureDetector(
+          key: _buttonKey,
+          onTap: _openSwitcher,
+          child: SizedBox(
+            width: widget.size * 2.4,
+            height: widget.size * 2.4,
+            child: Center(
+              child: isBluetooth
+                  ? Icon(
+                      Icons.bluetooth,
+                      color: const Color(0xFF10B981),
+                      size: widget.size,
+                    )
+                  : Iconoir.SoundHigh(
+                      color: Colors.white,
+                      width: widget.size,
+                      height: widget.size,
+                    ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

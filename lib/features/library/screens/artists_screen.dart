@@ -52,10 +52,21 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     super.initState();
     _scrollController.addListener(_scrollListener);
     _loadArtists();
+
+    // Listen for library changes (new songs scanned) to reload artists
+    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+    audioService.songsNotifier.addListener(_onSongsChanged);
+  }
+
+  void _onSongsChanged() {
+    // Songs list changed — reload artists from scratch
+    _loadArtists();
   }
 
   @override
   void dispose() {
+    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+    audioService.songsNotifier.removeListener(_onSongsChanged);
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _searchController.dispose();

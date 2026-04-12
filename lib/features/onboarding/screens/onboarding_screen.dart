@@ -5,7 +5,6 @@ import '../../../shared/services/user_preferences.dart';
 import '../../../shared/providers/providers.dart';
 import '../../home/screens/home_screen.dart';
 import '../pages/welcome_page.dart';
-import '../pages/beta_welcome_page.dart';
 import '../pages/app_info_page.dart';
 import '../pages/language_selection_page.dart';
 import '../pages/theme_selection_page.dart';
@@ -20,7 +19,7 @@ import '../../../shared/widgets/expanding_player.dart';
 class OnboardingScreen extends HookWidget {
   const OnboardingScreen({super.key});
 
-  static const int _totalPages = 10;
+  static const int _totalPages = 9;
 
   @override
   Widget build(BuildContext context) {
@@ -71,36 +70,31 @@ class OnboardingScreen extends HookWidget {
             onBack: previousPage,
           );
         case 3:
-          return BetaWelcomePage(
-            onContinue: nextPage,
-            onBack: previousPage,
-          );
-        case 4:
           return AppInfoPage(
             onContinue: nextPage,
             onBack: previousPage,
           );
-        case 5:
+        case 4:
           return PermissionsPage(
             onContinue: nextPage,
             onBack: previousPage,
           );
-        case 6:
+        case 5:
           return ThemeSelectionPage(
             onContinue: nextPage,
             onBack: previousPage,
           );
-        case 7:
+        case 6:
           return InternetUsagePage(
             onContinue: nextPage,
             onBack: previousPage,
           );
-        case 8:
+        case 7:
           return DonationPage(
             onContinue: nextPage,
             onBack: previousPage,
           );
-        case 9:
+        case 8:
           return CompletionPage(onComplete: () => _completeOnboarding(context));
         default:
           return WelcomePage(onContinue: nextPage);

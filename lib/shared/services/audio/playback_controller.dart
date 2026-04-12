@@ -7,13 +7,15 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
     int startIndex, {
     PlaybackSourceInfo? source,
   }) async {
+    if (_isDisposed) return;
+
     // Update playback source
     _playbackSource = source ?? PlaybackSourceInfo.unknown;
 
     try {
       if (songs.isEmpty || startIndex < 0 || startIndex >= songs.length) {
         debugPrint('Invalid playlist or start index');
-        _errorController.add('Invalid playlist or start index');
+        if (!_errorController.isClosed) _errorController.add('Invalid playlist or start index');
         return;
       }
 
@@ -104,7 +106,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
           _isPlaying = true;
           isPlayingNotifier.value = true;
           _incrementPlayCount(_playlist[_currentIndex]);
-          _currentSongController.add(_playlist[_currentIndex]);
+if (!_currentSongController.isClosed) _currentSongController.add(_playlist[_currentIndex]);
           currentSongNotifier.value = _playlist[_currentIndex];
 
           // Fire and forget UI updates
@@ -155,7 +157,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
         return;
       }
       debugPrint('Failed to set playlist: $e');
-      _errorController.add('Failed to set playlist: $e');
+      if (!_errorController.isClosed) _errorController.add('Failed to set playlist: $e');
       _isPlaying = false;
       isPlayingNotifier.value = false;
       _isLoading = false;
@@ -164,6 +166,8 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
   }
 
   Future<void> updatePlaylist(List<SongModel> newSongs) async {
+    if (_isDisposed) return;
+
     try {
       if (_gaplessPlayback) {
         // Use lightweight MediaItems for instant rebuild
@@ -200,12 +204,14 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
         await setPlaylist(newSongs, 0);
       }
     } catch (e) {
-      _errorController.add('Failed to update playlist: $e');
+      if (!_errorController.isClosed) _errorController.add('Failed to update playlist: $e');
       _scheduleNotify();
     }
   }
 
   Future<void> play({int? index}) async {
+    if (_isDisposed) return;
+
     // If an explicit index is provided (user selected a song), allow it
     // even if a previous load is in progress — the user's intent takes priority.
     if (index != null) {
@@ -273,7 +279,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
         _isPlaying = true;
         isPlayingNotifier.value = true;
         _incrementPlayCount(song);
-        _currentSongController.add(song);
+        if (!_currentSongController.isClosed) _currentSongController.add(song);
         currentSongNotifier.value = song;
 
         // Fire and forget - don't await these UI updates
@@ -290,7 +296,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
       debugPrint('Stack trace: $stackTrace');
       _isPlaying = false;
       isPlayingNotifier.value = false;
-      _currentSongController.addError('Failed to play song: $e');
+      if (!_currentSongController.isClosed) _currentSongController.addError('Failed to play song: $e');
       _scheduleNotify();
     } finally {
       _isLoading = false;
@@ -298,6 +304,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
   }
 
   Future<void> pause() async {
+    if (_isDisposed) return;
     await _audioPlayer.pause();
     _isPlaying = false;
     isPlayingNotifier.value = false;
@@ -305,6 +312,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
   }
 
   Future<void> resume() async {
+    if (_isDisposed) return;
     if (_audioPlayer.playing) return;
     await _audioPlayer.play();
     _isPlaying = true;
@@ -313,6 +321,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
   }
 
   Future<void> stop() async {
+    if (_isDisposed) return;
     await _audioPlayer.stop();
     _isPlaying = false;
     isPlayingNotifier.value = false;
@@ -337,6 +346,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
   }
 
   void skip() async {
+    if (_isDisposed) return;
     _isLoading = false; // Reset loading flag to allow new song to play
 
     debugPrint(
@@ -372,32 +382,26 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
   }
 
   void back() async {
+    if (_isDisposed) return;
     _isLoading = false; // Reset loading flag to allow new song to play
 
     final currentPosition = _audioPlayer.position;
 
     // If more than 3 seconds have elapsed, restart the current track.
     if (currentPosition > const Duration(seconds: kPreviousThresholdSeconds)) {
-      debugPrint(
-          '⏮️ [BACK] Past 3s — restarting current song (position: ${currentPosition.inSeconds}s)');
-      await _audioPlayer.seek(Duration.zero);
       return;
     }
 
     // Within 3 seconds: move to the previous track.
     if (_audioPlayer.hasPrevious) {
-      debugPrint('⏮️ [BACK] Within 3s and has previous — seeking to previous');
       await _audioPlayer.seekToPrevious();
     } else {
       // At the very first track in the queue.
       if (_loopMode == LoopMode.all && _playlist.isNotEmpty) {
-        // Repeat ALL: jump to the last track.
-        debugPrint('⏮️ [BACK] At first track, repeat ALL — jumping to last');
+        // Repeat all: jump to the last track.
         await _audioPlayer.seek(Duration.zero, index: _playlist.length - 1);
       } else {
-        // Repeat OFF / ONE at first track: restart.
-        debugPrint(
-            '⏮️ [BACK] At first track (position: ${currentPosition.inSeconds}s) — restarting');
+        // Repeat off or once at first track: restart.
         await _audioPlayer.seek(Duration.zero);
       }
     }

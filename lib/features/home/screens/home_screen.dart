@@ -29,6 +29,8 @@ import '../../../shared/services/local_caching_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/download_progress_monitor.dart';
 import '../../../shared/services/bluetooth_service.dart';
+import '../../../shared/services/audio_output_service.dart';
+import '../../../shared/widgets/audio_output_switcher.dart';
 import '../widgets/library_tab.dart';
 import 'package:aurora_music_v01/features/onboarding/screens/onboarding_screen.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -64,6 +66,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final NotificationManager _notificationManager = NotificationManager();
   final DownloadProgressMonitor _downloadMonitor = DownloadProgressMonitor();
   final BluetoothService _bluetoothService = BluetoothService();
+  final AudioOutputService _audioOutputService = AudioOutputService();
+  final GlobalKey _bluetoothPillKey = GlobalKey();
+  bool _isPillHidden = false;
   StreamSubscription<String>? _downloadStatusSubscription;
 
   @override
@@ -74,6 +79,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     // Initialize Bluetooth service
     _bluetoothService.initialize();
+
+    // Initialize audio output service
+    _audioOutputService.initialize();
 
     // Start monitoring downloads
     _downloadMonitor.startMonitoring();
@@ -213,12 +221,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _loadSmartSuggestions();
   }
 
-  Future<void> _loadAlbumsAndArtists() async {
+  Future<void> _loadAlbumsAndArtists({bool forceRefresh = false}) async {
     try {
       final onAudioQuery = OnAudioQuery();
       final loadedAlbums = await onAudioQuery.queryAlbums();
       // Use ArtistAggregatorService for properly separated artists
-      final loadedArtists = await _artistAggregator.getAllArtists();
+      final loadedArtists = await _artistAggregator.getAllArtists(forceRefresh: forceRefresh);
       if (mounted) {
         setState(() {
           albums = loadedAlbums;
@@ -253,6 +261,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _notificationManager.dispose();
     _downloadStatusSubscription?.cancel();
     _downloadMonitor.stopMonitoring();
+    _downloadMonitor.dispose();
     ArtistSeparatorService().removeListener(_onArtistSeparatorChanged);
     super.dispose();
   }
@@ -340,8 +349,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           // Reload smart suggestions for For You section
           await _loadSmartSuggestions();
 
-          // Reload albums and artists
-          unawaited(_loadAlbumsAndArtists());
+          // Reload albums and artists (force refresh since library just changed)
+          unawaited(_loadAlbumsAndArtists(forceRefresh: true));
         }
 
         if (!mounted) return;
@@ -705,47 +714,59 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             AnimatedSize(
               duration: const Duration(milliseconds: 400),
               curve: Curves.ease,
-              child: isConnected
-                  ? Container(
-                      height: 30,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: const Color(0xFF10B981), // Green color
-                          width: 1.5,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.bluetooth_connected,
-                            color: Color(0xFF10B981),
-                            size: 16,
-                          ),
-                          const SizedBox(width: 6),
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            transitionBuilder:
-                                (Widget child, Animation<double> animation) {
-                              return FadeTransition(
-                                  opacity: animation, child: child);
-                            },
-                            child: Text(
-                              _bluetoothService.connectedDeviceName,
-                              key: ValueKey(
-                                  _bluetoothService.connectedDeviceName),
-                              style: const TextStyle(
-                                fontFamily: FontConstants.fontFamily,
-                                fontSize: 12,
-                                color: Color(0xFF10B981),
-                                fontWeight: FontWeight.w600,
+              child: isConnected && !_isPillHidden
+                  ? GestureDetector(
+                      onTap: () async {
+                        final renderBox = _bluetoothPillKey.currentContext
+                            ?.findRenderObject() as RenderBox?;
+                        Rect? sourceRect;
+                        if (renderBox != null) {
+                          final pos = renderBox.localToGlobal(Offset.zero);
+                          sourceRect = pos & renderBox.size;
+                        }
+                        setState(() => _isPillHidden = true);
+                        await showAudioOutputSwitcher(context,
+                            sourceRect: sourceRect);
+                        // Wait for the reverse morph animation to fully
+                        // collapse before replaying the pill entrance.
+                        await Future.delayed(
+                            const Duration(milliseconds: 340));
+                        if (mounted) setState(() => _isPillHidden = false);
+                      },
+                      child: _AnimatedStrokePill(
+                        key: _bluetoothPillKey,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.bluetooth_connected,
+                              color: Color(0xFF10B981),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            AnimatedSwitcher(
+                              duration:
+                                  const Duration(milliseconds: 300),
+                              transitionBuilder: (Widget child,
+                                  Animation<double> animation) {
+                                return FadeTransition(
+                                    opacity: animation, child: child);
+                              },
+                              child: Text(
+                                _bluetoothService.connectedDeviceName,
+                                key: ValueKey(
+                                    _bluetoothService
+                                        .connectedDeviceName),
+                                style: const TextStyle(
+                                  fontFamily: FontConstants.fontFamily,
+                                  fontSize: 12,
+                                  color: Color(0xFF10B981),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     )
                   : const SizedBox.shrink(),
@@ -1052,4 +1073,123 @@ class _BlurredNavBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A pill-shaped container whose border stroke animates from 0 to full length
+/// and whose content fades in with a stagger.  Accepts [visible] to replay the
+/// entrance when the pill reappears after the morph dialog closes.
+class _AnimatedStrokePill extends StatefulWidget {
+  final Widget child;
+
+  const _AnimatedStrokePill({
+    super.key,
+    required this.child,
+  });
+
+  @override
+  State<_AnimatedStrokePill> createState() => _AnimatedStrokePillState();
+}
+
+// Apple-like spring curve for the pill entrance.
+const _pillEntranceCurve = Cubic(0.175, 0.885, 0.32, 1.075);
+
+class _AnimatedStrokePillState extends State<_AnimatedStrokePill>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final CurvedAnimation _curved;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+    _curved = CurvedAnimation(
+      parent: _controller,
+      curve: _pillEntranceCurve,
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _curved.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _curved,
+      builder: (context, child) {
+        final t = _curved.value;
+        // Stroke draws during 0 → 65 % of the animation.
+        final strokeProgress = (t / 0.65).clamp(0.0, 1.0);
+        // Content fades + slides in during 35 → 100 %.
+        final contentT = ((t - 0.35) / 0.65).clamp(0.0, 1.0);
+
+        return CustomPaint(
+          painter: _StrokePillPainter(
+            progress: strokeProgress,
+            color: const Color(0xFF10B981),
+            strokeWidth: 1.5,
+            radius: 20,
+          ),
+          child: Opacity(
+            opacity: contentT,
+            child: Transform.translate(
+              offset: Offset(4 * (1 - contentT), 0),
+              child: child,
+            ),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: SizedBox(
+          height: 22,
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}
+
+class _StrokePillPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final double strokeWidth;
+  final double radius;
+
+  _StrokePillPainter({
+    required this.progress,
+    required this.color,
+    required this.strokeWidth,
+    required this.radius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
+    final path = Path()..addRRect(rrect);
+
+    final metric = path.computeMetrics().first;
+    final drawLength = metric.length * progress;
+    final extract = metric.extractPath(0, drawLength);
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawPath(extract, paint);
+  }
+
+  @override
+  bool shouldRepaint(_StrokePillPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }

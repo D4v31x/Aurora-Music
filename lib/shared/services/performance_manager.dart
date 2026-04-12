@@ -24,6 +24,7 @@ class PerformanceManager {
   int _frameCount = 0;
   DateTime? _fpsStartTime;
   double _currentFps = 60.0;
+  bool _isMonitoringFps = false;
 
   /// Current measured FPS
   double get currentFps => _currentFps;
@@ -76,12 +77,21 @@ class PerformanceManager {
 
   /// Start FPS monitoring
   void startFpsMonitoring() {
+    if (_isMonitoringFps) return;
+    _isMonitoringFps = true;
     _fpsStartTime = DateTime.now();
     _frameCount = 0;
     SchedulerBinding.instance.addPostFrameCallback(_onFrame);
   }
 
+  /// Stop FPS monitoring
+  void stopFpsMonitoring() {
+    _isMonitoringFps = false;
+  }
+
   void _onFrame(Duration timestamp) {
+    if (!_isMonitoringFps) return;
+
     _frameCount++;
 
     final now = DateTime.now();
@@ -94,7 +104,7 @@ class PerformanceManager {
       }
     }
 
-    // Continue monitoring
+    // Continue monitoring only if still active
     SchedulerBinding.instance.addPostFrameCallback(_onFrame);
   }
 
@@ -139,6 +149,7 @@ class PerformanceManager {
   /// Dispose the performance manager
   void dispose() {
     stopAutomaticCleanup();
+    stopFpsMonitoring();
     _registeredCaches.clear();
     _cleanupCallbacks.clear();
   }

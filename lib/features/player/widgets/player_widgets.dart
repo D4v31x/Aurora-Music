@@ -6,7 +6,6 @@
 /// - PlayPauseButton: Standalone play/pause button
 /// - SongLikeButton: Like/favorite button
 /// - SleepTimerIndicator: Sleep timer countdown
-/// - TrackInfoDisplay: Song title and artist display
 /// - NowPlayingArtwork: Album artwork with hero animations
 /// - PlayingFromHeader: Playback source display
 /// - ArtistSection: Artist info card
@@ -21,7 +20,6 @@ export 'player_controls.dart';
 export 'song_like_button.dart';
 export 'sleep_timer_widgets.dart';
 export 'player_dialogs.dart';
-export 'track_info_display.dart';
 export 'now_playing_artwork.dart';
 export 'playing_from_header.dart';
 export 'artist_section.dart';

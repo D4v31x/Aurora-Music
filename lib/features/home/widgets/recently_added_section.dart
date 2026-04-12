@@ -19,6 +19,7 @@ class RecentlyAddedSection extends StatelessWidget {
   static List<SongModel> _getDisplaySongs(List<SongModel> songs) {
     if (songs.isEmpty) return [];
     final sorted = List<SongModel>.from(songs)
+      ..removeWhere((s) => s.title.isEmpty)
       ..sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
     return sorted.take(10).toList();
   }
@@ -27,6 +28,7 @@ class RecentlyAddedSection extends StatelessWidget {
   static List<SongModel> _getFullPlaylist(List<SongModel> songs) {
     if (songs.isEmpty) return [];
     final sorted = List<SongModel>.from(songs)
+      ..removeWhere((s) => s.title.isEmpty)
       ..sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
     return sorted;
   }
@@ -43,7 +45,7 @@ class RecentlyAddedSection extends StatelessWidget {
         for (int i = 0; i < previous.length; i++) {
           if (previous[i].id != next[i].id ||
               previous[i].title != next[i].title ||
-              previous[i].artist != next[i].artist) {
+              (previous[i].artist ?? '') != (next[i].artist ?? '')) {
             return true;
           }
         }
@@ -89,7 +91,7 @@ class RecentlyAddedSection extends StatelessWidget {
                 child: GlassmorphicCard.song(
                   key: ValueKey(song.id),
                   songId: song.id,
-                  title: song.title,
+                  title: song.title.isNotEmpty ? song.title : '',
                   artist: splitArtists(song.artist ?? '').first,
                   artworkService: _artworkService,
                   badge: CardBadge(text: AppLocalizations.of(context).badgeNew),

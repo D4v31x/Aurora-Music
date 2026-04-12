@@ -89,11 +89,17 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
   }
 
   Future<void> _loadSongs() async {
-    final songs = await _audioQuery.querySongs(
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
+    // Use the in-memory songs list from AudioPlayerService instead of
+    // re-querying MediaStore, which is expensive I/O.
+    final service = Provider.of<AudioPlayerService>(context, listen: false);
+    final cachedSongs = service.songs;
+    final songs = cachedSongs.isNotEmpty
+        ? cachedSongs
+        : await _audioQuery.querySongs(
+            orderType: OrderType.ASC_OR_SMALLER,
+            uriType: UriType.EXTERNAL,
+            ignoreCase: true,
+          );
 
     // Load albums for this artist
     final allAlbums = await _audioQuery.queryAlbums(

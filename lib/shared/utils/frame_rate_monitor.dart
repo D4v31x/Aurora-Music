@@ -1,7 +1,9 @@
-import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 
 /// Simple frame rate monitoring service for performance analysis
+/// Uses SchedulerBinding.addTimingsCallback for zero-overhead measurement
 class FrameRateMonitor {
   static FrameRateMonitor? _instance;
   static FrameRateMonitor get instance {
@@ -12,10 +14,10 @@ class FrameRateMonitor {
   FrameRateMonitor._();
 
   final List<Duration> _frameTimes = [];
-  Timer? _monitoringTimer;
   int _frameCount = 0;
   double _currentFps = 0.0;
   bool _isMonitoring = false;
+  TimingsCallback? _timingsCallback;
 
   /// Current estimated FPS
   double get currentFps => _currentFps;
@@ -23,7 +25,7 @@ class FrameRateMonitor {
   /// Whether monitoring is active
   bool get isMonitoring => _isMonitoring;
 
-  /// Start monitoring frame rate
+  /// Start monitoring frame rate using engine frame timings
   void startMonitoring() {
     if (_isMonitoring) return;
 
@@ -31,13 +33,8 @@ class FrameRateMonitor {
     _frameCount = 0;
     _frameTimes.clear();
 
-    // Start the monitoring using a timer-based approach
-    _monitoringTimer =
-        Timer.periodic(const Duration(milliseconds: 16), (timer) {
-      if (_isMonitoring) {
-        _onFrame();
-      }
-    });
+    _timingsCallback = _onTimings;
+    SchedulerBinding.instance.addTimingsCallback(_timingsCallback!);
   }
 
   /// Stop monitoring frame rate
@@ -45,20 +42,26 @@ class FrameRateMonitor {
     if (!_isMonitoring) return;
 
     _isMonitoring = false;
-    _monitoringTimer?.cancel();
-    _monitoringTimer = null;
+    if (_timingsCallback != null) {
+      SchedulerBinding.instance.removeTimingsCallback(_timingsCallback!);
+      _timingsCallback = null;
+    }
   }
 
-  void _onFrame() {
+  void _onTimings(List<FrameTiming> timings) {
     if (!_isMonitoring) return;
 
-    final now = Duration(microseconds: DateTime.now().microsecondsSinceEpoch);
-    _frameCount++;
-    _frameTimes.add(now);
+    for (final timing in timings) {
+      final frameDuration = Duration(
+        microseconds: timing.totalSpan.inMicroseconds,
+      );
+      _frameCount++;
+      _frameTimes.add(frameDuration);
 
-    // Keep only the last 60 frame times (approximately 1 second at 60fps)
-    if (_frameTimes.length > 60) {
-      _frameTimes.removeAt(0);
+      // Keep only the last 60 frame times
+      if (_frameTimes.length > 60) {
+        _frameTimes.removeAt(0);
+      }
     }
 
     // Calculate FPS every few frames
@@ -73,12 +76,15 @@ class FrameRateMonitor {
       return;
     }
 
-    // Calculate FPS based on frame times
-    final Duration totalTime = _frameTimes.last - _frameTimes.first;
-    final int frameSpan = _frameTimes.length - 1;
+    // Calculate FPS based on average frame duration
+    int totalMicroseconds = 0;
+    for (final duration in _frameTimes) {
+      totalMicroseconds += duration.inMicroseconds;
+    }
+    final avgMicroseconds = totalMicroseconds / _frameTimes.length;
 
-    if (totalTime.inMicroseconds > 0) {
-      _currentFps = frameSpan * 1000000 / totalTime.inMicroseconds;
+    if (avgMicroseconds > 0) {
+      _currentFps = 1000000 / avgMicroseconds;
     } else {
       _currentFps = 0.0;
     }

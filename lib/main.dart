@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:clarity_flutter/clarity_flutter.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +10,8 @@ import 'dart:ui' as ui;
 
 import 'core/constants/app_config.dart';
 import 'shared/services/audio_player_service.dart';
+import 'shared/services/artwork_cache_service.dart';
 import 'shared/services/audio_handler.dart';
-import 'shared/services/error_tracking_service.dart';
 import 'shared/services/shader_warmup_service.dart';
 import 'shared/services/background_manager_service.dart';
 import 'shared/services/sleep_timer_controller.dart';
@@ -25,24 +25,13 @@ import 'shared/widgets/performance_debug_overlay.dart';
 import 'shared/widgets/expanding_player.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-/// Global navigator key for accessing navigator from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-/// Global audio handler instance
 late AuroraAudioHandler audioHandler;
 
-/// Application entry point
+/// App entry point
 void main() async {
   try {
-    // Initialize error tracking
-    final errorTracker = ErrorTrackingService();
-
-    // Set up Flutter error handling
-    FlutterError.onError = (FlutterErrorDetails details) async {
-      FlutterError.dumpErrorToConsole(details);
-      await errorTracker.recordError(details.exception, details.stack);
-    };
-
     // Ensure Flutter bindings are initialized
     WidgetsFlutterBinding.ensureInitialized();
 
@@ -61,6 +50,9 @@ void main() async {
       SharedPreferences.getInstance(),
       ArtistSeparatorService().initialize(),
       HomeLayoutService().initialize(),
+      // Pre-warm the artwork cache with the most recently added songs so the
+      // first skip after startup shows artwork instantly.
+      ArtworkCacheService().initialize(),
     ]);
 
     // Warmup shaders in parallel with other initialization
@@ -89,37 +81,35 @@ void main() async {
       ),
     );
 
-    // Initialize Clarity
-    const clarityProjectId = String.fromEnvironment('CLARITY_PROJECT_ID');
-    final clarityConfig = ClarityConfig(
-      projectId: clarityProjectId,
-      logLevel: LogLevel.None,
-    );
-
     // Launch the application with all required providers
     await SentryFlutter.init(
     (options) {
-      options.dsn = const String.fromEnvironment('SENTRY_DSN');
+      const dsn = String.fromEnvironment('SENTRY_DSN');
+      options.dsn = dsn.isNotEmpty ? dsn : null;
       options.tracesSampleRate = 0.2;
       options.profilesSampleRate = 0.2;
     },
     appRunner: () => runApp(SentryWidget(child: 
-      ClarityWidget(
-        clarityConfig: clarityConfig,
-        app: MultiProvider(
+      MultiProvider(
           providers: [
             // Use lazy initialization for better startup performance
-            ChangeNotifierProvider(create: (_) => AudioPlayerService()),
-            ChangeNotifierProvider(create: (_) => ThemeProvider(), lazy: false),
             ChangeNotifierProvider(
-                create: (_) => PerformanceModeProvider(), lazy: false),
+              create: (_) => AudioPlayerService()
+              ),
             ChangeNotifierProvider(
-                create: (_) => BackgroundManagerService(), lazy: false),
+              create: (_) => ThemeProvider(), lazy: false
+              ),
             ChangeNotifierProvider(
-                create: (_) => SleepTimerController(), lazy: true),
+              create: (_) => PerformanceModeProvider(), lazy: false
+              ),
+            ChangeNotifierProvider(
+              create: (_) => BackgroundManagerService(), lazy: false
+              ),
+            ChangeNotifierProvider(
+              create: (_) => SleepTimerController(), lazy: true
+              ),
             ChangeNotifierProvider.value(value: ArtistSeparatorService()),
             ChangeNotifierProvider.value(value: HomeLayoutService()),
-            Provider<ErrorTrackingService>.value(value: errorTracker),
           ],
           child: Builder(
             builder: (context) {
@@ -145,11 +135,9 @@ void main() async {
             },
           ),
         ),
-      ),
     )));
   } catch (e, stack) {
-    final errorTracker = ErrorTrackingService();
-    await errorTracker.recordError(e, stack);
+    debugPrint('Fatal error during app initialization: $e\n$stack');
     rethrow;
   }
 }
@@ -213,6 +201,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late ui.Locale _locale;
   final _MiniPlayerObserver _miniPlayerObserver = _MiniPlayerObserver();
+  StreamSubscription<bool>? _notificationClickedSub;
 
   @override
   void initState() {
@@ -221,7 +210,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     // Listen for notification clicks to expand the player
-    AudioService.notificationClicked.listen((clicked) {
+    _notificationClickedSub = AudioService.notificationClicked.listen((clicked) {
       if (clicked) {
         // Expand the mini player to show Now Playing screen
         ExpandingPlayer.expand();
@@ -231,6 +220,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _notificationClickedSub?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

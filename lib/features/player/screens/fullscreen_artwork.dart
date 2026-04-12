@@ -27,6 +27,11 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
   final ArtworkCacheService _artworkService = ArtworkCacheService();
   ImageProvider? _artworkProvider;
   int? _lastSongId;
+  // True once the high-quality fetch for the current song has completed.
+  bool _hasHighQualityArtwork = false;
+
+  /// Held for listener management; set in the post-frame callback.
+  AudioPlayerService? _audioService;
 
   StreamSubscription<SongModel?>? _songChangeSubscription;
 
@@ -67,11 +72,20 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final audioService =
           Provider.of<AudioPlayerService>(context, listen: false);
+      _audioService = audioService;
+
+      // Subscribe to the service-level artwork notifier so the fullscreen
+      // image swaps on the same frame as the song change when art is cached.
+      audioService.currentArtworkProvider.addListener(_onServiceArtworkChanged);
+
+      // Seed with whatever the service already has.
+      _artworkProvider = audioService.currentArtworkProvider.value;
 
       _loadArtwork(audioService);
 
       _songChangeSubscription = audioService.currentSongStream.listen((song) {
         if (mounted && song != null && song.id != _lastSongId) {
+          _hasHighQualityArtwork = false;
           _loadArtwork(audioService);
         }
       });
@@ -115,22 +129,44 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
     }
   }
 
+  /// Called whenever [AudioPlayerService.currentArtworkProvider] changes.
+  /// Provides an instant thumbnail while the high-quality fetch runs.
+  void _onServiceArtworkChanged() {
+    if (!mounted || _hasHighQualityArtwork) return;
+    final provider = _audioService?.currentArtworkProvider.value;
+    final serviceSongId = _audioService?.currentSong?.id;
+    if (provider != null && serviceSongId == _lastSongId) {
+      setState(() => _artworkProvider = provider);
+    }
+  }
+
   Future<void> _loadArtwork(AudioPlayerService audioService) async {
     final song = audioService.currentSong;
     if (song == null) return;
 
-    _lastSongId = song.id;
+    final songId = song.id;
+    _lastSongId = songId;
+
+    // Immediate placeholder: sync cache first, then the service notifier.
+    final quick = _artworkService.getCachedImageProviderSync(songId)
+        ?? _audioService?.currentArtworkProvider.value;
+    if (quick != null && mounted && _lastSongId == songId) {
+      setState(() => _artworkProvider = quick);
+    }
 
     try {
       final provider = await _artworkService.getCachedImageProvider(
-        song.id,
+        songId,
         highQuality: true,
       );
-      if (mounted) {
+      // Stale-update guard: discard result if the song changed while loading.
+      if (mounted && _lastSongId == songId) {
+        _hasHighQualityArtwork = true;
         setState(() => _artworkProvider = provider);
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && _lastSongId == songId) {
+        _hasHighQualityArtwork = true;
         setState(() => _artworkProvider = null);
       }
     }
@@ -138,6 +174,8 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
 
   @override
   void dispose() {
+    _audioService?.currentArtworkProvider
+        .removeListener(_onServiceArtworkChanged);
     _fadeController.dispose();
     _controlsController.dispose();
     _hideControlsTimer?.cancel();
@@ -147,15 +185,18 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
 
   @override
   Widget build(BuildContext context) {
-    final audioService = Provider.of<AudioPlayerService>(context);
-    final song = audioService.currentSong;
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     final padding = MediaQuery.of(context).padding;
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: FadeTransition(
         opacity: _fadeController,
-        child: Stack(
+        child: ValueListenableBuilder<SongModel?>(
+          valueListenable: audioService.currentSongNotifier,
+          builder: (context, song, _) {
+        return Stack(
           fit: StackFit.expand,
           children: [
             // Fullscreen artwork - edge to edge
@@ -288,6 +329,8 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
               ),
             ),
           ],
+        );
+          },
         ),
       ),
     );

@@ -19,7 +19,6 @@ export 'widgets/player_menu.dart';
 export 'widgets/song_like_button.dart';
 export 'widgets/sleep_timer_widgets.dart';
 export 'widgets/now_playing_artwork.dart';
-export 'widgets/track_info_display.dart';
 export 'widgets/playing_from_header.dart';
 export 'widgets/album_section.dart';
 export 'widgets/artist_section.dart';

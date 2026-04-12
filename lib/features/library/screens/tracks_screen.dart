@@ -83,6 +83,19 @@ class _TracksScreenState extends State<TracksScreen> {
     });
 
     try {
+      // Read from the already-loaded in-memory songs list instead of
+      // re-querying MediaStore, which is expensive I/O.
+      final service = Provider.of<AudioPlayerService>(context, listen: false);
+      final songs = service.songs;
+
+      if (songs.isNotEmpty) {
+        _allSongs = List<SongModel>.from(songs);
+        setState(() => _isLoading = false);
+        _applySorting();
+        return;
+      }
+
+      // Fallback: if service hasn't loaded yet, query directly
       final bool permissionStatus = await _audioQuery.permissionsStatus();
 
       if (!permissionStatus) {
@@ -94,22 +107,20 @@ class _TracksScreenState extends State<TracksScreen> {
         return;
       }
 
-      if (permissionStatus) {
-        _allSongs = await _audioQuery.querySongs(
-          orderType: OrderType.ASC_OR_SMALLER,
-          uriType: UriType.EXTERNAL,
-          ignoreCase: true,
-        );
+      _allSongs = await _audioQuery.querySongs(
+        orderType: OrderType.ASC_OR_SMALLER,
+        uriType: UriType.EXTERNAL,
+        ignoreCase: true,
+      );
 
-        setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-        if (_allSongs.isEmpty) {
-          setState(() {
-            _errorMessage = 'No songs found on the device.';
-          });
-        } else {
-          _applySorting();
-        }
+      if (_allSongs.isEmpty) {
+        setState(() {
+          _errorMessage = 'No songs found on the device.';
+        });
+      } else {
+        _applySorting();
       }
     } catch (e) {
       setState(() {

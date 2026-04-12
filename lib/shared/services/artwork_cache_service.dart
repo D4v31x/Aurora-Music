@@ -143,6 +143,16 @@ class ArtworkCacheService {
     return null;
   }
 
+  /// Synchronously returns cached artwork bytes if available, null otherwise.
+  /// Useful for zero-latency updates when the cache is already warm.
+  Uint8List? getCachedArtworkSync(int id) {
+    if (_artworkCache.containsKey(id) && _artworkCache[id] != null) {
+      _updateAccessOrder(id, false);
+      return _artworkCache[id];
+    }
+    return null;
+  }
+
   Future<Uint8List?> _getArtwork(int id, {bool highQuality = false}) async {
     // Only return cached value for low-quality requests
     if (!highQuality &&

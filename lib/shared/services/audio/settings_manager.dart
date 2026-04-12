@@ -6,37 +6,54 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
     final file = File('${directory.path}/settings.json');
 
     if (await file.exists()) {
-      final contents = await file.readAsString();
-      final json = jsonDecode(contents);
+      try {
+        final contents = await file.readAsString();
+        final json = jsonDecode(contents);
 
-      _gaplessPlayback = json['gaplessPlayback'] ?? true;
-      _volumeNormalization = json['volumeNormalization'] ?? false;
-      _playbackSpeed = (json['playbackSpeed'] ?? 1.0).toDouble();
-      _pitchWithSpeed = json['pitchWithSpeed'] ?? false;
-      _defaultSortOrder = json['defaultSortOrder'] ?? 'title';
-      _cacheSize = json['cacheSize'] ?? 100;
-      _mediaControls = json['mediaControls'] ?? true;
+        _gaplessPlayback = json['gaplessPlayback'] ?? true;
+        _volumeNormalization = json['volumeNormalization'] ?? false;
+        _playbackSpeed = (json['playbackSpeed'] ?? 1.0).toDouble();
+        _pitchWithSpeed = json['pitchWithSpeed'] ?? false;
+        _defaultSortOrder = json['defaultSortOrder'] ?? 'title';
+        _cacheSize = json['cacheSize'] ?? 100;
+        _mediaControls = json['mediaControls'] ?? true;
 
-      // Apply settings to audio player
-      await _applySettings();
+        // Apply settings to audio player
+        await _applySettings();
+      } catch (e) {
+        // Corrupted JSON – delete the file and fall back to defaults
+        if (kDebugMode) {
+          print('Settings file corrupted, resetting to defaults: $e');
+        }
+        await file.delete();
+      }
     }
   }
 
   Future<void> _saveSettings() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/settings.json');
+    // Serialize writes through the mutex to prevent concurrent corruption
+    _settingsSaveLock = _settingsSaveLock.then((_) async {
+      final directory = await getApplicationDocumentsDirectory();
+      final path = '${directory.path}/settings.json';
+      final tempFile = File('$path.tmp');
 
-    final json = {
-      'gaplessPlayback': _gaplessPlayback,
-      'volumeNormalization': _volumeNormalization,
-      'playbackSpeed': _playbackSpeed,
-      'pitchWithSpeed': _pitchWithSpeed,
-      'defaultSortOrder': _defaultSortOrder,
-      'cacheSize': _cacheSize,
-      'mediaControls': _mediaControls,
-    };
+      final json = {
+        'gaplessPlayback': _gaplessPlayback,
+        'volumeNormalization': _volumeNormalization,
+        'playbackSpeed': _playbackSpeed,
+        'pitchWithSpeed': _pitchWithSpeed,
+        'defaultSortOrder': _defaultSortOrder,
+        'cacheSize': _cacheSize,
+        'mediaControls': _mediaControls,
+      };
 
-    await file.writeAsString(jsonEncode(json));
+      // Atomic write: write to temp file, then rename to target
+      await tempFile.writeAsString(jsonEncode(json));
+      await tempFile.rename(path);
+    }).catchError((_) {
+      // Swallow errors so the lock Future never stays in a failed state
+    });
+    await _settingsSaveLock;
   }
 
   Future<void> _applySettings() async {
@@ -157,7 +174,7 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
         avAudioSessionMode: AVAudioSessionMode.defaultMode,
         androidAudioAttributes: AndroidAudioAttributes(
           contentType: AndroidAudioContentType.music,
-          flags: AndroidAudioFlags.audibilityEnforced,
+          flags: AndroidAudioFlags.none,
           usage: AndroidAudioUsage.media,
         ),
         androidWillPauseWhenDucked: true,
@@ -171,7 +188,7 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
         avAudioSessionMode: AVAudioSessionMode.defaultMode,
         androidAudioAttributes: AndroidAudioAttributes(
           contentType: AndroidAudioContentType.music,
-          flags: AndroidAudioFlags.audibilityEnforced,
+          flags: AndroidAudioFlags.none,
           usage: AndroidAudioUsage.media,
         ),
         androidWillPauseWhenDucked: true,
@@ -182,12 +199,14 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
         // Update the current media item to refresh the notification
         final currentSong = this.currentSong;
         if (currentSong != null) {
+          final currentPosition = _audioPlayer.position;
           final mediaItem = await _createMediaItem(currentSong);
           await _audioPlayer.setAudioSource(
             AudioSource.uri(
               Uri.parse(currentSong.data),
               tag: mediaItem,
             ),
+            initialPosition: currentPosition,
           );
         }
       }
@@ -200,23 +219,32 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
     final cacheDir = Directory('${directory.path}/artwork_cache');
     final spotifyCacheDir = Directory(directory.path);
 
+    final maxBytes = _cacheSize * 1024 * 1024;
     int totalSize = 0;
 
     // Clean artwork cache
     if (await cacheDir.exists()) {
       final files = await cacheDir.list().toList();
-      totalSize += files.fold<int>(
-          0, (sum, file) => sum + (file is File ? file.lengthSync() : 0));
+      for (final entity in files) {
+        if (entity is File) {
+          totalSize += await entity.length();
+        }
+      }
 
-      if (totalSize > _cacheSize * 1024 * 1024) {
-        files.sort(
-            (a, b) => a.statSync().accessed.compareTo(b.statSync().accessed));
+      if (totalSize > maxBytes) {
+        // Sort by last accessed (oldest first) using async stat
+        final statEntries = <MapEntry<FileSystemEntity, FileStat>>[];
+        for (final entity in files) {
+          statEntries.add(MapEntry(entity, await entity.stat()));
+        }
+        statEntries.sort((a, b) => a.value.accessed.compareTo(b.value.accessed));
+
         var currentSize = totalSize;
-        for (final file in files) {
-          if (currentSize <= _cacheSize * 1024 * 1024) break;
-          if (file is File) {
-            final fileSize = file.lengthSync();
-            await file.delete();
+        for (final entry in statEntries) {
+          if (currentSize <= maxBytes) break;
+          if (entry.key is File) {
+            final fileSize = await (entry.key as File).length();
+            await entry.key.delete();
             currentSize -= fileSize;
           }
         }
@@ -229,18 +257,25 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
       final spotifyFiles = files
           .where((file) => file is File && file.path.endsWith('.mp3'))
           .toList();
-      totalSize += spotifyFiles.fold<int>(
-          0, (sum, file) => sum + (file is File ? file.lengthSync() : 0));
+      for (final entity in spotifyFiles) {
+        if (entity is File) {
+          totalSize += await entity.length();
+        }
+      }
 
-      if (totalSize > _cacheSize * 1024 * 1024) {
-        spotifyFiles.sort(
-            (a, b) => a.statSync().accessed.compareTo(b.statSync().accessed));
+      if (totalSize > maxBytes) {
+        final statEntries = <MapEntry<FileSystemEntity, FileStat>>[];
+        for (final entity in spotifyFiles) {
+          statEntries.add(MapEntry(entity, await entity.stat()));
+        }
+        statEntries.sort((a, b) => a.value.accessed.compareTo(b.value.accessed));
+
         var currentSize = totalSize;
-        for (final file in spotifyFiles) {
-          if (currentSize <= _cacheSize * 1024 * 1024) break;
-          if (file is File) {
-            final fileSize = file.lengthSync();
-            await file.delete();
+        for (final entry in statEntries) {
+          if (currentSize <= maxBytes) break;
+          if (entry.key is File) {
+            final fileSize = await (entry.key as File).length();
+            await entry.key.delete();
             currentSize -= fileSize;
           }
         }

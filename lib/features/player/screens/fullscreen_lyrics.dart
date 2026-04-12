@@ -225,16 +225,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final audioService = Provider.of<AudioPlayerService>(context);
-
-    if (audioService.currentSong != null &&
-        audioService.currentSong!.id != _lastSongId) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _loadLyricsForCurrentSong(audioService);
-        }
-      });
-    }
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
 
     return AppBackground(
       child: Scaffold(
@@ -247,7 +239,12 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           SafeArea(
             child: Column(
               children: [
-                _buildHeader(audioService),
+                // Only rebuild the header when the current song changes
+                ValueListenableBuilder<SongModel?>(
+                  valueListenable: audioService.currentSongNotifier,
+                  builder: (context, song, _) =>
+                      _buildHeader(audioService),
+                ),
                 Expanded(
                   child: FadeTransition(
                     opacity: _fadeController,

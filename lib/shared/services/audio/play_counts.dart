@@ -14,12 +14,20 @@ extension AudioPlayCountsExtension on AudioPlayerService {
       _artistPlayCounts = Map<String, int>.from(json['artists']);
       _playlistPlayCounts = Map<String, int>.from(json['playlists']);
       _folderAccessCounts = Map<String, int>.from(json['folders']);
+
+      final rawLastPlayed = json['lastPlayedAt'] as Map<String, dynamic>?;
+      if (rawLastPlayed != null) {
+        _lastPlayedAt = rawLastPlayed.map(
+          (k, v) => MapEntry(k, DateTime.parse(v as String)),
+        );
+      }
     }
   }
 
   Future<void> _savePlayCounts() async {
     final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/play_counts.json');
+    final path = '${directory.path}/play_counts.json';
+    final tempFile = File('$path.tmp');
 
     final json = {
       'tracks': _trackPlayCounts,
@@ -27,14 +35,18 @@ extension AudioPlayCountsExtension on AudioPlayerService {
       'artists': _artistPlayCounts,
       'playlists': _playlistPlayCounts,
       'folders': _folderAccessCounts,
+      'lastPlayedAt':
+          _lastPlayedAt.map((k, v) => MapEntry(k, v.toIso8601String())),
     };
 
-    await file.writeAsString(jsonEncode(json));
+    await tempFile.writeAsString(jsonEncode(json));
+    await tempFile.rename(path);
   }
 
   void _incrementPlayCount(SongModel song) {
-    _trackPlayCounts[song.id.toString()] =
-        (_trackPlayCounts[song.id.toString()] ?? 0) + 1;
+    final songKey = song.id.toString();
+    _trackPlayCounts[songKey] = (_trackPlayCounts[songKey] ?? 0) + 1;
+    _lastPlayedAt[songKey] = DateTime.now();
 
     if (song.albumId != null) {
       _albumPlayCounts[song.albumId.toString()] =
@@ -62,13 +74,13 @@ extension AudioPlayCountsExtension on AudioPlayerService {
   /// Get smart suggested tracks based on listening patterns and time of day
   Future<List<SongModel>> getSuggestedTracks({int count = 3}) async {
     await _smartSuggestions.initialize();
-    return _smartSuggestions.getSuggestedTracks(count: count);
+    return _smartSuggestions.getSuggestedTracks(count: count, songs: _songs);
   }
 
   /// Get smart suggested artists based on listening patterns and time of day
   Future<List<String>> getSuggestedArtists({int count = 3}) async {
     await _smartSuggestions.initialize();
-    return _smartSuggestions.getSuggestedArtists(count: count);
+    return _smartSuggestions.getSuggestedArtists(count: count, songs: _songs);
   }
 
   /// Check if user has enough listening history for smart suggestions
@@ -76,11 +88,7 @@ extension AudioPlayCountsExtension on AudioPlayerService {
 
   // Most Played Queries
   Future<List<SongModel>> getMostPlayedTracks() async {
-    final allSongs = await _audioQuery.querySongs(
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
+    final allSongs = _songs;
     final playedSongs = allSongs
         .where((song) => (_trackPlayCounts[song.id.toString()] ?? 0) > 0)
         .toList()
@@ -90,14 +98,16 @@ extension AudioPlayCountsExtension on AudioPlayerService {
   }
 
   Future<List<AlbumModel>> getMostPlayedAlbums() async {
-    final albums = await _audioQuery.queryAlbums();
+    _cachedAlbums ??= await _audioQuery.queryAlbums();
+    final albums = List<AlbumModel>.from(_cachedAlbums!);
     albums.sort((a, b) => (_albumPlayCounts[b.id.toString()] ?? 0)
         .compareTo(_albumPlayCounts[a.id.toString()] ?? 0));
     return albums.take(10).toList();
   }
 
   Future<List<ArtistModel>> getMostPlayedArtists() async {
-    final allArtists = await _audioQuery.queryArtists();
+    _cachedArtists ??= await _audioQuery.queryArtists();
+    final allArtists = List<ArtistModel>.from(_cachedArtists!);
     final artistPlayCounts = <String, int>{};
 
     for (final artist in allArtists) {
@@ -107,11 +117,10 @@ extension AudioPlayCountsExtension on AudioPlayerService {
       }
     }
 
-    final sortedArtists = allArtists
-      ..sort((a, b) => (artistPlayCounts[b.artist] ?? 0)
-          .compareTo(artistPlayCounts[a.artist] ?? 0));
+    allArtists.sort((a, b) => (artistPlayCounts[b.artist] ?? 0)
+        .compareTo(artistPlayCounts[a.artist] ?? 0));
 
-    return sortedArtists.take(10).toList();
+    return allArtists.take(10).toList();
   }
 
   List<Playlist> getThreePlaylists() {
@@ -127,20 +136,22 @@ extension AudioPlayCountsExtension on AudioPlayerService {
     return folderAccessCounts.take(3).map((entry) => entry.key).toList();
   }
 
-  /// Get recently played songs sorted by play count
+  /// Get recently played songs sorted by time of last play (most recent first).
   /// [count] - number of songs to return (default 3, use -1 for all)
   Future<List<SongModel>> getRecentlyPlayed({int count = 3}) async {
-    final allSongs = await _audioQuery.querySongs(
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
+    final allSongs = _songs;
     final recentlyPlayedSongs = allSongs
-        .where((song) => _trackPlayCounts.containsKey(song.id.toString()))
+        .where((song) => _lastPlayedAt.containsKey(song.id.toString()))
         .toList();
 
-    recentlyPlayedSongs.sort((a, b) => (_trackPlayCounts[b.id.toString()] ?? 0)
-        .compareTo(_trackPlayCounts[a.id.toString()] ?? 0));
+    recentlyPlayedSongs.sort((a, b) {
+      final timeA = _lastPlayedAt[a.id.toString()];
+      final timeB = _lastPlayedAt[b.id.toString()];
+      if (timeA == null && timeB == null) return 0;
+      if (timeA == null) return 1;
+      if (timeB == null) return -1;
+      return timeB.compareTo(timeA);
+    });
 
     if (count == -1) {
       return recentlyPlayedSongs;
@@ -155,22 +166,14 @@ extension AudioPlayCountsExtension on AudioPlayerService {
 
   /// Get all recently added songs (full list for playback)
   Future<List<SongModel>> getAllRecentlyAdded() async {
-    final allSongs = await _audioQuery.querySongs(
-      sortType: SongSortType.DATE_ADDED,
-      orderType: OrderType.DESC_OR_GREATER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
+    final allSongs = List<SongModel>.from(_songs)
+      ..sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
     return allSongs;
   }
 
   /// Get all most played tracks (full list for playback)
   Future<List<SongModel>> getAllMostPlayedTracks() async {
-    final allSongs = await _audioQuery.querySongs(
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
+    final allSongs = _songs;
     final playedSongs = allSongs
         .where((song) => (_trackPlayCounts[song.id.toString()] ?? 0) > 0)
         .toList();

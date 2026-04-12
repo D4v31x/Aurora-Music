@@ -42,23 +42,24 @@ extension AudioQueuePersistenceExtension on AudioPlayerService {
       if (queueMaps.isEmpty) return;
 
       // Reconstruct songs and filter out any that no longer exist on disk.
-      List<SongModel> buildQueueFromMaps(List maps) {
-        return maps
+      Future<List<SongModel>> buildQueueFromMaps(List maps) async {
+        final songs = maps
             .map((m) => SongModel(Map<String, dynamic>.from(m as Map)))
-            .where((song) {
+            .toList();
+        final result = <SongModel>[];
+        for (final song in songs) {
           try {
-            return File(song.data).existsSync();
-          } catch (_) {
-            return false;
-          }
-        }).toList();
+            if (await File(song.data).exists()) result.add(song);
+          } catch (_) {}
+        }
+        return result;
       }
 
-      final queue = buildQueueFromMaps(queueMaps);
+      final queue = await buildQueueFromMaps(queueMaps);
       if (queue.isEmpty) return;
 
       final originalQueueMaps = json['originalQueue'] as List? ?? [];
-      final originalQueue = buildQueueFromMaps(originalQueueMaps);
+      final originalQueue = await buildQueueFromMaps(originalQueueMaps);
 
       final savedIndex =
           (json['currentIndex'] as int? ?? 0).clamp(0, queue.length - 1);

@@ -10,7 +10,6 @@ import '../../main.dart' show navigatorKey;
 import '../models/models.dart';
 import '../../features/player/player_feature.dart';
 import '../services/audio_player_service.dart';
-import '../services/artwork_cache_service.dart';
 import '../services/background_manager_service.dart';
 import '../services/sleep_timer_controller.dart';
 import '../utils/responsive_utils.dart';
@@ -233,7 +232,7 @@ class _MiniPlayerWidget extends StatelessWidget {
       child: Row(
         children: [
           // Artwork
-          _ArtworkThumbnail(songId: song.id, size: 52),
+          _ArtworkThumbnail(size: 52),
 
           const SizedBox(width: 14),
 
@@ -366,20 +365,22 @@ class _MiniPlayerWidget extends StatelessWidget {
   }
 }
 
-/// Artwork thumbnail with subtle glow effect
+/// Artwork thumbnail driven by [AudioPlayerService.currentArtworkProvider].
+///
+/// Because it listens to a [ValueNotifier] updated synchronously in
+/// [AudioPlayerService.updateCurrentArtwork] (the cache-hit fast path),
+/// the image swaps on the exact same frame as the song change — no async
+/// FutureBuilder delay, no stale-artwork flicker.
 class _ArtworkThumbnail extends StatelessWidget {
-  final int songId;
   final double size;
 
-  const _ArtworkThumbnail({
-    required this.songId,
-    required this.size,
-  });
-
-  static final _artworkService = ArtworkCacheService();
+  const _ArtworkThumbnail({required this.size});
 
   @override
   Widget build(BuildContext context) {
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+
     return Container(
       width: size,
       height: size,
@@ -395,7 +396,30 @@ class _ArtworkThumbnail extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
-        child: _artworkService.buildCachedArtwork(songId, size: size),
+        child: ValueListenableBuilder<ImageProvider<Object>?>(
+          valueListenable: audioService.currentArtworkProvider,
+          builder: (context, provider, _) {
+            if (provider != null) {
+              return Image(
+                image: provider,
+                fit: BoxFit.cover,
+                width: size,
+                height: size,
+                gaplessPlayback: true,
+              );
+            }
+            return Container(
+              width: size,
+              height: size,
+              color: Colors.white.withValues(alpha: 0.1),
+              child: Icon(
+                Icons.music_note_rounded,
+                color: Colors.white54,
+                size: size * 0.45,
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -405,16 +429,7 @@ class _ArtworkThumbnail extends StatelessWidget {
 class _ProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final audioService =
-        Provider.of<AudioPlayerService>(context, listen: false);
-
-    // KEY PERF FIX: Use Selector so that only the color value is watched from
-    // BackgroundManagerService. When a new color arrives the Selector rebuilds,
-    // producing a new StreamBuilder widget with the updated colour captured in
-    // its builder closure. The StreamBuilder element is reused (same stream,
-    // same position in tree) and simply re-renders with the latest position
-    // snapshot – all without making _ProgressBar.build subscribe to every
-    // notifyListeners() call from BackgroundManagerService.
+    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
     return Selector<BackgroundManagerService, Color>(
       selector: (context, bm) => bm.currentColors.length > 2
           ? bm.currentColors[2]

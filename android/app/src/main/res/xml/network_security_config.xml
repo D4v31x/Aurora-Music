@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Production configuration - allow both HTTP and HTTPS for API access -->
-    <base-config cleartextTrafficPermitted="true">
+    <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
-            <!-- Trust system certificates -->
             <certificates src="system" />
         </trust-anchors>
     </base-config>

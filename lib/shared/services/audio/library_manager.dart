@@ -449,36 +449,31 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       _scheduleNotify();
     }));
 
-    // Create "Recently Added" playlist
-    unawaited(_audioQuery
-        .querySongs(
-      sortType: SongSortType.DATE_ADDED,
-      orderType: OrderType.DESC_OR_GREATER,
-    )
-        .then((tracks) {
-      final existingIndex =
-          _playlists.indexWhere((p) => p.id == kRecentlyAddedPlaylistId);
+    // Create "Recently Added" playlist from already-loaded songs
+    // (sorted by dateAdded descending — no extra MediaStore query needed)
+    final recentSongs = List<SongModel>.from(_songs)
+      ..sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
 
-      if (existingIndex != -1) {
-        // Update existing playlist
-        _playlists[existingIndex] = Playlist(
-          id: kRecentlyAddedPlaylistId,
-          name: 'Recently Added',
-          songs: tracks,
-        );
-      } else {
-        // Create new playlist
-        _playlists.add(Playlist(
-          id: kRecentlyAddedPlaylistId,
-          name: 'Recently Added',
-          songs: tracks,
-        ));
-      }
+    final recentIndex =
+        _playlists.indexWhere((p) => p.id == kRecentlyAddedPlaylistId);
 
-      _playlistsDirty = true;
-      _scheduleSavePlayCounts();
-      _scheduleNotify();
-    }));
+    if (recentIndex != -1) {
+      _playlists[recentIndex] = Playlist(
+        id: kRecentlyAddedPlaylistId,
+        name: 'Recently Added',
+        songs: recentSongs,
+      );
+    } else {
+      _playlists.add(Playlist(
+        id: kRecentlyAddedPlaylistId,
+        name: 'Recently Added',
+        songs: recentSongs,
+      ));
+    }
+
+    _playlistsDirty = true;
+    _scheduleSavePlayCounts();
+    _scheduleNotify();
   }
 
   // Ensure that _folderAccessCounts is correctly populated
@@ -492,9 +487,8 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
   void playSongFromFolder(SongModel song) {
     final folderPath = File(song.data).parent.path;
     _incrementFolderAccessCount(folderPath);
-    // Proceed to play the song
+    // Proceed to play the song (setPlaylist already starts playback)
     setPlaylist([song], 0);
-    unawaited(play());
   }
 
   // Method to update playlist name when language changes

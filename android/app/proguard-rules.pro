@@ -12,8 +12,17 @@
 ## Aurora Music Widget
 -keep class com.aurorasoftware.music.AuroraMusicWidgetProvider { *; }
 
+## Audio Analyzer (native BPM/energy analysis)
+-keep class com.aurorasoftware.music.AudioAnalyzer { *; }
+
+## Kotlinx Coroutines
+-dontwarn kotlinx.coroutines.**
+
 ## Just Audio
 -keep class com.ryanheise.just_audio.** { *; }
+
+## Media3 / ExoPlayer (needed for audio output switching via reflection)
+-keep class androidx.media3.exoplayer.** { *; }
 
 ## On Audio Query
 -keep class com.lucasjosino.on_audio_query.** { *; }

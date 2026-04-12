@@ -19,22 +19,4 @@ String formatBytes(int bytes, {int decimals = 1}) {
   return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(decimals)} GB';
 }
 
-/// Format bytes to a compact human-readable string (no decimals for small values).
-String formatBytesCompact(int bytes) {
-  if (bytes < 1024) {
-    return '$bytes B';
-  }
-  if (bytes < 10 * 1024) {
-    return '${(bytes / 1024).toStringAsFixed(1)} KB';
-  }
-  if (bytes < 1024 * 1024) {
-    return '${(bytes / 1024).round()} KB';
-  }
-  if (bytes < 10 * 1024 * 1024) {
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-  }
-  if (bytes < 1024 * 1024 * 1024) {
-    return '${(bytes / (1024 * 1024)).round()} MB';
-  }
-  return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
-}
+

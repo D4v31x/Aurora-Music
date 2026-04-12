@@ -80,14 +80,21 @@ class MusicStatsCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     // Check if blur should be enabled based on performance mode
-    // Use Selector to only rebuild when songs or playlists count changes
-    return Selector<AudioPlayerService, _LibraryStats>(
-      selector: (_, service) => _LibraryStats.compute(
-        service.songs,
-        service.playlists.length,
+    // Select only cheap-to-compare counts; compute stats in builder only on change
+    return Selector<AudioPlayerService, ({int songCount, int playlistCount})>(
+      selector: (_, service) => (
+        songCount: service.songs.length,
+        playlistCount: service.playlists.length,
       ),
-      shouldRebuild: (prev, next) => prev != next,
-      builder: (context, stats, _) {
+      shouldRebuild: (prev, next) =>
+          prev.songCount != next.songCount ||
+          prev.playlistCount != next.playlistCount,
+      builder: (context, counts, _) {
+        final service = context.read<AudioPlayerService>();
+        final stats = _LibraryStats.compute(
+          service.songs,
+          counts.playlistCount,
+        );
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: GlassmorphicContainer(
