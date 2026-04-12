@@ -33,7 +33,12 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
   /// Held for listener management; set in the post-frame callback.
   AudioPlayerService? _audioService;
 
-  StreamSubscription<SongModel?>? _songChangeSubscription;
+  /// Listener registered on [AudioPlayerService.currentSongNotifier].
+  /// Using the synchronous ValueNotifier ensures [_lastSongId] is always
+  /// up-to-date when [_onServiceArtworkChanged] fires (which is also
+  /// synchronous). The old async-stream approach caused the stale-song
+  /// guard to always fail, so fast-path artwork updates were silently dropped.
+  VoidCallback? _currentSongListener;
 
   // Animation controllers
   late AnimationController _fadeController;
@@ -74,8 +79,8 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
           Provider.of<AudioPlayerService>(context, listen: false);
       _audioService = audioService;
 
-      // Subscribe to the service-level artwork notifier so the fullscreen
-      // image swaps on the same frame as the song change when art is cached.
+      // Subscribe to service-level artwork updates so the fullscreen image
+      // swaps on the same frame as the song change when artwork is cached.
       audioService.currentArtworkProvider.addListener(_onServiceArtworkChanged);
 
       // Seed with whatever the service already has.
@@ -83,12 +88,18 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
 
       _loadArtwork(audioService);
 
-      _songChangeSubscription = audioService.currentSongStream.listen((song) {
-        if (mounted && song != null && song.id != _lastSongId) {
-          _hasHighQualityArtwork = false;
-          _loadArtwork(audioService);
-        }
-      });
+      // Listen to song changes via the *synchronous* ValueNotifier so that
+      // _lastSongId is always current when _onServiceArtworkChanged fires.
+      _currentSongListener = () {
+        final song = audioService.currentSongNotifier.value;
+        if (song == null || song.id == _lastSongId) return;
+        _hasHighQualityArtwork = false;
+        if (!mounted) return;
+        // Immediately clear the previous song's artwork to avoid bleed-through.
+        setState(() => _artworkProvider = null);
+        _loadArtwork(audioService);
+      };
+      audioService.currentSongNotifier.addListener(_currentSongListener!);
     });
   }
 
@@ -130,14 +141,17 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
   }
 
   /// Called whenever [AudioPlayerService.currentArtworkProvider] changes.
-  /// Provides an instant thumbnail while the high-quality fetch runs.
+  /// Because [_currentSongListener] updates [_lastSongId] synchronously before
+  /// [updateCurrentArtwork] fires this notifier, the song-id guard is accurate.
   void _onServiceArtworkChanged() {
     if (!mounted || _hasHighQualityArtwork) return;
     final provider = _audioService?.currentArtworkProvider.value;
     final serviceSongId = _audioService?.currentSong?.id;
-    if (provider != null && serviceSongId == _lastSongId) {
-      setState(() => _artworkProvider = provider);
-    }
+    // Guard: only apply when the service's current song matches ours.
+    if (serviceSongId != _lastSongId) return;
+    // Apply even when null: clears stale artwork so a placeholder is shown
+    // rather than the previous song's image.
+    setState(() => _artworkProvider = provider);
   }
 
   Future<void> _loadArtwork(AudioPlayerService audioService) async {
@@ -147,9 +161,10 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
     final songId = song.id;
     _lastSongId = songId;
 
-    // Immediate placeholder: sync cache first, then the service notifier.
-    final quick = _artworkService.getCachedImageProviderSync(songId)
-        ?? _audioService?.currentArtworkProvider.value;
+    // Immediate placeholder from the sync in-memory cache only.
+    // We deliberately do NOT fall back to currentArtworkProvider.value here:
+    // that notifier may still hold the previous song's artwork at this point.
+    final quick = _artworkService.getCachedImageProviderSync(songId);
     if (quick != null && mounted && _lastSongId == songId) {
       setState(() => _artworkProvider = quick);
     }
@@ -176,10 +191,12 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
   void dispose() {
     _audioService?.currentArtworkProvider
         .removeListener(_onServiceArtworkChanged);
+    if (_currentSongListener != null) {
+      _audioService?.currentSongNotifier.removeListener(_currentSongListener!);
+    }
     _fadeController.dispose();
     _controlsController.dispose();
     _hideControlsTimer?.cancel();
-    _songChangeSubscription?.cancel();
     super.dispose();
   }
 

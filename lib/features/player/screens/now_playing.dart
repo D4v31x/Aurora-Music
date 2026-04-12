@@ -68,7 +68,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   StreamSubscription<Duration>? _positionSub;
   int? _pendingSongLoadId;
-  StreamSubscription<SongModel?>? _songChangeSubscription;
+  /// Listener registered on [AudioPlayerService.currentSongNotifier].
+  /// Using the synchronous ValueNotifier ensures [_lastSongId] is always
+  /// up-to-date when [_onServiceArtworkChanged] fires, which is also
+  /// synchronous. The old async-stream approach caused a race where the
+  /// stale-song guard in [_onServiceArtworkChanged] always failed.
+  VoidCallback? _currentSongListener;
 
   // MARK: - Lifecycle
 
@@ -82,9 +87,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   void dispose() {
     _audioService?.currentArtworkProvider
         .removeListener(_onServiceArtworkChanged);
+    if (_currentSongListener != null) {
+      _audioService?.currentSongNotifier.removeListener(_currentSongListener!);
+    }
     _currentLyricIndexNotifier.dispose();
     _positionSub?.cancel();
-    _songChangeSubscription?.cancel();
     _pendingSongLoadId = null;
     super.dispose();
   }
@@ -118,31 +125,42 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       if (mounted) _ensureBackgroundArtwork();
     });
 
-    // Listen to song changes
-    _songChangeSubscription =
-        audioPlayerService.currentSongStream.listen((song) {
-      if (song != null && song.id != _lastSongId) {
-        _lastSongId = song.id;
-        _hasHighQualityArtwork = false;
-        _pendingSongLoadId = song.id;
-        if (mounted) {
-          _updateArtwork(song);
-          _initializeTimedLyrics(audioPlayerService);
-          _ensureBackgroundArtwork();
-        }
-      }
-    });
+    // Listen to song changes via the *synchronous* ValueNotifier so that
+    // _lastSongId is always current when _onServiceArtworkChanged fires.
+    // The old async-stream approach introduced a race: updateCurrentArtwork()
+    // sets currentArtworkProvider synchronously, but the stream delivered its
+    // event later — so the _lastSongId guard in _onServiceArtworkChanged was
+    // always stale and the fast-path artwork update was silently discarded.
+    _currentSongListener = () {
+      final song = audioPlayerService.currentSongNotifier.value;
+      if (song == null || song.id == _lastSongId) return;
+      _lastSongId = song.id;
+      _hasHighQualityArtwork = false;
+      _pendingSongLoadId = song.id;
+      if (!mounted) return;
+      // Clear stale artwork immediately so the old song's image never bleeds
+      // into the next song's display while the async fetch is in flight.
+      setState(() => _currentArtwork = null);
+      _updateArtwork(song);
+      _initializeTimedLyrics(audioPlayerService);
+      _ensureBackgroundArtwork();
+    };
+    audioPlayerService.currentSongNotifier.addListener(_currentSongListener!);
   }
 
   /// Called whenever [AudioPlayerService.currentArtworkProvider] changes value.
-  /// Used as a quick-path placeholder while our own high-quality fetch runs.
+  /// Because [_currentSongListener] (above) updates [_lastSongId] synchronously
+  /// before [updateCurrentArtwork] fires this notifier, the song-id guard is
+  /// now always accurate — we can safely apply the artwork (or null) immediately.
   void _onServiceArtworkChanged() {
     if (!mounted || _hasHighQualityArtwork) return;
     final provider = _audioService?.currentArtworkProvider.value;
     final serviceSongId = _audioService?.currentSong?.id;
-    if (provider != null && serviceSongId == _lastSongId) {
-      setState(() => _currentArtwork = provider);
-    }
+    // Guard: only apply when the service's current song matches ours.
+    if (serviceSongId != _lastSongId) return;
+    // Apply even when provider is null: that clears stale artwork so a
+    // placeholder is shown rather than the previous song's image.
+    setState(() => _currentArtwork = provider);
   }
 
   Future<void> _ensureBackgroundArtwork() async {
@@ -217,10 +235,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   Future<void> _updateArtwork(SongModel song) async {
     final songId = song.id;
 
-    // Immediate placeholder: prefer the sync-cached provider, then whatever
-    // AudioPlayerService has already computed (synchronous cache-hit path).
-    final quick = _artworkService.getCachedImageProviderSync(songId)
-        ?? _audioService?.currentArtworkProvider.value;
+    // Immediate placeholder from the sync in-memory cache only.
+    // We deliberately do NOT fall back to currentArtworkProvider.value here:
+    // at the time this is called, that notifier may still hold the previous
+    // song's artwork (it is cleared asynchronously by updateCurrentArtwork).
+    // Using it would re-introduce the exact stale-artwork bug we are fixing.
+    final quick = _artworkService.getCachedImageProviderSync(songId);
     if (quick != null && mounted && _lastSongId == songId) {
       setState(() => _currentArtwork = quick);
     }
