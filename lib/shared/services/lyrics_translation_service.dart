@@ -20,6 +20,18 @@ import 'package:http/http.dart' as http;
 ///
 /// Caching: in-memory map keyed by "$cacheKey|$targetLang".
 /// The cache is capped at 30 entries (LRU-free, just clears when full).
+
+/// Thrown when the detected source language of the lyrics matches the
+/// requested target language — i.e. translation would be a no-op.
+class SameLanguageException implements Exception {
+  final String detectedLanguage;
+  const SameLanguageException(this.detectedLanguage);
+
+  @override
+  String toString() =>
+      'SameLanguageException: lyrics already in "$detectedLanguage"';
+}
+
 class LyricsTranslationService {
   static const String _baseUrl =
       'https://api.mymemory.translated.net/get';
@@ -124,6 +136,27 @@ class LyricsTranslationService {
         if (response.statusCode == 200) {
           final data =
               jsonDecode(response.body) as Map<String, dynamic>;
+
+          // On the first batch, detect the source language from the matches
+          // array (e.g. "en-GB" → "en"). If it equals the target language,
+          // abort immediately so we don't waste quota translating a no-op.
+          if (i == 0) {
+            final matches = data['matches'] as List<dynamic>?;
+            if (matches != null && matches.isNotEmpty) {
+              final firstMatch = matches[0] as Map<String, dynamic>?;
+              final detectedFull =
+                  (firstMatch?['source'] as String?) ?? '';
+              if (detectedFull.isNotEmpty) {
+                final detected =
+                    detectedFull.split('-')[0].toLowerCase();
+                final target = targetLang.split('-')[0].toLowerCase();
+                if (detected == target) {
+                  throw SameLanguageException(detected);
+                }
+              }
+            }
+          }
+
           final translated =
               (data['responseData']?['translatedText'] as String?) ?? '';
 

@@ -4,7 +4,6 @@
 /// and an optional translation powered by the MyMemory API.
 library;
 
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 import 'package:provider/provider.dart';
@@ -78,6 +77,10 @@ class _LyricsSectionState extends State<LyricsSection>
   List<String?> _translatedLines = [];
   bool _showTranslated = false;
 
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _scrollKey = GlobalKey();
+  final Map<int, GlobalKey> _lyricKeys = {};
+
   /// Controls the pulsing opacity of the translate button while fetching.
   late final AnimationController _pulseController;
   late final Animation<double> _pulseAnim;
@@ -92,6 +95,7 @@ class _LyricsSectionState extends State<LyricsSection>
     _pulseAnim = Tween<double>(begin: 1.0, end: 0.25).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _jumpToCurrentLyric());
   }
 
   @override
@@ -100,17 +104,22 @@ class _LyricsSectionState extends State<LyricsSection>
     // Reset when a new song is loaded (lyrics list reference changes).
     if (!identical(old.timedLyrics, widget.timedLyrics)) {
       _reset();
+    } else if (old.currentLyricIndex != widget.currentLyricIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentLyric());
     }
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   void _reset() {
     if (!mounted) return;
+    _lyricKeys.clear();
+    if (_scrollController.hasClients) _scrollController.jumpTo(0.0);
     setState(() {
       _translationState = _TranslationState.idle;
       _translatedLines = [];
@@ -119,6 +128,7 @@ class _LyricsSectionState extends State<LyricsSection>
     _pulseController
       ..stop()
       ..reset();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _jumpToCurrentLyric());
   }
 
   Future<void> _handleTranslateButton() async {
@@ -156,6 +166,19 @@ class _LyricsSectionState extends State<LyricsSection>
         _translationState = _TranslationState.done;
         _showTranslated = true;
       });
+    } on SameLanguageException catch (e) {
+      if (!mounted) return;
+      setState(() => _translationState = _TranslationState.idle);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Can\'t translate — lyrics are already in the target language'
+            ' (${e.detectedLanguage.toUpperCase()})',
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() => _translationState = _TranslationState.error);
@@ -170,6 +193,42 @@ class _LyricsSectionState extends State<LyricsSection>
         ..stop()
         ..reset();
     }
+  }
+
+  double? _targetOffsetForCurrentLyric() {
+    if (!_scrollController.hasClients) return null;
+    final key = _lyricKeys[widget.currentLyricIndex];
+    if (key?.currentContext == null) return null;
+    final renderBox = key!.currentContext!.findRenderObject() as RenderBox?;
+    if (renderBox == null || !renderBox.attached) return null;
+    final scrollBox = _scrollKey.currentContext?.findRenderObject() as RenderBox?;
+    if (scrollBox == null) return null;
+
+    final itemOffset = renderBox.localToGlobal(Offset.zero, ancestor: scrollBox);
+    final itemHeight = renderBox.size.height;
+    final viewportHeight = scrollBox.size.height;
+
+    return (_scrollController.offset
+            + itemOffset.dy
+            - (viewportHeight / 2 - itemHeight / 2))
+        .clamp(0.0, _scrollController.position.maxScrollExtent);
+  }
+
+  void _jumpToCurrentLyric() {
+    if (!mounted) return;
+    final target = _targetOffsetForCurrentLyric();
+    if (target != null) _scrollController.jumpTo(target);
+  }
+
+  void _scrollToCurrentLyric() {
+    if (!mounted) return;
+    final target = _targetOffsetForCurrentLyric();
+    if (target == null) return;
+    _scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   // MARK: - Build
@@ -246,7 +305,12 @@ class _LyricsSectionState extends State<LyricsSection>
           },
           blendMode: BlendMode.dstIn,
           child: SingleChildScrollView(
+            key: _scrollKey,
+            controller: _scrollController,
             physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(
+              vertical: _kLyricsSectionHeight / 2,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: _buildAnimatedLyricLines(context, screenWidth),
@@ -264,21 +328,15 @@ class _LyricsSectionState extends State<LyricsSection>
     final lyrics = widget.timedLyrics;
     if (lyrics == null || lyrics.isEmpty) return [];
 
-    final startIndex = max(0, widget.currentLyricIndex - 2);
-    final endIndex = min(lyrics.length - 1, widget.currentLyricIndex + 2);
-
-    final lines = lyrics
-        .sublist(startIndex, endIndex + 1)
-        .asMap()
-        .entries
-        .map((entry) {
-      final index = entry.key + startIndex;
+    final lines = lyrics.asMap().entries.map((entry) {
+      final index = entry.key;
       final lyric = entry.value;
       final isCurrent = index == widget.currentLyricIndex;
       final dist = (index - widget.currentLyricIndex).abs();
       final opacity =
           (1.0 - dist * _kOpacityDecayPerLine).clamp(_kMinLyricOpacity, 1.0);
-      final scale = 1.0 - dist * _kScaleDecayPerLine;
+      final scale =
+          (1.0 - dist * _kScaleDecayPerLine).clamp(0.75, 1.0);
 
       final translatedText =
           (_showTranslated && index < _translatedLines.length)
@@ -286,6 +344,7 @@ class _LyricsSectionState extends State<LyricsSection>
               : null;
 
       return _buildLyricLine(
+        key: _lyricKeys.putIfAbsent(index, GlobalKey.new),
         context: context,
         lyric: lyric,
         isCurrent: isCurrent,
@@ -328,6 +387,7 @@ class _LyricsSectionState extends State<LyricsSection>
   }
 
   Widget _buildLyricLine({
+    Key? key,
     required BuildContext context,
     required TimedLyric lyric,
     required bool isCurrent,
@@ -337,6 +397,7 @@ class _LyricsSectionState extends State<LyricsSection>
     String? translatedText,
   }) {
     return AnimatedContainer(
+      key: key,
       duration: _kLyricAnimationDuration,
       curve: Curves.easeOutCubic,
       padding: EdgeInsets.symmetric(

@@ -15,6 +15,7 @@ import '../../../shared/services/lyrics_service.dart';
 import '../../../shared/services/lyrics_translation_service.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import 'lyrics_editor_screen.dart';
 
 enum _TranslationState { idle, loading, done, error }
 
@@ -339,6 +340,10 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                   Icons.text_fields,
                   AppLocalizations.of(context).fontSize,
                   'font_size'),
+              _buildMenuItem(
+                  Icons.edit_note_rounded,
+                  'Edit / Create Lyrics',
+                  'edit_lyrics'),
             ],
           ),
         ],
@@ -384,7 +389,26 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       case 'font_size':
         _showFontSizeDialog();
         break;
+      case 'edit_lyrics':
+        _openLyricsEditor(audioService);
+        break;
     }
+  }
+
+  void _openLyricsEditor(AudioPlayerService audioService) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LyricsEditorScreen(
+          onSaved: () {
+            if (mounted) {
+              setState(() => _lastSongId = null);
+              _loadLyricsForCurrentSong(audioService);
+            }
+          },
+        ),
+      ),
+    );
   }
 
   Future<void> _handleTranslateButton() async {
@@ -423,6 +447,19 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         _translationState = _TranslationState.done;
         _showTranslated = true;
       });
+    } on SameLanguageException catch (e) {
+      if (!mounted) return;
+      setState(() => _translationState = _TranslationState.idle);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Can\'t translate — lyrics are already in the target language'
+            ' (${e.detectedLanguage.toUpperCase()})',
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() => _translationState = _TranslationState.error);

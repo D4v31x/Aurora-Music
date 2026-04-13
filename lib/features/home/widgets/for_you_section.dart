@@ -34,15 +34,33 @@ class _ForYouSectionState extends State<ForYouSection> {
   static final ArtworkCacheService _artworkService = ArtworkCacheService();
   List<_ForYouItem> _cachedItems = [];
   bool _isInitialized = false;
-  SongModel? _lastCurrentSong;
+  AudioPlayerService? _audioService;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+    // Subscribe to currentSongNotifier for immediate updates (no debounce delay).
+    if (_audioService != audioService) {
+      _audioService?.currentSongNotifier.removeListener(_onSongChanged);
+      _audioService = audioService;
+      audioService.currentSongNotifier.addListener(_onSongChanged);
+    }
     if (!_isInitialized) {
       _buildForYouItems();
       _isInitialized = true;
     }
+  }
+
+  void _onSongChanged() {
+    if (mounted) _buildForYouItems();
+  }
+
+  @override
+  void dispose() {
+    _audioService?.currentSongNotifier.removeListener(_onSongChanged);
+    super.dispose();
   }
 
   @override
@@ -164,30 +182,14 @@ class _ForYouSectionState extends State<ForYouSection> {
 
   @override
   Widget build(BuildContext context) {
-    // Listen to current song changes to update recommendations
-    return Selector<AudioPlayerService, SongModel?>(
-      selector: (_, service) => service.currentSong,
-      shouldRebuild: (prev, next) {
-        // Only rebuild if we switched to a different song
-        if (prev?.id != next?.id && _lastCurrentSong?.id != next?.id) {
-          _lastCurrentSong = next;
-          // Schedule rebuild for next frame to avoid setState during build
-          Future.microtask(() {
-            if (mounted) _buildForYouItems();
-          });
-        }
-        return false; // Never rebuild from selector, let setState handle it
-      },
-      builder: (context, _, __) {
-        final audioService =
-            Provider.of<AudioPlayerService>(context, listen: false);
-        final likedPlaylist = audioService.likedSongsPlaylist;
-        final hasLiked =
-            likedPlaylist != null && likedPlaylist.songs.isNotEmpty;
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+    final likedPlaylist = audioService.likedSongsPlaylist;
+    final hasLiked = likedPlaylist != null && likedPlaylist.songs.isNotEmpty;
 
-        if (!hasLiked && _cachedItems.isEmpty) {
-          return const SizedBox.shrink();
-        }
+    if (!hasLiked && _cachedItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -282,8 +284,6 @@ class _ForYouSectionState extends State<ForYouSection> {
             ],
           ),
         );
-      },
-    );
   }
 
   void _handleItemTap(_ForYouItem item, AudioPlayerService audioService) {
