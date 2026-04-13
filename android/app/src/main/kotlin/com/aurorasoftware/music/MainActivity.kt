@@ -11,7 +11,11 @@ import android.provider.MediaStore
 import android.provider.Settings
 import androidx.core.view.WindowCompat
 import com.ryanheise.audioservice.AudioServiceActivity
+import android.media.audiofx.Visualizer
+import android.os.Handler
+import android.os.Looper
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import java.io.FileInputStream
@@ -21,6 +25,7 @@ class MainActivity : AudioServiceActivity() {
     companion object {
         private const val SAF_CHANNEL = "aurora/saf_write"
         private const val MEDIA_ACTIONS_CHANNEL = "aurora/media_actions"
+        private const val VISUALIZER_CHANNEL = "aurora/visualizer"
         private const val REQUEST_WRITE_PERMISSION = 42
         private const val REQUEST_DELETE_PERMISSION = 43
     }
@@ -86,6 +91,68 @@ class MainActivity : AudioServiceActivity() {
                     else -> result.notImplemented()
                 }
             }
+
+        setupVisualizerChannel(flutterEngine)
+    }
+
+    /**
+     * Streams FFT magnitude data from the Android [Visualizer] API to Dart.
+     *
+     * The Dart side passes the audio session ID as the [EventChannel] stream
+     * argument. When the stream is cancelled the Visualizer is released.
+     */
+    private fun setupVisualizerChannel(flutterEngine: FlutterEngine) {
+        val mainHandler = Handler(Looper.getMainLooper())
+        var activeVisualizer: Visualizer? = null
+
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, VISUALIZER_CHANNEL)
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    activeVisualizer?.release()
+                    activeVisualizer = null
+
+                    val sessionId = when (arguments) {
+                        is Int  -> arguments
+                        is Long -> arguments.toInt()
+                        else    -> 0
+                    }
+
+                    try {
+                        val capSize = try {
+                            Visualizer.getCaptureSizeRange()[1]
+                        } catch (_: Exception) {
+                            1024
+                        }
+                        activeVisualizer = Visualizer(sessionId).apply {
+                            captureSize = capSize
+                            setDataCaptureListener(
+                                object : Visualizer.OnDataCaptureListener {
+                                    override fun onWaveFormDataCapture(
+                                        v: Visualizer, waveform: ByteArray, samplingRate: Int
+                                    ) {}
+                                    override fun onFftDataCapture(
+                                        v: Visualizer, fft: ByteArray, samplingRate: Int
+                                    ) {
+                                        val copy = fft.copyOf()
+                                        mainHandler.post { events?.success(copy) }
+                                    }
+                                },
+                                Visualizer.getMaxCaptureRate(),
+                                false, /* waveform */
+                                true   /* fft */
+                            )
+                            enabled = true
+                        }
+                    } catch (e: Exception) {
+                        events?.error("VISUALIZER_ERROR", e.message ?: "Visualizer init failed", null)
+                    }
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    activeVisualizer?.release()
+                    activeVisualizer = null
+                }
+            })
     }
 
     /**

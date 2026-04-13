@@ -26,6 +26,7 @@ import '../../../shared/widgets/music_metadata_widget.dart';
 import '../../library/screens/artist_detail_screen.dart';
 import '../widgets/player_widgets.dart';
 import 'fullscreen_artwork.dart';
+import 'music_visualizer_screen.dart';
 import 'fullscreen_lyrics.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
 
@@ -239,12 +240,31 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         onPressed: _handleClose,
       ),
       actions: [
+        IconButton(
+          icon: const Icon(Icons.graphic_eq_rounded, color: Colors.white),
+          onPressed: _openVisualizer,
+          tooltip: 'Visualiser',
+        ),
         const SleepTimerIndicator(),
         PlayerMoreOptionsMenu(
           onSelected: (value) =>
               _handleMenuSelection(value, audioPlayerService),
         ),
       ],
+    );
+  }
+
+  void _openVisualizer() {
+    Navigator.push(
+      context,
+      PageRouteBuilder<void>(
+        transitionDuration:        const Duration(milliseconds: 400),
+        reverseTransitionDuration: const Duration(milliseconds: 300),
+        pageBuilder: (ctx, animation, _) => FadeTransition(
+          opacity: animation,
+          child:   const MusicVisualizerScreen(),
+        ),
+      ),
     );
   }
 
