@@ -172,6 +172,7 @@ class AudioPlayerService extends ChangeNotifier {
 
   /// Update songs list and notify listeners efficiently
   void _updateSongs(List<SongModel> newSongs) {
+    debugPrint('🎵 [LIBRARY] Song library updated: ${newSongs.length} songs total');
     _songs = newSongs;
     songsNotifier.value = newSongs;
   }

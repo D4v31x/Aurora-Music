@@ -69,6 +69,10 @@ class BackgroundManagerService extends ChangeNotifier {
     _currentArtwork = artwork;
     _currentSong = song;
     _isTransitioning = artwork != null;
+    if (kDebugMode) {
+      debugPrint(
+          '🎨 [BG_MGR] pushArtwork: "${song.title}" (id: ${song.id}) — artwork: ${artwork != null ? '${artwork.length} bytes' : 'null'}, notifying listeners');
+    }
     notifyListeners();
 
     // Clean up transition state after animation

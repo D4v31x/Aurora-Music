@@ -21,19 +21,23 @@ class AppBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaceColor = Theme.of(context).colorScheme.surface;
 
-    return Selector<BackgroundManagerService, Uint8List?>(
+    return Selector<BackgroundManagerService, (Uint8List?, int?)>(
       selector: (context, backgroundManager) =>
-          backgroundManager.currentArtwork,
+          (backgroundManager.currentArtwork, backgroundManager.currentSong?.id),
       shouldRebuild: (prev, next) {
-        // Only rebuild if artwork reference changed
-        final shouldRebuild = !identical(prev, next);
+        // Rebuild if artwork reference changed OR if the song changed
+        // (same cached Uint8List reference can be reused for the same song id,
+        // but a different song id always needs a rebuild even if artwork bytes
+        // happen to be the same object reference in the cache)
+        final shouldRebuild = !identical(prev.$1, next.$1) || prev.$2 != next.$2;
         if (kDebugMode && shouldRebuild) {
           debugPrint(
-              '🎨 [APP_BG] Rebuild background (hasArtwork: ${next != null}, bytes: ${next?.length ?? 0}, animated: $enableAnimation)');
+              '🎨 [APP_BG] Rebuild background (hasArtwork: ${next.$1 != null}, bytes: ${next.$1?.length ?? 0}, songId: ${next.$2}, animated: $enableAnimation)');
         }
         return shouldRebuild;
       },
-      builder: (context, currentArtwork, _) {
+      builder: (context, artworkData, _) {
+        final currentArtwork = artworkData.$1;
         // Always use AnimatedArtworkBackground - it handles null artwork internally
         // This keeps the widget tree stable and avoids remounting issues
         if (enableAnimation) {

@@ -25,13 +25,19 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
       final cachedUri = _artworkUriCache[songId];
       if (cachedUri == null) return null;
       final cachedFile = File(cachedUri.toFilePath());
-      if (await cachedFile.exists()) return cachedUri;
+      if (await cachedFile.exists()) {
+        debugPrint('🎨 [ARTWORK_URI] Cache hit for song id: $songId');
+        return cachedUri;
+      }
       // File was deleted; fall through to recreate it
+      debugPrint('🎨 [ARTWORK_URI] Cache stale (file deleted) for song id: $songId, refetching...');
       _artworkUriCache.remove(songId);
     }
     try {
+      debugPrint('🎨 [ARTWORK_URI] Fetching artwork bytes for song id: $songId');
       final artwork = await _artworkCache.getArtwork(songId);
       if (artwork == null || artwork.isEmpty) {
+        debugPrint('🎨 [ARTWORK_URI] No artwork bytes for song id: $songId');
         _artworkUriCache[songId] = null;
         return null;
       }
@@ -43,6 +49,7 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
 
       final uri = Uri.parse('file://${artworkFile.path}');
       _artworkUriCache[songId] = uri;
+      debugPrint('🎨 [ARTWORK_URI] Wrote ${artwork.length} bytes to ${artworkFile.path}');
       return uri;
     } catch (e) {
       debugPrint('Error getting artwork URI: $e');
@@ -116,12 +123,19 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
     // Capture song now — currentSong is a getter that could change across awaits.
     final song = currentSong;
     if (song == null) {
+      debugPrint('🎨 [ARTWORK] updateCurrentArtwork called but currentSong is null (playlist: ${_playlist.length} songs, index: $_currentIndex)');
       currentArtwork.value = null;
       return;
     }
+    debugPrint('🎨 [ARTWORK] Fetching artwork for "${song.title}" (id: ${song.id})');
     try {
       // Use cached artwork service for better performance
       final artwork = await _artworkCache.getArtwork(song.id);
+      if (artwork != null && artwork.isNotEmpty) {
+        debugPrint('🎨 [ARTWORK] Artwork loaded: ${artwork.length} bytes for "${song.title}"');
+      } else {
+        debugPrint('🎨 [ARTWORK] No artwork found for "${song.title}" (id: ${song.id})');
+      }
       currentArtwork.value = artwork;
 
       // Push artwork directly to the background manager, bypassing all guards.
@@ -139,6 +153,7 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
         ));
       }
     } catch (e) {
+      debugPrint('🎨 [ARTWORK] Error fetching artwork for "${song.title}": $e');
       currentArtwork.value = null;
     }
   }

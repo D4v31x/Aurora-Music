@@ -148,9 +148,11 @@ class ArtworkCacheService {
     if (!highQuality &&
         _artworkCache.containsKey(id) &&
         _artworkCache[id] != null) {
+      debugPrint('🎨 [ART_CACHE] Cache hit (id: $id, ${highQuality ? 'HQ' : 'thumb'})');
       return _artworkCache[id];
     }
 
+    debugPrint('🎨 [ART_CACHE] Cache miss — querying MediaStore for id: $id (${highQuality ? 'HQ' : 'thumb'})');
     try {
       final artwork = await _audioQuery.queryArtwork(
         id,
@@ -161,6 +163,7 @@ class ArtworkCacheService {
 
       // Only cache low-quality thumbnails to save memory
       if (!highQuality && artwork != null && artwork.isNotEmpty) {
+        debugPrint('🎨 [ART_CACHE] Stored ${artwork.length} bytes for id: $id');
         _artworkCache[id] = artwork;
         _updateAccessOrder(id, false);
       }

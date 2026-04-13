@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'audio_constants.dart';
@@ -104,7 +105,9 @@ class AuroraAudioHandler extends BaseAudioHandler with SeekHandler {
     } else if (player.loopMode == LoopMode.all && queueLength > 0) {
       // Repeat ALL: wrap back to the beginning.
       await player.seek(Duration.zero, index: 0);
-      await player.play();
+      // play() in just_audio ^0.10.x completes when interrupted, not when
+      // it starts, so fire-and-forget to avoid blocking the handler.
+      unawaited(player.play());
     }
     // Repeat OFF at end: do nothing — let the completion handler stop playback.
   }

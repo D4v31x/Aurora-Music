@@ -77,6 +77,7 @@ class _TracksScreenState extends State<TracksScreen> {
   }
 
   Future<void> _fetchAllSongs() async {
+    debugPrint('🎵 [TRACKS] Starting song fetch from MediaStore...');
     setState(() {
       _isLoading = true;
       _errorMessage = '';
@@ -86,6 +87,7 @@ class _TracksScreenState extends State<TracksScreen> {
       final bool permissionStatus = await _audioQuery.permissionsStatus();
 
       if (!permissionStatus) {
+        debugPrint('🎵 [TRACKS] Permission denied — cannot fetch songs');
         setState(() {
           _errorMessage = 'Permission to access media library is required. '
               'Please grant permissions in the onboarding or app settings.';
@@ -101,9 +103,11 @@ class _TracksScreenState extends State<TracksScreen> {
           ignoreCase: true,
         );
 
+        debugPrint('🎵 [TRACKS] Fetched ${_allSongs.length} songs from MediaStore');
         setState(() => _isLoading = false);
 
         if (_allSongs.isEmpty) {
+          debugPrint('🎵 [TRACKS] No songs found on device');
           setState(() {
             _errorMessage = 'No songs found on the device.';
           });
@@ -112,6 +116,7 @@ class _TracksScreenState extends State<TracksScreen> {
         }
       }
     } catch (e) {
+      debugPrint('🎵 [TRACKS] Error fetching songs: $e');
       setState(() {
         _errorMessage = 'Error fetching songs: $e';
         _isLoading = false;
@@ -169,6 +174,7 @@ class _TracksScreenState extends State<TracksScreen> {
 
     if (startIndex < _allSongs.length) {
       final newSongs = _allSongs.sublist(startIndex, endIndex);
+      debugPrint('🎵 [TRACKS] Loading page $_currentPage: songs $startIndex–${endIndex - 1} (${newSongs.length} songs displayed)');
 
       setState(() {
         _displayedSongs.addAll(newSongs);
@@ -177,6 +183,7 @@ class _TracksScreenState extends State<TracksScreen> {
         _hasMoreSongs = endIndex < _allSongs.length;
       });
     } else {
+      debugPrint('🎵 [TRACKS] All ${_allSongs.length} songs displayed');
       setState(() {
         _isLoading = false;
         _hasMoreSongs = false;
@@ -505,6 +512,7 @@ class _TracksScreenState extends State<TracksScreen> {
         song: song,
         selected: audioPlayerService.currentSong?.id == song.id,
         onTap: () {
+          debugPrint('🎵 [TRACKS] Song tapped: "${song.title}" by ${song.artist ?? 'Unknown'} (id: ${song.id}, index: $index)');
           audioPlayerService.setPlaylist(
             _displayedSongs,
             index,

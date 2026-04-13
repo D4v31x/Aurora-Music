@@ -42,8 +42,9 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
 
       _isSettingPlaylist = true; // Guard against currentIndexStream race
 
+      final startSongInfo = songs[startIndex];
       debugPrint(
-          'Setting playlist with ${songs.length} songs, starting at index $startIndex');
+          '🎵 [PLAYBACK] setPlaylist: ${songs.length} songs, starting at index $startIndex — "${startSongInfo.title}" by ${startSongInfo.artist ?? 'Unknown'}');
 
       if (_gaplessPlayback) {
         try {
@@ -87,25 +88,35 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
           // Resume automatic mediaItem updates
           audioHandler.resumeIndexUpdates();
 
-          await _audioPlayer.play();
-
-          // Sync _currentIndex with the player's actual index to prevent
-          // stale currentIndexStream events from overriding it after the
-          // guard is released.
+          // Sync _currentIndex with the player's actual index BEFORE play().
+          // just_audio sets currentIndex when setAudioSources is called, so
+          // this is already correct here.
           final actualIndex = _audioPlayer.currentIndex ?? _currentIndex;
           if (actualIndex >= 0 && actualIndex < _playlist.length) {
             _currentIndex = actualIndex;
           }
 
-          // Update current media item in notification (after index sync)
+          // Update current media item in notification
           audioHandler.updateNotificationMediaItem(startMediaItem);
 
-          // Batch all state updates
+          // Batch all state updates BEFORE play() — in just_audio ^0.10.x,
+          // play() returns a Future that completes only when playback is
+          // *interrupted* (paused/stopped/error), not when it starts.
+          // Awaiting it would block all code below for the song's entire
+          // duration, so we must fire it without awaiting.
           _isPlaying = true;
           isPlayingNotifier.value = true;
           _incrementPlayCount(_playlist[_currentIndex]);
           _currentSongController.add(_playlist[_currentIndex]);
           currentSongNotifier.value = _playlist[_currentIndex];
+
+          // Release guard before firing play() so index-stream events that
+          // arrive during/after the play command are handled correctly.
+          _isSettingPlaylist = false;
+
+          debugPrint('🎵 [PLAYBACK] ▶️ Starting playback: "${_playlist[_currentIndex].title}" by ${_playlist[_currentIndex].artist ?? 'Unknown'} (id: ${_playlist[_currentIndex].id})');
+          // Fire and forget — do NOT await; see comment above.
+          unawaited(_audioPlayer.play());
 
           // Fire and forget UI updates
           unawaited(updateCurrentArtwork());
@@ -113,10 +124,6 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
 
           // Load remaining artwork in background (non-blocking)
           unawaited(_loadRemainingArtworkInBackground(_playlist));
-
-          // Release guard AFTER all state is consistent — this prevents
-          // stale currentIndexStream events from overriding _currentIndex
-          _isSettingPlaylist = false;
 
           // Single debounced notification
           _scheduleNotify();
@@ -238,11 +245,20 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
           debugPrint(
               'Using gapless playback, seeking to index: $_currentIndex');
           await _audioPlayer.seek(Duration.zero, index: _currentIndex);
-          await _audioPlayer.play();
 
           // Update notification with current media item
           final mediaItem = await _createMediaItem(song);
           audioHandler.updateNotificationMediaItem(mediaItem);
+
+          // Set state BEFORE firing play() — play() in just_audio ^0.10.x
+          // completes only when playback is interrupted, not when it starts.
+          _isPlaying = true;
+          isPlayingNotifier.value = true;
+          _incrementPlayCount(song);
+          _currentSongController.add(song);
+          currentSongNotifier.value = song;
+
+          unawaited(_audioPlayer.play()); // fire-and-forget
         } else {
           final url = song.uri ?? song.data;
           debugPrint('Non-gapless playback, loading URL: $url');
@@ -266,17 +282,18 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
             _isSettingPlaylist = wasSettingPlaylist;
             audioHandler.resumeIndexUpdates();
           }
-          await _audioPlayer.play();
+
+          // Set state BEFORE firing play() — same reason as gapless path.
+          _isPlaying = true;
+          isPlayingNotifier.value = true;
+          _incrementPlayCount(song);
+          _currentSongController.add(song);
+          currentSongNotifier.value = song;
+
+          unawaited(_audioPlayer.play()); // fire-and-forget
         }
 
-        // Batch all state updates after playback starts
-        _isPlaying = true;
-        isPlayingNotifier.value = true;
-        _incrementPlayCount(song);
-        _currentSongController.add(song);
-        currentSongNotifier.value = song;
-
-        // Fire and forget - don't await these UI updates
+        // Fire and forget UI updates (now reachable immediately)
         unawaited(updateCurrentArtwork());
         unawaited(_updateBackgroundColors());
 
@@ -306,7 +323,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
 
   Future<void> resume() async {
     if (_audioPlayer.playing) return;
-    await _audioPlayer.play();
+    unawaited(_audioPlayer.play()); // fire-and-forget: play() completes on interrupt
     _isPlaying = true;
     isPlayingNotifier.value = true;
     // No need for notifyListeners - ValueNotifier handles UI updates
