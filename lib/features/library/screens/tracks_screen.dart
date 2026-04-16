@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -17,6 +18,38 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 enum TrackSortOption { title, artist, duration, dateAdded }
 
+// ---------------------------------------------------------------------------
+// Top-level helpers for compute() — must be outside any class so they can
+// run in a background isolate without capturing a closure.
+// ---------------------------------------------------------------------------
+
+/// Encapsulates everything needed to sort a song list off the main thread.
+class _SortParams {
+  final List<SongModel> songs;
+  final TrackSortOption option;
+  final bool ascending;
+  const _SortParams(
+      {required this.songs, required this.option, required this.ascending});
+}
+
+/// Pure sort function executed via [compute] in a background isolate.
+/// Sorting large libraries (1 000+ tracks) synchronously on the UI thread
+/// can cause multi-frame drops; isolating it keeps the 60 fps budget intact.
+List<SongModel> _sortSongsIsolate(_SortParams p) {
+  final list = List<SongModel>.from(p.songs);
+  switch (p.option) {
+    case TrackSortOption.title:
+      list.sort((a, b) => a.title.compareTo(b.title));
+    case TrackSortOption.artist:
+      list.sort((a, b) => (a.artist ?? '').compareTo(b.artist ?? ''));
+    case TrackSortOption.duration:
+      list.sort((a, b) => (a.duration ?? 0).compareTo(b.duration ?? 0));
+    case TrackSortOption.dateAdded:
+      list.sort((a, b) => (a.dateAdded ?? 0).compareTo(b.dateAdded ?? 0));
+  }
+  return p.ascending ? list : list.reversed.toList();
+}
+
 class TracksScreen extends StatefulWidget {
   final bool isEditingPlaylist;
   final Playlist? playlist;
@@ -33,6 +66,8 @@ class TracksScreen extends StatefulWidget {
 
 class _TracksScreenState extends State<TracksScreen> {
   final ScrollController _scrollController = ScrollController();
+  // OnAudioQuery is only used as a cold-start fallback; the primary source is
+  // AudioPlayerService.songs which is already loaded.
   final OnAudioQuery _audioQuery = OnAudioQuery();
   final _artworkService = ArtworkCacheService();
   List<SongModel> _allSongs = [];
@@ -77,13 +112,32 @@ class _TracksScreenState extends State<TracksScreen> {
   }
 
   Future<void> _fetchAllSongs() async {
-    debugPrint('🎵 [TRACKS] Starting song fetch from MediaStore...');
     setState(() {
       _isLoading = true;
       _errorMessage = '';
     });
 
     try {
+      // Performance: prefer the already-loaded in-memory song list from
+      // AudioPlayerService over issuing a duplicate MediaStore querySongs()
+      // call.  TracksScreen previously held its own OnAudioQuery instance and
+      // queried independently, which doubled the expensive platform-channel
+      // round-trip on every screen open.
+      final audioPlayerService =
+          Provider.of<AudioPlayerService>(context, listen: false);
+      final cachedSongs = audioPlayerService.songs;
+
+      if (cachedSongs.isNotEmpty) {
+        debugPrint(
+            '🎵 [TRACKS] Using ${cachedSongs.length} cached songs from AudioPlayerService (no MediaStore call)');
+        _allSongs = List<SongModel>.from(cachedSongs);
+        setState(() => _isLoading = false);
+        unawaited(_applySorting());
+        return;
+      }
+
+      // Cold-start fallback: library hasn't been loaded yet — query directly.
+      debugPrint('🎵 [TRACKS] Cache empty, querying MediaStore as fallback...');
       final bool permissionStatus = await _audioQuery.permissionsStatus();
 
       if (!permissionStatus) {
@@ -96,24 +150,22 @@ class _TracksScreenState extends State<TracksScreen> {
         return;
       }
 
-      if (permissionStatus) {
-        _allSongs = await _audioQuery.querySongs(
-          orderType: OrderType.ASC_OR_SMALLER,
-          uriType: UriType.EXTERNAL,
-          ignoreCase: true,
-        );
+      _allSongs = await _audioQuery.querySongs(
+        orderType: OrderType.ASC_OR_SMALLER,
+        uriType: UriType.EXTERNAL,
+        ignoreCase: true,
+      );
 
-        debugPrint('🎵 [TRACKS] Fetched ${_allSongs.length} songs from MediaStore');
-        setState(() => _isLoading = false);
+      debugPrint('🎵 [TRACKS] Fetched ${_allSongs.length} songs from MediaStore');
+      setState(() => _isLoading = false);
 
-        if (_allSongs.isEmpty) {
-          debugPrint('🎵 [TRACKS] No songs found on device');
-          setState(() {
-            _errorMessage = 'No songs found on the device.';
-          });
-        } else {
-          _applySorting();
-        }
+      if (_allSongs.isEmpty) {
+        debugPrint('🎵 [TRACKS] No songs found on device');
+        setState(() {
+          _errorMessage = 'No songs found on the device.';
+        });
+      } else {
+        unawaited(_applySorting());
       }
     } catch (e) {
       debugPrint('🎵 [TRACKS] Error fetching songs: $e');
@@ -124,23 +176,27 @@ class _TracksScreenState extends State<TracksScreen> {
     }
   }
 
-  void _applySorting() {
-    switch (_sortOption) {
-      case TrackSortOption.title:
-        _allSongs.sort((a, b) => a.title.compareTo(b.title));
-        break;
-      case TrackSortOption.artist:
-        _allSongs.sort((a, b) => (a.artist ?? '').compareTo(b.artist ?? ''));
-        break;
-      case TrackSortOption.duration:
-        _allSongs.sort((a, b) => (a.duration ?? 0).compareTo(b.duration ?? 0));
-        break;
-      case TrackSortOption.dateAdded:
-        _allSongs
-            .sort((a, b) => (a.dateAdded ?? 0).compareTo(b.dateAdded ?? 0));
-        break;
-    }
-    if (!_isAscending) _allSongs = _allSongs.reversed.toList();
+  /// Sorts [_allSongs] off the main thread via [compute] and resets paging.
+  ///
+  /// Using [compute] for large libraries prevents multi-frame jank while the
+  /// CPU is busy sorting thousands of [SongModel] entries.
+  Future<void> _applySorting() async {
+    // Threshold: skip the isolate overhead for small lists where in-line sort
+    // is faster than the isolate round-trip (~0.5 ms overhead).
+    final sorted = _allSongs.length > 300
+        ? await compute(
+            _sortSongsIsolate,
+            _SortParams(
+                songs: _allSongs,
+                option: _sortOption,
+                ascending: _isAscending))
+        : _sortSongsIsolate(
+            _SortParams(
+                songs: _allSongs,
+                option: _sortOption,
+                ascending: _isAscending));
+    if (!mounted) return;
+    _allSongs = sorted;
     // Reset paging and load first page in one setState
     _displayedSongs.clear();
     _currentPage = 0;
@@ -264,7 +320,7 @@ class _TracksScreenState extends State<TracksScreen> {
                     child: PopupMenuButton<TrackSortOption>(
                       onSelected: (opt) {
                         setState(() => _sortOption = opt);
-                        _applySorting();
+                        unawaited(_applySorting());
                       },
                       color: Colors.grey.shade900,
                       child: LibraryControlPill(
@@ -299,7 +355,7 @@ class _TracksScreenState extends State<TracksScreen> {
                   LibraryControlPill(
                     onTap: () {
                       setState(() => _isAscending = !_isAscending);
-                      _applySorting();
+                      unawaited(_applySorting());
                     },
                     child: Icon(
                       _isAscending

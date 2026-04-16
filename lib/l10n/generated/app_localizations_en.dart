@@ -654,6 +654,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Required to read music files from your device';
 
   @override
+  String get onboardingVisualizerAccess => 'Visualizer';
+
+  @override
+  String get onboardingVisualizerAccessDesc =>
+      'Lets the visualizer read your device\'s audio session for the live bar spectrum. No audio is ever recorded.';
+
+  @override
   String get onboardingSyncBackup => 'Sync & Backup';
 
   @override

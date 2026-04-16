@@ -395,6 +395,19 @@ class AudioPlayerService extends ChangeNotifier {
 
     // Restore the queue from the previous session (non-blocking).
     unawaited(loadQueueState());
+
+    // Wire Android Auto browse-tree callbacks into the audio handler.
+    // Closures are evaluated lazily so they always reflect the current state.
+    audioHandler.attachAndroidAutoCallbacks(
+      getSongs: () => _songs,
+      getPlaylists: () => _playlists,
+      getIsShuffle: () => _isShuffle,
+      getLoopMode: () => _loopMode,
+      playSongs: (songs, index) => setPlaylist(songs, index),
+      resume: resume,
+      toggleShuffle: toggleShuffle,
+      toggleRepeat: toggleRepeat,
+    );
   }
 
   /// Adjusts [_queueCount] when [_currentIndex] transitions from [oldIndex]

@@ -322,7 +322,11 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
   }
 
   Future<void> resume() async {
-    if (_audioPlayer.playing) return;
+    // Do NOT guard on _audioPlayer.playing here. In single-source (non-gapless)
+    // mode, just_audio keeps playing==true even after ProcessingState.completed
+    // (the "want-to-play" intent stays set). That means the guard would silently
+    // swallow every tap of the play button after a track finishes. Calling
+    // play() when already truly playing is a harmless no-op in just_audio.
     unawaited(_audioPlayer.play()); // fire-and-forget: play() completes on interrupt
     _isPlaying = true;
     isPlayingNotifier.value = true;
@@ -342,7 +346,15 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
   /// Always forces a UI refresh since stream events may have been missed
   /// while the Flutter engine was paused in the background.
   void syncPlaybackState() {
-    final actuallyPlaying = _audioPlayer.playing;
+    // _audioPlayer.playing can remain true after ProcessingState.completed in
+    // single-source (non-gapless) mode — just_audio keeps the "want-to-play"
+    // flag set even when there is nothing left to play. Treat completed/idle
+    // as not-playing so the UI button reflects reality when the app returns
+    // from the background.
+    final ps = _audioPlayer.processingState;
+    final actuallyPlaying = _audioPlayer.playing &&
+        ps != ProcessingState.completed &&
+        ps != ProcessingState.idle;
     _isPlaying = actuallyPlaying;
     // Unconditionally assign the value. If it differs, ValueNotifier fires
     // normally. If it is the same, we still call _scheduleNotify() below to

@@ -17,13 +17,15 @@ class LoggingService {
     }
   }
 
-  /// Logs informational messages
+  /// Logs informational messages (debug builds only — too verbose for release)
   static void info(String message, [String? tag]) {
-    developer.log(
-      message,
-      name: '$_appName${tag != null ? ' - $tag' : ''}',
-      level: 800, // Info level
-    );
+    if (kDebugMode) {
+      developer.log(
+        message,
+        name: '$_appName${tag != null ? ' - $tag' : ''}',
+        level: 800, // Info level
+      );
+    }
   }
 
   /// Logs warning messages

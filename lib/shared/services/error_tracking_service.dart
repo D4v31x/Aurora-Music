@@ -10,6 +10,7 @@ class ErrorTrackingService {
   static final ErrorTrackingService _instance =
       ErrorTrackingService._internal();
   final List<ErrorRecord> _currentErrors = [];
+  SharedPreferences? _prefs;
 
   /// Singleton factory constructor
   factory ErrorTrackingService() {
@@ -30,10 +31,14 @@ class ErrorTrackingService {
     await _savePendingErrors();
   }
 
+  Future<SharedPreferences> _getPrefs() async {
+    return _prefs ??= await SharedPreferences.getInstance();
+  }
+
   /// Persists current errors to SharedPreferences
   Future<void> _savePendingErrors() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       final List<Map<String, dynamic>> errorMaps =
           _currentErrors.map((error) => error.toJson()).toList();
 
@@ -46,7 +51,7 @@ class ErrorTrackingService {
   /// Retrieves stored errors from SharedPreferences
   Future<List<ErrorRecord>> loadPendingErrors() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       final String? storedErrors = prefs.getString(_storageKey);
 
       if (storedErrors != null) {
@@ -64,7 +69,7 @@ class ErrorTrackingService {
   /// Clears all stored errors
   Future<void> clearPendingErrors() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       await prefs.remove(_storageKey);
       _currentErrors.clear();
     } catch (e) {

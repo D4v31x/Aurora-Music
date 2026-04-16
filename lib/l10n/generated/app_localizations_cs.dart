@@ -655,6 +655,13 @@ class AppLocalizationsCs extends AppLocalizations {
       'Potřebné pro čtení hudebních souborů ze zařízení';
 
   @override
+  String get onboardingVisualizerAccess => 'Visualizer';
+
+  @override
+  String get onboardingVisualizerAccessDesc =>
+      'Lets the visualizer read your device\'s audio session for the live bar spectrum. No audio is ever recorded.';
+
+  @override
   String get onboardingSyncBackup => 'Synchronizace a záloha';
 
   @override

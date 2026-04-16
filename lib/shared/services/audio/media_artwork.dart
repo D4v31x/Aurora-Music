@@ -58,7 +58,8 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
     }
   }
 
-  /// Create a lightweight MediaItem WITHOUT artwork (instant, no I/O)
+  /// Create a lightweight MediaItem WITHOUT artwork I/O.
+  /// Uses the public MediaStore content URI so Android Auto can load it.
   MediaItem _createMediaItemSync(SongModel song) {
     return MediaItem(
       id: song.id.toString(),
@@ -66,19 +67,26 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
       title: song.title,
       artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
       duration: Duration(milliseconds: song.duration ?? 0),
+      artUri: song.albumId != null
+          ? Uri.parse(
+              'content://media/external/audio/albumart/${song.albumId}')
+          : null,
     );
   }
 
-  /// Create MediaItem with artwork for a song (async, involves I/O)
+  /// Create MediaItem with artwork for a song.
+  /// Uses the public MediaStore content URI so Android Auto can load it.
   Future<MediaItem> _createMediaItem(SongModel song) async {
-    final artUri = await _getArtworkUri(song.id);
     return MediaItem(
       id: song.id.toString(),
       album: song.album ?? 'Unknown Album',
       title: song.title,
       artist: splitArtists(song.artist ?? 'Unknown Artist').join(', '),
       duration: Duration(milliseconds: song.duration ?? 0),
-      artUri: artUri,
+      artUri: song.albumId != null
+          ? Uri.parse(
+              'content://media/external/audio/albumart/${song.albumId}')
+          : null,
     );
   }
 

@@ -1,271 +1,217 @@
 import 'dart:async';
-import 'dart:ui';
+import 'dart:io';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
+import 'package:feedback/feedback.dart';
 import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
-import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../providers/performance_mode_provider.dart';
 import '../services/feedback_reminder_service.dart';
+import '../services/feedback_email_service.dart';
 
-/// A glassmorphic dialog to remind users to provide feedback.
-/// Performance-aware: Respects device performance mode for blur effects.
+/// Minimal bottom-sheet prompt for feedback and bug reporting.
+/// Uses the `feedback` package to capture annotated screenshots before
+/// opening the corresponding GitHub page.
 class FeedbackReminderDialog extends StatelessWidget {
   const FeedbackReminderDialog({super.key});
 
+  /// Shows the sheet only when the reminder service decides it's time.
   static Future<void> showIfNeeded(BuildContext context) async {
     final shouldShow = await FeedbackReminderService.shouldShowFeedbackPrompt();
-
     if (shouldShow && context.mounted) {
       await FeedbackReminderService.recordPromptShown();
+      if (context.mounted) unawaited(show(context));
+    }
+  }
 
+  /// Shows the sheet unconditionally (e.g. tapped from Settings).
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const FeedbackReminderDialog(),
+    );
+  }
+
+  void _reportBug(BuildContext context) {
+    final feedbackController = BetterFeedback.of(context);
+    Navigator.pop(context);
+    feedbackController.show((UserFeedback feedback) async {
+      await _submit(
+        context: context,
+        type: 'Bug Report',
+        feedback: feedback,
+      );
+    });
+  }
+
+  void _suggestFeature(BuildContext context) {
+    final feedbackController = BetterFeedback.of(context);
+    Navigator.pop(context);
+    feedbackController.show((UserFeedback feedback) async {
+      await _submit(
+        context: context,
+        type: 'Feature Suggestion',
+        feedback: feedback,
+      );
+    });
+  }
+
+  /// Sends feedback to Sentry (with annotated screenshot attached).
+  /// Falls back to the native share sheet if Sentry throws.
+  static Future<void> _submit({
+    required BuildContext context,
+    required String type,
+    required UserFeedback feedback,
+  }) async {
+    try {
+      await FeedbackEmailService.send(
+        type: type,
+        description: feedback.text,
+        screenshot: feedback.screenshot,
+      );
       if (context.mounted) {
-        unawaited(showDialog(
-          context: context,
-          builder: (context) => const FeedbackReminderDialog(),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Thanks! Your $type was received.',
+              style: const TextStyle(fontFamily: FontConstants.fontFamily),
+            ),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
       }
-    }
-  }
-
-  void _openGitHubIssues() async {
-    final url = Uri.parse('https://github.com/D4v31x/Aurora-Music/issues');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    }
-  }
-
-  void _openGitHubDiscussions() async {
-    final url = Uri.parse('https://github.com/D4v31x/Aurora-Music/discussions');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // Fallback: share sheet with annotated screenshot
+      final tmpDir = await getTemporaryDirectory();
+      final file = File(
+        '${tmpDir.path}/aurora_feedback_${DateTime.now().millisecondsSinceEpoch}.png',
+      );
+      await file.writeAsBytes(feedback.screenshot);
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'image/png', name: 'screenshot.png')],
+        text: feedback.text.isEmpty
+            ? '$type — no description provided.'
+            : feedback.text,
+        subject: 'Aurora Music – $type',
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final cs = Theme.of(context).colorScheme;
 
-    // Check if blur should be enabled based on performance mode
-    final performanceProvider =
-        Provider.of<PerformanceModeProvider>(context, listen: false);
-    final shouldBlur = performanceProvider.shouldEnableBlur;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    // Use solid surface colors for low-end devices
-    final BoxDecoration dialogDecoration;
-    if (shouldBlur) {
-      dialogDecoration = BoxDecoration(
-        color: Colors.grey[900]?.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      );
-    } else {
-      // Solid dialog styling for low-end devices
-      dialogDecoration = BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-        ),
-      );
-    }
-
-    final innerContent = Container(
-      constraints: const BoxConstraints(maxWidth: 400),
-      decoration: dialogDecoration,
-      child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icon
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color:
-                      Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: Iconoir.Heart(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 44,
-                    height: 44,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Title
-              Text(
-                l10n.feedback_title,
-                style: const TextStyle(
-                  fontFamily: FontConstants.fontFamily,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-
-              // Description
-              Text(
-                l10n.feedback_description,
-                style: TextStyle(
-                  fontFamily: FontConstants.fontFamily,
-                  fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.7),
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-
-              // Action buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: _FeedbackButton(
-                      icon: const Iconoir.Bug(color: Colors.orange, width: 28, height: 28),
-                      label: l10n.report_bug,
-                      color: Colors.orange,
-                      onTap: () {
-                        Navigator.pop(context);
-                        _openGitHubIssues();
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _FeedbackButton(
-                      icon: const Iconoir.LightBulb(color: Colors.blue, width: 28, height: 28),
-                      label: l10n.suggest_feature,
-                      color: Colors.blue,
-                      onTap: () {
-                        Navigator.pop(context);
-                        _openGitHubDiscussions();
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Dismiss options
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      l10n.maybeLater,
-                      style: TextStyle(
-                        fontFamily: FontConstants.fontFamily,
-                        color: Colors.white.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  TextButton(
-                    onPressed: () async {
-                      await FeedbackReminderService.dismissPermanently();
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: Text(
-                      l10n.dont_ask_again,
-                      style: TextStyle(
-                        fontFamily: FontConstants.fontFamily,
-                        color: Colors.white.withValues(alpha: 0.4),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-
-    // Return dialog with BackdropFilter blur when performance allows
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: shouldBlur
-            ? BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: innerContent,
-              )
-            : innerContent,
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
-    );
-  }
-}
-
-class _FeedbackButton extends StatelessWidget {
-  final Widget icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _FeedbackButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: color.withValues(alpha: 0.3),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: cs.onSurfaceVariant.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          child: Column(
-            children: [
-              icon,
-              const SizedBox(height: 8),
-              Text(
-                label,
+
+            // Title
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  l10n.send_feedback,
+                  style: TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
+                ),
+              ),
+            ),
+
+            // Report Bug
+            ListTile(
+              leading: Iconoir.Bug(
+                color: cs.error,
+                width: 22,
+                height: 22,
+              ),
+              title: Text(
+                l10n.report_bug,
                 style: TextStyle(
                   fontFamily: FontConstants.fontFamily,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: color,
+                  color: cs.onSurface,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
+              onTap: () => _reportBug(context),
+            ),
+
+            // Suggest Feature
+            ListTile(
+              leading: Iconoir.LightBulb(
+                color: cs.primary,
+                width: 22,
+                height: 22,
+              ),
+              title: Text(
+                l10n.suggest_feature,
+                style: TextStyle(
+                  fontFamily: FontConstants.fontFamily,
+                  color: cs.onSurface,
+                ),
+              ),
+              onTap: () => _suggestFeature(context),
+            ),
+
+            const Divider(height: 1, indent: 16, endIndent: 16),
+
+            // Dismiss row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    l10n.maybeLater,
+                    style: TextStyle(
+                      fontFamily: FontConstants.fontFamily,
+                      color: cs.onSurfaceVariant,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    await FeedbackReminderService.dismissPermanently();
+                    if (context.mounted) Navigator.pop(context);
+                  },
+                  child: Text(
+                    l10n.dont_ask_again,
+                    style: TextStyle(
+                      fontFamily: FontConstants.fontFamily,
+                      color: cs.onSurfaceVariant.withValues(alpha: 0.6),
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+          ],
         ),
       ),
     );

@@ -39,6 +39,7 @@ class _PermissionsPageState extends State<PermissionsPage>
   bool _storagePermissionGranted = false;
   bool _notificationPermissionGranted = false;
   bool _bluetoothPermissionGranted = false;
+  bool _microphonePermissionGranted = false;
   bool _isChecking = false;
   bool _shouldShowStoragePermission = false; // Android 12 and below
   bool _shouldShowBluetoothPermission = false;
@@ -177,6 +178,7 @@ class _PermissionsPageState extends State<PermissionsPage>
 
     final notificationStatus = await Permission.notification.status;
     final bluetoothStatus = await Permission.bluetoothConnect.status;
+    final microphoneStatus = await Permission.microphone.status;
 
     // Only check audio permission on Android 13+
     PermissionStatus? audioStatus;
@@ -198,6 +200,7 @@ class _PermissionsPageState extends State<PermissionsPage>
           storageStatus?.isGranted ?? true; // Auto-grant if not needed
       _notificationPermissionGranted = notificationStatus.isGranted;
       _bluetoothPermissionGranted = bluetoothStatus.isGranted;
+      _microphonePermissionGranted = microphoneStatus.isGranted;
       _isChecking = false;
     });
   }
@@ -230,6 +233,13 @@ class _PermissionsPageState extends State<PermissionsPage>
     await _checkPermissions();
   }
 
+  Future<void> _requestMicrophonePermission() async {
+    if (_isChecking) return;
+    setState(() => _isChecking = true);
+    await Permission.microphone.request();
+    await _checkPermissions();
+  }
+
   Future<void> _requestAllPermissions() async {
     setState(() {
       _isChecking = true;
@@ -249,6 +259,7 @@ class _PermissionsPageState extends State<PermissionsPage>
       await Permission.bluetoothConnect.request();
     }
 
+    await Permission.microphone.request();
     await Permission.notification.request();
 
     await _checkPermissions();
@@ -448,6 +459,25 @@ class _PermissionsPageState extends State<PermissionsPage>
                                 isRequired: false,
                                 isDark: isDark,
                                 onTap: _requestNotificationPermission,
+                              ),
+
+                              const SizedBox(height: 12),
+
+                              _buildPermissionItem(
+                                context: context,
+                                icon: Iconoir.SoundHigh(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 24,
+                                  height: 24,
+                                ),
+                                title: AppLocalizations.of(context)
+                                    .onboardingVisualizerAccess,
+                                description: AppLocalizations.of(context)
+                                    .onboardingVisualizerAccessDesc,
+                                isGranted: _microphonePermissionGranted,
+                                isRequired: false,
+                                isDark: isDark,
+                                onTap: _requestMicrophonePermission,
                               ),
 
                               const SizedBox(height: 24),

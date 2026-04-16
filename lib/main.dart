@@ -1,3 +1,4 @@
+import 'package:feedback/feedback.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:clarity_flutter/clarity_flutter.dart';
@@ -9,6 +10,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'dart:ui' as ui;
 
 import 'core/constants/app_config.dart';
+import 'shared/widgets/aurora_feedback_form.dart';
 import 'shared/services/audio_player_service.dart';
 import 'shared/services/audio_handler.dart';
 import 'shared/services/error_tracking_service.dart';
@@ -139,8 +141,24 @@ void main() async {
                 performanceProvider.initialize();
               });
 
-              return MyApp(
-                languageCode: languageCode,
+              return BetterFeedback(
+                feedbackBuilder: auroraFeedbackForm,
+                theme: FeedbackThemeData(
+                  background: Colors.black,
+                  feedbackSheetColor: const Color(0xFF1C1B1F),
+                  activeFeedbackModeColor: const Color(0xFF7C3AED),
+                  drawColors: const [
+                    Color(0xFFFF453A),
+                    Color(0xFFFF9F0A),
+                    Color(0xFFFFD60A),
+                    Color(0xFF32D74B),
+                    Color(0xFF0A84FF),
+                    Colors.white,
+                  ],
+                ),
+                child: MyApp(
+                  languageCode: languageCode,
+                ),
               );
             },
           ),

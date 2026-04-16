@@ -62,6 +62,7 @@ dependencies:
   home_widget: ^0.7.0
   iconoir_flutter: ^7.11.0
   in_app_update: ^4.2.5
+  feedback: ^3.2.0
   
 dependency_overrides:
   sqflite_android: ^2.4.2+2

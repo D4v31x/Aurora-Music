@@ -210,6 +210,8 @@
   "onboardingStartListening": "Start Listening",
   "onboardingStorageAccess": "Storage Access",
   "onboardingStorageAccessDesc": "Required to read music files from your device",
+  "onboardingVisualizerAccess": "Visualizer",
+  "onboardingVisualizerAccessDesc": "Lets the visualizer read your device's audio session for the live bar spectrum. No audio is ever recorded.",
   "onboardingSyncBackup": "Sync & Backup",
   "onboardingSyncBackupDesc": "Optional cloud sync for playlists and preferences",
   "onboardingThemeSubtitle": "Choose a theme that suits your style",

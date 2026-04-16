@@ -1328,6 +1328,18 @@ abstract class AppLocalizations {
   /// **'Required to read music files from your device'**
   String get onboardingStorageAccessDesc;
 
+  /// No description provided for @onboardingVisualizerAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Visualizer'**
+  String get onboardingVisualizerAccess;
+
+  /// No description provided for @onboardingVisualizerAccessDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Lets the visualizer read your device\'s audio session for the live bar spectrum. No audio is ever recorded.'**
+  String get onboardingVisualizerAccessDesc;
+
   /// No description provided for @onboardingSyncBackup.
   ///
   /// In en, this message translates to:

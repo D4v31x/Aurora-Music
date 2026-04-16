@@ -64,8 +64,33 @@ class _LibraryStats {
 
 /// A minimalistic glassmorphic card showing music library statistics.
 /// Performance-aware: Respects device performance mode for blur effects.
-class MusicStatsCard extends StatelessWidget {
+class MusicStatsCard extends StatefulWidget {
   const MusicStatsCard({super.key});
+
+  @override
+  State<MusicStatsCard> createState() => _MusicStatsCardState();
+}
+
+class _MusicStatsCardState extends State<MusicStatsCard> {
+  // Memoization: only re-run the expensive _LibraryStats.compute() when the
+  // song or playlist count actually changes.  During normal playback the
+  // AudioPlayerService fires ~60 notifyListeners/sec (position debounce);
+  // without memoization, compute() would iterate every song on every tick.
+  _LibraryStats? _cachedStats;
+  int _lastSongCount = -1;
+  int _lastPlaylistCount = -1;
+
+  _LibraryStats _getMemoizedStats(List<SongModel> songs, int playlistCount) {
+    if (songs.length == _lastSongCount &&
+        playlistCount == _lastPlaylistCount &&
+        _cachedStats != null) {
+      return _cachedStats!;
+    }
+    _lastSongCount = songs.length;
+    _lastPlaylistCount = playlistCount;
+    _cachedStats = _LibraryStats.compute(songs, playlistCount);
+    return _cachedStats!;
+  }
 
   String _formatNumber(int number) {
     if (number >= 1000) {
@@ -79,15 +104,17 @@ class MusicStatsCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Check if blur should be enabled based on performance mode
-    // Use Selector to only rebuild when songs or playlists count changes
-    return Selector<AudioPlayerService, _LibraryStats>(
-      selector: (_, service) => _LibraryStats.compute(
-        service.songs,
-        service.playlists.length,
-      ),
+    // Selector only extracts the two integer counts — O(1) per notification.
+    // shouldRebuild ensures the builder body only runs when counts change, at
+    // which point _getMemoizedStats() performs the full O(n) computation once.
+    return Selector<AudioPlayerService, (int, int)>(
+      selector: (_, service) => (service.songs.length, service.playlists.length),
       shouldRebuild: (prev, next) => prev != next,
-      builder: (context, stats, _) {
+      builder: (context, counts, _) {
+        final audioPlayerService =
+            Provider.of<AudioPlayerService>(context, listen: false);
+        final stats =
+            _getMemoizedStats(audioPlayerService.songs, counts.$2);
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: GlassmorphicContainer(

@@ -60,19 +60,32 @@ class _SettingsTabState extends State<SettingsTab> {
     }
   }
 
-  // Glassmorphic Section Header
+  // Section Header — left accent bar + title-case label
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1.5,
-          fontFamily: FontConstants.fontFamily,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+      padding: const EdgeInsets.fromLTRB(20, 32, 20, 10),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 18,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
+              fontFamily: FontConstants.fontFamily,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -92,13 +105,24 @@ class _SettingsTabState extends State<SettingsTab> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: DecoratedBox(
+      child: Container(
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: borderColor,
+            width: 1,
           ),
+          // Subtle depth shadow on capable devices so the card lifts off the background
+          boxShadow: isLowEnd
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Column(
           children: children,
@@ -107,7 +131,7 @@ class _SettingsTabState extends State<SettingsTab> {
     );
   }
 
-  // Glassmorphic Switch Tile
+  // Switch Tile
   Widget _buildSwitchTile({
     required Widget icon,
     required String title,
@@ -117,24 +141,34 @@ class _SettingsTabState extends State<SettingsTab> {
     bool isFirst = false,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
     return Column(
       children: [
         if (!isFirst)
           Divider(
             height: 1,
-            indent: 56,
+            indent: 64,
+            endIndent: 16,
+            thickness: 0.5,
             color: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.06),
+                ? Colors.white.withValues(alpha: 0.07)
+                : Colors.black.withValues(alpha: 0.05),
           ),
         SwitchListTile(
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           secondary: Container(
-            padding: const EdgeInsets.all(8),
+            width: 40,
+            height: 40,
+            padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+              color: primary.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12),
+              // Subtle ring echoes the icon accent colour
+              border: Border.all(
+                color: primary.withValues(alpha: 0.22),
+                width: 1,
+              ),
             ),
             child: icon,
           ),
@@ -170,7 +204,7 @@ class _SettingsTabState extends State<SettingsTab> {
     );
   }
 
-  // Glassmorphic Action Tile
+  // Action Tile
   Widget _buildActionTile({
     required Widget icon,
     required String title,
@@ -189,19 +223,27 @@ class _SettingsTabState extends State<SettingsTab> {
         if (!isFirst)
           Divider(
             height: 1,
-            indent: 56,
+            indent: 64,
+            endIndent: 16,
+            thickness: 0.5,
             color: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.06),
+                ? Colors.white.withValues(alpha: 0.07)
+                : Colors.black.withValues(alpha: 0.05),
           ),
         ListTile(
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: Container(
-            padding: const EdgeInsets.all(8),
+            width: 40,
+            height: 40,
+            padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: effectiveIconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+              color: effectiveIconColor.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: effectiveIconColor.withValues(alpha: 0.22),
+                width: 1,
+              ),
             ),
             child: icon,
           ),
@@ -230,11 +272,29 @@ class _SettingsTabState extends State<SettingsTab> {
                   ),
                 )
               : null,
+          // Chevron wrapped in a faint circle for a more premium look
           trailing: trailing ??
-              Iconoir.NavArrowRight(
-                color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.5) ?? Colors.white54,
-                width: 16,
-                height: 16,
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.07)
+                      : Colors.black.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Iconoir.NavArrowRight(
+                    color: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.color
+                            ?.withValues(alpha: 0.45) ??
+                        Colors.white38,
+                    width: 14,
+                    height: 14,
+                  ),
+                ),
               ),
           onTap: onTap,
         ),
@@ -335,23 +395,34 @@ class _SettingsTabState extends State<SettingsTab> {
         if (!isFirst)
           Divider(
             height: 1,
-            indent: 56,
+            indent: 64,
+            endIndent: 16,
+            thickness: 0.5,
             color: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.06),
+                ? Colors.white.withValues(alpha: 0.07)
+                : Colors.black.withValues(alpha: 0.05),
           ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                width: 40,
+                height: 40,
+                padding: const EdgeInsets.all(9),
                 decoration: BoxDecoration(
                   color: Theme.of(context)
                       .colorScheme
                       .primary
-                      .withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
+                      .withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.22),
+                    width: 1,
+                  ),
                 ),
                 child: icon,
               ),
@@ -371,13 +442,32 @@ class _SettingsTabState extends State<SettingsTab> {
                             fontFamily: FontConstants.fontFamily,
                           ),
                         ),
-                        Text(
-                          displayValue,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: FontConstants.fontFamily,
-                            color: Theme.of(context).colorScheme.primary,
+                        // Pill badge makes the live value visually distinct
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withValues(alpha: 0.25),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            displayValue,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: FontConstants.fontFamily,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
                         ),
                       ],
@@ -531,7 +621,7 @@ class _SettingsTabState extends State<SettingsTab> {
     );
   }
 
-  // Glassmorphic Segmented Choice Tile
+  // Segmented Choice Tile — animated sliding-pill selector
   Widget _buildSegmentedChoiceTile({
     required Widget icon,
     required String title,
@@ -542,15 +632,18 @@ class _SettingsTabState extends State<SettingsTab> {
     bool isFirst = false,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
     return Column(
       children: [
         if (!isFirst)
           Divider(
             height: 1,
-            indent: 56,
+            indent: 64,
+            endIndent: 16,
+            thickness: 0.5,
             color: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.06),
+                ? Colors.white.withValues(alpha: 0.07)
+                : Colors.black.withValues(alpha: 0.05),
           ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -560,13 +653,16 @@ class _SettingsTabState extends State<SettingsTab> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    width: 40,
+                    height: 40,
+                    padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
+                      color: primary.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: primary.withValues(alpha: 0.22),
+                        width: 1,
+                      ),
                     ),
                     child: icon,
                   ),
@@ -601,21 +697,90 @@ class _SettingsTabState extends State<SettingsTab> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: SegmentedButton<int>(
-                  segments: options.asMap().entries.map((entry) {
-                    return ButtonSegment<int>(
-                      value: entry.key,
-                      label: Text(entry.value),
-                    );
-                  }).toList(),
-                  selected: {selectedIndex},
-                  onSelectionChanged: (selection) {
-                    if (selection.isNotEmpty) onChanged(selection.first);
-                  },
-                ),
+              const SizedBox(height: 12),
+              // Custom animated pill selector — the indicator slides smoothly
+              // to the selected segment instead of Flutter's generic
+              // SegmentedButton, giving the settings a more polished feel.
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final segmentWidth =
+                      constraints.maxWidth / options.length;
+                  return Container(
+                    height: 38,
+                    // Clip so the sliding indicator stays within rounded corners
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.07)
+                          : Colors.black.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.10)
+                            : Colors.black.withValues(alpha: 0.08),
+                        width: 1,
+                      ),
+                    ),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Sliding accent indicator
+                        AnimatedPositioned(
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeInOut,
+                          left: selectedIndex * segmentWidth + 2,
+                          top: 2,
+                          bottom: 2,
+                          width: segmentWidth - 4,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: primary,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: primary.withValues(alpha: 0.35),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Tappable label overlay
+                        Row(
+                          children: options.asMap().entries.map((entry) {
+                            final isSelected = entry.key == selectedIndex;
+                            return Expanded(
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => onChanged(entry.key),
+                                child: Center(
+                                  child: Text(
+                                    entry.value,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.w400,
+                                      fontFamily: FontConstants.fontFamily,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : (isDark
+                                              ? Colors.white
+                                                  .withValues(alpha: 0.55)
+                                              : Colors.black
+                                                  .withValues(alpha: 0.5)),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -1019,11 +1184,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
   void _showFeedbackDialog() {
     if (!mounted) return;
-
-    showDialog(
-      context: context,
-      builder: (context) => const FeedbackReminderDialog(),
-    );
+    FeedbackReminderDialog.show(context);
   }
 
   void _showColorPickerDialog(ThemeProvider themeProvider) {
@@ -1195,19 +1356,33 @@ class _SettingsTabState extends State<SettingsTab> {
       children: [
         Divider(
           height: 1,
-          indent: 56,
+          indent: 64,
+          endIndent: 16,
+          thickness: 0.5,
           color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.06),
+              ? Colors.white.withValues(alpha: 0.07)
+              : Colors.black.withValues(alpha: 0.05),
         ),
         ListTile(
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: Container(
-            padding: const EdgeInsets.all(8),
+            width: 40,
+            height: 40,
+            padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+              color: Theme.of(context)
+                  .colorScheme
+                  .primary
+                  .withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.22),
+                width: 1,
+              ),
             ),
             child: Iconoir.Language(
               color: Theme.of(context).colorScheme.primary,

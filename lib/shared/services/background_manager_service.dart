@@ -126,10 +126,13 @@ class BackgroundManagerService extends ChangeNotifier {
       return;
     }
 
-    // Check cache first
-    final artworkHash = artworkData.hashCode;
-    if (_colorCache.containsKey(artworkHash)) {
-      _currentColors = _colorCache[artworkHash]!;
+    // Performance: use song ID as the cache key instead of artworkData.hashCode.
+    // Uint8List.hashCode in Dart is identity-based (not content-based), so it
+    // returns a different value for every new buffer object even when the pixel
+    // data is identical — making the old cache 100 % miss-prone in practice.
+    final cacheKey = _currentSong?.id;
+    if (cacheKey != null && _colorCache.containsKey(cacheKey)) {
+      _currentColors = _colorCache[cacheKey]!;
       return;
     }
 
@@ -143,16 +146,18 @@ class BackgroundManagerService extends ChangeNotifier {
       final colors = _extractColorsFromPalette(palette);
       if (colors.length >= 2) {
         _currentColors = colors;
-        // Cache the extracted colors
-        _colorCache[artworkHash] = colors;
+        // Cache by song ID so subsequent calls for the same song are O(1).
+        if (cacheKey != null) {
+          _colorCache[cacheKey] = colors;
 
-        // Limit cache size to prevent memory leaks
-        if (_colorCache.length > 50) {
-          // Remove oldest entries (first keys)
-          final keysToRemove =
-              _colorCache.keys.take(_colorCache.length - 50).toList();
-          for (final key in keysToRemove) {
-            _colorCache.remove(key);
+          // Limit cache size to prevent memory leaks
+          if (_colorCache.length > 50) {
+            // Remove oldest entries (first keys)
+            final keysToRemove =
+                _colorCache.keys.take(_colorCache.length - 50).toList();
+            for (final key in keysToRemove) {
+              _colorCache.remove(key);
+            }
           }
         }
       } else {

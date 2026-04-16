@@ -5,15 +5,20 @@ extension AudioPlayCountsExtension on AudioPlayerService {
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/play_counts.json');
 
-    if (await file.exists()) {
+    if (!await file.exists()) return;
+
+    try {
       final contents = await file.readAsString();
       final json = jsonDecode(contents);
 
-      _trackPlayCounts = Map<String, int>.from(json['tracks']);
-      _albumPlayCounts = Map<String, int>.from(json['albums']);
-      _artistPlayCounts = Map<String, int>.from(json['artists']);
-      _playlistPlayCounts = Map<String, int>.from(json['playlists']);
-      _folderAccessCounts = Map<String, int>.from(json['folders']);
+      _trackPlayCounts = Map<String, int>.from(json['tracks'] ?? {});
+      _albumPlayCounts = Map<String, int>.from(json['albums'] ?? {});
+      _artistPlayCounts = Map<String, int>.from(json['artists'] ?? {});
+      _playlistPlayCounts = Map<String, int>.from(json['playlists'] ?? {});
+      _folderAccessCounts = Map<String, int>.from(json['folders'] ?? {});
+    } catch (_) {
+      // Corrupted data — delete and start fresh to prevent startup crash.
+      await file.delete();
     }
   }
 
@@ -75,12 +80,22 @@ extension AudioPlayCountsExtension on AudioPlayerService {
   bool hasListeningHistory() => _smartSuggestions.hasListeningHistory();
 
   // Most Played Queries
+
+  /// Returns the top [count] most-played tracks.
+  ///
+  /// Performance: uses the in-memory [_songs] cache instead of issuing a
+  /// full MediaStore query (`_audioQuery.querySongs`) on every call, which
+  /// was the single biggest blocking operation on the main thread.
   Future<List<SongModel>> getMostPlayedTracks() async {
-    final allSongs = await _audioQuery.querySongs(
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
+    // Use the already-loaded in-memory song list. Fall back to a fresh query
+    // only when the cache is empty (e.g. first cold-start before library loads).
+    final allSongs = _songs.isNotEmpty
+        ? _songs
+        : await _audioQuery.querySongs(
+            orderType: OrderType.ASC_OR_SMALLER,
+            uriType: UriType.EXTERNAL,
+            ignoreCase: true,
+          );
     final playedSongs = allSongs
         .where((song) => (_trackPlayCounts[song.id.toString()] ?? 0) > 0)
         .toList()
@@ -127,14 +142,19 @@ extension AudioPlayCountsExtension on AudioPlayerService {
     return folderAccessCounts.take(3).map((entry) => entry.key).toList();
   }
 
-  /// Get recently played songs sorted by play count
-  /// [count] - number of songs to return (default 3, use -1 for all)
+  /// Returns recently played songs sorted by play count.
+  ///
+  /// Performance: reads from the in-memory [_songs] cache rather than
+  /// issuing a new `querySongs` MediaStore call on every invocation.
+  /// [count] – number of songs to return (default 3, -1 = all).
   Future<List<SongModel>> getRecentlyPlayed({int count = 3}) async {
-    final allSongs = await _audioQuery.querySongs(
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
+    final allSongs = _songs.isNotEmpty
+        ? _songs
+        : await _audioQuery.querySongs(
+            orderType: OrderType.ASC_OR_SMALLER,
+            uriType: UriType.EXTERNAL,
+            ignoreCase: true,
+          );
     final recentlyPlayedSongs = allSongs
         .where((song) => _trackPlayCounts.containsKey(song.id.toString()))
         .toList();
@@ -148,29 +168,42 @@ extension AudioPlayCountsExtension on AudioPlayerService {
     return recentlyPlayedSongs.take(count).toList();
   }
 
-  /// Get all recently played songs (full list for playback)
+  /// Returns all recently played songs (full list for playback).
   Future<List<SongModel>> getAllRecentlyPlayed() async {
     return getRecentlyPlayed(count: -1);
   }
 
-  /// Get all recently added songs (full list for playback)
+  /// Returns all recently-added songs, sorted newest-first.
+  ///
+  /// Performance: derives the list from the cached [_songs] and sorts
+  /// in-memory by [dateAdded] rather than firing a new MediaStore query.
   Future<List<SongModel>> getAllRecentlyAdded() async {
-    final allSongs = await _audioQuery.querySongs(
-      sortType: SongSortType.DATE_ADDED,
-      orderType: OrderType.DESC_OR_GREATER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
+    final allSongs = _songs.isNotEmpty
+        ? List<SongModel>.from(_songs)
+        : await _audioQuery.querySongs(
+            sortType: SongSortType.DATE_ADDED,
+            orderType: OrderType.DESC_OR_GREATER,
+            uriType: UriType.EXTERNAL,
+            ignoreCase: true,
+          );
+    // If the cache was used, sort by dateAdded descending in-memory.
+    if (_songs.isNotEmpty) {
+      allSongs.sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
+    }
     return allSongs;
   }
 
-  /// Get all most played tracks (full list for playback)
+  /// Returns all most-played tracks (full list for playback).
+  ///
+  /// Performance: uses the in-memory [_songs] cache — no MediaStore round-trip.
   Future<List<SongModel>> getAllMostPlayedTracks() async {
-    final allSongs = await _audioQuery.querySongs(
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
+    final allSongs = _songs.isNotEmpty
+        ? _songs
+        : await _audioQuery.querySongs(
+            orderType: OrderType.ASC_OR_SMALLER,
+            uriType: UriType.EXTERNAL,
+            ignoreCase: true,
+          );
     final playedSongs = allSongs
         .where((song) => (_trackPlayCounts[song.id.toString()] ?? 0) > 0)
         .toList();

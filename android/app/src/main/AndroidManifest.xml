@@ -112,6 +112,11 @@
                 android:resource="@xml/aurora_music_widget_info" />
         </receiver>
 
+        <!-- Android Auto: declare this is a media app -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
