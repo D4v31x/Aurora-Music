@@ -1,11 +1,51 @@
 class ChangelogContent {
   static const Map<String, List<Map<String, List<String>>>> versions = {
     // Latest version at the top
+    '1.0.5': [
+      {
+        '_': ['Aurora Music 1.0 — the first production release'],
+      },
+      {
+        'Preface for beta testers': [
+          'After over a year of development and testing, Aurora Music has reached its first stable release! This version includes all the core features I envisioned, along with numerous optimizations and bug fixes. I am incredibly grateful to our early adopters and beta testers for their invaluable feedback and support throughout this journey.',
+          'This release marks a major milestone for me, but it’s just the beginning. I am committed to continuously enhancing Aurora Music based on user feedback and evolving needs. Thank you for being part of this journey, and I can’t wait to share what’s next!',
+        ],
+        'New Features': [
+          'Music Visualizer — real-time audio visualization with multiple modes (accessible from Now Playing)',
+          'Android Auto support — control playback from your car display',
+          'Lyrics Editor — create and edit custom timed lyrics for any song',
+          'In-app feedback form — send feedback or bug reports directly from the app',
+        ],
+      },
+      {
+        'Lyrics': [ 
+          'Lyrics Editor for writing and fine-tuning timed (.lrc) lyrics',
+          'Smoother lyric line animations and improved scroll behavior',
+        ],
+      },
+      {
+        'Bug Fixes': [
+          'Fixed artwork not updating when skipping between tracks',
+          'Fixed play count tracking not incrementing correctly',
+        ],
+      },
+      {
+        'UI': [
+          'Various visual refinements across screens',
+        ],
+      },
+      {
+        'Under the Hood': [
+          'Improved error tracking and logging',
+          'Background service stability improvements',
+        ],
+      },
+    ],
     '0.1.84': [
       {
         'UI': [
           'Added option to contribute to translate app via Crowdin in settings',
-          'Replaced most Material icons with Iconoir icon library throughout the app',
+          'Replaced most Material icons with iconoir icon library throughout the app',
           'Added more customization options in settings',
           'Playback speed slider now has step arrow buttons (±0.05) and max speed capped at 2.0×',
           'Various UI improvements',

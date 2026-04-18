@@ -5,7 +5,7 @@ import '../../../shared/providers/providers.dart';
 import '../../../shared/services/donation_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
 class DonationPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -128,7 +128,7 @@ class _DonationPageState extends State<DonationPage>
                     position: slidePos,
                     child: FadeTransition(
                       opacity: fadeOp,
-                      child: Iconoir.Heart(
+                      child: iconoir.Heart(
                         color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
@@ -188,7 +188,7 @@ class _DonationPageState extends State<DonationPage>
                           children: [
                             _buildDonationOption(
                               context: context,
-                              icon: Iconoir.CoffeeCup(
+                              icon: iconoir.CoffeeCup(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,
@@ -202,7 +202,7 @@ class _DonationPageState extends State<DonationPage>
                             const SizedBox(height: 12),
                             _buildDonationOption(
                               context: context,
-                              icon: Iconoir.Heart(
+                              icon: iconoir.Heart(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,

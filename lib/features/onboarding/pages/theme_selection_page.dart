@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
 class ThemeSelectionPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -158,7 +158,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                               _exitController.isCompleted
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
-                      child: Iconoir.Palette(
+                      child: iconoir.Palette(
                         color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
@@ -250,7 +250,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
                                   ),
                                   child: Row(
                                     children: [
-                                      Iconoir.Palette(
+                                      iconoir.Palette(
                                         width: 28,
                                         height: 28,
                                         color: Theme.of(context)
@@ -384,7 +384,7 @@ class _ThemeSelectionPageState extends State<ThemeSelectionPage>
           children: [
             Row(
               children: [
-                Iconoir.ColorPicker(
+                iconoir.ColorPicker(
                   color: Theme.of(context).colorScheme.primary,
                   height: 24,
                   width: 24,

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
 class CompletionPage extends StatefulWidget {
   final VoidCallback onComplete;
@@ -85,7 +85,7 @@ class _CompletionPageState extends State<CompletionPage>
                 position: _slideAnimation,
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-                  child: Iconoir.Check(
+                  child: iconoir.Check(
                     color: Theme.of(context).colorScheme.primary,
                     height: 56,
                     width: 56,

@@ -285,12 +285,21 @@ class AuroraAudioHandler extends BaseAudioHandler with SeekHandler {
           uriType: UriType.EXTERNAL,
         );
         return artists
-            .map((artist) => MediaItem(
-                  id: 'artist/${artist.id}',
-                  title: artist.artist,
-                  playable: false,
-                  extras: {'trackCount': artist.numberOfTracks ?? 0},
-                ))
+            .map((artist) {
+              // Find a representative song to use for artwork (grid view requires it)
+              final candidates = songs.where((s) => s.artistId == artist.id);
+              final rep = candidates.isEmpty ? null : candidates.first;
+              return MediaItem(
+                id: 'artist/${artist.id}',
+                title: artist.artist,
+                playable: false,
+                artUri: rep?.albumId != null
+                    ? Uri.parse(
+                        'content://media/external/audio/albumart/${rep!.albumId}')
+                    : null,
+                extras: {'trackCount': artist.numberOfTracks ?? 0},
+              );
+            })
             .toList();
 
       // All playlists
@@ -372,7 +381,6 @@ class AuroraAudioHandler extends BaseAudioHandler with SeekHandler {
               'content://media/external/audio/albumart/${song.albumId}',
             )
           : null,
-      playable: true,
     );
   }
 

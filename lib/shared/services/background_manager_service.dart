@@ -140,6 +140,7 @@ class BackgroundManagerService extends ChangeNotifier {
       final imageProvider = MemoryImage(artworkData);
       final palette = await PaletteGenerator.fromImageProvider(
         imageProvider,
+        size: const Size(112, 112),
         maximumColorCount: 6,
       );
 

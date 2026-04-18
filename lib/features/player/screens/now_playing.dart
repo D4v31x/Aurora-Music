@@ -28,7 +28,7 @@ import '../widgets/player_widgets.dart';
 import 'fullscreen_artwork.dart';
 import 'music_visualizer_screen.dart';
 import 'fullscreen_lyrics.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
 
 
@@ -52,10 +52,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   // MARK: - Private Fields
 
   static final _artworkService = ArtworkCacheService();
-  ImageProvider<Object>? _currentArtwork;
   int? _lastSongId;
 
-  List<TimedLyric>? _timedLyrics;
+  final ValueNotifier<ImageProvider<Object>?> _artworkNotifier =
+      ValueNotifier<ImageProvider<Object>?>(null);
+  final ValueNotifier<List<TimedLyric>?> _lyricsNotifier =
+      ValueNotifier<List<TimedLyric>?>(null);
   final ValueNotifier<int> _currentLyricIndexNotifier = ValueNotifier<int>(0);
 
   StreamSubscription<Duration>? _positionSub;
@@ -72,6 +74,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   @override
   void dispose() {
+    _artworkNotifier.dispose();
+    _lyricsNotifier.dispose();
     _currentLyricIndexNotifier.dispose();
     _positionSub?.cancel();
     _songChangeSubscription?.cancel();
@@ -152,7 +156,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       );
     if (!mounted || song.id != _pendingSongLoadId) return;
 
-    setState(() => _timedLyrics = lyrics);
+    _lyricsNotifier.value = lyrics;
     _currentLyricIndexNotifier.value = 0;
 
     _positionSub ??=
@@ -163,17 +167,18 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   }
 
   void _updateCurrentLyric(Duration position) {
-    if (!mounted || _timedLyrics == null || _timedLyrics!.isEmpty) return;
+    final timedLyrics = _lyricsNotifier.value;
+    if (!mounted || timedLyrics == null || timedLyrics.isEmpty) return;
 
-    for (int i = 0; i < _timedLyrics!.length; i++) {
-      if (position < _timedLyrics![i].time) {
+    for (int i = 0; i < timedLyrics.length; i++) {
+      if (position < timedLyrics[i].time) {
         final newIndex = i > 0 ? i - 1 : 0;
         if (newIndex != _currentLyricIndexNotifier.value) {
           _currentLyricIndexNotifier.value = newIndex;
         }
         break;
       }
-      if (i == _timedLyrics!.length - 1 &&
+      if (i == timedLyrics.length - 1 &&
           _currentLyricIndexNotifier.value != i) {
         _currentLyricIndexNotifier.value = i;
       }
@@ -188,13 +193,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         song.id,
         highQuality: true,
       );
-      if (mounted) setState(() => _currentArtwork = provider);
+      if (mounted) _artworkNotifier.value = provider;
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _currentArtwork =
-              const AssetImage('assets/images/logo/default_art.png');
-        });
+        _artworkNotifier.value =
+            const AssetImage('assets/images/logo/default_art.png');
       }
     }
   }
@@ -232,7 +235,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       centerTitle: true,
       title: PlayingFromHeader(audioPlayerService: audioPlayerService),
       leading: IconButton(
-        icon: const Iconoir.NavArrowDown(
+        icon: const iconoir.NavArrowDown(
           color: Colors.white,
           width: 32,
           height: 32,
@@ -259,7 +262,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       context,
       PageRouteBuilder<void>(
         transitionDuration:        const Duration(milliseconds: 400),
-        reverseTransitionDuration: const Duration(milliseconds: 300),
         pageBuilder: (ctx, animation, _) => FadeTransition(
           opacity: animation,
           child:   const MusicVisualizerScreen(),
@@ -310,7 +312,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       MaterialPageRoute(
         builder: (context) => FullscreenLyricsScreen(
           onLyricsChanged: (lyrics) {
-            if (mounted) setState(() => _timedLyrics = lyrics);
+            if (mounted) _lyricsNotifier.value = lyrics;
           },
         ),
       ),
@@ -374,9 +376,16 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
               ),
               SizedBox(height: isTablet ? 28 : 20),
               Center(
-                child: SongLikeButton(
-                  audioPlayerService: audioPlayerService,
-                  size: isTablet ? 34 : 30,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SongLikeButton(
+                      audioPlayerService: audioPlayerService,
+                      size: isTablet ? 34 : 30,
+                    ),
+
+                  ],
                 ),
               ),
               _buildLyricsSection(audioPlayerService, isTablet),
@@ -563,22 +572,27 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   }
 
   Widget _buildArtworkImage() {
-    if (_currentArtwork != null) {
-      return Image(
-        image: _currentArtwork!,
-        fit: BoxFit.cover,
-        gaplessPlayback: true,
-      );
-    }
-    return ColoredBox(
-      color: Colors.white.withValues(alpha: 0.1),
-      child: Center(
-        child: Iconoir.MusicNote(
-          color: Colors.white.withValues(alpha: 0.3),
-          width: 64,
-          height: 64,
-        ),
-      ),
+    return ValueListenableBuilder<ImageProvider<Object>?>(
+      valueListenable: _artworkNotifier,
+      builder: (context, artwork, _) {
+        if (artwork != null) {
+          return Image(
+            image: artwork,
+            fit: BoxFit.cover,
+            gaplessPlayback: true,
+          );
+        }
+        return ColoredBox(
+          color: Colors.white.withValues(alpha: 0.1),
+          child: Center(
+            child: iconoir.MusicNote(
+              color: Colors.white.withValues(alpha: 0.3),
+              width: 64,
+              height: 64,
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -661,38 +675,42 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   Widget _buildLyricsSection(
       AudioPlayerService audioPlayerService, bool isTablet) {
-    final hasLyrics = _timedLyrics != null && _timedLyrics!.isNotEmpty;
-
-    return Column(
-      children: [
-        SizedBox(height: isTablet ? 80 : 60),
-        Text(
-          AppLocalizations.of(context).lyrics,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: isTablet ? 26 : 22,
-            fontWeight: FontWeight.bold,
-            fontFamily: FontConstants.fontFamily,
-            letterSpacing: 0.5,
-          ),
-        ),
-        SizedBox(height: isTablet ? 24 : 20),
-        GestureDetector(
-          onTap: hasLyrics
-              ? () => _openFullscreenLyrics(audioPlayerService)
-              : null,
-          child: ValueListenableBuilder<int>(
-            valueListenable: _currentLyricIndexNotifier,
-            builder: (context, currentIndex, _) {
-              return LyricsSection(
-                timedLyrics: _timedLyrics,
-                currentLyricIndex: currentIndex,
-                audioPlayerService: audioPlayerService,
-              );
-            },
-          ),
-        ),
-      ],
+    return ValueListenableBuilder<List<TimedLyric>?>(
+      valueListenable: _lyricsNotifier,
+      builder: (context, timedLyrics, _) {
+        final hasLyrics = timedLyrics != null && timedLyrics.isNotEmpty;
+        return Column(
+          children: [
+            SizedBox(height: isTablet ? 80 : 60),
+            Text(
+              AppLocalizations.of(context).lyrics,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isTablet ? 26 : 22,
+                fontWeight: FontWeight.bold,
+                fontFamily: FontConstants.fontFamily,
+                letterSpacing: 0.5,
+              ),
+            ),
+            SizedBox(height: isTablet ? 24 : 20),
+            GestureDetector(
+              onTap: hasLyrics
+                  ? () => _openFullscreenLyrics(audioPlayerService)
+                  : null,
+              child: ValueListenableBuilder<int>(
+                valueListenable: _currentLyricIndexNotifier,
+                builder: (context, currentIndex, _) {
+                  return LyricsSection(
+                    timedLyrics: timedLyrics,
+                    currentLyricIndex: currentIndex,
+                    audioPlayerService: audioPlayerService,
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -804,7 +822,7 @@ class _ArtistSelectionSheet extends StatelessWidget {
                           color: Colors.white.withValues(alpha: 0.15),
                         ),
                       ),
-                      child: Iconoir.Group(
+                      child: const iconoir.Group(
                         color: Colors.white,
                         width: 20,
                         height: 20,
@@ -852,7 +870,7 @@ class _ArtistSelectionSheet extends StatelessWidget {
                                 color: Colors.white.withValues(alpha: 0.12),
                               ),
                             ),
-                            child: Iconoir.User(
+                            child: const iconoir.User(
                               color: Colors.white,
                               width: 22,
                               height: 22,
@@ -869,7 +887,7 @@ class _ArtistSelectionSheet extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Iconoir.NavArrowRight(
+                          iconoir.NavArrowRight(
                             color: Colors.white.withValues(alpha: 0.4),
                             width: 24,
                             height: 24,
@@ -895,3 +913,4 @@ class _ArtistSelectionSheet extends StatelessWidget {
     );
   }
 }
+

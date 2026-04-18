@@ -1,6 +1,6 @@
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/home_layout_service.dart';
@@ -28,7 +28,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Iconoir.NavArrowLeft(
+          icon: iconoir.NavArrowLeft(
             color: isDark ? Colors.white : Colors.black,
             width: 28,
             height: 28,

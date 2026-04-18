@@ -7,7 +7,7 @@ library;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
 // MARK: - Constants
 
@@ -133,7 +133,7 @@ class BlurDialog extends StatelessWidget {
           if (title != null) Expanded(child: title!),
           if (showCloseButton)
             IconButton(
-              icon: const Iconoir.Xmark(color: Colors.white70, width: 24, height: 24),
+              icon: const iconoir.Xmark(color: Colors.white70, width: 24, height: 24),
               onPressed: () => Navigator.of(context).pop(),
             ),
         ],

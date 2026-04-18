@@ -7,7 +7,7 @@ import 'dart:io';
 import '../../../shared/providers/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
 class PermissionsPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -309,7 +309,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                               _exitController.isCompleted
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
-                      child: Iconoir.Shield(
+                      child: iconoir.Shield(
                         color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
@@ -387,7 +387,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                               if (_shouldShowAudioPermission) ...[
                                 _buildPermissionItem(
                                   context: context,
-                                  icon: Iconoir.MusicNote(
+                                  icon: iconoir.MusicNote(
                                     color: Theme.of(context).colorScheme.primary,
                                     width: 24,
                                     height: 24,
@@ -408,7 +408,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                               if (_shouldShowStoragePermission) ...[
                                 _buildPermissionItem(
                                   context: context,
-                                  icon: Iconoir.Folder(
+                                  icon: iconoir.Folder(
                                     color: Theme.of(context).colorScheme.primary,
                                     width: 24,
                                     height: 24,
@@ -427,7 +427,7 @@ class _PermissionsPageState extends State<PermissionsPage>
 
                               _buildPermissionItem(
                                 context: context,
-                                icon: Iconoir.Bluetooth(
+                                icon: iconoir.Bluetooth(
                                   color: Theme.of(context).colorScheme.primary,
                                   width: 24,
                                   height: 24,
@@ -446,7 +446,7 @@ class _PermissionsPageState extends State<PermissionsPage>
 
                               _buildPermissionItem(
                                 context: context,
-                                icon: Iconoir.Bell(
+                                icon: iconoir.Bell(
                                   color: Theme.of(context).colorScheme.primary,
                                   width: 24,
                                   height: 24,
@@ -465,7 +465,7 @@ class _PermissionsPageState extends State<PermissionsPage>
 
                               _buildPermissionItem(
                                 context: context,
-                                icon: Iconoir.SoundHigh(
+                                icon: iconoir.SoundHigh(
                                   color: Theme.of(context).colorScheme.primary,
                                   width: 24,
                                   height: 24,
@@ -493,7 +493,7 @@ class _PermissionsPageState extends State<PermissionsPage>
                                       ? null
                                       : _requestAllPermissions,
                                   isLoading: _isChecking,
-                                  iconWidget: Iconoir.ShieldCheck(
+                                  iconWidget: iconoir.ShieldCheck(
                                     color: Theme.of(context).colorScheme.primary,
                                     width: 20,
                                     height: 20,
@@ -671,12 +671,12 @@ class _PermissionsPageState extends State<PermissionsPage>
               ),
               const SizedBox(width: 12),
               isGranted
-                  ? Iconoir.CheckCircle(
+                  ? iconoir.CheckCircle(
                       color: Theme.of(context).colorScheme.primary,
                       width: 24,
                       height: 24,
                     )
-                  : Iconoir.Circle(
+                  : iconoir.Circle(
                       color: isDark
                           ? Colors.white.withValues(alpha: 0.3)
                           : Colors.black.withValues(alpha: 0.3),

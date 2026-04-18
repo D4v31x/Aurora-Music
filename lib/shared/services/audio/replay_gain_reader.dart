@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 
 /// Reads ReplayGain track gain from audio files without external dependencies.
@@ -218,7 +217,9 @@ class ReplayGainReader {
     } else {
       // Latin-1 (0) or UTF-8 (3) – single-byte null terminator
       int nullIdx = start;
-      while (nullIdx < end && bytes[nullIdx] != 0) nullIdx++;
+      while (nullIdx < end && bytes[nullIdx] != 0) {
+        nullIdx++;
+      }
 
       desc = String.fromCharCodes(bytes.sublist(start, nullIdx))
           .toLowerCase()
@@ -226,7 +227,9 @@ class ReplayGainReader {
 
       final valueStart = nullIdx + 1;
       int valueEnd = valueStart;
-      while (valueEnd < end && bytes[valueEnd] != 0) valueEnd++;
+      while (valueEnd < end && bytes[valueEnd] != 0) {
+        valueEnd++;
+      }
 
       value =
           String.fromCharCodes(bytes.sublist(valueStart, valueEnd)).trim();

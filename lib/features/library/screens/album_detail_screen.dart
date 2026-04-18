@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../../shared/services/audio_player_service.dart';
@@ -195,7 +195,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                         alignment: Alignment.topLeft,
                         child: IconButton(
                           icon:
-                              const Iconoir.NavArrowLeft(color: Colors.white, width: 28, height: 28),
+                              const iconoir.NavArrowLeft(color: Colors.white, width: 28, height: 28),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ),

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -211,7 +211,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                     color: Colors.white.withValues(alpha: 0.2),
                                   ),
                                 ),
-                                child: const Iconoir.MoreVert(
+                                child: const iconoir.MoreVert(
                                   color: Colors.white,
                                   width: 20,
                                   height: 20,
@@ -316,7 +316,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Iconoir.Play(color: Colors.white, width: 22, height: 22),
+                        const iconoir.Play(color: Colors.white, width: 22, height: 22),
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
@@ -354,7 +354,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       },
                 child: GlassmorphicContainer(
                   padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-                  child: Iconoir.Shuffle(
+                  child: iconoir.Shuffle(
                     color: playlist.songs.isEmpty ? Colors.white30 : Colors.white,
                     width: 20,
                     height: 20,
@@ -377,7 +377,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       },
                 child: GlassmorphicContainer(
                   padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-                  child: Iconoir.Playlist(
+                  child: iconoir.Playlist(
                     color: playlist.songs.isEmpty ? Colors.white30 : Colors.white,
                     width: 22,
                     height: 22,
@@ -403,7 +403,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         color: color.withValues(alpha: 0.4),
                       ),
                     ),
-                    child: Iconoir.PlusCircle(
+                    child: iconoir.PlusCircle(
                       color: color,
                       width: 24,
                       height: 24,
@@ -491,7 +491,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
         color: Colors.red.withValues(alpha: 0.15),
-        child: Iconoir.Trash(color: Colors.red.withValues(alpha: 0.8), width: 24, height: 24),
+        child: iconoir.Trash(color: Colors.red.withValues(alpha: 0.8), width: 24, height: 24),
       ),
       confirmDismiss: (_) async {
         if (!_isAutoPlaylist) {
@@ -524,7 +524,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   SizedBox(
                     width: 32,
                     child: isPlaying
-                        ? Iconoir.SoundHigh(
+                        ? iconoir.SoundHigh(
                             color: theme.colorScheme.primary,
                             width: 18,
                             height: 18,
@@ -584,7 +584,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   ),
                   // More button
                   const SizedBox(width: 4),
-                  Iconoir.MoreVert(
+                  iconoir.MoreVert(
                     color: Colors.white.withValues(alpha: 0.5),
                     width: 20,
                     height: 20,
@@ -604,7 +604,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Iconoir.MusicNote(
+          iconoir.MusicNote(
             color: isDark ? Colors.white24 : Colors.black12,
             width: 56,
             height: 56,
@@ -782,7 +782,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 // Rename
                 _buildOptionTile(
                   context,
-                  Iconoir.Edit(
+                  iconoir.Edit(
                     color: isDark ? Colors.white70 : Colors.black54,
                     width: 22,
                     height: 22,
@@ -797,7 +797,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 // Delete
                 _buildOptionTile(
                   context,
-                  const Iconoir.Trash(
+                  const iconoir.Trash(
                     color: Colors.red,
                     width: 22,
                     height: 22,
@@ -880,7 +880,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Iconoir.Trash(
+                  iconoir.Trash(
                     color: Colors.red.withValues(alpha: 0.8),
                     width: 44,
                     height: 44,

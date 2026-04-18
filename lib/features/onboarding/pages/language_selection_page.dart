@@ -8,7 +8,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../l10n/supported_languages.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/pill_button.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
 class LanguageSelectionPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -191,7 +191,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                               _exitController.isCompleted
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
-                      child: Iconoir.Language(
+                      child: iconoir.Language(
                         color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,

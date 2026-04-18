@@ -515,5 +515,16 @@
   "backgroundBlur": "Rozostření pozadí",
   "backgroundBlurDesc": "Intenzita rozostření obalu",
   "backgroundDarkness": "Tmavost pozadí",
-  "backgroundDarknessDesc": "Průhlednost překrytí na obalu"
+  "backgroundDarknessDesc": "Průhlednost překrytí na obalu",
+  "onboardingVisualizerAccess": "Vizualizér",
+  "onboardingVisualizerAccessDesc": "Umožňuje vizualizéru číst audio session vašeho zařízení pro zobrazení vizualizéru. Mikrofon není nikdy použit pro nahrávání ani ukládání zvuku.",
+  "feedbackHeaderTitle": "Už je to chvíli co používáš Aurora Music",
+  "feedbackHeaderSubtitle": "Jsi přesně ten, pro koho jsem tohle vytvořil. Podělíš se o rychlou myšlenku? Opravdu to pomáhá.",
+  "feedbackLove": "Líbí se mi",
+  "feedbackMissing": "Něco chybí",
+  "feedbackBroken": "Něco nefunguje",
+  "feedbackHint": "Něco konkrétního? (volitelné)",
+  "feedbackSend": "Odeslat",
+  "microphoneAccessNeeded": "Je potřeba přístup k mikrofonu",
+  "microphoneAccessDesc": "Aurora potřebuje přístup k mikrofonu pro živý vizualizér. Žádný zvuk není nikdy nahrán ani uložen."
 }

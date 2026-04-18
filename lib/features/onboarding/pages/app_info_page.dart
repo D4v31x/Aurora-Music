@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
 class AppInfoPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -162,7 +162,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                               _exitController.isCompleted
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
-                      child: Iconoir.InfoCircle(
+                      child: iconoir.InfoCircle(
                         color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
@@ -234,7 +234,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                         child: ListView(
                           children: [
                             _buildFeatureItem(
-                              icon: Iconoir.Folder(
+                              icon: iconoir.Folder(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,
@@ -247,7 +247,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
-                              icon: Iconoir.MediaImage(
+                              icon: iconoir.MediaImage(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,
@@ -260,7 +260,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
-                              icon: Iconoir.Palette(
+                              icon: iconoir.Palette(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,
@@ -273,7 +273,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
-                              icon: Iconoir.MusicDoubleNote(
+                              icon: iconoir.MusicDoubleNote(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,
@@ -286,7 +286,7 @@ class _AppInfoPageState extends State<AppInfoPage>
                             ),
                             const SizedBox(height: 16),
                             _buildFeatureItem(
-                              icon: Iconoir.TextSize(
+                              icon: iconoir.TextSize(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,

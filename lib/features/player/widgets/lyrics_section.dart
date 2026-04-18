@@ -4,8 +4,10 @@
 /// and an optional translation powered by the MyMemory API.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:provider/provider.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -145,7 +147,7 @@ class _LyricsSectionState extends State<LyricsSection>
     if (_translationState == _TranslationState.loading) return;
 
     setState(() => _translationState = _TranslationState.loading);
-    _pulseController.repeat(reverse: true);
+    unawaited(_pulseController.repeat(reverse: true));
 
     try {
       final targetLang = Localizations.localeOf(context).languageCode;
@@ -176,18 +178,17 @@ class _LyricsSectionState extends State<LyricsSection>
             ' (${e.detectedLanguage.toUpperCase()})',
           ),
           behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
         ),
       );
     } catch (e) {
       if (!mounted) return;
       setState(() => _translationState = _TranslationState.error);
       // Auto-reset to idle after a delay so the user can retry.
-      Future.delayed(const Duration(seconds: 3), () {
+      unawaited(Future.delayed(const Duration(seconds: 3), () {
         if (mounted && _translationState == _TranslationState.error) {
           setState(() => _translationState = _TranslationState.idle);
         }
-      });
+      }));
     } finally {
       _pulseController
         ..stop()
@@ -358,16 +359,16 @@ class _LyricsSectionState extends State<LyricsSection>
     if (_showTranslated) {
       lines.insert(
         0,
-        Padding(
-          key: const ValueKey('ai-disclaimer'),
-          padding: const EdgeInsets.only(bottom: 6),
+        const Padding(
+          key: ValueKey('ai-disclaimer'),
+          padding: EdgeInsets.only(bottom: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.auto_awesome_rounded,
+              Icon(Icons.auto_awesome_rounded,
                   size: 10, color: Colors.white38),
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               Text(
                 'AI translated \u00b7 accuracy may vary',
                 style: TextStyle(
@@ -404,9 +405,7 @@ class _LyricsSectionState extends State<LyricsSection>
         vertical: isCurrent ? _kCurrentLyricPadding : _kOtherLyricPadding,
         horizontal: _kHorizontalLyricPadding,
       ),
-      child: AnimatedScale(
-        duration: _kLyricAnimationDuration,
-        curve: Curves.easeOutCubic,
+      child: Transform.scale(
         scale: scale,
         child: SizedBox(
           width: screenWidth - 80,
@@ -525,7 +524,7 @@ class _LyricsSectionState extends State<LyricsSection>
         colorScheme: colorScheme,
         isActive: false,
         child: IconButton(
-          icon: const Iconoir.Expand(
+          icon: const iconoir.Expand(
             color: Colors.white,
             width: 20,
             height: 20,
@@ -590,12 +589,12 @@ class _LyricsSectionState extends State<LyricsSection>
                 )
               : IconButton(
                   icon: isError
-                      ? const Iconoir.WarningTriangle(
+                      ? const iconoir.WarningTriangle(
                           color: Colors.orangeAccent,
                           width: 20,
                           height: 20,
                         )
-                      : Iconoir.Language(
+                      : iconoir.Language(
                           color: isActive
                               ? colorScheme.primary
                               : Colors.white,

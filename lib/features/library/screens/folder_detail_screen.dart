@@ -3,7 +3,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -303,7 +303,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                             const SizedBox(width: 4),
                             GestureDetector(
                               onTap: () => showSongContextMenu(context, song),
-                              child: Iconoir.MoreVert(
+                              child: iconoir.MoreVert(
                                 color: Colors.white.withValues(alpha: 0.5),
                                 width: 20,
                                 height: 20,

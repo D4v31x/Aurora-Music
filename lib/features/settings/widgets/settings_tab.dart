@@ -1,7 +1,7 @@
 import 'package:aurora_music_v01/shared/widgets/about_dialog.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:aurora_music_v01/shared/widgets/changelog_dialog.dart';
-import 'package:aurora_music_v01/shared/widgets/feedback_reminder_dialog.dart';
+import 'package:aurora_music_v01/shared/widgets/feedback_popup_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +24,7 @@ import '../screens/artist_separator_settings.dart';
 import '../screens/home_layout_settings.dart';
 import '../../../shared/utils/responsive_utils.dart';
 import '../../../shared/widgets/expanding_player.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:url_launcher/url_launcher.dart';
 
 /// A glassmorphic settings tab with translations.
@@ -60,32 +60,25 @@ class _SettingsTabState extends State<SettingsTab> {
     }
   }
 
-  // Section Header — left accent bar + title-case label
+  // Section Header — Material 3 overline style.
+  // Muted label keyed on `onSurfaceVariant`, so it naturally shifts with the
+  // Material You palette without drawing as much attention as the primary
+  // color did previously. No accent bar, no glow — just a clean, modern group
+  // label that sits quietly above its card.
   Widget _buildSectionHeader(String title) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 32, 20, 10),
-      child: Row(
-        children: [
-          Container(
-            width: 3,
-            height: 18,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.6,
-              fontFamily: FontConstants.fontFamily,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.fromLTRB(22, 28, 22, 10),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.4,
+          height: 1.2,
+          fontFamily: FontConstants.fontFamily,
+          color: cs.onSurfaceVariant,
+        ),
       ),
     );
   }
@@ -105,13 +98,12 @@ class _SettingsTabState extends State<SettingsTab> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: borderColor,
-            width: 1,
           ),
           // Subtle depth shadow on capable devices so the card lifts off the background
           boxShadow: isLowEnd
@@ -167,7 +159,6 @@ class _SettingsTabState extends State<SettingsTab> {
               // Subtle ring echoes the icon accent colour
               border: Border.all(
                 color: primary.withValues(alpha: 0.22),
-                width: 1,
               ),
             ),
             child: icon,
@@ -242,7 +233,6 @@ class _SettingsTabState extends State<SettingsTab> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: effectiveIconColor.withValues(alpha: 0.22),
-                width: 1,
               ),
             ),
             child: icon,
@@ -284,7 +274,7 @@ class _SettingsTabState extends State<SettingsTab> {
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child: Iconoir.NavArrowRight(
+                  child: iconoir.NavArrowRight(
                     color: Theme.of(context)
                             .textTheme
                             .bodySmall
@@ -421,7 +411,6 @@ class _SettingsTabState extends State<SettingsTab> {
                         .colorScheme
                         .primary
                         .withValues(alpha: 0.22),
-                    width: 1,
                   ),
                 ),
                 child: icon,
@@ -457,7 +446,6 @@ class _SettingsTabState extends State<SettingsTab> {
                                   .colorScheme
                                   .primary
                                   .withValues(alpha: 0.25),
-                              width: 1,
                             ),
                           ),
                           child: Text(
@@ -506,7 +494,7 @@ class _SettingsTabState extends State<SettingsTab> {
                       ),
                       child: () {
                         // Build the core slider widget (with optional default-value marker)
-                        Widget sliderWidget = defaultValue != null
+                        final Widget sliderWidget = defaultValue != null
                             ? LayoutBuilder(
                                 builder: (context, constraints) {
                                   // Flutter's Slider pads the thumb by the overlay radius
@@ -563,7 +551,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
                         if (!showArrows) return sliderWidget;
 
-                        // Wrap slider with Iconoir arrow step buttons
+                        // Wrap slider with iconoir arrow step buttons
                         final arrowColor =
                             Theme.of(context).colorScheme.primary;
                         return Row(
@@ -580,7 +568,7 @@ class _SettingsTabState extends State<SettingsTab> {
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 4),
-                                child: Iconoir.NavArrowLeft(
+                                child: iconoir.NavArrowLeft(
                                   color: arrowColor,
                                   width: 20,
                                   height: 20,
@@ -600,7 +588,7 @@ class _SettingsTabState extends State<SettingsTab> {
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 4),
-                                child: Iconoir.NavArrowRight(
+                                child: iconoir.NavArrowRight(
                                   color: arrowColor,
                                   width: 20,
                                   height: 20,
@@ -631,8 +619,8 @@ class _SettingsTabState extends State<SettingsTab> {
     required ValueChanged<int> onChanged,
     bool isFirst = false,
   }) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = Theme.of(context).colorScheme.primary;
     return Column(
       children: [
         if (!isFirst)
@@ -646,25 +634,26 @@ class _SettingsTabState extends State<SettingsTab> {
                 : Colors.black.withValues(alpha: 0.05),
           ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
+                  // Icon chip — uses `primaryContainer` so it picks up the
+                  // active Material You palette without looking "hot".
                   Container(
                     width: 40,
                     height: 40,
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
-                      color: primary.withValues(alpha: 0.14),
+                      color: cs.primaryContainer.withValues(alpha: 0.55),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: primary.withValues(alpha: 0.22),
-                        width: 1,
-                      ),
                     ),
-                    child: icon,
+                    child: IconTheme.merge(
+                      data: IconThemeData(color: cs.onPrimaryContainer),
+                      child: icon,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -697,90 +686,28 @@ class _SettingsTabState extends State<SettingsTab> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              // Custom animated pill selector — the indicator slides smoothly
-              // to the selected segment instead of Flutter's generic
-              // SegmentedButton, giving the settings a more polished feel.
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final segmentWidth =
-                      constraints.maxWidth / options.length;
-                  return Container(
-                    height: 38,
-                    // Clip so the sliding indicator stays within rounded corners
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.07)
-                          : Colors.black.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.10)
-                            : Colors.black.withValues(alpha: 0.08),
-                        width: 1,
+              const SizedBox(height: 14),
+              // Independent chip-style choices. Selected chip fills with
+              // `primaryContainer` (Material You dynamic color) and uses
+              // `onPrimaryContainer` for text — no shadow, no glow, just a
+              // clear, reactive highlight. Unselected chips stay transparent
+              // with a subtle outline so the row reads as a group.
+              Row(
+                children: List<Widget>.generate(options.length, (index) {
+                  final isSelected = index == selectedIndex;
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: index == options.length - 1 ? 0 : 8,
+                      ),
+                      child: _ChoiceChipSegment(
+                        label: options[index],
+                        selected: isSelected,
+                        onTap: () => onChanged(index),
                       ),
                     ),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        // Sliding accent indicator
-                        AnimatedPositioned(
-                          duration: const Duration(milliseconds: 220),
-                          curve: Curves.easeInOut,
-                          left: selectedIndex * segmentWidth + 2,
-                          top: 2,
-                          bottom: 2,
-                          width: segmentWidth - 4,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: primary,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: primary.withValues(alpha: 0.35),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        // Tappable label overlay
-                        Row(
-                          children: options.asMap().entries.map((entry) {
-                            final isSelected = entry.key == selectedIndex;
-                            return Expanded(
-                              child: GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: () => onChanged(entry.key),
-                                child: Center(
-                                  child: Text(
-                                    entry.value,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.w400,
-                                      fontFamily: FontConstants.fontFamily,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : (isDark
-                                              ? Colors.white
-                                                  .withValues(alpha: 0.55)
-                                              : Colors.black
-                                                  .withValues(alpha: 0.5)),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
                   );
-                },
+                }),
               ),
             ],
           ),
@@ -1184,7 +1111,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
   void _showFeedbackDialog() {
     if (!mounted) return;
-    FeedbackReminderDialog.show(context);
+    FeedbackPopupWidget.show(context);
   }
 
   void _showColorPickerDialog(ThemeProvider themeProvider) {
@@ -1247,7 +1174,7 @@ class _SettingsTabState extends State<SettingsTab> {
                       : null,
                 ),
                 child: isSelected
-                    ? const Iconoir.Check(color: Colors.white, width: 22, height: 22)
+                    ? const iconoir.Check(color: Colors.white, width: 22, height: 22)
                     : null,
               ),
             );
@@ -1381,10 +1308,9 @@ class _SettingsTabState extends State<SettingsTab> {
                     .colorScheme
                     .primary
                     .withValues(alpha: 0.22),
-                width: 1,
               ),
             ),
-            child: Iconoir.Language(
+            child: iconoir.Language(
               color: Theme.of(context).colorScheme.primary,
               width: 20,
               height: 20,
@@ -1504,7 +1430,7 @@ class _SettingsTabState extends State<SettingsTab> {
       builder: (context, themeProvider, _) => _buildGlassmorphicCard(
         children: [
           _buildSwitchTile(
-            icon: Iconoir.Palette(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+            icon: iconoir.Palette(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
             title: l10n.settingsMaterialYou,
             subtitle: l10n.settingsMaterialYouDesc,
             value: themeProvider.useDynamicColor,
@@ -1514,7 +1440,7 @@ class _SettingsTabState extends State<SettingsTab> {
           _buildAnimatedTile(
             visible: !themeProvider.useDynamicColor,
             child: _buildActionTile(
-              icon: Iconoir.ColorPicker(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+              icon: iconoir.ColorPicker(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
               title: 'Accent Color',
               subtitle: 'Choose the app accent color',
               trailing: Row(
@@ -1533,7 +1459,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Iconoir.NavArrowRight(
+                  iconoir.NavArrowRight(
                     color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.5) ?? Colors.white54,
                     width: 16,
                     height: 16,
@@ -1549,7 +1475,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 return const SizedBox.shrink();
               }
               return _buildSegmentedChoiceTile(
-                icon: Iconoir.MultiWindow(
+                icon: iconoir.MultiWindow(
                     color: Theme.of(context).colorScheme.primary,
                     width: 20,
                     height: 20),
@@ -1574,7 +1500,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 return const SizedBox.shrink();
               }
               return _buildSegmentedChoiceTile(
-                icon: Iconoir.MediaImage(
+                icon: iconoir.MediaImage(
                     color: Theme.of(context).colorScheme.primary,
                     width: 20,
                     height: 20),
@@ -1600,7 +1526,7 @@ class _SettingsTabState extends State<SettingsTab> {
               final isHighEnd =
                   performanceProvider.currentMode == PerformanceLevel.high;
               return _buildSwitchTile(
-                icon: Iconoir.DashboardSpeed(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+                icon: iconoir.DashboardSpeed(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
                 title: l10n.settingsHighendUi,
                 subtitle: l10n.settingsHighendUiDesc,
                 value: isHighEnd,
@@ -1615,7 +1541,7 @@ class _SettingsTabState extends State<SettingsTab> {
               return _buildAnimatedTile(
                 visible: showBlur,
                 child: _buildSliderTile(
-                  icon: Iconoir.Fog(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+                  icon: iconoir.Fog(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
                   title: l10n.backgroundBlur,
                   subtitle: l10n.backgroundBlurDesc,
                   value: themeProvider.blurIntensity,
@@ -1636,7 +1562,7 @@ class _SettingsTabState extends State<SettingsTab> {
               return _buildAnimatedTile(
                 visible: showDarkness,
                 child: _buildSliderTile(
-                  icon: Iconoir.Brightness(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+                  icon: iconoir.Brightness(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
                   title: l10n.backgroundDarkness,
                   subtitle: l10n.backgroundDarknessDesc,
                   value: themeProvider.overlayOpacity,
@@ -1652,7 +1578,7 @@ class _SettingsTabState extends State<SettingsTab> {
           ),
           _buildLanguageTile(),
           _buildActionTile(
-            icon: Iconoir.Dashboard(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+            icon: iconoir.Dashboard(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
             title: l10n.homeLayout,
             subtitle: l10n.homeLayoutDesc,
             onTap: () {
@@ -1677,7 +1603,7 @@ class _SettingsTabState extends State<SettingsTab> {
     return _buildGlassmorphicCard(
       children: [
         _buildSwitchTile(
-          icon: Iconoir.GitFork(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          icon: iconoir.GitFork(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
           title: l10n.settingsGapless,
           subtitle: l10n.settingsGaplessDesc,
           value: audioPlayerService.gaplessPlayback,
@@ -1685,14 +1611,14 @@ class _SettingsTabState extends State<SettingsTab> {
           isFirst: true,
         ),
         _buildSwitchTile(
-          icon: Iconoir.SoundHigh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          icon: iconoir.SoundHigh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
           title: l10n.settingsNormalization,
           subtitle: l10n.settingsNormalizationDesc,
           value: audioPlayerService.volumeNormalization,
           onChanged: (value) => audioPlayerService.setVolumeNormalization(value),
         ),
         _buildSliderTile(
-          icon: Iconoir.DashboardSpeed(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          icon: iconoir.DashboardSpeed(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
           title: l10n.playbackSpeed,
           subtitle: l10n.playbackSpeedDesc,
           value: audioPlayerService.playbackSpeed.clamp(0.25, 2.0),
@@ -1701,7 +1627,6 @@ class _SettingsTabState extends State<SettingsTab> {
           defaultValue: 1.0,
           valueFormatter: (v) => '${v.toStringAsFixed(2)}x',
           showArrows: true,
-          arrowStep: 0.05,
           onChanged: (value) => audioPlayerService.setPlaybackSpeed(value),
           onChangeEnd: (value) {
             final rounded = (value * 20).round() / 20;
@@ -1709,14 +1634,14 @@ class _SettingsTabState extends State<SettingsTab> {
           },
         ),
         _buildSwitchTile(
-          icon: Iconoir.MusicNote(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          icon: iconoir.MusicNote(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
           title: l10n.adjustPitchWithSpeed,
           subtitle: l10n.adjustPitchWithSpeedDesc,
           value: audioPlayerService.pitchWithSpeed,
           onChanged: (value) => audioPlayerService.setPitchWithSpeed(value),
         ),
         _buildActionTile(
-          icon: Iconoir.Group(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          icon: iconoir.Group(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
           title: l10n.artistSeparation,
           subtitle: l10n.artistSeparationDesc,
           onTap: () {
@@ -1737,14 +1662,14 @@ class _SettingsTabState extends State<SettingsTab> {
     return _buildGlassmorphicCard(
       children: [
         _buildActionTile(
-          icon: Iconoir.Database(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          icon: iconoir.Database(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
           title: l10n.settingsCacheInfo,
           subtitle: l10n.settingsCacheInfoDesc,
           onTap: _showCacheInfo,
           isFirst: true,
         ),
         _buildActionTile(
-          icon: Iconoir.Trash(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          icon: iconoir.Trash(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
           title: l10n.settingsClearCache,
           subtitle: l10n.settingsClearCacheDesc,
           onTap: _showClearCacheDialog,
@@ -1758,35 +1683,35 @@ class _SettingsTabState extends State<SettingsTab> {
     return _buildGlassmorphicCard(
       children: [
         _buildActionTile(
-          icon: Iconoir.InfoCircle(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          icon: iconoir.InfoCircle(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
           title: l10n.settingsAboutApp,
           subtitle: '${l10n.settingsVersion} $_currentVersion',
           onTap: _showAboutDialog,
           isFirst: true,
         ),
         _buildActionTile(
-          icon: Iconoir.Bell(color: Colors.blue, width: 20, height: 20),
+          icon: const iconoir.Bell(color: Colors.blue, width: 20, height: 20),
           title: l10n.whatsNew,
           subtitle: l10n.view_changelog,
           onTap: _showChangelogDialog,
           iconColor: Colors.blue,
         ),
         _buildActionTile(
-          icon: Iconoir.HeartSolid(color: Colors.pink, width: 20, height: 20),
+          icon: const iconoir.HeartSolid(color: Colors.pink, width: 20, height: 20),
           title: l10n.supportAurora,
           subtitle: l10n.supportAuroraDescShort,
           onTap: () => DonationService.showDonationDialog(context),
           iconColor: Colors.pink,
         ),
         _buildActionTile(
-          icon: Iconoir.ChatBubble(color: Colors.green, width: 20, height: 20),
+          icon: const iconoir.ChatBubble(color: Colors.green, width: 20, height: 20),
           title: l10n.send_feedback,
           subtitle: l10n.send_feedback_desc,
           onTap: () => _showFeedbackDialog(),
           iconColor: Colors.green,
         ),
         _buildActionTile(
-          icon: Iconoir.Language(color: Colors.purple, width: 20, height: 20),
+          icon: const iconoir.Language(color: Colors.purple, width: 20, height: 20),
           title: l10n.contributeTranslations,
           subtitle: l10n.contributeTranslationsDesc,
           onTap: () => launchUrl(
@@ -1796,7 +1721,7 @@ class _SettingsTabState extends State<SettingsTab> {
           iconColor: Colors.purple,
         ),
         _buildActionTile(
-          icon: Iconoir.Refresh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
+          icon: iconoir.Refresh(color: Theme.of(context).colorScheme.primary, width: 20, height: 20),
           title: l10n.settingsCheckUpdates,
           subtitle: l10n.settingsCheckUpdatesDesc,
           onTap: () async {
@@ -1827,6 +1752,83 @@ class _SettingsTabState extends State<SettingsTab> {
           isLast: true,
         ),
       ],
+    );
+  }
+}
+
+/// A single chip in the redesigned segmented choice tile.
+///
+/// Selected state fills with `primaryContainer` (Material You dynamic color)
+/// and colors text with `onPrimaryContainer`, making the whole row react to
+/// the active palette. Unselected state stays transparent with a subtle
+/// outline. There is no shadow or glow — Material 3 semantic color alone
+/// does the lifting.
+class _ChoiceChipSegment extends StatelessWidget {
+  const _ChoiceChipSegment({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final Color bg = selected
+        ? cs.primaryContainer
+        : (isDark
+            ? Colors.white.withValues(alpha: 0.04)
+            : Colors.black.withValues(alpha: 0.03));
+    final Color border = selected
+        ? cs.primary.withValues(alpha: 0.0) // borderless when selected
+        : (isDark
+            ? Colors.white.withValues(alpha: 0.10)
+            : Colors.black.withValues(alpha: 0.10));
+    final Color fg = selected
+        ? cs.onPrimaryContainer
+        : (isDark
+            ? Colors.white.withValues(alpha: 0.70)
+            : Colors.black.withValues(alpha: 0.65));
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        splashColor: cs.primary.withValues(alpha: 0.12),
+        highlightColor: cs.primary.withValues(alpha: 0.06),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          height: 38,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: border),
+          ),
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              fontFamily: FontConstants.fontFamily,
+              color: fg,
+            ),
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

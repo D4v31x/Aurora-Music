@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:provider/provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
@@ -108,7 +108,7 @@ class _SleepTimerIndicatorState extends State<SleepTimerIndicator> {
                                 strokeWidth: 1.5,
                               ),
                             ),
-                            const Iconoir.HalfMoon(
+                            const iconoir.HalfMoon(
                               color: Colors.white,
                               width: 16,
                               height: 16,
@@ -130,7 +130,7 @@ class _SleepTimerIndicatorState extends State<SleepTimerIndicator> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Iconoir.HalfMoon(
+                            const iconoir.HalfMoon(
                               color: Colors.white,
                               width: 16,
                               height: 16,
@@ -277,7 +277,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _CounterButton(
-                          icon: const Iconoir.Minus(
+                          icon: const iconoir.Minus(
                             color: Colors.white,
                             width: 22,
                             height: 22,
@@ -312,7 +312,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                           ),
                         ),
                         _CounterButton(
-                          icon: const Iconoir.Plus(
+                          icon: const iconoir.Plus(
                             color: Colors.white,
                             width: 22,
                             height: 22,
@@ -407,7 +407,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                           color: Colors.white.withValues(alpha: 0.15),
                         ),
                       ),
-                      child: const Iconoir.HalfMoon(
+                      child: const iconoir.HalfMoon(
                         color: Colors.white,
                         width: 22,
                         height: 22,
@@ -463,7 +463,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Iconoir.Timer(
+                              const iconoir.Timer(
                                 color: Colors.redAccent,
                                 width: 13,
                                 height: 13,
@@ -547,7 +547,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Iconoir.FilterAlt(
+                        iconoir.FilterAlt(
                           color: Colors.white.withValues(alpha: 0.7),
                           width: 17,
                           height: 17,
@@ -589,7 +589,7 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                                 timer.cancelTimer();
                                 Navigator.pop(context);
                               },
-                              icon: const Iconoir.TimerOff(
+                              icon: const iconoir.TimerOff(
                                 color: Colors.redAccent,
                                 width: 18,
                                 height: 18,

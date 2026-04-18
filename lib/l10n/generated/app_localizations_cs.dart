@@ -655,11 +655,11 @@ class AppLocalizationsCs extends AppLocalizations {
       'Potřebné pro čtení hudebních souborů ze zařízení';
 
   @override
-  String get onboardingVisualizerAccess => 'Visualizer';
+  String get onboardingVisualizerAccess => 'Vizualizér';
 
   @override
   String get onboardingVisualizerAccessDesc =>
-      'Lets the visualizer read your device\'s audio session for the live bar spectrum. No audio is ever recorded.';
+      'Umožňuje vizualizéru číst audio session vašeho zařízení pro zobrazení vizualizéru. Mikrofon není nikdy použit pro nahrávání ani ukládání zvuku.';
 
   @override
   String get onboardingSyncBackup => 'Synchronizace a záloha';
@@ -1493,4 +1493,33 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get backgroundDarknessDesc => 'Průhlednost překrytí na obalu';
+
+  @override
+  String get feedbackHeaderTitle => 'Už je to chvíli co používáš Aurora Music';
+
+  @override
+  String get feedbackHeaderSubtitle =>
+      'Jsi přesně ten, pro koho jsem tohle vytvořil. Podělíš se o rychlou myšlenku? Opravdu to pomáhá.';
+
+  @override
+  String get feedbackLove => 'Líbí se mi';
+
+  @override
+  String get feedbackMissing => 'Něco chybí';
+
+  @override
+  String get feedbackBroken => 'Něco nefunguje';
+
+  @override
+  String get feedbackHint => 'Něco konkrétního? (volitelné)';
+
+  @override
+  String get feedbackSend => 'Odeslat';
+
+  @override
+  String get microphoneAccessNeeded => 'Je potřeba přístup k mikrofonu';
+
+  @override
+  String get microphoneAccessDesc =>
+      'Aurora potřebuje přístup k mikrofonu pro živý vizualizér. Žádný zvuk není nikdy nahrán ani uložen.';
 }

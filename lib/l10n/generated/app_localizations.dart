@@ -2905,6 +2905,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Overlay opacity on artwork'**
   String get backgroundDarknessDesc;
+
+  /// No description provided for @feedbackHeaderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey, you\'ve been with Aurora Music a while.'**
+  String get feedbackHeaderTitle;
+
+  /// No description provided for @feedbackHeaderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re exactly who I built this for. Mind sharing a quick thought? It genuinely helps.'**
+  String get feedbackHeaderSubtitle;
+
+  /// No description provided for @feedbackLove.
+  ///
+  /// In en, this message translates to:
+  /// **'Love it'**
+  String get feedbackLove;
+
+  /// No description provided for @feedbackMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Something\'s missing'**
+  String get feedbackMissing;
+
+  /// No description provided for @feedbackBroken.
+  ///
+  /// In en, this message translates to:
+  /// **'Something\'s broken'**
+  String get feedbackBroken;
+
+  /// No description provided for @feedbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything specific? (optional)'**
+  String get feedbackHint;
+
+  /// No description provided for @feedbackSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get feedbackSend;
+
+  /// No description provided for @microphoneAccessNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone access needed'**
+  String get microphoneAccessNeeded;
+
+  /// No description provided for @microphoneAccessDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Aurora needs microphone access to tap your device\'s audio session for the live visualizer. No audio is ever recorded or stored.'**
+  String get microphoneAccessDesc;
 }
 
 class _AppLocalizationsDelegate

@@ -28,7 +28,7 @@
 
     <application
         android:enableOnBackInvokedCallback="true"
-        android:label="Aurora Music (Beta)"
+        android:label="Aurora Music"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:hardwareAccelerated="true"
@@ -71,26 +71,6 @@
         <activity
             android:name="com.spotify.sdk.android.auth.LoginActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar">
-        </activity>
-
-        <activity
-            android:exported="true"
-            android:name="com.linusu.flutter_web_auth.CallbackActivity" >
-            <intent-filter android:label="flutter_web_auth">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="auroramusic" />
-            </intent-filter>
-        </activity>
-
-        <activity android:name="com.linusu.flutter_web_auth_2.CallbackActivity" android:exported="true">
-            <intent-filter android:label="flutter_web_auth_2">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="appwrite-callback-663e1a92003d390b8b2f" />
-            </intent-filter>
         </activity>
 
         <!-- Aurora Music Home Screen Widget -->

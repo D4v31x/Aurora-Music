@@ -1,6 +1,6 @@
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:provider/provider.dart';
 import '../../../shared/services/artist_separator_service.dart';
 import '../../../shared/services/audio_player_service.dart';
@@ -72,7 +72,7 @@ class _ArtistSeparatorSettingsScreenState
             onTap: () => Navigator.of(context).pop(),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Iconoir.NavArrowLeft(
+              child: iconoir.NavArrowLeft(
                 color: colorScheme.onSurface,
                 width: 28,
                 height: 28,
@@ -93,7 +93,7 @@ class _ArtistSeparatorSettingsScreenState
               onTap: _showResetDialog,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Iconoir.Refresh(
+                child: iconoir.Refresh(
                   color: colorScheme.onSurface.withValues(alpha: 0.7),
                   width: 22,
                   height: 22,
@@ -164,7 +164,7 @@ class _ArtistSeparatorSettingsScreenState
               // ── Separators ─────────────────────────────────────
               _sectionLabelWithAction(
                 label: l10n.separators.toUpperCase(),
-                icon: Iconoir.Slash(
+                icon: iconoir.Slash(
                     color: colorScheme.onSurface.withValues(alpha: 0.65),
                     width: 15,
                     height: 15),
@@ -196,7 +196,7 @@ class _ArtistSeparatorSettingsScreenState
               // ── Exclusions ─────────────────────────────────────
               _sectionLabelWithAction(
                 label: l10n.exclusions.toUpperCase(),
-                icon: Iconoir.FilterAlt(
+                icon: iconoir.FilterAlt(
                     color: colorScheme.onSurface.withValues(alpha: 0.65),
                     width: 15,
                     height: 15),
@@ -234,7 +234,7 @@ class _ArtistSeparatorSettingsScreenState
               // ── Test ───────────────────────────────────────────
               _sectionLabel(
                 'TEST',
-                icon: Iconoir.Flask(
+                icon: iconoir.Flask(
                     color: colorScheme.onSurface.withValues(alpha: 0.65),
                     width: 15,
                     height: 15),
@@ -304,7 +304,7 @@ class _ArtistSeparatorSettingsScreenState
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Iconoir.User(
+                                  iconoir.User(
                                     color: colorScheme.onSecondaryContainer,
                                     width: 13,
                                     height: 13,
@@ -390,7 +390,7 @@ class _ArtistSeparatorSettingsScreenState
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             visualDensity: VisualDensity.compact,
           ),
-          icon: Iconoir.Plus(
+          icon: iconoir.Plus(
             color: colorScheme.onSecondaryContainer,
             width: 14,
             height: 14,
@@ -482,7 +482,7 @@ class _ArtistSeparatorSettingsScreenState
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
-                child: Iconoir.Xmark(
+                child: iconoir.Xmark(
                   width: 12,
                   height: 12,
                   color: colorScheme.onErrorContainer,

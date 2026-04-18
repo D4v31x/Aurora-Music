@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../shared/providers/providers.dart';
@@ -15,7 +15,8 @@ import '../../../shared/widgets/music_metadata_widget.dart';
 /// Shows a dialog for adding the current song to a playlist.
 void showAddToPlaylistDialog(
     BuildContext context, AudioPlayerService audioPlayerService) {
-  if (audioPlayerService.currentSong == null) {
+  final song = audioPlayerService.currentSong;
+  if (song == null) {
     NotificationManager.showMessage(
       context,
       AppLocalizations.of(context).noSongPlaying,
@@ -80,7 +81,7 @@ void showAddToPlaylistDialog(
                       itemBuilder: (context, index) {
                         final playlist = audioPlayerService.playlists[index];
                         return ListTile(
-                          leading: const Iconoir.PlaylistPlay(
+                          leading: const iconoir.PlaylistPlay(
                               color: Colors.white, width: 24, height: 24),
                           title: Text(
                             playlist.name,
@@ -93,7 +94,7 @@ void showAddToPlaylistDialog(
                           onTap: () {
                             audioPlayerService.addSongToPlaylist(
                               playlist.id,
-                              audioPlayerService.currentSong!,
+                              song,
                             );
                             Navigator.pop(context);
                             NotificationManager.showMessage(
@@ -181,7 +182,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
           color: Colors.red.withValues(alpha: 0.75),
           borderRadius: BorderRadius.circular(14),
         ),
-        child: const Iconoir.Trash(color: Colors.white, width: 22, height: 22),
+        child: const iconoir.Trash(color: Colors.white, width: 22, height: 22),
       ),
       onDismissed: (_) async {
         await audio.removeFromQueue(playlistIndex);
@@ -263,7 +264,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                         color: Colors.blue.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Iconoir.Playlist(
+                      child: const iconoir.Playlist(
                           color: Colors.blue, width: 20, height: 20),
                     ),
                     const SizedBox(width: 12),
@@ -291,7 +292,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                     ),
                     if (audio.hasUpcoming)
                       IconButton(
-                        icon: const Iconoir.Trash(
+                        icon: const iconoir.Trash(
                             color: Colors.white54, width: 24, height: 24),
                         tooltip: AppLocalizations.of(context)
                             .clearUpcoming,
@@ -301,7 +302,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                         },
                       ),
                     IconButton(
-                    icon: Iconoir.Xmark(
+                    icon: iconoir.Xmark(
                         color: Colors.white.withValues(alpha: 0.7),
                         width: 24,
                         height: 24),
@@ -319,7 +320,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Iconoir.Playlist(
+                            iconoir.Playlist(
                                 color: Colors.white.withValues(alpha: 0.2),
                                 width: 48,
                                 height: 48),
@@ -542,7 +543,7 @@ class _QueueSongTile extends StatelessWidget {
                             color: Colors.black.withValues(alpha: 0.52),
                           ),
                             child: const Center(
-                              child: Iconoir.Play(
+                              child: iconoir.Play(
                                 color: Colors.white,
                                 width: 24,
                                 height: 24,
@@ -602,7 +603,7 @@ class _QueueSongTile extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.07),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Iconoir.Xmark(
+                    child: iconoir.Xmark(
                         color: Colors.white.withValues(alpha: 0.45),
                         width: 16,
                         height: 16),
@@ -613,7 +614,7 @@ class _QueueSongTile extends StatelessWidget {
                 const SizedBox(width: 8),
                 ReorderableDragStartListener(
                   index: reorderIndex!,
-                  child: Iconoir.Drag(
+                  child: iconoir.Drag(
                       color: Colors.white.withValues(alpha: 0.3),
                       width: 20,
                       height: 20),
@@ -630,7 +631,8 @@ class _QueueSongTile extends StatelessWidget {
 /// Shows a dialog displaying detailed song information.
 void showSongInfoDialog(
     BuildContext context, AudioPlayerService audioPlayerService) {
-  if (audioPlayerService.currentSong == null) {
+  final song = audioPlayerService.currentSong;
+  if (song == null) {
     NotificationManager.showMessage(
       context,
       AppLocalizations.of(context).noSongPlaying,
@@ -683,31 +685,30 @@ void showSongInfoDialog(
                           ),
                         ),
                         IconButton(
-                          icon: const Iconoir.Xmark(color: Colors.white, width: 24, height: 24),
+                          icon: const iconoir.Xmark(color: Colors.white, width: 24, height: 24),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
                     ),
                     const Divider(color: Colors.white24),
                     const SizedBox(height: 16),
-                    MusicMetadataWidget(song: audioPlayerService.currentSong!),
+                    MusicMetadataWidget(song: song),
                     const SizedBox(height: 16),
                     InfoRow(
                         label: 'Title',
-                        value: audioPlayerService.currentSong!.title),
+                        value: song.title),
                     InfoRow(
                         label: 'Artist',
                         value: splitArtists(
-                                audioPlayerService.currentSong!.artist ??
+                                song.artist ??
                                     'Unknown')
                             .join(', ')),
                     InfoRow(
                         label: 'Album',
-                        value:
-                            audioPlayerService.currentSong!.album ?? 'Unknown'),
+                        value: song.album ?? 'Unknown'),
                     InfoRow(
                         label: 'Path',
-                        value: audioPlayerService.currentSong!.data),
+                        value: song.data),
                   ],
                 ),
               ),

@@ -1,4 +1,3 @@
-import 'package:feedback/feedback.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:clarity_flutter/clarity_flutter.dart';
@@ -7,10 +6,10 @@ import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'core/constants/app_config.dart';
-import 'shared/widgets/aurora_feedback_form.dart';
 import 'shared/services/audio_player_service.dart';
 import 'shared/services/audio_handler.dart';
 import 'shared/services/error_tracking_service.dart';
@@ -47,6 +46,15 @@ void main() async {
 
     // Ensure Flutter bindings are initialized
     WidgetsFlutterBinding.ensureInitialized();
+
+    // Catch uncaught async errors that escape the Flutter framework
+    // (e.g. errors from platform channels, plugin callbacks, isolates).
+    // Returning true marks the error as handled and prevents app termination.
+    ui.PlatformDispatcher.instance.onError = (error, stack) {
+      // Fire-and-forget — onError must be synchronous.
+      unawaited(errorTracker.recordError(error, stack));
+      return true;
+    };
 
     // Silence all debug output in release builds — kDebugMode is a
     // compile-time constant so the AOT compiler eliminates this in debug.
@@ -103,6 +111,7 @@ void main() async {
     (options) {
       options.dsn = const String.fromEnvironment('SENTRY_DSN');
       options.tracesSampleRate = 0.2;
+      // ignore: experimental_member_use
       options.profilesSampleRate = 0.2;
     },
     appRunner: () => runApp(SentryWidget(child: 
@@ -141,24 +150,8 @@ void main() async {
                 performanceProvider.initialize();
               });
 
-              return BetterFeedback(
-                feedbackBuilder: auroraFeedbackForm,
-                theme: FeedbackThemeData(
-                  background: Colors.black,
-                  feedbackSheetColor: const Color(0xFF1C1B1F),
-                  activeFeedbackModeColor: const Color(0xFF7C3AED),
-                  drawColors: const [
-                    Color(0xFFFF453A),
-                    Color(0xFFFF9F0A),
-                    Color(0xFFFFD60A),
-                    Color(0xFF32D74B),
-                    Color(0xFF0A84FF),
-                    Colors.white,
-                  ],
-                ),
-                child: MyApp(
-                  languageCode: languageCode,
-                ),
+              return MyApp(
+                languageCode: languageCode,
               );
             },
           ),
@@ -231,6 +224,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late ui.Locale _locale;
   final _MiniPlayerObserver _miniPlayerObserver = _MiniPlayerObserver();
+  StreamSubscription<bool>? _notificationClickSub;
 
   @override
   void initState() {
@@ -239,7 +233,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     // Listen for notification clicks to expand the player
-    AudioService.notificationClicked.listen((clicked) {
+    _notificationClickSub =
+        AudioService.notificationClicked.listen((clicked) {
       if (clicked) {
         // Expand the mini player to show Now Playing screen
         ExpandingPlayer.expand();
@@ -249,6 +244,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _notificationClickSub?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

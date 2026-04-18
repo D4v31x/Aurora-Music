@@ -5,6 +5,11 @@ class MetadataService {
   static const String _deezerBaseUrl = 'https://api.deezer.com';
   static const String _itunesBaseUrl = 'https://itunes.apple.com';
 
+  /// Force English results from any locale-aware upstream API.
+  static const Map<String, String> _englishHeaders = {
+    'Accept-Language': 'en-US,en;q=0.9',
+  };
+
   Future<List<Map<String, dynamic>>> searchMetadata(String query) async {
     if (query.trim().isEmpty) return [];
 
@@ -65,8 +70,9 @@ class MetadataService {
       final uri = Uri.parse('$_deezerBaseUrl/search').replace(
         queryParameters: {'q': query},
       );
-      final response =
-          await http.get(uri).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(uri, headers: _englishHeaders)
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final tracks = data['data'];
@@ -93,11 +99,13 @@ class MetadataService {
     try {
       final futures = [
         http
-            .get(Uri.parse('$_deezerBaseUrl/track/$trackId'))
+            .get(Uri.parse('$_deezerBaseUrl/track/$trackId'),
+                headers: _englishHeaders)
             .timeout(const Duration(seconds: 8)),
         if (albumId != null)
           http
-              .get(Uri.parse('$_deezerBaseUrl/album/$albumId'))
+              .get(Uri.parse('$_deezerBaseUrl/album/$albumId'),
+                  headers: _englishHeaders)
               .timeout(const Duration(seconds: 8)),
       ];
 
@@ -137,16 +145,22 @@ class MetadataService {
     if (query.trim().isEmpty) return null;
 
     try {
-      // Properly encode the query parameters using Uri class
+      // Properly encode the query parameters using Uri class.
+      // Force the US storefront + English language so results are in English
+      // regardless of the device locale.
       final uri = Uri.parse('$_itunesBaseUrl/search').replace(
         queryParameters: {
           'term': query,
           'entity': 'album',
           'limit': '1',
+          'country': 'US',
+          'lang': 'en_us',
         },
       );
 
-      final response = await http.get(uri).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(uri, headers: _englishHeaders)
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

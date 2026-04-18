@@ -387,7 +387,9 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
       if (_loopMode == LoopMode.all) {
         debugPrint('⏭️ [SKIP] At end of queue, wrapping to start (repeat ALL)');
         await _audioPlayer.seek(Duration.zero, index: 0);
-        await _audioPlayer.play();
+        // just_audio ^0.10.x: play() completes on interrupt, not start —
+        // awaiting would block skip() for the entire track duration.
+        unawaited(_audioPlayer.play());
       } else {
         // Repeat OFF: stop playback.
         debugPrint('⏭️ [SKIP] At end of queue, stopping (repeat OFF)');

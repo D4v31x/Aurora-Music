@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -88,7 +88,7 @@ class TranslationReminderDialog extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Center(
-                child: Iconoir.Language(
+                child: iconoir.Language(
                   color: colorScheme.primary,
                   width: 44,
                   height: 44,
@@ -131,7 +131,7 @@ class TranslationReminderDialog extends StatelessWidget {
                   Navigator.pop(context);
                   _openCrowdin();
                 },
-                icon: const Iconoir.Language(
+                icon: const iconoir.Language(
                   color: Colors.white,
                   width: 20,
                   height: 20,

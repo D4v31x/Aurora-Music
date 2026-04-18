@@ -1,7 +1,6 @@
-/// Full-screen music visualiser with six switchable modes and real-time FFT.
+/// Full-screen music visualiser with switchable modes and real-time FFT.
 ///
-/// Modes: Bar Spectrum, Waveform, Circular Bars, Particle Field, Mirror Bars,
-/// Frequency Line. The active mode is persisted via SharedPreferences.
+/// Modes: Bar Spectrum, Circular Bars, Mirror Bars, Frequency Line. The active mode is persisted via SharedPreferences.
 /// On Android the native Visualizer EventChannel ("aurora/visualizer") drives
 /// FFT. Falls back to procedural sine animation when unavailable.
 library;
@@ -12,10 +11,11 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/font_constants.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/background_manager_service.dart';
 import '../../../shared/services/artist_separator_service.dart';
@@ -25,17 +25,13 @@ import '../../../shared/services/artwork_cache_service.dart';
 
 enum VisualizerMode {
   barSpectrum,
-  waveform,
   circularBars,
-  particleField,
   mirrorBars,
   frequencyLine;
 
   String get label => switch (this) {
     VisualizerMode.barSpectrum   => 'Bar Spectrum',
-    VisualizerMode.waveform      => 'Waveform',
     VisualizerMode.circularBars  => 'Circular Bars',
-    VisualizerMode.particleField => 'Particle Field',
     VisualizerMode.mirrorBars    => 'Mirror Bars',
     VisualizerMode.frequencyLine => 'Frequency Line',
   };
@@ -72,12 +68,13 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
   late final List<double> _barHeights;
   late final List<int>    _barBinStart;
   late final List<int>    _barBinEnd;
-  // Raw waveform bytes for waveform mode (same FFT callback, re-used)
-  final List<double> _waveform = List.filled(_kNumBars * 4, 0.0);
-
   double _bassEnergy    = 0.0;
   double _overallEnergy = 0.0;
   bool   _hasRealData   = false;
+  Uint8List? _pendingFftData;
+  // Incremented whenever bar heights or energy change so painters can skip
+  // redundant GPU draws via shouldRepaint when nothing changed.
+  int _paintGeneration = 0;
 
   // ── Simulation fallback ────────────────────────────────────────────────────
   final _rng = Random();
@@ -85,13 +82,11 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
   double _time          = 0.0;
   double _lastCtrlValue = 0.0;
 
-  // ── Particle state ─────────────────────────────────────────────────────────
-  late final List<_Particle> _particles;
-
   // ── Mode / UI ──────────────────────────────────────────────────────────────
   VisualizerMode _mode  = VisualizerMode.barSpectrum;
   bool           _micGranted     = false;
   ImageProvider? _artworkProvider;
+  int?           _loadedSongId;
 
   late final AudioPlayerService _audio;
 
@@ -105,7 +100,6 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
     _barPhases = List.generate(_kNumBars, (_) => _rng.nextDouble() * 2 * pi);
     _initFftBinRanges();
     _barHeights = List.filled(_kNumBars, 0.0);
-    _particles  = List.generate(120, (_) => _Particle.random(_rng));
 
     _mainCtrl = AnimationController(
       vsync: this,
@@ -116,6 +110,7 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
     _loadMode();
     _checkAndRequestPermission();
     _loadArtwork();
+    _audio.currentSongNotifier.addListener(_onSongChanged);
   }
 
   Future<void> _loadMode() async {
@@ -139,13 +134,38 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
     unawaited(_saveMode(next));
   }
 
+  void _onSongChanged() {
+    final song = _audio.currentSong;
+    final newId = song?.id;
+    if (newId == _loadedSongId) return;
+    // Clear stale artwork immediately so the old song's art doesn't flash.
+    if (mounted) setState(() => _artworkProvider = null);
+    _loadArtwork();
+  }
+
   Future<void> _loadArtwork() async {
     final song = _audio.currentSong;
-    if (song == null) return;
+    if (song == null) {
+      _loadedSongId = null;
+      return;
+    }
+    final targetId = song.id;
     try {
       final provider = await _artworkService.getCachedImageProvider(song.id);
-      if (mounted) setState(() => _artworkProvider = provider);
-    } catch (_) {}
+      if (mounted && _audio.currentSong?.id == targetId) {
+        setState(() {
+          _artworkProvider = provider;
+          _loadedSongId = targetId;
+        });
+      }
+    } catch (_) {
+      if (mounted && _audio.currentSong?.id == targetId) {
+        setState(() {
+          _artworkProvider = null;
+          _loadedSongId = targetId;
+        });
+      }
+    }
   }
 
   Future<void> _checkAndRequestPermission() async {
@@ -185,23 +205,27 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
   void _attachVisualizer(int sessionId) {
     _fftSub?.cancel();
     _fftSub = _kFftChannel.receiveBroadcastStream(sessionId).listen(
-      (data) { if (data is Uint8List) _processFft(data); },
+      (data) { if (data is Uint8List) _processVisualizerData(data); },
       onError: (_) { _hasRealData = false; },
     );
   }
 
-  void _processFft(Uint8List fft) {
-    if (!mounted) return;
-    final bd     = fft.buffer.asByteData();
-    final maxBin = (fft.length ~/ 2) - 1;
-    double totalEnergy = 0.0;
+  /// Stores incoming visualizer packets for processing on the next animation
+  /// frame, throttling FFT math to at most once per frame (~60 Hz).
+  void _processVisualizerData(Uint8List data) {
+    if (data.isEmpty || !mounted) return;
+    _pendingFftData = data;
+  }
 
-    // Waveform: sample evenly across the raw byte array
-    final wStep = fft.length / _waveform.length;
-    for (int i = 0; i < _waveform.length; i++) {
-      final idx = (i * wStep).floor().clamp(0, fft.length - 1);
-      _waveform[i] = (bd.getInt8(idx) / 128.0).clamp(-1.0, 1.0);
-    }
+  /// Processes FFT complex-pair data (prefixed with 0x01) into bar heights
+  /// and energy values used by all visualizer modes.
+  void _processFft(Uint8List data) {
+    if (!mounted || data.length < 2) return;
+    // data[0] = type prefix; FFT pairs start at offset 1
+    final bd     = data.buffer.asByteData();
+    final fftLen = data.length - 1;
+    final maxBin = (fftLen ~/ 2) - 1;
+    double totalEnergy = 0.0;
 
     for (int i = 0; i < _kNumBars; i++) {
       final binStart = _barBinStart[i].clamp(1, maxBin);
@@ -210,8 +234,8 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
       double sum = 0.0;
       int count = 0;
       for (int b = binStart; b < binEnd; b++) {
-        final int idx = b * 2;
-        if (idx + 1 >= fft.length) break;
+        final int idx = 1 + b * 2; // +1 to skip prefix byte
+        if (idx + 1 >= data.length) break;
         final double real = bd.getInt8(idx).toDouble();
         final double imag = bd.getInt8(idx + 1).toDouble();
         sum += sqrt(real * real + imag * imag);
@@ -237,6 +261,14 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
   void _onTick() {
     if (!mounted) return;
 
+    // Drain the latest FFT packet (at most one per animation frame).
+    final pending = _pendingFftData;
+    if (pending != null) {
+      _pendingFftData = null;
+      _processFft(pending);
+      _paintGeneration++;
+    }
+
     double delta = _mainCtrl.value - _lastCtrlValue;
     if (delta < -0.5) delta += 1.0;
     _lastCtrlValue = _mainCtrl.value;
@@ -255,23 +287,14 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
       }
       _bassEnergy    = (_barHeights[0] + _barHeights[1]) / 2.0;
       _overallEnergy = 0.4;
-
-      // Waveform fallback: smooth sine
-      for (int i = 0; i < _waveform.length; i++) {
-        _waveform[i] = sin(_time * 3.0 + i * 2 * pi / _waveform.length);
-      }
+      _paintGeneration++;
     }
 
-    // Animate particles
-    if (_audio.isPlaying) {
-      for (final p in _particles) {
-        p.update(delta, _bassEnergy, _overallEnergy, _rng);
-      }
-    }
   }
 
   @override
   void dispose() {
+    _audio.currentSongNotifier.removeListener(_onSongChanged);
     _mainCtrl
       ..removeListener(_onTick)
       ..dispose();
@@ -284,13 +307,19 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
 
   @override
   Widget build(BuildContext context) {
-    final bg        = context.watch<BackgroundManagerService>();
-    final colors    = bg.currentColors;
-    final dominant  = colors.isNotEmpty ? colors[0] : const Color(0xFF6200EE);
-    final vibrant   = colors.length > 1 ? colors[1] : dominant;
-    final barColor  = colors.length > 2 ? colors[2]
-                    : colors.length > 1 ? colors[1]
-                    : dominant;
+    final bg         = context.watch<BackgroundManagerService>();
+    final colors     = bg.currentColors;
+    final hasArtwork = _artworkProvider != null;
+    final dominant   = colors.isNotEmpty ? colors[0] : const Color(0xFF6200EE);
+    // When there is no artwork show white bars and text on a solid black bg.
+    final vibrant    = hasArtwork
+        ? (colors.length > 1 ? colors[1] : dominant)
+        : Colors.white;
+    final barColor   = hasArtwork
+        ? (colors.length > 2 ? colors[2]
+           : colors.length > 1 ? colors[1]
+           : dominant)
+        : Colors.white;
     final song      = _audio.currentSong;
     final bottomPad = MediaQuery.paddingOf(context).bottom;
     final topPad    = MediaQuery.paddingOf(context).top;
@@ -379,7 +408,7 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
               children: [
                 // Close button
                 IconButton(
-                  icon: const Iconoir.NavArrowDown(
+                  icon: const iconoir.NavArrowDown(
                     color: Colors.white, width: 28, height: 28),
                   onPressed: () => Navigator.of(context).pop(),
                   tooltip: 'Close visualiser',
@@ -390,7 +419,7 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
-                        icon: const Iconoir.NavArrowLeft(
+                        icon: const iconoir.NavArrowLeft(
                             color: Colors.white, width: 22, height: 22),
                         onPressed: () => _switchMode(-1),
                         tooltip: 'Previous mode',
@@ -407,7 +436,7 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
                       ),
                       const SizedBox(width: 4),
                       IconButton(
-                        icon: const Iconoir.NavArrowRight(
+                        icon: const iconoir.NavArrowRight(
                             color: Colors.white, width: 22, height: 22),
                         onPressed: () => _switchMode(1),
                         tooltip: 'Next mode',
@@ -428,19 +457,17 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
   CustomPainter _buildPainter(Color barColor, double bottomInset) {
     return switch (_mode) {
       VisualizerMode.barSpectrum   => _BarSpectrumPainter(
-          barHeights: _barHeights, barColor: barColor, bottomInset: bottomInset),
-      VisualizerMode.waveform      => _WaveformPainter(
-          waveform: _waveform, color: barColor, bottomInset: bottomInset),
+          barHeights: _barHeights, barColor: barColor, bottomInset: bottomInset,
+          paintGeneration: _paintGeneration),
       VisualizerMode.circularBars  => _CircularBarsPainter(
           barHeights: _barHeights, barColor: barColor,
-          bassEnergy: _bassEnergy),
-      VisualizerMode.particleField => _ParticleFieldPainter(
-          particles: _particles, accentColor: barColor,
-          bassEnergy: _bassEnergy, overallEnergy: _overallEnergy),
+          bassEnergy: _bassEnergy, paintGeneration: _paintGeneration),
       VisualizerMode.mirrorBars    => _MirrorBarsPainter(
-          barHeights: _barHeights, barColor: barColor, bottomInset: bottomInset),
+          barHeights: _barHeights, barColor: barColor, bottomInset: bottomInset,
+          paintGeneration: _paintGeneration),
       VisualizerMode.frequencyLine => _FrequencyLinePainter(
-          barHeights: _barHeights, color: barColor, bottomInset: bottomInset),
+          barHeights: _barHeights, color: barColor, bottomInset: bottomInset,
+          paintGeneration: _paintGeneration),
     };
   }
 
@@ -453,19 +480,18 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
           children: [
             const Icon(Icons.graphic_eq_rounded, color: Colors.white, size: 64),
             const SizedBox(height: 20),
-            const Text(
-              'Microphone access needed',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context).microphoneAccessNeeded,
+              style: const TextStyle(
                 color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600,
                 fontFamily: FontConstants.fontFamily,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
-            const Text(
-              'Aurora needs microphone access to tap your device\'s audio session '
-              'for the live visualizer. No audio is ever recorded or stored.',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context).microphoneAccessDesc,
+              style: const TextStyle(
                 fontSize: 14, fontFamily: FontConstants.fontFamily,
                 color: Color(0xA6FFFFFF),
               ),
@@ -485,70 +511,12 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
                   await openAppSettings();
                 }
               },
-              child: const Text('Grant Permission'),
+              child: Text(AppLocalizations.of(context).grantPermission),
             ),
           ],
         ),
       ),
     );
-  }
-}
-
-// ── Particle helper ───────────────────────────────────────────────────────────
-
-class _Particle {
-  double x, y;      // normalised [0..1]
-  double vx, vy;
-  double radius;
-  double opacity;
-  double life;       // [0..1]
-  double speed;
-
-  _Particle({
-    required this.x, required this.y,
-    required this.vx, required this.vy,
-    required this.radius, required this.opacity,
-    required this.life, required this.speed,
-  });
-
-  factory _Particle.random(Random rng) => _Particle(
-    x: rng.nextDouble(), y: rng.nextDouble(),
-    vx: (rng.nextDouble() - 0.5) * 0.003,
-    vy: (rng.nextDouble() - 0.5) * 0.003,
-    radius: 2 + rng.nextDouble() * 4,
-    opacity: 0.3 + rng.nextDouble() * 0.5,
-    life: rng.nextDouble(),
-    speed: 0.5 + rng.nextDouble(),
-  );
-
-  void update(double dt, double bass, double energy, Random rng) {
-    final boost = 1.0 + bass * 6.0 + energy * 2.0;
-    x += vx * boost;
-    y += vy * boost;
-    life += dt * speed * 0.4;
-
-    // Orbit-drift — slight pull toward center and tangential nudge
-    final cx = x - 0.5;
-    final cy = y - 0.5;
-    vx += (-cx * 0.0002 + cy * 0.0003) * boost;
-    vy += (-cy * 0.0002 - cx * 0.0003) * boost;
-
-    // Dampen velocity slightly so particles don't fly away
-    vx *= 0.998;
-    vy *= 0.998;
-
-    if (life > 1.0 || x < -0.05 || x > 1.05 || y < -0.05 || y > 1.05) {
-      // Respawn near center with random radial offset
-      final angle = rng.nextDouble() * 2 * pi;
-      final r     = 0.05 + rng.nextDouble() * 0.15;
-      x = 0.5 + cos(angle) * r;
-      y = 0.5 + sin(angle) * r;
-      vx = (rng.nextDouble() - 0.5) * 0.003;
-      vy = (rng.nextDouble() - 0.5) * 0.003;
-      life = 0.0;
-      opacity = 0.3 + rng.nextDouble() * 0.5;
-      radius  = 2 + rng.nextDouble() * 4;
-    }
   }
 }
 
@@ -559,11 +527,13 @@ class _BarSpectrumPainter extends CustomPainter {
   final List<double> barHeights;
   final Color        barColor;
   final double       bottomInset;
+  final int          paintGeneration;
 
   const _BarSpectrumPainter({
     required this.barHeights,
     required this.barColor,
     required this.bottomInset,
+    required this.paintGeneration,
   });
 
   @override
@@ -600,66 +570,22 @@ class _BarSpectrumPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_BarSpectrumPainter _) => true;
+  bool shouldRepaint(_BarSpectrumPainter old) =>
+      old.paintGeneration != paintGeneration || old.barColor != barColor;
 }
 
-/// 2 · Waveform — oscilloscope-style horizontal line.
-class _WaveformPainter extends CustomPainter {
-  final List<double> waveform;
-  final Color        color;
-  final double       bottomInset;
-
-  const _WaveformPainter({
-    required this.waveform,
-    required this.color,
-    required this.bottomInset,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (waveform.isEmpty) return;
-
-    final cy    = size.height * 0.45;
-    final amp   = size.height * 0.20;
-    final xStep = size.width / (waveform.length - 1);
-
-    final linePaint = Paint()
-      ..color       = color.withValues(alpha: 0.90)
-      ..strokeWidth = 2.5
-      ..strokeCap   = StrokeCap.round
-      ..style       = PaintingStyle.stroke;
-
-    final glowPaint = Paint()
-      ..color       = color.withValues(alpha: 0.25)
-      ..strokeWidth = 8.0
-      ..maskFilter  = const MaskFilter.blur(BlurStyle.normal, 6)
-      ..style       = PaintingStyle.stroke;
-
-    final path = Path();
-    for (int i = 0; i < waveform.length; i++) {
-      final x = i * xStep;
-      final y = cy + waveform[i] * amp;
-      i == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
-    }
-
-    canvas.drawPath(path, glowPaint);
-    canvas.drawPath(path, linePaint);
-  }
-
-  @override
-  bool shouldRepaint(_WaveformPainter _) => true;
-}
-
-/// 3 · Circular Bars — bars radiating outward in a ring around the center.
+/// 2 · Circular Bars — bars radiating outward in a ring around the center.
 class _CircularBarsPainter extends CustomPainter {
   final List<double> barHeights;
   final Color        barColor;
   final double       bassEnergy;
+  final int          paintGeneration;
 
   const _CircularBarsPainter({
     required this.barHeights,
     required this.barColor,
     required this.bassEnergy,
+    required this.paintGeneration,
   });
 
   @override
@@ -695,76 +621,22 @@ class _CircularBarsPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_CircularBarsPainter _) => true;
+  bool shouldRepaint(_CircularBarsPainter old) =>
+      old.paintGeneration != paintGeneration || old.barColor != barColor;
 }
 
-/// 4 · Particle Field — glowing orbiting dots that react to the beat,
-///     with a central pulsing ball (NCS-style).
-class _ParticleFieldPainter extends CustomPainter {
-  final List<_Particle> particles;
-  final Color           accentColor;
-  final double          bassEnergy;
-  final double          overallEnergy;
-
-  const _ParticleFieldPainter({
-    required this.particles,
-    required this.accentColor,
-    required this.bassEnergy,
-    required this.overallEnergy,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center  = size.center(Offset.zero);
-    final ballR   = min(size.width, size.height) * (0.12 + bassEnergy * 0.06);
-
-    // Central glowing ball
-    final ballGlow = Paint()
-      ..color      = accentColor.withValues(alpha: 0.18 + bassEnergy * 0.20)
-      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 30 + bassEnergy * 30);
-    canvas.drawCircle(center, ballR * 1.6, ballGlow);
-
-    final ballCore = Paint()
-      ..shader = ui.Gradient.radial(
-        center, ballR,
-        [
-          accentColor.withValues(alpha: 0.95),
-          accentColor.withValues(alpha: 0.60),
-          accentColor.withValues(alpha: 0.0),
-        ],
-        [0.0, 0.6, 1.0],
-      );
-    canvas.drawCircle(center, ballR, ballCore);
-
-    // Particles
-    for (final p in particles) {
-      final fade = sin(p.life * pi).clamp(0.0, 1.0);
-      final paint = Paint()
-        ..color      = accentColor.withValues(
-            alpha: (p.opacity * fade * (0.6 + overallEnergy * 0.4)).clamp(0.0, 1.0))
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, p.radius * 0.8);
-      canvas.drawCircle(
-        Offset(p.x * size.width, p.y * size.height),
-        p.radius * (1.0 + bassEnergy * 1.5),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ParticleFieldPainter _) => true;
-}
-
-/// 5 · Mirror Bars — bars that grow both up and down from the center line.
+/// 4 · Mirror Bars — bars that grow both up and down from the center line.
 class _MirrorBarsPainter extends CustomPainter {
   final List<double> barHeights;
   final Color        barColor;
   final double       bottomInset;
+  final int          paintGeneration;
 
   const _MirrorBarsPainter({
     required this.barHeights,
     required this.barColor,
     required this.bottomInset,
+    required this.paintGeneration,
   });
 
   @override
@@ -808,7 +680,8 @@ class _MirrorBarsPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_MirrorBarsPainter _) => true;
+  bool shouldRepaint(_MirrorBarsPainter old) =>
+      old.paintGeneration != paintGeneration || old.barColor != barColor;
 }
 
 /// 6 · Frequency Line — smooth filled curve connecting all FFT bins.
@@ -816,11 +689,13 @@ class _FrequencyLinePainter extends CustomPainter {
   final List<double> barHeights;
   final Color        color;
   final double       bottomInset;
+  final int          paintGeneration;
 
   const _FrequencyLinePainter({
     required this.barHeights,
     required this.color,
     required this.bottomInset,
+    required this.paintGeneration,
   });
 
   @override
@@ -854,7 +729,7 @@ class _FrequencyLinePainter extends CustomPainter {
     // Fill gradient
     final fillPaint = Paint()
       ..shader = ui.Gradient.linear(
-        Offset(0, topReserve),
+        const Offset(0, topReserve),
         Offset(0, bottomY),
         [
           color.withValues(alpha: 0.55),
@@ -879,14 +754,14 @@ class _FrequencyLinePainter extends CustomPainter {
       }
     }
     final linePaint = Paint()
-      ..color       = color.withValues(alpha: 0.90)
-      ..strokeWidth = 2.5
-      ..style       = PaintingStyle.stroke
-      ..maskFilter  = const MaskFilter.blur(BlurStyle.normal, 2);
+      ..color       = color.withValues(alpha: 0.92)
+      ..strokeWidth = 2.0
+      ..style       = PaintingStyle.stroke;
     canvas.drawPath(strokePath, linePaint);
   }
 
   @override
-  bool shouldRepaint(_FrequencyLinePainter _) => true;
+  bool shouldRepaint(_FrequencyLinePainter old) =>
+      old.paintGeneration != paintGeneration || old.color != color;
 }
 

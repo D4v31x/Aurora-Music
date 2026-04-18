@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import '../../core/constants/font_constants.dart';
 import '../../l10n/generated/app_localizations.dart';
 import './glassmorphic_container.dart';
@@ -97,25 +97,25 @@ class AuroraAboutDialog extends StatelessWidget {
                     children: [
                       // Version Info
                       _buildInfoRow(
-                        icon: const Iconoir.Hashtag(color: Colors.white70, width: 20, height: 20),
+                        icon: const iconoir.Hashtag(color: Colors.white70, width: 20, height: 20),
                         title: 'Version',
                         value: version,
                       ),
                       const SizedBox(height: 12),
                       _buildInfoRow(
-                        icon: const Iconoir.Label(color: Colors.white70, width: 20, height: 20),
+                        icon: const iconoir.Label(color: Colors.white70, width: 20, height: 20),
                         title: 'Codename',
                         value: codename,
                       ),
                       const SizedBox(height: 12),
                       _buildInfoRow(
-                        icon: const Iconoir.User(color: Colors.white70, width: 20, height: 20),
+                        icon: const iconoir.User(color: Colors.white70, width: 20, height: 20),
                         title: 'Developer',
                         value: 'D4v31x',
                       ),
                       const SizedBox(height: 12),
                       _buildInfoRow(
-                        icon: const Iconoir.Copyright(color: Colors.white70, width: 20, height: 20),
+                        icon: const iconoir.Copyright(color: Colors.white70, width: 20, height: 20),
                         title: 'Copyright',
                         value: '© ${DateTime.now().year} Aurora Software CZ',
                       ),
@@ -138,7 +138,7 @@ class AuroraAboutDialog extends StatelessWidget {
                               ),
                             ),
                           ),
-                          icon: const Iconoir.Star(color: Colors.white, width: 20, height: 20),
+                          icon: const iconoir.Star(color: Colors.white, width: 20, height: 20),
                           label: Text(
                             AppLocalizations.of(context).whatsNew,
                             style: const TextStyle(
@@ -168,7 +168,7 @@ class AuroraAboutDialog extends StatelessWidget {
                               ),
                             ),
                           ),
-                          icon: const Iconoir.Archive(color: Colors.white, width: 20, height: 20),
+                          icon: const iconoir.Archive(color: Colors.white, width: 20, height: 20),
                           label: const Text(
                             'Open Source Packages',
                             style: TextStyle(
@@ -199,21 +199,21 @@ class AuroraAboutDialog extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           _buildSocialButton(
-                            icon: const Iconoir.Globe(color: Colors.white, width: 24, height: 24),
+                            icon: const iconoir.Globe(color: Colors.white, width: 24, height: 24),
                             label: 'Website',
                             onTap: () => _launchURL(
                                 'https://aurorasoftware.netlify.app'),
                           ),
                           const SizedBox(width: 16),
                           _buildSocialButton(
-                            icon: const Iconoir.Code(color: Colors.white, width: 24, height: 24),
+                            icon: const iconoir.Code(color: Colors.white, width: 24, height: 24),
                             label: 'GitHub',
                             onTap: () => _launchURL(
                                 'https://github.com/D4v31x/Aurora-Music'),
                           ),
                           const SizedBox(width: 16),
                           _buildSocialButton(
-                            icon: const Iconoir.Instagram(color: Colors.white, width: 24, height: 24),
+                            icon: const iconoir.Instagram(color: Colors.white, width: 24, height: 24),
                             label: 'Instagram',
                             onTap: () => _launchURL(
                                 'https://www.instagram.com/aurora.software'),

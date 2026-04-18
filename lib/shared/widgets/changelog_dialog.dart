@@ -28,6 +28,22 @@ class ChangelogDialog extends StatelessWidget {
 
   Widget _buildChangelogSection(String title, List<String> items,
       {required bool isDarkMode}) {
+    // Special key '_' renders items as a big bold headline (no section label, no bullets)
+    if (title == '_') {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Text(
+          items.first,
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : Colors.black,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            fontFamily: FontConstants.fontFamily,
+            height: 1.3,
+          ),
+        ),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

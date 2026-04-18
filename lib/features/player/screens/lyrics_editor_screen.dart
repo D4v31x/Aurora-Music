@@ -612,8 +612,7 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
               ? Border.all(
                   color: isReStamping
                       ? Colors.orangeAccent.withValues(alpha: 0.35)
-                      : Colors.white.withValues(alpha: 0.18),
-                  width: 1)
+                      : Colors.white.withValues(alpha: 0.18))
               : null,
         ),
         child: Row(

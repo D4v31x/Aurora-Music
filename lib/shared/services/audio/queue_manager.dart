@@ -163,7 +163,9 @@ extension AudioQueueManagerExtension on AudioPlayerService {
       if (_gaplessPlayback) {
         try {
           await _audioPlayer.seek(Duration.zero, index: _currentIndex);
-          if (!_isPlaying) await _audioPlayer.play();
+          // Fire-and-forget: play() in just_audio ^0.10.x resolves only on
+          // interrupt, so awaiting it would block the remove-song path.
+          if (!_isPlaying) unawaited(_audioPlayer.play());
           final mediaItems =
               _playlist.map((s) => _createMediaItemSync(s)).toList();
           audioHandler.updateNotificationQueue(mediaItems);
@@ -403,7 +405,10 @@ extension AudioQueueManagerExtension on AudioPlayerService {
       }
 
       if (_isPlaying) {
-        await _audioPlayer.play();
+        // Fire-and-forget: play() in just_audio ^0.10.x resolves only on
+        // interrupt, so awaiting it would block source-rebuild for the
+        // remainder of the track.
+        unawaited(_audioPlayer.play());
       }
     } catch (e) {
       audioHandler.resumeIndexUpdates();

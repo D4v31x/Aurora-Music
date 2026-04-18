@@ -53,7 +53,7 @@ class AlbumSection extends StatelessWidget {
     return Column(
       children: [
         _buildSectionTitle(context),
-        _buildAlbumCard(context, currentSong),
+        _buildAlbumCard(context, currentSong, albumName),
       ],
     );
   }
@@ -76,14 +76,14 @@ class AlbumSection extends StatelessWidget {
   }
 
   /// Builds the album card with navigation.
-  Widget _buildAlbumCard(BuildContext context, SongModel currentSong) {
+  Widget _buildAlbumCard(BuildContext context, SongModel currentSong, String albumName) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: _kHorizontalMargin),
       child: AlbumCard(
-        albumName: currentSong.album!,
+        albumName: albumName,
         artistName: currentSong.artist,
         albumId: currentSong.albumId,
-        onTap: () => _navigateToAlbumDetails(context, currentSong.album!),
+        onTap: () => _navigateToAlbumDetails(context, albumName),
       ),
     );
   }

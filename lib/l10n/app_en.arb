@@ -522,5 +522,14 @@
   "backgroundBlur": "Background Blur",
   "backgroundBlurDesc": "Artwork blur intensity",
   "backgroundDarkness": "Background Darkness",
-  "backgroundDarknessDesc": "Overlay opacity on artwork"
+  "backgroundDarknessDesc": "Overlay opacity on artwork",
+  "feedbackHeaderTitle": "Hey, you've been with Aurora Music a while.",
+  "feedbackHeaderSubtitle": "You're exactly who I built this for. Mind sharing a quick thought? It genuinely helps.",
+  "feedbackLove": "Love it",
+  "feedbackMissing": "Something's missing",
+  "feedbackBroken": "Something's broken",
+  "feedbackHint": "Anything specific? (optional)",
+  "feedbackSend": "Send",
+  "microphoneAccessNeeded": "Microphone access needed",
+  "microphoneAccessDesc": "Aurora needs microphone access to tap your device's audio session for the live visualizer. No audio is ever recorded or stored."
 }

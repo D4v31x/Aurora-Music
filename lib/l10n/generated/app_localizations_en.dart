@@ -1489,4 +1489,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backgroundDarknessDesc => 'Overlay opacity on artwork';
+
+  @override
+  String get feedbackHeaderTitle =>
+      'Hey, you\'ve been with Aurora Music a while.';
+
+  @override
+  String get feedbackHeaderSubtitle =>
+      'You\'re exactly who I built this for. Mind sharing a quick thought? It genuinely helps.';
+
+  @override
+  String get feedbackLove => 'Love it';
+
+  @override
+  String get feedbackMissing => 'Something\'s missing';
+
+  @override
+  String get feedbackBroken => 'Something\'s broken';
+
+  @override
+  String get feedbackHint => 'Anything specific? (optional)';
+
+  @override
+  String get feedbackSend => 'Send';
+
+  @override
+  String get microphoneAccessNeeded => 'Microphone access needed';
+
+  @override
+  String get microphoneAccessDesc =>
+      'Aurora needs microphone access to tap your device\'s audio session for the live visualizer. No audio is ever recorded or stored.';
 }

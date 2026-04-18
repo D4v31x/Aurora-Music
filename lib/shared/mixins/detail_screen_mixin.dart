@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../services/audio_player_service.dart';
@@ -190,7 +190,7 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
         children: [
           Expanded(
             child: buildActionButton(
-              icon: const Iconoir.Play(color: Colors.white, width: 22, height: 22),
+              icon: const iconoir.Play(color: Colors.white, width: 22, height: 22),
               label: AppLocalizations.of(context).playAll,
               onTap: playAllSongs,
               isPrimary: true,
@@ -198,14 +198,14 @@ mixin DetailScreenMixin<T extends StatefulWidget> on State<T> {
           ),
           const SizedBox(width: 8),
           buildActionButton(
-            icon: const Iconoir.Shuffle(color: Colors.white, width: 22, height: 22),
+            icon: const iconoir.Shuffle(color: Colors.white, width: 22, height: 22),
             label: AppLocalizations.of(context).shuffle,
             onTap: shuffleAllSongs,
             iconOnly: true,
           ),
           const SizedBox(width: 8),
           buildActionButton(
-            icon: const Iconoir.Playlist(color: Colors.white, width: 22, height: 22),
+            icon: const iconoir.Playlist(color: Colors.white, width: 22, height: 22),
             label: AppLocalizations.of(context).queue,
             onTap: addAllToQueue,
             iconOnly: true,

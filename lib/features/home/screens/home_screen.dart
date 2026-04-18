@@ -16,7 +16,7 @@ import '../../../shared/services/artist_separator_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_dialog.dart';
 import '../../../shared/providers/providers.dart';
-import '../../../shared/widgets/feedback_reminder_dialog.dart';
+import '../../../shared/widgets/feedback_popup_widget.dart';
 import '../../../shared/widgets/translation_reminder_dialog.dart';
 import '../widgets/home_tab.dart';
 import '../../search/widgets/search_tab.dart';
@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Wait a bit before showing feedback reminder
     await Future.delayed(const Duration(seconds: 10));
     if (mounted) {
-      await FeedbackReminderDialog.showIfNeeded(context);
+      await FeedbackPopupWidget.showIfNeeded(context);
     }
   }
 
@@ -704,7 +704,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // and Visibility instead of AnimatedOpacity for the bluetooth indicator
             AnimatedSize(
               duration: const Duration(milliseconds: 400),
-              curve: Curves.ease,
+              curve: Curves.easeInOutCubic,
               child: isConnected
                   ? Container(
                       height: 30,

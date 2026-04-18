@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
 class InternetUsagePage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -157,7 +157,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                               _exitController.isCompleted
                           ? _exitFadeAnimation
                           : _titleFadeAnimation,
-                      child: Iconoir.Globe(
+                      child: iconoir.Globe(
                         color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
@@ -232,7 +232,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                           children: [
                             _buildInfoCard(
                               context: context,
-                              icon: Iconoir.MediaImage(
+                              icon: iconoir.MediaImage(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,
@@ -247,7 +247,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                             const SizedBox(height: 16),
                             _buildInfoCard(
                               context: context,
-                              icon: Iconoir.InfoCircle(
+                              icon: iconoir.InfoCircle(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,
@@ -262,7 +262,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                             const SizedBox(height: 16),
                             _buildInfoCard(
                               context: context,
-                              icon: Iconoir.TextSize(
+                              icon: iconoir.TextSize(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,
@@ -292,7 +292,7 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                               ),
                               child: Row(
                                 children: [
-                                  Iconoir.Lock(
+                                  iconoir.Lock(
                                     color: Theme.of(context).colorScheme.primary,
                                     width: 20,
                                     height: 20,

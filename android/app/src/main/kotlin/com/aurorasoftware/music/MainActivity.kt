@@ -52,7 +52,6 @@ class MainActivity : AudioServiceActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SAF_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -129,16 +128,19 @@ class MainActivity : AudioServiceActivity() {
                                 object : Visualizer.OnDataCaptureListener {
                                     override fun onWaveFormDataCapture(
                                         v: Visualizer, waveform: ByteArray, samplingRate: Int
-                                    ) {}
+                                    ) { /* waveform mode removed */ }
                                     override fun onFftDataCapture(
                                         v: Visualizer, fft: ByteArray, samplingRate: Int
                                     ) {
-                                        val copy = fft.copyOf()
+                                        // Prefix 0x01 = FFT complex-pair data
+                                        val copy = ByteArray(fft.size + 1)
+                                        copy[0] = 1
+                                        fft.copyInto(copy, destinationOffset = 1)
                                         mainHandler.post { events?.success(copy) }
                                     }
                                 },
                                 Visualizer.getMaxCaptureRate(),
-                                false, /* waveform */
+                                false, /* waveform — not used */
                                 true   /* fft */
                             )
                             enabled = true

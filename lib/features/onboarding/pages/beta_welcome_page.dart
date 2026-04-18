@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
 class BetaWelcomePage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -127,7 +127,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                     position: slidePos,
                     child: FadeTransition(
                       opacity: fadeOp,
-                      child: Iconoir.Flask(
+                      child: iconoir.Flask(
                         color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
@@ -187,7 +187,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                           children: [
                             _buildInfoCard(
                               context,
-                              icon: Iconoir.Bug(
+                              icon: iconoir.Bug(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,
@@ -200,7 +200,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                             const SizedBox(height: 12),
                             _buildInfoCard(
                               context,
-                              icon: Iconoir.ChatLines(
+                              icon: iconoir.ChatLines(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,
@@ -213,7 +213,7 @@ class _BetaWelcomePageState extends State<BetaWelcomePage>
                             const SizedBox(height: 12),
                             _buildInfoCard(
                               context,
-                              icon: Iconoir.Refresh(
+                              icon: iconoir.Refresh(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 24,
                                 height: 24,

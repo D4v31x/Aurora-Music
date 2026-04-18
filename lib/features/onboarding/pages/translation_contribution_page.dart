@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/pill_button.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
 const _crowdinProjectUrl = 'https://crowdin.com/project/aurora-music';
 
@@ -132,7 +132,7 @@ class _TranslationContributionPageState
                     position: slidePos,
                     child: FadeTransition(
                       opacity: fadeOp,
-                      child: Iconoir.Globe(
+                      child: iconoir.Globe(
                         color: Theme.of(context).colorScheme.primary,
                         height: 56,
                         width: 56,
@@ -261,7 +261,6 @@ class _TranslationContributionPageState
                         PillButton(
                           text: l10n.contributeTranslationsOpenCrowdin,
                           onPressed: _openCrowdin,
-                          isPrimary: true,
                           width: double.infinity,
                         ),
                         const SizedBox(height: 12),

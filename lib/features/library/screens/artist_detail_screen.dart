@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/services/audio_player_service.dart';
@@ -238,7 +238,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                         Expanded(
                           child: _buildActionButton(
                             context,
-                            const Iconoir.Play(color: Colors.white, width: 22, height: 22),
+                            const iconoir.Play(color: Colors.white, width: 22, height: 22),
                             localizations.playAll,
                             () => _playAllSongs(context),
                             isPrimary: true,
@@ -247,7 +247,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                         const SizedBox(width: 10),
                         _buildActionButton(
                           context,
-                          const Iconoir.Shuffle(color: Colors.white, width: 22, height: 22),
+                          const iconoir.Shuffle(color: Colors.white, width: 22, height: 22),
                           localizations.shuffle,
                           () => _shuffleAllSongs(context),
                           iconOnly: true,
@@ -255,7 +255,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                         const SizedBox(width: 10),
                         _buildActionButton(
                           context,
-                          const Iconoir.Playlist(color: Colors.white, width: 22, height: 22),
+                          const iconoir.Playlist(color: Colors.white, width: 22, height: 22),
                           'Queue',
                           () => _addAllToQueue(context),
                           iconOnly: true,
@@ -276,7 +276,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                           child: _buildCategoryTab(
                             '${localizations.songs} (${_allSongs.length})',
                             0,
-                            const Iconoir.MusicNote(color: Colors.white, width: 18, height: 18),
+                            const iconoir.MusicNote(color: Colors.white, width: 18, height: 18),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -284,7 +284,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                           child: _buildCategoryTab(
                             '${localizations.albums} (${_albums.length})',
                             1,
-                            const Iconoir.Album(color: Colors.white, width: 18, height: 18),
+                            const iconoir.Album(color: Colors.white, width: 18, height: 18),
                           ),
                         ),
                       ],
@@ -381,7 +381,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Iconoir.Album(color: Colors.white.withValues(alpha: 0.3), width: 64, height: 64),
+              iconoir.Album(color: Colors.white.withValues(alpha: 0.3), width: 64, height: 64),
               const SizedBox(height: 16),
               Text(
                 AppLocalizations.of(context).noAlbumsFound,
@@ -546,7 +546,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             ),
             const Divider(color: Colors.white24),
             ListTile(
-              leading: const Iconoir.Play(color: Colors.white, width: 24, height: 24),
+              leading: const iconoir.Play(color: Colors.white, width: 24, height: 24),
               title: Text(loc.play, style: const TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
@@ -563,7 +563,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
               },
             ),
             ListTile(
-              leading: const Iconoir.Shuffle(color: Colors.white, width: 24, height: 24),
+              leading: const iconoir.Shuffle(color: Colors.white, width: 24, height: 24),
               title:
                   Text(loc.shuffle, style: const TextStyle(color: Colors.white)),
               onTap: () {
@@ -582,7 +582,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
               },
             ),
             ListTile(
-              leading: const Iconoir.InfoCircle(color: Colors.white, width: 24, height: 24),
+              leading: const iconoir.InfoCircle(color: Colors.white, width: 24, height: 24),
               title: Text(loc.viewAlbum,
                   style: const TextStyle(color: Colors.white)),
               onTap: () {
@@ -736,7 +736,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                             const SizedBox(width: 4),
                             GestureDetector(
                               onTap: () => showSongContextMenu(context, song),
-                              child: Iconoir.MoreVert(
+                              child: iconoir.MoreVert(
                                 color: Colors.white.withValues(alpha: 0.5),
                                 width: 20,
                                 height: 20,

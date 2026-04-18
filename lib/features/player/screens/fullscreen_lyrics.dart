@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
-import 'package:iconoir_flutter/iconoir_flutter.dart' as Iconoir;
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -168,15 +168,16 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
     // Apply sync offset
     final adjustedPosition = position + Duration(milliseconds: _syncOffset);
-    int newIndex = _currentLyricIndex;
 
-    for (int i = 0; i < _currentLyrics!.length; i++) {
-      if (adjustedPosition < _currentLyrics![i].time) {
-        newIndex = i > 0 ? i - 1 : 0;
-        break;
-      }
-      if (i == _currentLyrics!.length - 1) {
-        newIndex = i;
+    // Binary search: find the last lyric whose time <= adjustedPosition.
+    int lo = 0, hi = _currentLyrics!.length - 1, newIndex = 0;
+    while (lo <= hi) {
+      final mid = (lo + hi) >> 1;
+      if (_currentLyrics![mid].time <= adjustedPosition) {
+        newIndex = mid;
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
       }
     }
 
@@ -283,7 +284,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
       child: Row(
         children: [
           IconButton(
-            icon: const Iconoir.NavArrowDown(
+            icon: const iconoir.NavArrowDown(
                 color: Colors.white, width: 32, height: 32),
             onPressed: () => Navigator.pop(context),
           ),
@@ -424,7 +425,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     if (_translationState == _TranslationState.loading) return;
 
     setState(() => _translationState = _TranslationState.loading);
-    _pulseController.repeat(reverse: true);
+    unawaited(_pulseController.repeat(reverse: true));
 
     try {
       final targetLang = Localizations.localeOf(context).languageCode;
@@ -457,17 +458,16 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             ' (${e.detectedLanguage.toUpperCase()})',
           ),
           behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
         ),
       );
     } catch (e) {
       if (!mounted) return;
       setState(() => _translationState = _TranslationState.error);
-      Future.delayed(const Duration(seconds: 3), () {
+      unawaited(Future.delayed(const Duration(seconds: 3), () {
         if (mounted && _translationState == _TranslationState.error) {
           setState(() => _translationState = _TranslationState.idle);
         }
-      });
+      }));
     } finally {
       _pulseController
         ..stop()
@@ -1092,14 +1092,14 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     );
   }
 
-  Widget _buildTranslationDisclaimerHeader() {    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+  Widget _buildTranslationDisclaimerHeader() {    return const Padding(
+      padding: EdgeInsets.only(bottom: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.auto_awesome_rounded,
+          Icon(Icons.auto_awesome_rounded,
               size: 12, color: Colors.white30),
-          const SizedBox(width: 5),
+          SizedBox(width: 5),
           Text(
             'AI translated \u00b7 accuracy may vary',
             textAlign: TextAlign.center,
