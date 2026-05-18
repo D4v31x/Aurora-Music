@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'dart:math' as math;
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -32,6 +33,8 @@ import '../../../shared/services/bluetooth_service.dart';
 import '../widgets/library_tab.dart';
 import 'package:aurora_music_v01/features/onboarding/screens/onboarding_screen.dart';
 import '../../../shared/widgets/app_background.dart';
+import '../../../shared/services/insights_promo_service.dart';
+import '../screens/listening_recap_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -816,14 +819,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 .clamp(0.0, 1.0);
 
                             return FlexibleSpaceBar(
-                              background: ColoredBox(
-                                color: Colors.transparent,
-                                child: Center(
-                                  child: Opacity(
-                                    opacity: expandRatio,
-                                    child: buildAppBarTitle(),
-                                  ),
-                                ),
+                              background: ValueListenableBuilder<bool>(
+                                valueListenable:
+                                    InsightsPromoService.recapBannerNotifier,
+                                builder: (context, recapAvailable, _) {
+                                  return AnimatedSwitcher(
+                                    duration:
+                                        const Duration(milliseconds: 600),
+                                    child: recapAvailable
+                                        ? _RecapAppBarContent(
+                                            key: const ValueKey('recap'),
+                                            onShow: () {
+                                              InsightsPromoService
+                                                  .recapBannerNotifier
+                                                  .value = false;
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (_) => const
+                                                      ListeningRecapScreen(),
+                                                ),
+                                              );
+                                            },
+                                            onLater: () => InsightsPromoService
+                                                .recapBannerNotifier
+                                                .value = false,
+                                          )
+                                        : ColoredBox(
+                                            key: const ValueKey('normal'),
+                                            color: Colors.transparent,
+                                            child: Center(
+                                              child: Opacity(
+                                                opacity: expandRatio,
+                                                child: buildAppBarTitle(),
+                                              ),
+                                            ),
+                                          ),
+                                  );
+                                },
                               ),
                               centerTitle: true,
                             );
@@ -1052,4 +1084,220 @@ class _BlurredNavBar extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── Recap AppBar content ──────────────────────────────────────────────────────
+
+class _RecapAppBarContent extends StatefulWidget {
+  final VoidCallback onShow;
+  final VoidCallback onLater;
+
+  const _RecapAppBarContent({
+    super.key,
+    required this.onShow,
+    required this.onLater,
+  });
+
+  @override
+  State<_RecapAppBarContent> createState() => _RecapAppBarContentState();
+}
+
+class _RecapAppBarContentState extends State<_RecapAppBarContent>
+    with TickerProviderStateMixin {
+  late final AnimationController _auroraCtrl;
+  late final AnimationController _entryCtrl;
+  late final Animation<double> _fadeAnim;
+  late final Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _auroraCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )..repeat();
+    _entryCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    )..forward();
+    _fadeAnim =
+        CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.12),
+      end: Offset.zero,
+    ).animate(
+        CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOutCubic));
+  }
+
+  @override
+  void dispose() {
+    _auroraCtrl.dispose();
+    _entryCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _dismiss(VoidCallback callback) async {
+    await _entryCtrl.reverse();
+    if (mounted) callback();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      shaderCallback: (bounds) => const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        stops: [0.0, 0.28, 1.0],
+        colors: [Colors.white, Colors.white, Colors.transparent],
+      ).createShader(bounds),
+      blendMode: BlendMode.dstIn,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const ColoredBox(color: Color(0xFF08000F)),
+          AnimatedBuilder(
+            animation: _auroraCtrl,
+            builder: (_, __) => CustomPaint(
+                painter: _RecapAuroraPainter(_auroraCtrl.value)),
+          ),
+          FadeTransition(
+            opacity: _fadeAnim,
+            child: SlideTransition(
+              position: _slideAnim,
+              child: Align(
+                alignment: const Alignment(0, 0.05),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context).recapBannerTitle,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: FontConstants.fontFamily,
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w600,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            blurRadius: 12,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FilledButton(
+                          onPressed: () => _dismiss(widget.onShow),
+                          style: FilledButton.styleFrom(
+                            backgroundColor:
+                                Colors.white.withValues(alpha: 0.18),
+                            foregroundColor: Colors.white,
+                            side: BorderSide(
+                                color:
+                                    Colors.white.withValues(alpha: 0.35)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50)),
+                          ),
+                          child: Text(AppLocalizations.of(context).recapBannerShow),
+                        ),
+                        const SizedBox(width: 12),
+                        TextButton(
+                          onPressed: () => _dismiss(widget.onLater),
+                          style: TextButton.styleFrom(
+                            foregroundColor:
+                                Colors.white.withValues(alpha: 0.65),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                          ),
+                          child: Text(AppLocalizations.of(context).recapBannerLater),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecapAuroraPainter extends CustomPainter {
+  final double t;
+  _RecapAuroraPainter(this.t);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()..blendMode = BlendMode.screen;
+    const pi = math.pi;
+
+    // Circle 1 — large violet
+    _band(canvas, size, p,
+        color: const Color(0xFF6600CC),
+        cx: 0.50 + 0.14 * math.sin(1 * 2 * pi * t),
+        cy: 0.35 + 0.11 * math.cos(2 * 2 * pi * t),
+        rw: size.width * 0.80,
+        rh: size.width * 0.80);
+
+    // Circle 2 — large magenta
+    _band(canvas, size, p,
+        color: const Color(0xFF990055),
+        cx: 0.38 + 0.16 * math.cos(1 * 2 * pi * t + pi * 0.75),
+        cy: 0.48 + 0.10 * math.sin(2 * 2 * pi * t + pi * 0.4),
+        rw: size.width * 0.72,
+        rh: size.width * 0.72);
+
+    // Circle 3 — large deep indigo
+    _band(canvas, size, p,
+        color: const Color(0xFF1A0099),
+        cx: 0.62 + 0.13 * math.sin(2 * 2 * pi * t + pi),
+        cy: 0.42 + 0.12 * math.cos(1 * 2 * pi * t + pi * 1.6),
+        rw: size.width * 0.76,
+        rh: size.width * 0.76);
+
+  }
+
+  /// Draws a soft aurora blob: three gradient layers for a deeply blurred glow.
+  void _band(Canvas canvas, Size size, Paint p,
+      {required Color color,
+      required double cx,
+      required double cy,
+      required double rw,
+      required double rh}) {
+    final center = Offset(cx * size.width, cy * size.height);
+
+    // Ultra-diffuse outer cloud
+    p.shader = RadialGradient(
+      colors: [color.withValues(alpha: 0.15), color.withValues(alpha: 0.0)],
+    ).createShader(
+        Rect.fromCenter(center: center, width: rw * 5.0, height: rh * 5.0));
+    canvas.drawOval(
+        Rect.fromCenter(center: center, width: rw * 5.0, height: rh * 5.0), p);
+
+    // Outer diffuse halo
+    p.shader = RadialGradient(
+      colors: [color.withValues(alpha: 0.35), color.withValues(alpha: 0.0)],
+    ).createShader(
+        Rect.fromCenter(center: center, width: rw * 3.0, height: rh * 3.0));
+    canvas.drawOval(
+        Rect.fromCenter(center: center, width: rw * 3.0, height: rh * 3.0), p);
+
+    // Inner bright core
+    p.shader = RadialGradient(
+      colors: [color.withValues(alpha: 0.80), color.withValues(alpha: 0.0)],
+    ).createShader(
+        Rect.fromCenter(center: center, width: rw, height: rh));
+    canvas.drawOval(
+        Rect.fromCenter(center: center, width: rw, height: rh), p);
+  }
+
+  @override
+  bool shouldRepaint(_RecapAuroraPainter old) => old.t != t;
 }

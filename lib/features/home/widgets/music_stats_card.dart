@@ -6,6 +6,7 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
+import '../screens/listening_insights_screen.dart';
 
 /// Holds computed library statistics
 class _LibraryStats {
@@ -79,6 +80,7 @@ class _MusicStatsCardState extends State<MusicStatsCard> {
   _LibraryStats? _cachedStats;
   int _lastSongCount = -1;
   int _lastPlaylistCount = -1;
+  bool _pressed = false;
 
   _LibraryStats _getMemoizedStats(List<SongModel> songs, int playlistCount) {
     if (songs.length == _lastSongCount &&
@@ -115,7 +117,20 @@ class _MusicStatsCardState extends State<MusicStatsCard> {
             Provider.of<AudioPlayerService>(context, listen: false);
         final stats =
             _getMemoizedStats(audioPlayerService.songs, counts.$2);
-        return Padding(
+        return GestureDetector(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const ListeningInsightsScreen(),
+            ),
+          ),
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapUp: (_) => setState(() => _pressed = false),
+          onTapCancel: () => setState(() => _pressed = false),
+          child: AnimatedScale(
+            scale: _pressed ? 0.97 : 1.0,
+            duration: const Duration(milliseconds: 80),
+            curve: Curves.easeOut,
+            child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: GlassmorphicContainer(
             borderRadius: BorderRadius.circular(20),
@@ -151,6 +166,14 @@ class _MusicStatsCardState extends State<MusicStatsCard> {
                         color: isDark ? Colors.white38 : Colors.black38,
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.insights_rounded,
+                      size: 16,
+                      color: isDark
+                          ? Colors.white38
+                          : Colors.black38,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -183,6 +206,8 @@ class _MusicStatsCardState extends State<MusicStatsCard> {
                 ),
               ],
             ),
+          ),
+        ),
           ),
         );
       },

@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:clarity_flutter/clarity_flutter.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +24,11 @@ import 'shared/providers/providers.dart';
 import 'shared/widgets/performance_debug_overlay.dart';
 import 'shared/widgets/expanding_player.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_performance/firebase_performance.dart';
+import 'firebase_options.dart';
+import 'shared/services/equalizer_service.dart';
 
 /// Global navigator key for accessing navigator from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -32,20 +36,32 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 /// Global audio handler instance
 late AuroraAudioHandler audioHandler;
 
+/// Global equalizer effect — attached to the player via AudioPipeline
+late AndroidEqualizer equalizer;
+
 /// Application entry point
 void main() async {
   try {
     // Initialize error tracking
     final errorTracker = ErrorTrackingService();
 
-    // Set up Flutter error handling
-    FlutterError.onError = (FlutterErrorDetails details) async {
-      FlutterError.dumpErrorToConsole(details);
-      await errorTracker.recordError(details.exception, details.stack);
-    };
-
     // Ensure Flutter bindings are initialized
     WidgetsFlutterBinding.ensureInitialized();
+
+    // Initialize Firebase — requires google-services.json at android/app/
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+    // Disable performance data collection in debug to keep overhead low
+    if (kDebugMode) {
+      await FirebasePerformance.instance.setPerformanceCollectionEnabled(false);
+    }
+
+    // Route all Flutter framework errors to Sentry + Firebase Crashlytics
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.dumpErrorToConsole(details);
+      unawaited(errorTracker.recordError(details.exception, details.stack));
+      unawaited(FirebaseCrashlytics.instance.recordFlutterFatalError(details));
+    };
 
     // Catch uncaught async errors that escape the Flutter framework
     // (e.g. errors from platform channels, plugin callbacks, isolates).
@@ -53,6 +69,7 @@ void main() async {
     ui.PlatformDispatcher.instance.onError = (error, stack) {
       // Fire-and-forget — onError must be synchronous.
       unawaited(errorTracker.recordError(error, stack));
+      unawaited(FirebaseCrashlytics.instance.recordError(error, stack, fatal: true));
       return true;
     };
 
@@ -86,7 +103,11 @@ void main() async {
     await shaderWarmup;
 
     // Initialize audio service with custom handler (no stop button in notification)
-    final player = AudioPlayer();
+    final eq = AndroidEqualizer();
+    equalizer = eq;
+    final player = AudioPlayer(
+      audioPipeline: AudioPipeline(androidAudioEffects: [eq]),
+    );
     audioHandler = await AudioService.init(
       builder: () => AuroraAudioHandler(player),
       config: const AudioServiceConfig(
@@ -99,13 +120,6 @@ void main() async {
       ),
     );
 
-    // Initialize Clarity
-    const clarityProjectId = String.fromEnvironment('CLARITY_PROJECT_ID');
-    final clarityConfig = ClarityConfig(
-      projectId: clarityProjectId,
-      logLevel: LogLevel.None,
-    );
-
     // Launch the application with all required providers
     await SentryFlutter.init(
     (options) {
@@ -113,51 +127,59 @@ void main() async {
       options.tracesSampleRate = 0.2;
       // ignore: experimental_member_use
       options.profilesSampleRate = 0.2;
+      // Session Replay — capture every session during testing; lower
+      // sessionSampleRate in production once validated.
+      options.replay.sessionSampleRate = 1.0;
+      options.replay.onErrorSampleRate = 1.0;
+      // maskAllText / maskAllImages are not yet exposed in the Flutter SDK.
     },
-    appRunner: () => runApp(SentryWidget(child: 
-      ClarityWidget(
-        clarityConfig: clarityConfig,
-        app: MultiProvider(
-          providers: [
-            // Use lazy initialization for better startup performance
-            ChangeNotifierProvider(create: (_) => AudioPlayerService()),
-            ChangeNotifierProvider(create: (_) => ThemeProvider(), lazy: false),
-            ChangeNotifierProvider(
-                create: (_) => PerformanceModeProvider(), lazy: false),
-            ChangeNotifierProvider(
-                create: (_) => BackgroundManagerService(), lazy: false),
-            ChangeNotifierProvider(
-                create: (_) => SleepTimerController(), lazy: true),
-            ChangeNotifierProvider.value(value: ArtistSeparatorService()),
-            ChangeNotifierProvider.value(value: HomeLayoutService()),
-            Provider<ErrorTrackingService>.value(value: errorTracker),
-          ],
-          child: Builder(
-            builder: (context) {
-              // Connect the services after providers are initialized
-              final audioPlayerService =
-                  Provider.of<AudioPlayerService>(context, listen: false);
-              final backgroundManager =
-                  Provider.of<BackgroundManagerService>(context, listen: false);
-              final performanceProvider =
-                  Provider.of<PerformanceModeProvider>(context, listen: false);
+    appRunner: () {
+      final app = MultiProvider(
+        providers: [
+          // Use lazy initialization for better startup performance
+          ChangeNotifierProvider(create: (_) => AudioPlayerService()),
+          ChangeNotifierProvider(create: (_) => ThemeProvider(), lazy: false),
+          ChangeNotifierProvider(create: (_) => EqualizerService(), lazy: true),
+          ChangeNotifierProvider(
+              create: (_) => PerformanceModeProvider(), lazy: false),
+          ChangeNotifierProvider(
+              create: (_) => BackgroundManagerService(), lazy: false),
+          ChangeNotifierProvider(
+              create: (_) => SleepTimerController(), lazy: true),
+          ChangeNotifierProvider.value(value: ArtistSeparatorService()),
+          ChangeNotifierProvider.value(value: HomeLayoutService()),
+          Provider<ErrorTrackingService>.value(value: errorTracker),
+        ],
+        child: Builder(
+          builder: (context) {
+            // Connect the services after providers are initialized
+            final audioPlayerService =
+                Provider.of<AudioPlayerService>(context, listen: false);
+            final backgroundManager =
+                Provider.of<BackgroundManagerService>(context, listen: false);
+            final performanceProvider =
+                Provider.of<PerformanceModeProvider>(context, listen: false);
 
-              // Set the background manager in the audio player service
-              audioPlayerService.setBackgroundManager(backgroundManager);
+            // Set the background manager in the audio player service
+            audioPlayerService.setBackgroundManager(backgroundManager);
 
-              // Initialize performance provider
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                performanceProvider.initialize();
-              });
+            // Initialize performance provider
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              performanceProvider.initialize();
+            });
 
-              return MyApp(
-                languageCode: languageCode,
-              );
-            },
-          ),
+            return MyApp(
+              languageCode: languageCode,
+            );
+          },
         ),
-      ),
-    )));
+      );
+      return runApp(
+        SentryWidget(
+          child: app,
+        ),
+      );
+    });
   } catch (e, stack) {
     final errorTracker = ErrorTrackingService();
     await errorTracker.recordError(e, stack);
@@ -180,6 +202,9 @@ class _MiniPlayerObserver extends NavigatorObserver {
     if (route is PopupRoute) {
       _popupCount++;
       _update();
+    } else {
+      // Screen navigation: bring the mini player back into view.
+      ExpandingPlayer.resetScrollHide();
     }
   }
 
@@ -329,11 +354,20 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 // Mini player overlaid above all routes. The _MiniPlayerObserver
                 // hides it automatically whenever a PopupRoute (dialog / bottom
                 // sheet) is active so popups always appear on top.
-                child: Stack(
-                  children: [
-                    child ?? const SizedBox.shrink(),
-                    const ExpandingPlayer(),
-                  ],
+                // NotificationListener catches scroll events from all descendant
+                // scrollables to drive the mini player's slide-away behaviour.
+                child: NotificationListener<ScrollUpdateNotification>(
+                  onNotification: (notification) {
+                    ExpandingPlayer.handleScrollDelta(
+                        notification.scrollDelta ?? 0);
+                    return false;
+                  },
+                  child: Stack(
+                    children: [
+                      child ?? const SizedBox.shrink(),
+                      const ExpandingPlayer(),
+                    ],
+                  ),
                 ),
               );
             },

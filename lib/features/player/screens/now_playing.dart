@@ -109,6 +109,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         _lastSongId = song.id;
         _pendingSongLoadId = song.id;
         if (mounted) {
+          setState(() {}); // rebuild title, artist, album text
           _updateArtwork(song);
           _initializeTimedLyrics(audioPlayerService);
           _ensureBackgroundArtwork();

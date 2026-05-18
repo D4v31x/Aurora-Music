@@ -232,7 +232,7 @@ class _SplashScreenState extends State<SplashScreen>
 
       // Pre-cache essential images
       final homeImages = [
-        'assets/images/UI/liked_icon.png',
+        'assets/images/UI/liked.png',
         'assets/images/logo/default_art.png',
       ];
 

@@ -26,17 +26,12 @@ class OptimizedSongTile extends StatefulWidget {
   State<OptimizedSongTile> createState() => _OptimizedSongTileState();
 }
 
-class _OptimizedSongTileState extends State<OptimizedSongTile>
-    with AutomaticKeepAliveClientMixin {
+class _OptimizedSongTileState extends State<OptimizedSongTile> {
   // Make artwork service static to prevent recreation
   static final _artworkService = ArtworkCacheService();
 
   @override
-  bool get wantKeepAlive => true;
-
-  @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
 
     return RepaintBoundary(
       child: Material(
@@ -131,17 +126,12 @@ class OptimizedGridTile extends StatefulWidget {
   State<OptimizedGridTile> createState() => _OptimizedGridTileState();
 }
 
-class _OptimizedGridTileState extends State<OptimizedGridTile>
-    with AutomaticKeepAliveClientMixin {
+class _OptimizedGridTileState extends State<OptimizedGridTile> {
   // Make artwork service static to prevent recreation
   static final _artworkService = ArtworkCacheService();
 
   @override
-  bool get wantKeepAlive => true;
-
-  @override
   Widget build(BuildContext context) {
-    super.build(context);
 
     return RepaintBoundary(
       child: Material(

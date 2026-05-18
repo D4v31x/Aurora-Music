@@ -24,6 +24,9 @@ class ThemeProvider with ChangeNotifier {
   LowEndBackground _lowEndBackground = LowEndBackground.solid;
   HighEndBackground _highEndBackground = HighEndBackground.blurredArtwork;
 
+  // Cached ThemeData — invalidated whenever theme-affecting properties change.
+  ThemeData? _cachedDarkTheme;
+
   bool get useDynamicColor => _useDynamicColor;
   ThemeMode get themeMode => ThemeMode.dark;
   Color get customSeedColor => _customSeedColor;
@@ -52,7 +55,9 @@ class ThemeProvider with ChangeNotifier {
     brightness: Brightness.dark,
   );
 
-  ThemeData get darkTheme {
+  ThemeData get darkTheme => _cachedDarkTheme ??= _buildDarkTheme();
+
+  ThemeData _buildDarkTheme() {
     final colorScheme = _useDynamicColor && _darkDynamicColorScheme != null
         ? _darkDynamicColorScheme!
         : _defaultDarkColorScheme;
@@ -152,23 +157,32 @@ class ThemeProvider with ChangeNotifier {
     if (highEndBgIndex != null && highEndBgIndex < HighEndBackground.values.length) {
       _highEndBackground = HighEndBackground.values[highEndBgIndex];
     }
+    _cachedDarkTheme = null;
     notifyListeners();
   }
 
   Future<void> _loadDynamicColors() async {
     // Dynamic colors will be loaded via DynamicColorBuilder in main.dart
-    // This method is kept for manual refresh if needed
-    notifyListeners();
+    // This method is kept for manual refresh if needed.
+    // Note: intentionally no notifyListeners() here — DynamicColorBuilder
+    // will call setDynamicColorSchemes() which handles notification.
   }
 
   void setDynamicColorSchemes(ColorScheme? light, ColorScheme? dark) {
-    // Only store dark scheme since app is dark mode only
+    // Only store dark scheme since app is dark mode only.
+    // Guard: identical reference means same object from DynamicColorBuilder —
+    // no actual change, so skip notifyListeners() to avoid a per-frame
+    // rebuild loop (DynamicColorBuilder rebuilds → addPostFrameCallback →
+    // setDynamicColorSchemes → notifyListeners → rebuild → …).
+    if (identical(_darkDynamicColorScheme, dark)) return;
     _darkDynamicColorScheme = dark;
+    _cachedDarkTheme = null;
     notifyListeners();
   }
 
   Future<void> toggleDynamicColor() async {
     _useDynamicColor = !_useDynamicColor;
+    _cachedDarkTheme = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_useDynamicColorKey, _useDynamicColor);
     notifyListeners();
@@ -176,6 +190,7 @@ class ThemeProvider with ChangeNotifier {
 
   Future<void> setCustomSeedColor(Color color) async {
     _customSeedColor = color;
+    _cachedDarkTheme = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_customSeedColorKey, color.toARGB32());
     notifyListeners();

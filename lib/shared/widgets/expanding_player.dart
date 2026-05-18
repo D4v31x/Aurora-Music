@@ -46,6 +46,39 @@ class ExpandingPlayer extends StatefulWidget {
   static final ValueNotifier<bool> popupActiveNotifier =
       ValueNotifier<bool>(false);
 
+  /// True when the mini player has been scrolled out of view. Animated slide
+  /// hides it below the screen edge; any upward scroll brings it back.
+  static final ValueNotifier<bool> scrollHiddenNotifier =
+      ValueNotifier<bool>(false);
+
+  // Accumulated downward scroll pixels since last direction change.
+  static double _scrollAccumulator = 0;
+
+  // Pixels of downward scroll required to trigger hide.
+  static const double _scrollHideThreshold = 80;
+
+  /// Call from a root [NotificationListener] on every scroll update.
+  /// Positive [delta] = scrolling down, negative = scrolling up.
+  static void handleScrollDelta(double delta) {
+    if (isExpanded) return;
+    if (delta > 0) {
+      _scrollAccumulator += delta;
+      if (_scrollAccumulator >= _scrollHideThreshold) {
+        _scrollAccumulator = _scrollHideThreshold;
+        scrollHiddenNotifier.value = true;
+      }
+    } else if (delta < 0) {
+      _scrollAccumulator = 0;
+      scrollHiddenNotifier.value = false;
+    }
+  }
+
+  /// Reset the scroll-hide state — call when the user navigates to a new page.
+  static void resetScrollHide() {
+    _scrollAccumulator = 0;
+    scrollHiddenNotifier.value = false;
+  }
+
   /// Check if player is expanded (now playing screen is open)
   static bool get isExpanded => isOpenNotifier.value;
 
@@ -165,9 +198,36 @@ class _ExpandingPlayerState extends State<ExpandingPlayer> {
                   builder: (context, currentSong, _) {
                     if (currentSong == null) return const SizedBox.shrink();
 
-                    return _MiniPlayerWidget(
-                      song: currentSong,
-                      onTap: _openNowPlaying,
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: ExpandingPlayer.scrollHiddenNotifier,
+                      builder: (context, scrollHidden, child) {
+                        final bottomPad =
+                            MediaQuery.of(context).padding.bottom;
+                        final targetOffset = scrollHidden
+                            ? ExpandingPlayer.miniPlayerHeight +
+                                ExpandingPlayer.bottomMargin +
+                                bottomPad +
+                                16.0
+                            : 0.0;
+                        return TweenAnimationBuilder<double>(
+                          tween: Tween<double>(end: targetOffset),
+                          duration: Duration(
+                              milliseconds: scrollHidden ? 220 : 300),
+                          curve: scrollHidden
+                              ? Curves.easeInCubic
+                              : Curves.easeOutCubic,
+                          builder: (context, offset, child) =>
+                              Transform.translate(
+                            offset: Offset(0, offset),
+                            child: child,
+                          ),
+                          child: child,
+                        );
+                      },
+                      child: _MiniPlayerWidget(
+                        song: currentSong,
+                        onTap: _openNowPlaying,
+                      ),
                     );
                   },
                 );

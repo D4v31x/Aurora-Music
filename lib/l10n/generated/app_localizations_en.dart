@@ -1519,4 +1519,155 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get microphoneAccessDesc =>
       'Aurora needs microphone access to tap your device\'s audio session for the live visualizer. No audio is ever recorded or stored.';
+
+  @override
+  String get recapWeek => 'week';
+
+  @override
+  String get recapMonth => 'month';
+
+  @override
+  String get recapPeriodWeek => 'Week';
+
+  @override
+  String get recapPeriodMonth => 'Month';
+
+  @override
+  String get recapWeekly => 'Weekly';
+
+  @override
+  String get recapMonthly => 'Monthly';
+
+  @override
+  String get recapIntroAppName => 'AURORA MUSIC';
+
+  @override
+  String recapIntroTitle(String period) {
+    return 'Your $period\nRecap';
+  }
+
+  @override
+  String get recapIntroSubtitle =>
+      'Let\'s see what you\'ve been\nlistening to.';
+
+  @override
+  String recapPlayedEyebrow(String period) {
+    return 'This $period you played music';
+  }
+
+  @override
+  String get recapTimeSingular => 'time';
+
+  @override
+  String get recapTimePlural => 'times';
+
+  @override
+  String get recapListenedForEyebrow => 'You listened for';
+
+  @override
+  String get recapListenedForLabel => 'of music';
+
+  @override
+  String get recapTopTrackEyebrow => 'Your #1 track';
+
+  @override
+  String get recapPlays => 'plays';
+
+  @override
+  String get recapTopTracksTitle => 'Top Tracks';
+
+  @override
+  String get recapTopArtistEyebrow => 'Your top artist';
+
+  @override
+  String get recapTopArtistsTitle => 'Top Artists';
+
+  @override
+  String get recapNothingToWrap => 'Nothing to wrap yet';
+
+  @override
+  String recapNothingToWrapBody(String period) {
+    return 'Play some music this $period and come back.';
+  }
+
+  @override
+  String get recapSwipeUp => 'SWIPE UP';
+
+  @override
+  String get recapYourSoundLabel => 'YOUR SOUND';
+
+  @override
+  String get recapTopGenresTitle => 'Top Genres';
+
+  @override
+  String get recapYouListenMost => 'YOU LISTEN MOST';
+
+  @override
+  String recapOnDay(String day) {
+    return 'on ${day}s';
+  }
+
+  @override
+  String recapAroundTime(String time) {
+    return 'around $time';
+  }
+
+  @override
+  String get recapVibesHitDifferent => 'That\'s when the vibes hit different.';
+
+  @override
+  String get recapThatsAWrap => 'THAT\'S A WRAP';
+
+  @override
+  String recapInNumbers(String period) {
+    return 'Your $period\nin Numbers';
+  }
+
+  @override
+  String get recapNumberOneTrack => '#1 TRACK';
+
+  @override
+  String get recapStatTotalPlays => 'Total Plays';
+
+  @override
+  String get recapStatTimeListened => 'Time Listened';
+
+  @override
+  String get recapStatUniqueTracks => 'Unique Tracks';
+
+  @override
+  String get recapStatTopArtist => 'Top Artist';
+
+  @override
+  String get recapDone => 'Done';
+
+  @override
+  String get recapWeekdayMonday => 'Monday';
+
+  @override
+  String get recapWeekdayTuesday => 'Tuesday';
+
+  @override
+  String get recapWeekdayWednesday => 'Wednesday';
+
+  @override
+  String get recapWeekdayThursday => 'Thursday';
+
+  @override
+  String get recapWeekdayFriday => 'Friday';
+
+  @override
+  String get recapWeekdaySaturday => 'Saturday';
+
+  @override
+  String get recapWeekdaySunday => 'Sunday';
+
+  @override
+  String get recapBannerTitle => 'Music recap is here';
+
+  @override
+  String get recapBannerShow => 'Show';
+
+  @override
+  String get recapBannerLater => 'Later';
 }

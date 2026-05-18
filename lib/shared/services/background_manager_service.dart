@@ -1,10 +1,35 @@
 import 'dart:async';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'artwork_cache_service.dart';
 import '../utils/performance_optimizations.dart';
+
+/// Arguments record for palette computation in a background isolate.
+typedef _PaletteArgs = ({Uint8List pixels, int width, int height});
+
+/// Top-level function for [compute] — runs in a background isolate.
+/// Returns ARGB int values for each extracted palette color in order:
+/// [dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted].
+/// A value of 0 means the corresponding color was not found.
+Future<List<int>> _computePaletteColors(_PaletteArgs args) async {
+  final byteData = ByteData.sublistView(args.pixels);
+  final palette = await PaletteGenerator.fromByteData(
+    EncodedImage(byteData, width: args.width, height: args.height),
+    maximumColorCount: 6,
+  );
+  return [
+    palette.dominantColor?.color.toARGB32() ?? 0,
+    palette.vibrantColor?.color.toARGB32() ?? 0,
+    palette.lightVibrantColor?.color.toARGB32() ?? 0,
+    palette.darkVibrantColor?.color.toARGB32() ?? 0,
+    palette.mutedColor?.color.toARGB32() ?? 0,
+    palette.lightMutedColor?.color.toARGB32() ?? 0,
+  ];
+}
 
 /// Service that manages background colors and artwork
 /// Provides artwork data for blurred backgrounds across the app
@@ -137,23 +162,61 @@ class BackgroundManagerService extends ChangeNotifier {
     }
 
     try {
-      final imageProvider = MemoryImage(artworkData);
-      final palette = await PaletteGenerator.fromImageProvider(
-        imageProvider,
-        size: const Size(112, 112),
-        maximumColorCount: 6,
+      // Decode and scale the image on the main thread (requires Flutter rendering).
+      final codec = await ui.instantiateImageCodec(
+        artworkData,
+        targetWidth: 112,
+        targetHeight: 112,
+      );
+      final frame = await codec.getNextFrame();
+      final image = frame.image;
+      final imageWidth = image.width;
+      final imageHeight = image.height;
+      final rawPixels =
+          await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      codec.dispose();
+
+      if (rawPixels == null) {
+        _currentColors = _getDefaultColors();
+        return;
+      }
+
+      // Run heavy color quantization in a background isolate so it cannot
+      // block the UI thread and cause frame drops during song transitions.
+      final colorInts = await compute(
+        _computePaletteColors,
+        (
+          pixels: rawPixels.buffer
+              .asUint8List(rawPixels.offsetInBytes, rawPixels.lengthInBytes),
+          width: imageWidth,
+          height: imageHeight,
+        ),
       );
 
-      final colors = _extractColorsFromPalette(palette);
+      // Reconstruct Color objects from isolate-returned ARGB ints.
+      // The order matches _computePaletteColors:
+      // [dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted].
+      final colors = <Color>[];
+      for (final argb in colorInts) {
+        if (argb != 0) colors.add(Color(argb));
+        if (colors.length == 4) break; // max 4 colours
+      }
+
+      // Ensure at least 2 colors.
+      if (colors.length == 1) {
+        colors.add(
+            _adjustColorBrightness(colors.first, _isDarkMode ? 0.7 : 1.3));
+      }
+
       if (colors.length >= 2) {
         _currentColors = colors;
         // Cache by song ID so subsequent calls for the same song are O(1).
         if (cacheKey != null) {
           _colorCache[cacheKey] = colors;
 
-          // Limit cache size to prevent memory leaks
+          // Limit cache size to prevent memory leaks.
           if (_colorCache.length > 50) {
-            // Remove oldest entries (first keys)
             final keysToRemove =
                 _colorCache.keys.take(_colorCache.length - 50).toList();
             for (final key in keysToRemove) {
@@ -343,45 +406,6 @@ class BackgroundManagerService extends ChangeNotifier {
   }
 
   /// Extract colors from palette generator
-  List<Color> _extractColorsFromPalette(PaletteGenerator palette) {
-    final colors = <Color>[];
-
-    // Primary color (dominant)
-    if (palette.dominantColor?.color != null) {
-      colors.add(palette.dominantColor!.color);
-    }
-
-    // Vibrant colors
-    if (palette.vibrantColor?.color != null) {
-      colors.add(palette.vibrantColor!.color);
-    }
-
-    if (palette.lightVibrantColor?.color != null) {
-      colors.add(palette.lightVibrantColor!.color);
-    }
-
-    if (palette.darkVibrantColor?.color != null) {
-      colors.add(palette.darkVibrantColor!.color);
-    }
-
-    // Muted colors as fallbacks
-    if (palette.mutedColor?.color != null && colors.length < 4) {
-      colors.add(palette.mutedColor!.color);
-    }
-
-    if (palette.lightMutedColor?.color != null && colors.length < 4) {
-      colors.add(palette.lightMutedColor!.color);
-    }
-
-    // Ensure we have at least 2 colors and max 4
-    if (colors.length < 2 && colors.isNotEmpty) {
-      final baseColor = colors.first;
-      colors.add(_adjustColorBrightness(baseColor, _isDarkMode ? 0.7 : 1.3));
-    }
-
-    return colors.take(4).toList();
-  }
-
   /// Adjust color brightness
   Color _adjustColorBrightness(Color color, double factor) {
     final hsl = HSLColor.fromColor(color);

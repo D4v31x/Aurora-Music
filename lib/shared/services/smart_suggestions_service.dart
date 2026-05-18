@@ -374,6 +374,136 @@ class SmartSuggestionsService {
   /// Check if user has enough history for smart suggestions
   bool hasListeningHistory() => _listeningHistory.length >= 10;
 
+  // ── Analytics / Insights ──────────────────────────────────────────────────
+
+  /// Read-only snapshot of per-track play counts (trackId → count).
+  Map<String, int> get trackPlayCounts => Map.unmodifiable(_trackPlayCounts);
+
+  /// Read-only snapshot of per-artist play counts (artist name → count).
+  Map<String, int> get artistPlayCounts => Map.unmodifiable(_artistPlayCounts);
+
+  /// Read-only snapshot of per-genre play counts (genre → count).
+  Map<String, int> get genrePlayCounts => Map.unmodifiable(_genrePlayCounts);
+
+  /// Read-only snapshot of skip counts per track (trackId → skips).
+  Map<String, int> get skipCounts => Map.unmodifiable(_trackSkipCounts);
+
+  /// Aggregated play count per hour of day (0–23 → total plays that hour).
+  Map<int, int> get playsByHour {
+    final result = <int, int>{};
+    for (final entry in _hourlyTrackCounts.entries) {
+      result[entry.key] = entry.value.values.fold(0, (a, b) => a + b);
+    }
+    return result;
+  }
+
+  /// Aggregated play count per weekday (0 = Monday … 6 = Sunday).
+  Map<int, int> get playsByWeekday {
+    final result = <int, int>{};
+    for (final entry in _weekdayTrackCounts.entries) {
+      result[entry.key] = entry.value.values.fold(0, (a, b) => a + b);
+    }
+    return result;
+  }
+
+  /// Total non-skipped listens across all tracks.
+  int get totalListens => _trackPlayCounts.values.fold(0, (a, b) => a + b);
+
+  /// Estimated total listening time in minutes (from recorded listen events).
+  int get estimatedListeningMinutes {
+    final totalMs = _listeningHistory
+        .where((e) => !e.wasSkipped)
+        .fold<int>(0, (sum, e) => sum + e.listenDurationMs);
+    return (totalMs / 60000).floor();
+  }
+
+  /// The hour (0–23) with the most plays, or null if no data.
+  int? get mostActiveHour {
+    final byHour = playsByHour;
+    if (byHour.isEmpty) return null;
+    return byHour.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+  }
+
+  /// The weekday (0 = Monday … 6 = Sunday) with the most plays, or null.
+  int? get mostActiveWeekday {
+    final byDay = playsByWeekday;
+    if (byDay.isEmpty) return null;
+    return byDay.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+  }
+
+  /// First listen timestamp, or null if no history.
+  DateTime? get firstListenTime =>
+      _listeningHistory.isEmpty ? null : _listeningHistory.first.timestamp;
+
+  // ── Period-based analytics ─────────────────────────────────────────────────
+
+  /// All non-skipped events within the last [days] days.
+  List<ListeningEvent> getEventsForPeriod(int days) {
+    final cutoff = DateTime.now().subtract(Duration(days: days));
+    return _listeningHistory
+        .where((e) => e.timestamp.isAfter(cutoff) && !e.wasSkipped)
+        .toList();
+  }
+
+  /// Track play counts for the last [days] days.
+  Map<String, int> trackPlayCountsForPeriod(int days) {
+    final counts = <String, int>{};
+    for (final e in getEventsForPeriod(days)) {
+      counts[e.trackId] = (counts[e.trackId] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  /// Artist play counts for the last [days] days.
+  Map<String, int> artistPlayCountsForPeriod(int days) {
+    final counts = <String, int>{};
+    for (final e in getEventsForPeriod(days)) {
+      for (final artist in e.artists) {
+        counts[artist] = (counts[artist] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }
+
+  /// Genre play counts for the last [days] days.
+  Map<String, int> genrePlayCountsForPeriod(int days) {
+    final counts = <String, int>{};
+    for (final e in getEventsForPeriod(days)) {
+      counts[e.genre] = (counts[e.genre] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  /// Estimated listening minutes for the last [days] days.
+  int estimatedMinutesForPeriod(int days) {
+    final totalMs = getEventsForPeriod(days)
+        .fold<int>(0, (s, e) => s + e.listenDurationMs);
+    return (totalMs / 60000).floor();
+  }
+
+  /// Most active hour (0–23) for the last [days] days, or null if no data.
+  int? mostActiveHourForPeriod(int days) {
+    final events = getEventsForPeriod(days);
+    if (events.isEmpty) return null;
+    final byHour = <int, int>{};
+    for (final e in events) {
+      byHour[e.timestamp.hour] = (byHour[e.timestamp.hour] ?? 0) + 1;
+    }
+    return byHour.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+  }
+
+  /// Most active weekday (0=Mon…6=Sun) for the last [days] days, or null.
+  int? mostActiveWeekdayForPeriod(int days) {
+    final events = getEventsForPeriod(days);
+    if (events.isEmpty) return null;
+    final byDay = <int, int>{};
+    for (final e in events) {
+      final day = e.timestamp.weekday - 1;
+      byDay[day] = (byDay[day] ?? 0) + 1;
+    }
+    return byDay.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+  }
+
   /// Save data to disk
   Future<void> _saveData() async {
     try {

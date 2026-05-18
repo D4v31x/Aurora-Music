@@ -218,9 +218,6 @@ class AudioPlayerService extends ChangeNotifier {
   final ValueNotifier<Duration?> sleepTimerDurationNotifier =
       ValueNotifier<Duration?>(null);
 
-  // Cache for artwork file URIs to avoid redundant disk I/O
-  final Map<int, Uri?> _artworkUriCache = {};
-
   /// Debounced notification to batch multiple state changes
   /// This prevents excessive rebuilds when multiple changes happen in quick succession
   void _scheduleNotify() {
@@ -383,6 +380,10 @@ class AudioPlayerService extends ChangeNotifier {
           debugPrint('🎵 [PROCESSING_STATE] Loop OFF, stopping playback');
           _isPlaying = false;
           isPlayingNotifier.value = false;
+          // Pause the underlying player so player.playing becomes false.
+          // This causes _broadcastState() to fire with playing:false, which
+          // clears the "playing" indicator in the notification / media controls.
+          unawaited(_audioPlayer.pause());
           _scheduleNotify();
         } else {
           debugPrint(

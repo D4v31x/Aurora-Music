@@ -526,5 +526,82 @@
   "feedbackHint": "Něco konkrétního? (volitelné)",
   "feedbackSend": "Odeslat",
   "microphoneAccessNeeded": "Je potřeba přístup k mikrofonu",
-  "microphoneAccessDesc": "Aurora potřebuje přístup k mikrofonu pro živý vizualizér. Žádný zvuk není nikdy nahrán ani uložen."
+  "microphoneAccessDesc": "Aurora potřebuje přístup k mikrofonu pro živý vizualizér. Žádný zvuk není nikdy nahrán ani uložen.",
+
+  "recapWeek": "týden",
+  "recapMonth": "měsíc",
+  "recapPeriodWeek": "Týden",
+  "recapPeriodMonth": "Měsíc",
+  "recapWeekly": "Týdenní",
+  "recapMonthly": "Měsíční",
+  "recapIntroAppName": "AURORA MUSIC",
+  "recapIntroTitle": "Tvůj {period}\nPřehled",
+  "@recapIntroTitle": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "recapIntroSubtitle": "Podívejme se, co jsi\nposledně poslouchal.",
+  "recapPlayedEyebrow": "Tento {period} jsi pouštěl hudbu",
+  "@recapPlayedEyebrow": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "recapTimeSingular": "krát",
+  "recapTimePlural": "krát",
+  "recapListenedForEyebrow": "Poslouchal jsi",
+  "recapListenedForLabel": "hudby",
+  "recapTopTrackEyebrow": "Tvá nejhranější skladba",
+  "recapPlays": "přehrání",
+  "recapTopTracksTitle": "Nejhranější skladby",
+  "recapTopArtistEyebrow": "Tvůj top umělec",
+  "recapTopArtistsTitle": "Top umělci",
+  "recapNothingToWrap": "Zatím nic k zobrazení",
+  "recapNothingToWrapBody": "Přehraj nějakou hudbu tento {period} a vrať se.",
+  "@recapNothingToWrapBody": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "recapSwipeUp": "PŘEJEĎ NAHORU",
+  "recapYourSoundLabel": "TVŮJ ZVUK",
+  "recapTopGenresTitle": "Oblíbené žánry",
+  "recapYouListenMost": "POSLOUCHÁŠ NEJVÍCE",
+  "recapOnDay": "v {day}",
+  "@recapOnDay": {
+    "placeholders": {
+      "day": {"type": "String"}
+    }
+  },
+  "recapAroundTime": "kolem {time}",
+  "@recapAroundTime": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "recapVibesHitDifferent": "To je tvůj oblíbený čas na hudbu.",
+  "recapThatsAWrap": "TO JE PŘEHLED",
+  "recapInNumbers": "Tvůj {period}\nv číslech",
+  "@recapInNumbers": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "recapNumberOneTrack": "#1 SKLADBA",
+  "recapStatTotalPlays": "Celkem přehrání",
+  "recapStatTimeListened": "Čas poslechu",
+  "recapStatUniqueTracks": "Unikátní skladby",
+  "recapStatTopArtist": "Top umělec",
+  "recapDone": "Hotovo",
+  "recapWeekdayMonday": "pondělí",
+  "recapWeekdayTuesday": "úterý",
+  "recapWeekdayWednesday": "středu",
+  "recapWeekdayThursday": "čtvrtek",
+  "recapWeekdayFriday": "pátek",
+  "recapWeekdaySaturday": "sobotu",
+  "recapWeekdaySunday": "neděli",
+  "recapBannerTitle": "Přehled hudby je tady",
+  "recapBannerShow": "Zobrazit",
+  "recapBannerLater": "Později"
 }

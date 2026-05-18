@@ -1522,4 +1522,154 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String get microphoneAccessDesc =>
       'Aurora potřebuje přístup k mikrofonu pro živý vizualizér. Žádný zvuk není nikdy nahrán ani uložen.';
+
+  @override
+  String get recapWeek => 'týden';
+
+  @override
+  String get recapMonth => 'měsíc';
+
+  @override
+  String get recapPeriodWeek => 'Týden';
+
+  @override
+  String get recapPeriodMonth => 'Měsíc';
+
+  @override
+  String get recapWeekly => 'Týdenní';
+
+  @override
+  String get recapMonthly => 'Měsíční';
+
+  @override
+  String get recapIntroAppName => 'AURORA MUSIC';
+
+  @override
+  String recapIntroTitle(String period) {
+    return 'Tvůj $period\nPřehled';
+  }
+
+  @override
+  String get recapIntroSubtitle => 'Podívejme se, co jsi\nposledně poslouchal.';
+
+  @override
+  String recapPlayedEyebrow(String period) {
+    return 'Tento $period jsi pouštěl hudbu';
+  }
+
+  @override
+  String get recapTimeSingular => 'krát';
+
+  @override
+  String get recapTimePlural => 'krát';
+
+  @override
+  String get recapListenedForEyebrow => 'Poslouchal jsi';
+
+  @override
+  String get recapListenedForLabel => 'hudby';
+
+  @override
+  String get recapTopTrackEyebrow => 'Tvá nejhranější skladba';
+
+  @override
+  String get recapPlays => 'přehrání';
+
+  @override
+  String get recapTopTracksTitle => 'Nejhranější skladby';
+
+  @override
+  String get recapTopArtistEyebrow => 'Tvůj top umělec';
+
+  @override
+  String get recapTopArtistsTitle => 'Top umělci';
+
+  @override
+  String get recapNothingToWrap => 'Zatím nic k zobrazení';
+
+  @override
+  String recapNothingToWrapBody(String period) {
+    return 'Přehraj nějakou hudbu tento $period a vrať se.';
+  }
+
+  @override
+  String get recapSwipeUp => 'PŘEJEĎ NAHORU';
+
+  @override
+  String get recapYourSoundLabel => 'TVŮJ ZVUK';
+
+  @override
+  String get recapTopGenresTitle => 'Oblíbené žánry';
+
+  @override
+  String get recapYouListenMost => 'POSLOUCHÁŠ NEJVÍCE';
+
+  @override
+  String recapOnDay(String day) {
+    return 'v $day';
+  }
+
+  @override
+  String recapAroundTime(String time) {
+    return 'kolem $time';
+  }
+
+  @override
+  String get recapVibesHitDifferent => 'To je tvůj oblíbený čas na hudbu.';
+
+  @override
+  String get recapThatsAWrap => 'TO JE PŘEHLED';
+
+  @override
+  String recapInNumbers(String period) {
+    return 'Tvůj $period\nv číslech';
+  }
+
+  @override
+  String get recapNumberOneTrack => '#1 SKLADBA';
+
+  @override
+  String get recapStatTotalPlays => 'Celkem přehrání';
+
+  @override
+  String get recapStatTimeListened => 'Čas poslechu';
+
+  @override
+  String get recapStatUniqueTracks => 'Unikátní skladby';
+
+  @override
+  String get recapStatTopArtist => 'Top umělec';
+
+  @override
+  String get recapDone => 'Hotovo';
+
+  @override
+  String get recapWeekdayMonday => 'pondělí';
+
+  @override
+  String get recapWeekdayTuesday => 'úterý';
+
+  @override
+  String get recapWeekdayWednesday => 'středu';
+
+  @override
+  String get recapWeekdayThursday => 'čtvrtek';
+
+  @override
+  String get recapWeekdayFriday => 'pátek';
+
+  @override
+  String get recapWeekdaySaturday => 'sobotu';
+
+  @override
+  String get recapWeekdaySunday => 'neděli';
+
+  @override
+  String get recapBannerTitle => 'Přehled hudby je tady';
+
+  @override
+  String get recapBannerShow => 'Zobrazit';
+
+  @override
+  String get recapBannerLater => 'Později';
 }

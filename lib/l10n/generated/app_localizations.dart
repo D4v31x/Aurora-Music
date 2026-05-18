@@ -2959,6 +2959,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Aurora needs microphone access to tap your device\'s audio session for the live visualizer. No audio is ever recorded or stored.'**
   String get microphoneAccessDesc;
+
+  /// No description provided for @recapWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'week'**
+  String get recapWeek;
+
+  /// No description provided for @recapMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'month'**
+  String get recapMonth;
+
+  /// No description provided for @recapPeriodWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get recapPeriodWeek;
+
+  /// No description provided for @recapPeriodMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get recapPeriodMonth;
+
+  /// No description provided for @recapWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get recapWeekly;
+
+  /// No description provided for @recapMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get recapMonthly;
+
+  /// No description provided for @recapIntroAppName.
+  ///
+  /// In en, this message translates to:
+  /// **'AURORA MUSIC'**
+  String get recapIntroAppName;
+
+  /// No description provided for @recapIntroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {period}\nRecap'**
+  String recapIntroTitle(String period);
+
+  /// No description provided for @recapIntroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s see what you\'ve been\nlistening to.'**
+  String get recapIntroSubtitle;
+
+  /// No description provided for @recapPlayedEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'This {period} you played music'**
+  String recapPlayedEyebrow(String period);
+
+  /// No description provided for @recapTimeSingular.
+  ///
+  /// In en, this message translates to:
+  /// **'time'**
+  String get recapTimeSingular;
+
+  /// No description provided for @recapTimePlural.
+  ///
+  /// In en, this message translates to:
+  /// **'times'**
+  String get recapTimePlural;
+
+  /// No description provided for @recapListenedForEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'You listened for'**
+  String get recapListenedForEyebrow;
+
+  /// No description provided for @recapListenedForLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'of music'**
+  String get recapListenedForLabel;
+
+  /// No description provided for @recapTopTrackEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Your #1 track'**
+  String get recapTopTrackEyebrow;
+
+  /// No description provided for @recapPlays.
+  ///
+  /// In en, this message translates to:
+  /// **'plays'**
+  String get recapPlays;
+
+  /// No description provided for @recapTopTracksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Tracks'**
+  String get recapTopTracksTitle;
+
+  /// No description provided for @recapTopArtistEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Your top artist'**
+  String get recapTopArtistEyebrow;
+
+  /// No description provided for @recapTopArtistsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Artists'**
+  String get recapTopArtistsTitle;
+
+  /// No description provided for @recapNothingToWrap.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to wrap yet'**
+  String get recapNothingToWrap;
+
+  /// No description provided for @recapNothingToWrapBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Play some music this {period} and come back.'**
+  String recapNothingToWrapBody(String period);
+
+  /// No description provided for @recapSwipeUp.
+  ///
+  /// In en, this message translates to:
+  /// **'SWIPE UP'**
+  String get recapSwipeUp;
+
+  /// No description provided for @recapYourSoundLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR SOUND'**
+  String get recapYourSoundLabel;
+
+  /// No description provided for @recapTopGenresTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Genres'**
+  String get recapTopGenresTitle;
+
+  /// No description provided for @recapYouListenMost.
+  ///
+  /// In en, this message translates to:
+  /// **'YOU LISTEN MOST'**
+  String get recapYouListenMost;
+
+  /// No description provided for @recapOnDay.
+  ///
+  /// In en, this message translates to:
+  /// **'on {day}s'**
+  String recapOnDay(String day);
+
+  /// No description provided for @recapAroundTime.
+  ///
+  /// In en, this message translates to:
+  /// **'around {time}'**
+  String recapAroundTime(String time);
+
+  /// No description provided for @recapVibesHitDifferent.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s when the vibes hit different.'**
+  String get recapVibesHitDifferent;
+
+  /// No description provided for @recapThatsAWrap.
+  ///
+  /// In en, this message translates to:
+  /// **'THAT\'S A WRAP'**
+  String get recapThatsAWrap;
+
+  /// No description provided for @recapInNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {period}\nin Numbers'**
+  String recapInNumbers(String period);
+
+  /// No description provided for @recapNumberOneTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'#1 TRACK'**
+  String get recapNumberOneTrack;
+
+  /// No description provided for @recapStatTotalPlays.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Plays'**
+  String get recapStatTotalPlays;
+
+  /// No description provided for @recapStatTimeListened.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Listened'**
+  String get recapStatTimeListened;
+
+  /// No description provided for @recapStatUniqueTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'Unique Tracks'**
+  String get recapStatUniqueTracks;
+
+  /// No description provided for @recapStatTopArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Artist'**
+  String get recapStatTopArtist;
+
+  /// No description provided for @recapDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get recapDone;
+
+  /// No description provided for @recapWeekdayMonday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get recapWeekdayMonday;
+
+  /// No description provided for @recapWeekdayTuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get recapWeekdayTuesday;
+
+  /// No description provided for @recapWeekdayWednesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get recapWeekdayWednesday;
+
+  /// No description provided for @recapWeekdayThursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get recapWeekdayThursday;
+
+  /// No description provided for @recapWeekdayFriday.
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get recapWeekdayFriday;
+
+  /// No description provided for @recapWeekdaySaturday.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get recapWeekdaySaturday;
+
+  /// No description provided for @recapWeekdaySunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get recapWeekdaySunday;
+
+  /// No description provided for @recapBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Music recap is here'**
+  String get recapBannerTitle;
+
+  /// No description provided for @recapBannerShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get recapBannerShow;
+
+  /// No description provided for @recapBannerLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get recapBannerLater;
 }
 
 class _AppLocalizationsDelegate

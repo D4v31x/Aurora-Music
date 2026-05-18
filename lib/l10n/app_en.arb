@@ -531,5 +531,82 @@
   "feedbackHint": "Anything specific? (optional)",
   "feedbackSend": "Send",
   "microphoneAccessNeeded": "Microphone access needed",
-  "microphoneAccessDesc": "Aurora needs microphone access to tap your device's audio session for the live visualizer. No audio is ever recorded or stored."
+  "microphoneAccessDesc": "Aurora needs microphone access to tap your device's audio session for the live visualizer. No audio is ever recorded or stored.",
+
+  "recapWeek": "week",
+  "recapMonth": "month",
+  "recapPeriodWeek": "Week",
+  "recapPeriodMonth": "Month",
+  "recapWeekly": "Weekly",
+  "recapMonthly": "Monthly",
+  "recapIntroAppName": "AURORA MUSIC",
+  "recapIntroTitle": "Your {period}\nRecap",
+  "@recapIntroTitle": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "recapIntroSubtitle": "Let's see what you've been\nlistening to.",
+  "recapPlayedEyebrow": "This {period} you played music",
+  "@recapPlayedEyebrow": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "recapTimeSingular": "time",
+  "recapTimePlural": "times",
+  "recapListenedForEyebrow": "You listened for",
+  "recapListenedForLabel": "of music",
+  "recapTopTrackEyebrow": "Your #1 track",
+  "recapPlays": "plays",
+  "recapTopTracksTitle": "Top Tracks",
+  "recapTopArtistEyebrow": "Your top artist",
+  "recapTopArtistsTitle": "Top Artists",
+  "recapNothingToWrap": "Nothing to wrap yet",
+  "recapNothingToWrapBody": "Play some music this {period} and come back.",
+  "@recapNothingToWrapBody": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "recapSwipeUp": "SWIPE UP",
+  "recapYourSoundLabel": "YOUR SOUND",
+  "recapTopGenresTitle": "Top Genres",
+  "recapYouListenMost": "YOU LISTEN MOST",
+  "recapOnDay": "on {day}s",
+  "@recapOnDay": {
+    "placeholders": {
+      "day": {"type": "String"}
+    }
+  },
+  "recapAroundTime": "around {time}",
+  "@recapAroundTime": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "recapVibesHitDifferent": "That's when the vibes hit different.",
+  "recapThatsAWrap": "THAT'S A WRAP",
+  "recapInNumbers": "Your {period}\nin Numbers",
+  "@recapInNumbers": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "recapNumberOneTrack": "#1 TRACK",
+  "recapStatTotalPlays": "Total Plays",
+  "recapStatTimeListened": "Time Listened",
+  "recapStatUniqueTracks": "Unique Tracks",
+  "recapStatTopArtist": "Top Artist",
+  "recapDone": "Done",
+  "recapWeekdayMonday": "Monday",
+  "recapWeekdayTuesday": "Tuesday",
+  "recapWeekdayWednesday": "Wednesday",
+  "recapWeekdayThursday": "Thursday",
+  "recapWeekdayFriday": "Friday",
+  "recapWeekdaySaturday": "Saturday",
+  "recapWeekdaySunday": "Sunday",
+  "recapBannerTitle": "Music recap is here",
+  "recapBannerShow": "Show",
+  "recapBannerLater": "Later"
 }

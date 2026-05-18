@@ -17,47 +17,6 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
   }
 
   /// Get artwork URI for media notification
-  /// Saves artwork to a temp file and returns the file URI.
-  /// Results are cached to avoid redundant disk writes.
-  Future<Uri?> _getArtworkUri(int songId) async {
-    // Validate cached URI — the temp file may have been deleted by the OS
-    if (_artworkUriCache.containsKey(songId)) {
-      final cachedUri = _artworkUriCache[songId];
-      if (cachedUri == null) return null;
-      final cachedFile = File(cachedUri.toFilePath());
-      if (await cachedFile.exists()) {
-        debugPrint('🎨 [ARTWORK_URI] Cache hit for song id: $songId');
-        return cachedUri;
-      }
-      // File was deleted; fall through to recreate it
-      debugPrint('🎨 [ARTWORK_URI] Cache stale (file deleted) for song id: $songId, refetching...');
-      _artworkUriCache.remove(songId);
-    }
-    try {
-      debugPrint('🎨 [ARTWORK_URI] Fetching artwork bytes for song id: $songId');
-      final artwork = await _artworkCache.getArtwork(songId);
-      if (artwork == null || artwork.isEmpty) {
-        debugPrint('🎨 [ARTWORK_URI] No artwork bytes for song id: $songId');
-        _artworkUriCache[songId] = null;
-        return null;
-      }
-
-      final tempDir = await getTemporaryDirectory();
-      final artworkFile = File('${tempDir.path}/notification_art_$songId.jpg');
-
-      await artworkFile.writeAsBytes(artwork);
-
-      final uri = Uri.parse('file://${artworkFile.path}');
-      _artworkUriCache[songId] = uri;
-      debugPrint('🎨 [ARTWORK_URI] Wrote ${artwork.length} bytes to ${artworkFile.path}');
-      return uri;
-    } catch (e) {
-      debugPrint('Error getting artwork URI: $e');
-      _artworkUriCache[songId] = null;
-      return null;
-    }
-  }
-
   /// Create a lightweight MediaItem WITHOUT artwork I/O.
   /// Uses the public MediaStore content URI so Android Auto can load it.
   MediaItem _createMediaItemSync(SongModel song) {
@@ -90,30 +49,24 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
     );
   }
 
-  /// Load artwork for remaining songs in background and update notification queue
+  /// Update notification queue with full artwork for all songs in the playlist.
+  ///
+  /// Previously this also pre-fetched artwork bytes and wrote every song's art
+  /// to a temp file, but [_createMediaItem] uses content:// URIs from the
+  /// system MediaStore, so those file writes were never consumed and caused
+  /// significant unnecessary I/O (100 + disk writes on every queue change).
   Future<void> _loadRemainingArtworkInBackground(List<SongModel> songs) async {
     try {
-      // Process in small batches to avoid blocking
-      const batchSize = 5;
-      for (var i = 0; i < songs.length; i += batchSize) {
-        final end = (i + batchSize).clamp(0, songs.length);
-        final batch = songs.sublist(i, end);
-        await Future.wait(batch.map((song) => _getArtworkUri(song.id)));
-      }
-
-      // Update notification queue with full artwork after loading
       if (_playlist.isNotEmpty && _currentIndex >= 0) {
-        final mediaItems = await Future.wait(
-          _playlist.map((song) => _createMediaItem(song)),
-        );
+        final mediaItems =
+            _playlist.map((song) => _createMediaItemSync(song)).toList();
         audioHandler.updateNotificationQueue(mediaItems);
-        // Update current item's notification with artwork
         if (_currentIndex < mediaItems.length) {
           audioHandler.updateNotificationMediaItem(mediaItems[_currentIndex]);
         }
       }
     } catch (e) {
-      debugPrint('Error loading background artwork: $e');
+      debugPrint('Error updating notification queue: $e');
     }
   }
 

@@ -1,0 +1,152 @@
+/// Playback settings sub-screen — speed, gapless, normalization, pitch & more.
+library;
+
+import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
+import 'package:provider/provider.dart';
+import '../../../core/constants/font_constants.dart';
+import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/widgets/expanding_player.dart';
+import '../screens/artist_separator_settings.dart';
+import '../screens/equalizer_screen.dart';
+import '../widgets/settings_tile_builders.dart';
+
+class PlaybackSettingsScreen extends StatelessWidget {
+  const PlaybackSettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
+
+    return Scaffold(
+      backgroundColor:
+          isDark ? const Color(0xFF0A0A0F) : const Color(0xFFF5F5F7),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: iconoir.NavArrowLeft(
+            color: isDark ? Colors.white : Colors.black,
+            width: 28,
+            height: 28,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          l10n.settingsPlayback,
+          style: TextStyle(
+            fontFamily: FontConstants.fontFamily,
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+      ),
+      body: Selector<AudioPlayerService, bool>(
+        selector: (_, s) => s.currentSong != null,
+        builder: (context, hasCurrentSong, _) => ListView(
+          padding: EdgeInsets.only(
+            top: 10,
+            bottom: hasCurrentSong
+                ? ExpandingPlayer.getMiniPlayerPaddingHeight(context)
+                : MediaQuery.of(context).padding.bottom + 24,
+          ),
+          children: [
+            SettingsTiles.buildSectionHeader(context, l10n.settingsPlayback),
+            Consumer<AudioPlayerService>(
+              builder: (context, audioService, _) =>
+                  SettingsTiles.buildGlassmorphicCard(context, children: [
+                SettingsTiles.buildSwitchTile(
+                  context,
+                  icon: iconoir.GitFork(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 20,
+                      height: 20),
+                  title: l10n.settingsGapless,
+                  subtitle: l10n.settingsGaplessDesc,
+                  value: audioService.gaplessPlayback,
+                  onChanged: audioService.setGaplessPlayback,
+                  isFirst: true,
+                ),
+                SettingsTiles.buildSwitchTile(
+                  context,
+                  icon: iconoir.SoundHigh(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 20,
+                      height: 20),
+                  title: l10n.settingsNormalization,
+                  subtitle: l10n.settingsNormalizationDesc,
+                  value: audioService.volumeNormalization,
+                  onChanged: audioService.setVolumeNormalization,
+                ),
+                SettingsTiles.buildSliderTile(
+                  context,
+                  icon: iconoir.DashboardSpeed(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 20,
+                      height: 20),
+                  title: l10n.playbackSpeed,
+                  subtitle: l10n.playbackSpeedDesc,
+                  value: audioService.playbackSpeed.clamp(0.25, 2.0),
+                  min: 0.25,
+                  max: 2.0,
+                  defaultValue: 1.0,
+                  valueFormatter: (v) => '${v.toStringAsFixed(2)}x',
+                  showArrows: true,
+                  onChanged: audioService.setPlaybackSpeed,
+                  onChangeEnd: (v) {
+                    final rounded = (v * 20).round() / 20;
+                    audioService.setPlaybackSpeed(rounded);
+                  },
+                ),
+                SettingsTiles.buildSwitchTile(
+                  context,
+                  icon: iconoir.MusicNote(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 20,
+                      height: 20),
+                  title: l10n.adjustPitchWithSpeed,
+                  subtitle: l10n.adjustPitchWithSpeedDesc,
+                  value: audioService.pitchWithSpeed,
+                  onChanged: audioService.setPitchWithSpeed,
+                ),
+                SettingsTiles.buildActionTile(
+                  context,
+                  icon: iconoir.Group(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 20,
+                      height: 20),
+                  title: l10n.artistSeparation,
+                  subtitle: l10n.artistSeparationDesc,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ArtistSeparatorSettingsScreen(),
+                    ),
+                  ),
+                ),
+                SettingsTiles.buildActionTile(
+                  context,
+                  icon: iconoir.SoundHigh(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 20,
+                      height: 20),
+                  title: 'Equalizer',
+                  subtitle: 'Adjust audio frequencies per band',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const EqualizerScreen(),
+                    ),
+                  ),
+                ),
+              ]),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+}

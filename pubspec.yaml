@@ -28,7 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  sentry_flutter: ^9.14.0
+  sentry_flutter: ^9.20.0
   flutter:
     sdk: flutter
   just_audio: ^0.10.4
@@ -57,12 +57,14 @@ dependencies:
   dynamic_color: ^1.7.0
   audio_session: any
   audiotags: ^1.4.5
-  clarity_flutter: ^1.6.0
   flutter_hooks: ^0.21.3+1
   home_widget: ^0.7.0
   iconoir_flutter: ^7.11.0
   in_app_update: ^4.2.5
-  
+  firebase_core: ^3.0.0
+  firebase_crashlytics: ^4.0.0
+  firebase_performance: ^0.10.0
+
 dependency_overrides:
   sqflite_android: ^2.4.2+2
 
