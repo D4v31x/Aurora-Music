@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/font_constants.dart';
 import '../../../main.dart' show equalizer;
 import '../../../shared/services/equalizer_service.dart';
+import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -22,9 +23,12 @@ class EqualizerScreen extends StatefulWidget {
 }
 
 class _EqualizerScreenState extends State<EqualizerScreen> {
+  bool _curveDragging = false;
+
   @override
   void initState() {
     super.initState();
+    // Fallback init in case the app-level eager init hasn't run yet.
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeInit());
   }
 
@@ -57,92 +61,105 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
             Navigator.pop(ctx);
           }
 
-          return AlertDialog(
+          return Dialog(
             backgroundColor: const Color(0xFF16162A),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20)),
-            title: const Text(
-              'Save Preset',
-              style: TextStyle(
-                fontFamily: FontConstants.fontFamily,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontSize: 18,
-              ),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: controller,
-                  autofocus: true,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontFamily: FontConstants.fontFamily,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'e.g. My Bass Boost',
-                    hintStyle:
-                        TextStyle(color: Colors.white.withValues(alpha: 0.35)),
-                    filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.07),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 1.5,
-                      ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Save Preset',
+                    style: TextStyle(
+                      fontFamily: FontConstants.fontFamily,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 18,
                     ),
                   ),
-                  onChanged: (_) => setState(() => errorMsg = null),
-                  onSubmitted: (_) => validate(),
-                ),
-                if (errorMsg != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    errorMsg!,
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
                     style: const TextStyle(
-                      color: Color(0xFFFF6B6B),
-                      fontSize: 12,
+                      color: Colors.white,
                       fontFamily: FontConstants.fontFamily,
                     ),
+                    decoration: InputDecoration(
+                      hintText: 'e.g. My Bass Boost',
+                      hintStyle:
+                          TextStyle(color: Colors.white.withValues(alpha: 0.35)),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.07),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Theme.of(ctx).colorScheme.primary,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    onChanged: (_) => setState(() => errorMsg = null),
+                    onSubmitted: (_) => validate(),
+                  ),
+                  if (errorMsg != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      errorMsg!,
+                      style: const TextStyle(
+                        color: Color(0xFFFF6B6B),
+                        fontSize: 12,
+                        fontFamily: FontConstants.fontFamily,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontFamily: FontConstants.fontFamily,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: validate,
+                        child: Text(
+                          'Save',
+                          style: TextStyle(
+                            color: Theme.of(ctx).colorScheme.primary,
+                            fontFamily: FontConstants.fontFamily,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ],
+              ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontFamily: FontConstants.fontFamily,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: validate,
-                child: Text(
-                  'Save',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontFamily: FontConstants.fontFamily,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
           );
         },
       ),
     );
-    controller.dispose();
+    // Do NOT call controller.dispose() here. showDialog's future resolves
+    // when Navigator.pop() is called, but the dialog's closing animation
+    // continues running after that. The TextField still has focus during
+    // the animation and fires clearComposing() on focus-loss — which
+    // crashes if the controller was already disposed. TextEditingController
+    // holds no OS resources, so letting the GC reclaim it is safe.
   }
 
   @override
@@ -150,9 +167,8 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF0A0A0F) : const Color(0xFFF5F5F7),
+    return AppBackground(child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -175,28 +191,36 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
         actions: [
           Consumer<EqualizerService>(
             builder: (_, svc, __) => Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.only(right: 16),
+              child: GestureDetector(
+                onTap: svc.initialized
+                    ? () => svc.setEnabled(equalizer, !svc.enabled)
+                    : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: svc.enabled
+                        ? cs.primary
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.08)),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    svc.enabled ? 'ON' : 'OFF',
                     style: TextStyle(
-                      color: svc.enabled ? cs.primary : Colors.grey,
-                      fontSize: 13,
                       fontFamily: FontConstants.fontFamily,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                      letterSpacing: 0.5,
+                      color: svc.enabled
+                          ? cs.onPrimary
+                          : (isDark ? Colors.white38 : Colors.black38),
                     ),
-                    child: Text(svc.enabled ? 'On' : 'Off'),
                   ),
-                  Switch(
-                    value: svc.enabled,
-                    onChanged: svc.initialized
-                        ? (v) => svc.setEnabled(equalizer, v)
-                        : null,
-                    activeColor: cs.primary,
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -228,6 +252,12 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
           final gains = params.bands.map((b) => b.gain).toList();
           return ListView(
             padding: EdgeInsets.zero,
+            // Lock scroll while the user is dragging a band on the EQ curve.
+            // Without this, the ListView's VerticalDragRecognizer wins the
+            // gesture arena and the page scrolls instead of the band moving.
+            physics: _curveDragging
+                ? const NeverScrollableScrollPhysics()
+                : const ClampingScrollPhysics(),
             children: [
               const SizedBox(height: 8),
               // ── Interactive EQ curve ─────────────────────────────────────
@@ -236,16 +266,24 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                 gains: gains,
                 enabled: svc.enabled,
                 onBandChanged: (i, v) => svc.setBandGain(i, v),
+                onDragActiveChanged: (active) {
+                  setState(() => _curveDragging = active);
+                },
               ),
-              const SizedBox(height: 12),
-              // ── Band sliders ─────────────────────────────────────────────
-              _BandSliders(
+              const SizedBox(height: 10),
+              // ── Band value read-out ───────────────────────────────────────
+              _BandValueRow(
                 params: params,
                 gains: gains,
                 enabled: svc.enabled,
-                onChanged: (i, v) => svc.setBandGain(i, v),
+                onResetBand: (i) => svc.setBandGain(i, 0.0),
+                onResetAll: () {
+                  for (int i = 0; i < params.bands.length; i++) {
+                    svc.setBandGain(i, 0.0);
+                  }
+                },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               // ── Presets ──────────────────────────────────────────────────
               _PresetsSection(
                 svc: svc,
@@ -265,6 +303,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
           );
         },
       ),
+    ),
     );
   }
 }
@@ -278,12 +317,14 @@ class _InteractiveCurve extends StatefulWidget {
   final List<double> gains;
   final bool enabled;
   final void Function(int bandIndex, double gainDb) onBandChanged;
+  final void Function(bool active) onDragActiveChanged;
 
   const _InteractiveCurve({
     required this.params,
     required this.gains,
     required this.enabled,
     required this.onBandChanged,
+    required this.onDragActiveChanged,
   });
 
   @override
@@ -293,7 +334,7 @@ class _InteractiveCurve extends StatefulWidget {
 class _InteractiveCurveState extends State<_InteractiveCurve> {
   int? _activeBand;
 
-  static const double _kH       = 220.0;
+  static const double _kH       = 260.0;
   static const double _kTopPad  = 20.0;
   static const double _kBotPad  = 28.0; // frequency label space
   static const double _kLeftPad = 40.0; // dB label space
@@ -361,27 +402,34 @@ class _InteractiveCurveState extends State<_InteractiveCurve> {
         borderRadius: BorderRadius.circular(20),
         child: LayoutBuilder(builder: (ctx, constraints) {
           final w = constraints.maxWidth;
-          return GestureDetector(
+          return Listener(
             behavior: HitTestBehavior.opaque,
-            onTapDown: widget.enabled
-                ? (d) => setState(
-                    () => _activeBand = _nearestBand(d.localPosition, w))
-                : null,
-            onTapUp: (_) => setState(() => _activeBand = null),
-            onTapCancel: () => setState(() => _activeBand = null),
-            onPanStart: widget.enabled
-                ? (d) => setState(() {
-                      _activeBand ??= _nearestBand(d.localPosition, w);
-                    })
-                : null,
-            onPanUpdate: widget.enabled
-                ? (d) {
-                    final band = _activeBand;
-                    if (band == null) return;
-                    widget.onBandChanged(band, _yToGain(d.localPosition.dy));
+            onPointerDown: widget.enabled
+                ? (event) {
+                    final band = _nearestBand(event.localPosition, w);
+                    if (band != null) {
+                      setState(() => _activeBand = band);
+                      widget.onDragActiveChanged(true);
+                    }
                   }
                 : null,
-            onPanEnd: (_) => setState(() => _activeBand = null),
+            onPointerMove: (event) {
+              final band = _activeBand;
+              if (band == null) return;
+              widget.onBandChanged(band, _yToGain(event.localPosition.dy));
+            },
+            onPointerUp: (event) {
+              if (_activeBand != null) {
+                setState(() => _activeBand = null);
+                widget.onDragActiveChanged(false);
+              }
+            },
+            onPointerCancel: (event) {
+              if (_activeBand != null) {
+                setState(() => _activeBand = null);
+                widget.onDragActiveChanged(false);
+              }
+            },
             child: CustomPaint(
               size: Size(w, _kH),
               painter: _CurvePainter(
@@ -640,115 +688,26 @@ class _CurvePainter extends CustomPainter {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Band sliders row
+// Band value read-out row  (shows current dB per band; double-tap to reset)
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _BandSliders extends StatelessWidget {
+class _BandValueRow extends StatelessWidget {
   final AndroidEqualizerParameters params;
   final List<double> gains;
   final bool enabled;
-  final void Function(int index, double gain) onChanged;
+  final void Function(int bandIndex) onResetBand;
+  final VoidCallback onResetAll;
 
-  const _BandSliders({
+  const _BandValueRow({
     required this.params,
     required this.gains,
     required this.enabled,
-    required this.onChanged,
+    required this.onResetBand,
+    required this.onResetAll,
   });
-
-  @override
-  Widget build(BuildContext context) {
-    final bandCount = params.bands.length;
-    Widget row;
-    if (bandCount > 7) {
-      row = SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (int i = 0; i < bandCount; i++)
-              SizedBox(
-                width: 56,
-                child: _BandFader(
-                  band: params.bands[i],
-                  gain: gains[i],
-                  minDb: params.minDecibels.toDouble(),
-                  maxDb: params.maxDecibels.toDouble(),
-                  enabled: enabled,
-                  bandIndex: i,
-                  totalBands: bandCount,
-                  onChanged: (v) => onChanged(i, v),
-                ),
-              ),
-          ],
-        ),
-      );
-    } else {
-      row = Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (int i = 0; i < bandCount; i++)
-            Expanded(
-              child: _BandFader(
-                band: params.bands[i],
-                gain: gains[i],
-                minDb: params.minDecibels.toDouble(),
-                maxDb: params.maxDecibels.toDouble(),
-                enabled: enabled,
-                bandIndex: i,
-                totalBands: bandCount,
-                onChanged: (v) => onChanged(i, v),
-              ),
-            ),
-        ],
-      );
-    }
-    return SizedBox(
-      height: 200,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: row,
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Single band fader  (warm bass → primary mid → cool treble gradient)
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _BandFader extends StatelessWidget {
-  final AndroidEqualizerBand band;
-  final double gain;
-  final double minDb;
-  final double maxDb;
-  final bool enabled;
-  final int bandIndex;
-  final int totalBands;
-  final ValueChanged<double> onChanged;
-
-  const _BandFader({
-    required this.band,
-    required this.gain,
-    required this.minDb,
-    required this.maxDb,
-    required this.enabled,
-    required this.bandIndex,
-    required this.totalBands,
-    required this.onChanged,
-  });
-
-  Color _bandColor(BuildContext context) {
-    final t = totalBands > 1 ? bandIndex / (totalBands - 1) : 0.5;
-    final primary = Theme.of(context).colorScheme.primary;
-    if (t <= 0.5) {
-      return Color.lerp(const Color(0xFFFF8C42), primary, t * 2)!;
-    }
-    return Color.lerp(primary, const Color(0xFF8B9EFF), (t - 0.5) * 2)!;
-  }
 
   String _fmtDb(double db) {
-    if (db.abs() < 0.05) return '0';
+    if (db.abs() < 0.05) return '0.0';
     return db > 0 ? '+${db.toStringAsFixed(1)}' : db.toStringAsFixed(1);
   }
 
@@ -762,68 +721,125 @@ class _BandFader extends StatelessWidget {
     return hz.round().toString();
   }
 
+  bool get _isFlat => gains.every((g) => g.abs() < 0.05);
+
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bc = _bandColor(context);
-    final textColor = isDark ? Colors.white70 : Colors.black54;
-    final active = gain.abs() > 0.05;
+    final bands = params.bands;
+    final dimColor = isDark
+        ? Colors.white.withValues(alpha: 0.28)
+        : Colors.black.withValues(alpha: 0.28);
 
-    return Column(
-      children: [
-        const SizedBox(height: 4),
-        Text(
-          _fmtDb(gain),
-          style: TextStyle(
-            fontSize: 11,
-            fontFamily: FontConstants.fontFamily,
-            color: enabled
-                ? (active ? bc : textColor)
-                : textColor.withValues(alpha: 0.4),
-            fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.04)
+              : Colors.black.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.07)
+                : Colors.black.withValues(alpha: 0.06),
           ),
         ),
-        const SizedBox(height: 4),
-        Expanded(
-          child: RotatedBox(
-            quarterTurns: 3,
-            child: SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                trackHeight: 3,
-                activeTrackColor:
-                    enabled ? bc : bc.withValues(alpha: 0.35),
-                inactiveTrackColor: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.1),
-                thumbColor: enabled ? bc : bc.withValues(alpha: 0.4),
-                thumbShape: const RoundSliderThumbShape(
-                  enabledThumbRadius: 8,
-                  disabledThumbRadius: 6,
-                ),
-                overlayShape:
-                    const RoundSliderOverlayShape(overlayRadius: 18),
-                overlayColor: bc.withValues(alpha: 0.2),
-              ),
-              child: Slider(
-                min: minDb,
-                max: maxDb,
-                value: gain.clamp(minDb, maxDb),
-                onChanged: enabled ? onChanged : null,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Band value chips
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 12, 4, 12),
+              child: Row(
+                children: [
+                  for (int i = 0; i < bands.length; i++)
+                    Expanded(
+                      child: GestureDetector(
+                        onDoubleTap: enabled ? () => onResetBand(i) : null,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 150),
+                                style: TextStyle(
+                                  fontFamily: FontConstants.fontFamily,
+                                  fontSize: 12,
+                                  fontWeight: gains[i].abs() > 0.05
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                  color: enabled
+                                      ? (gains[i].abs() > 0.05
+                                          ? cs.primary
+                                          : dimColor)
+                                      : dimColor.withValues(alpha: 0.4),
+                                ),
+                                child: Text(
+                                  _fmtDb(gains[i]),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _fmtFreq(
+                                    bands[i].centerFrequency.toDouble()),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: FontConstants.fontFamily,
+                                  fontSize: 10,
+                                  color: isDark
+                                      ? Colors.white.withValues(
+                                          alpha: enabled ? 0.35 : 0.15)
+                                      : Colors.black.withValues(
+                                          alpha: enabled ? 0.38 : 0.18),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-          ),
+            // Reset all divider + button
+            if (!_isFlat) ...[
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : Colors.black.withValues(alpha: 0.05),
+              ),
+              TextButton(
+                onPressed: enabled ? onResetAll : null,
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 38),
+                  padding: EdgeInsets.zero,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(16)),
+                  ),
+                ),
+                child: Text(
+                  'Reset all bands',
+                  style: TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: enabled
+                        ? cs.primary.withValues(alpha: 0.75)
+                        : dimColor.withValues(alpha: 0.4),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          _fmtFreq(band.centerFrequency.toDouble()),
-          style: TextStyle(
-            fontSize: 10,
-            fontFamily: FontConstants.fontFamily,
-            color: textColor.withValues(alpha: enabled ? 1.0 : 0.4),
-          ),
-        ),
-        const SizedBox(height: 8),
-      ],
+      ),
     );
   }
 }
@@ -838,29 +854,31 @@ class _PresetsSection extends StatelessWidget {
 
   const _PresetsSection({required this.svc, required this.onSavePressed});
 
+  TextStyle _labelStyle(bool isDark) => TextStyle(
+        fontSize: 11,
+        fontFamily: FontConstants.fontFamily,
+        fontWeight: FontWeight.w700,
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.4)
+            : Colors.black.withValues(alpha: 0.4),
+        letterSpacing: 1.2,
+      );
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Built-in ──────────────────────────────────────────────────────
+        // ── Built-in presets ──────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-          child: Text(
-            'BUILT-IN',
-            style: TextStyle(
-              fontSize: 11,
-              fontFamily: FontConstants.fontFamily,
-              fontWeight: FontWeight.w700,
-              color: Colors.white.withValues(alpha: 0.4),
-              letterSpacing: 1.2,
-            ),
-          ),
+          child: Text('PRESETS', style: _labelStyle(isDark)),
         ),
         SizedBox(
-          height: 44,
+          height: 40,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -872,44 +890,34 @@ class _PresetsSection extends StatelessWidget {
               return _PresetChip(
                 label: p.name,
                 selected: selected,
-                enabled: svc.enabled,
-                onTap: svc.enabled ? () => svc.applyPreset(p) : null,
+                eqEnabled: svc.enabled,
+                onTap: () {
+                  if (!svc.enabled) svc.setEnabled(equalizer, true);
+                  svc.applyPreset(p);
+                },
               );
             },
           ),
         ),
         const SizedBox(height: 20),
 
-        // ── Your Presets ─────────────────────────────────────────────────
+        // ── Your Presets ──────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 12, 10),
           child: Row(
             children: [
-              Text(
-                'YOUR PRESETS',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontFamily: FontConstants.fontFamily,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white.withValues(alpha: 0.4),
-                  letterSpacing: 1.2,
-                ),
-              ),
+              Text('YOUR PRESETS', style: _labelStyle(isDark)),
               const Spacer(),
               TextButton.icon(
-                onPressed: svc.enabled ? onSavePressed : null,
-                icon: Icon(
-                  Icons.add_rounded,
-                  size: 16,
-                  color: svc.enabled ? cs.primary : Colors.grey,
-                ),
+                onPressed: onSavePressed,
+                icon: Icon(Icons.add_rounded, size: 16, color: cs.primary),
                 label: Text(
                   'Save current',
                   style: TextStyle(
                     fontSize: 12,
                     fontFamily: FontConstants.fontFamily,
                     fontWeight: FontWeight.w600,
-                    color: svc.enabled ? cs.primary : Colors.grey,
+                    color: cs.primary,
                   ),
                 ),
                 style: TextButton.styleFrom(
@@ -930,13 +938,15 @@ class _PresetsSection extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontFamily: FontConstants.fontFamily,
-                color: Colors.white.withValues(alpha: 0.28),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.28)
+                    : Colors.black.withValues(alpha: 0.28),
               ),
             ),
           )
         else
           SizedBox(
-            height: 44,
+            height: 40,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -948,9 +958,12 @@ class _PresetsSection extends StatelessWidget {
                 return _PresetChip(
                   label: p.name,
                   selected: selected,
-                  enabled: svc.enabled,
+                  eqEnabled: svc.enabled,
                   isCustom: true,
-                  onTap: svc.enabled ? () => svc.applyPreset(p) : null,
+                  onTap: () {
+                    if (!svc.enabled) svc.setEnabled(equalizer, true);
+                    svc.applyPreset(p);
+                  },
                   onDelete: () => svc.deleteCustomPreset(p.name),
                 );
               },
@@ -968,7 +981,7 @@ class _PresetsSection extends StatelessWidget {
 class _PresetChip extends StatelessWidget {
   final String label;
   final bool selected;
-  final bool enabled;
+  final bool eqEnabled;
   final bool isCustom;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
@@ -976,7 +989,7 @@ class _PresetChip extends StatelessWidget {
   const _PresetChip({
     required this.label,
     required this.selected,
-    required this.enabled,
+    required this.eqEnabled,
     this.isCustom = false,
     this.onTap,
     this.onDelete,
@@ -998,11 +1011,11 @@ class _PresetChip extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: selected
-              ? cs.primary.withValues(alpha: enabled ? 1.0 : 0.5)
+              ? cs.primary.withValues(alpha: eqEnabled ? 1.0 : 0.6)
               : (isDark
                   ? Colors.white.withValues(alpha: 0.08)
                   : Colors.black.withValues(alpha: 0.05)),
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: selected
                 ? Colors.transparent
@@ -1021,9 +1034,7 @@ class _PresetChip extends StatelessWidget {
                 fontSize: 12.5,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
                 color: selected
-                    ? (enabled
-                        ? cs.onPrimary
-                        : cs.onPrimary.withValues(alpha: 0.7))
+                    ? cs.onPrimary
                     : (isDark ? Colors.white70 : Colors.black54),
               ),
             ),
@@ -1038,7 +1049,9 @@ class _PresetChip extends StatelessWidget {
                     size: 14,
                     color: selected
                         ? cs.onPrimary.withValues(alpha: 0.7)
-                        : Colors.white.withValues(alpha: 0.4),
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.4)
+                            : Colors.black.withValues(alpha: 0.35)),
                   ),
                 ),
               ),

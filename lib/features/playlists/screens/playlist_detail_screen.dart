@@ -7,6 +7,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/folder_filter_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -46,18 +47,29 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     super.initState();
     _scrollController = ScrollController()..addListener(_scrollListener);
     _nameController = TextEditingController(text: widget.playlist.name);
+    FolderFilterService().addListener(_onFolderFilterChanged);
     _loadMoreSongs();
     _loadArtwork();
   }
 
   @override
   void dispose() {
+    FolderFilterService().removeListener(_onFolderFilterChanged);
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _nameController.dispose();
     _isEditingNotifier.dispose();
     super.dispose();
   }
+
+  void _onFolderFilterChanged() {
+    if (!mounted) return;
+    _refreshSongs();
+  }
+
+  /// Playlist songs filtered to hide excluded folders (non-destructive).
+  List<SongModel> get _filteredPlaylistSongs =>
+      FolderFilterService().filterSongs(widget.playlist.songs);
 
   void _scrollListener() {
     if (_scrollController.position.extentAfter < 300 &&
@@ -71,17 +83,18 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     if (_isLoading) return;
     setState(() => _isLoading = true);
 
+    final songs = _filteredPlaylistSongs;
     final int startIndex = _currentPage * _songsPerPage;
     final int endIndex =
-        (startIndex + _songsPerPage).clamp(0, widget.playlist.songs.length);
+        (startIndex + _songsPerPage).clamp(0, songs.length);
 
-    if (startIndex < widget.playlist.songs.length) {
-      final newSongs = widget.playlist.songs.sublist(startIndex, endIndex);
+    if (startIndex < songs.length) {
+      final newSongs = songs.sublist(startIndex, endIndex);
       setState(() {
         _displayedSongs.addAll(newSongs);
         _currentPage++;
         _isLoading = false;
-        _hasMoreSongs = endIndex < widget.playlist.songs.length;
+        _hasMoreSongs = endIndex < songs.length;
       });
     } else {
       setState(() {

@@ -172,6 +172,7 @@ class _PermissionsPageState extends State<PermissionsPage>
   }
 
   Future<void> _checkPermissions() async {
+    if (!mounted) return;
     setState(() {
       _isChecking = true;
     });
@@ -209,6 +210,7 @@ class _PermissionsPageState extends State<PermissionsPage>
     if (_isChecking) return;
     setState(() => _isChecking = true);
     await Permission.audio.request();
+    if (!mounted) return;
     await _checkPermissions();
   }
 
@@ -216,6 +218,7 @@ class _PermissionsPageState extends State<PermissionsPage>
     if (_isChecking) return;
     setState(() => _isChecking = true);
     await Permission.storage.request();
+    if (!mounted) return;
     await _checkPermissions();
   }
 
@@ -223,6 +226,7 @@ class _PermissionsPageState extends State<PermissionsPage>
     if (_isChecking) return;
     setState(() => _isChecking = true);
     await Permission.bluetoothConnect.request();
+    if (!mounted) return;
     await _checkPermissions();
   }
 
@@ -230,6 +234,7 @@ class _PermissionsPageState extends State<PermissionsPage>
     if (_isChecking) return;
     setState(() => _isChecking = true);
     await Permission.notification.request();
+    if (!mounted) return;
     await _checkPermissions();
   }
 
@@ -237,6 +242,7 @@ class _PermissionsPageState extends State<PermissionsPage>
     if (_isChecking) return;
     setState(() => _isChecking = true);
     await Permission.microphone.request();
+    if (!mounted) return;
     await _checkPermissions();
   }
 
@@ -262,6 +268,7 @@ class _PermissionsPageState extends State<PermissionsPage>
     await Permission.microphone.request();
     await Permission.notification.request();
 
+    if (!mounted) return;
     await _checkPermissions();
   }
 

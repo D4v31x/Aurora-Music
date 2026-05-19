@@ -201,38 +201,35 @@ class _ArtistCardState extends State<ArtistCard>
           ),
           child: Row(
             children: [
-              Hero(
-                tag: 'artist_image_${widget.artistName}',
-                child: RepaintBoundary(
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: _artistImagePath != null
-                          ? Image.file(
-                              File(_artistImagePath!),
-                              fit: BoxFit.cover,
-                              width: 80,
-                              height: 80,
-                            )
-                          : Image.asset(
-                              'assets/images/UI/unknown.png',
-                              fit: BoxFit.cover,
-                              width: 80,
-                              height: 80,
-                            ),
-                    ),
+              RepaintBoundary(
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _artistImagePath != null
+                        ? Image.file(
+                            File(_artistImagePath!),
+                            fit: BoxFit.cover,
+                            width: 80,
+                            height: 80,
+                          )
+                        : Image.asset(
+                            'assets/images/UI/unknown.png',
+                            fit: BoxFit.cover,
+                            width: 80,
+                            height: 80,
+                          ),
                   ),
                 ),
               ),

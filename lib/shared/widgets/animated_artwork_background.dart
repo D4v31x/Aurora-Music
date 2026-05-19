@@ -406,6 +406,7 @@ class _AnimatedColorPointsBackgroundState
     extends State<AnimatedColorPointsBackground> with TickerProviderStateMixin {
   late AnimationController _positionController;
   late AnimationController _colorController;
+  late Listenable _mergedListenable;
 
   // Random positions for 5 color points (normalized 0-1)
   late List<Offset> _startPositions;
@@ -445,6 +446,7 @@ class _AnimatedColorPointsBackgroundState
       vsync: this,
     );
 
+    _mergedListenable = Listenable.merge([_positionController, _colorController]);
     _positionController.forward();
   }
 
@@ -527,8 +529,7 @@ class _AnimatedColorPointsBackgroundState
 
   @override
   Widget build(BuildContext context) {
-    final colors = _getInterpolatedColors();
-    if (colors.isEmpty) {
+    if (_currentColors.isEmpty && _targetColors.isEmpty) {
       return Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -544,7 +545,7 @@ class _AnimatedColorPointsBackgroundState
     }
 
     return AnimatedBuilder(
-      animation: Listenable.merge([_positionController, _colorController]),
+      animation: _mergedListenable,
       builder: (context, _) {
         final positions = _getInterpolatedPositions();
         final animatedColors = _getInterpolatedColors();

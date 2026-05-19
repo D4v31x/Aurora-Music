@@ -4,6 +4,7 @@ import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/home_layout_service.dart';
+import '../../../shared/widgets/app_background.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
 /// Settings screen for customizing home tab layout and section order
@@ -21,9 +22,8 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF0A0A0F) : const Color(0xFFF5F5F7),
+    return AppBackground(child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -157,6 +157,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
           );
         },
       ),
+    ),
     );
   }
 

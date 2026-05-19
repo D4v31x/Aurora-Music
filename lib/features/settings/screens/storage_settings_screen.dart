@@ -13,6 +13,7 @@ import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/cache_manager.dart';
 import '../../../shared/services/notification_manager.dart';
+import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../widgets/settings_tile_builders.dart';
 
@@ -232,9 +233,8 @@ class _StorageSettingsScreenState extends State<StorageSettingsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF0A0A0F) : const Color(0xFFF5F5F7),
+    return AppBackground(child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -293,6 +293,7 @@ class _StorageSettingsScreenState extends State<StorageSettingsScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }

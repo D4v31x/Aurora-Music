@@ -13,7 +13,8 @@ class BluetoothService extends ChangeNotifier {
 
   bool _isBluetoothConnected = false;
   String _connectedDeviceName = '';
-  Timer? _checkTimer;
+  StreamSubscription? _noisySubscription;
+  StreamSubscription? _devicesSubscription;
   bool _hasBluetoothPermission = false;
 
   bool get isBluetoothConnected => _isBluetoothConnected;
@@ -25,8 +26,54 @@ class BluetoothService extends ChangeNotifier {
     await _checkBluetoothPermission();
 
     if (_hasBluetoothPermission) {
-      // Start periodic checking for Bluetooth connectivity
-      _startMonitoring();
+      await _startMonitoringWithStreams();
+    }
+  }
+
+  Future<void> _startMonitoringWithStreams() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+      _setupStreamListeners(session);
+      final devices = await session.getDevices();
+      _updateFromDevices(devices);
+    } catch (e) {
+      debugPrint('⚠️ Error setting up Bluetooth stream monitoring: $e');
+    }
+  }
+
+  void _setupStreamListeners(AudioSession session) {
+    _noisySubscription?.cancel();
+    _devicesSubscription?.cancel();
+
+    _noisySubscription = session.becomingNoisyEventStream.listen((_) {
+      updateBluetoothStatus(false, '');
+    });
+
+    _devicesSubscription = session.devicesChangedEventStream.listen((_) async {
+      final devices = await session.getDevices();
+      _updateFromDevices(devices);
+    });
+  }
+
+  void _updateFromDevices(Iterable<AudioDevice> devices) {
+    final bluetoothDevice = devices.firstWhere(
+      (d) =>
+          d.type == AudioDeviceType.bluetoothA2dp ||
+          d.type == AudioDeviceType.bluetoothSco,
+      orElse: () => AudioDevice(
+        id: '',
+        name: '',
+        type: AudioDeviceType.unknown,
+        isInput: false,
+        isOutput: false,
+      ),
+    );
+
+    if (bluetoothDevice.id.isNotEmpty) {
+      updateBluetoothStatus(true, bluetoothDevice.name);
+    } else {
+      updateBluetoothStatus(false, '');
     }
   }
 
@@ -81,7 +128,7 @@ class BluetoothService extends ChangeNotifier {
       _hasBluetoothPermission = status.isGranted;
 
       if (_hasBluetoothPermission) {
-        _startMonitoring();
+        await _startMonitoringWithStreams();
       }
 
       notifyListeners();
@@ -89,79 +136,6 @@ class BluetoothService extends ChangeNotifier {
     } catch (e) {
       debugPrint('⚠️ Error requesting Bluetooth permission: $e');
       return false;
-    }
-  }
-
-  /// Start monitoring Bluetooth connectivity
-  void _startMonitoring() {
-    _checkTimer?.cancel();
-
-    // Check immediately
-    _checkBluetoothConnectivity();
-
-    // Then check every 5 seconds
-    _checkTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _checkBluetoothConnectivity();
-    });
-  }
-
-  /// Check Bluetooth connectivity using platform channels or audio route
-  Future<void> _checkBluetoothConnectivity() async {
-    if (!_hasBluetoothPermission) return;
-
-    try {
-      final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration.music());
-
-      // Listen for changes in audio output devices
-      session.becomingNoisyEventStream.listen((_) {
-        updateBluetoothStatus(false, '');
-      });
-
-      session.devicesChangedEventStream.listen((_) async {
-        final devices = await session.getDevices();
-        final bluetoothDevice = devices.firstWhere(
-          (d) =>
-              d.type == AudioDeviceType.bluetoothA2dp ||
-              d.type == AudioDeviceType.bluetoothSco,
-          orElse: () => AudioDevice(
-            id: '',
-            name: '',
-            type: AudioDeviceType.unknown,
-            isInput: false,
-            isOutput: false,
-          ),
-        );
-
-        if (bluetoothDevice.id.isNotEmpty) {
-          updateBluetoothStatus(true, bluetoothDevice.name);
-        } else {
-          updateBluetoothStatus(false, '');
-        }
-      });
-
-      // Initial check
-      final devices = await session.getDevices();
-      final bluetoothDevice = devices.firstWhere(
-        (d) =>
-            d.type == AudioDeviceType.bluetoothA2dp ||
-            d.type == AudioDeviceType.bluetoothSco,
-        orElse: () => AudioDevice(
-          id: '',
-          name: '',
-          type: AudioDeviceType.unknown,
-          isInput: false,
-          isOutput: false,
-        ),
-      );
-
-      if (bluetoothDevice.id.isNotEmpty) {
-        updateBluetoothStatus(true, bluetoothDevice.name);
-      } else {
-        updateBluetoothStatus(false, '');
-      }
-    } catch (e) {
-      debugPrint('⚠️ Error checking Bluetooth connectivity: $e');
     }
   }
 
@@ -180,8 +154,10 @@ class BluetoothService extends ChangeNotifier {
 
   /// Stop monitoring Bluetooth
   void stopMonitoring() {
-    _checkTimer?.cancel();
-    _checkTimer = null;
+    _noisySubscription?.cancel();
+    _noisySubscription = null;
+    _devicesSubscription?.cancel();
+    _devicesSubscription = null;
   }
 
   @override

@@ -13,6 +13,7 @@ import '../../../l10n/supported_languages.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/device_performance_service.dart';
+import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../screens/home_layout_settings.dart';
 import '../widgets/settings_tile_builders.dart';
@@ -25,9 +26,8 @@ class AppearanceSettingsScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF0A0A0F) : const Color(0xFFF5F5F7),
+    return AppBackground(child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -58,11 +58,11 @@ class AppearanceSettingsScreen extends StatelessWidget {
                 : MediaQuery.of(context).padding.bottom + 24,
           ),
           children: [
-            SettingsTiles.buildSectionHeader(context, l10n.settingsAppearance),
+            // ── THEME ────────────────────────────────────────────────────
+            SettingsTiles.buildSectionHeader(context, 'Theme'),
             Consumer<ThemeProvider>(
               builder: (context, themeProvider, _) =>
                   SettingsTiles.buildGlassmorphicCard(context, children: [
-                // Material You
                 SettingsTiles.buildSwitchTile(
                   context,
                   icon: iconoir.Palette(
@@ -75,7 +75,6 @@ class AppearanceSettingsScreen extends StatelessWidget {
                   onChanged: (_) => themeProvider.toggleDynamicColor(),
                   isFirst: true,
                 ),
-                // Accent color (hidden when Material You is on)
                 SettingsTiles.buildAnimatedTile(
                   visible: !themeProvider.useDynamicColor,
                   child: SettingsTiles.buildActionTile(
@@ -117,153 +116,150 @@ class AppearanceSettingsScreen extends StatelessWidget {
                         _showColorPickerDialog(context, themeProvider),
                   ),
                 ),
-                // Low-end background style
-                Consumer<PerformanceModeProvider>(
-                  builder: (context, perfProvider, _) {
-                    if (!perfProvider.isLowEndDevice) {
-                      return const SizedBox.shrink();
-                    }
-                    return SettingsTiles.buildSegmentedChoiceTile(
-                      context,
-                      icon: iconoir.MultiWindow(
-                          color: Theme.of(context).colorScheme.primary,
-                          width: 20,
-                          height: 20),
-                      title: l10n.backgroundLowEndStyle,
-                      subtitle: l10n.backgroundLowEndStyleDesc,
-                      options: [l10n.backgroundBlobs, l10n.backgroundSolid],
-                      selectedIndex:
-                          themeProvider.lowEndBackground == LowEndBackground.blobs
-                              ? 0
-                              : 1,
-                      onChanged: (i) => themeProvider.setLowEndBackground(
-                          i == 0
-                              ? LowEndBackground.blobs
-                              : LowEndBackground.solid),
-                    );
-                  },
-                ),
-                // High-end background style
-                Consumer<PerformanceModeProvider>(
-                  builder: (context, perfProvider, _) {
-                    if (!perfProvider.shouldEnableBlur) {
-                      return const SizedBox.shrink();
-                    }
-                    return SettingsTiles.buildSegmentedChoiceTile(
-                      context,
-                      icon: iconoir.MediaImage(
-                          color: Theme.of(context).colorScheme.primary,
-                          width: 20,
-                          height: 20),
-                      title: l10n.backgroundHighEndStyle,
-                      subtitle: l10n.backgroundHighEndStyleDesc,
-                      options: [
-                        l10n.backgroundBlurredArtwork,
-                        l10n.backgroundSolid,
-                      ],
-                      selectedIndex: themeProvider.highEndBackground ==
-                              HighEndBackground.blurredArtwork
-                          ? 0
-                          : 1,
-                      onChanged: (i) => themeProvider.setHighEndBackground(
-                          i == 0
-                              ? HighEndBackground.blurredArtwork
-                              : HighEndBackground.solid),
-                    );
-                  },
-                ),
+              ]),
+            ),
+
+            // ── BACKGROUND ───────────────────────────────────────────────
+            SettingsTiles.buildSectionHeader(context, 'Background'),
+            Consumer2<ThemeProvider, PerformanceModeProvider>(
+              builder: (context, themeProvider, perfProvider, _) =>
+                  SettingsTiles.buildGlassmorphicCard(context, children: [
                 // High-end UI toggle
-                Consumer<PerformanceModeProvider>(
-                  builder: (context, perfProvider, _) =>
-                      SettingsTiles.buildSwitchTile(
-                    context,
-                    icon: iconoir.DashboardSpeed(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 20,
-                        height: 20),
-                    title: l10n.settingsHighendUi,
-                    subtitle: l10n.settingsHighendUiDesc,
-                    value:
-                        perfProvider.currentMode == PerformanceLevel.high,
-                    onChanged: (value) =>
-                        _showRestartDialog(context, value),
-                  ),
-                ),
-                // Blur intensity
-                Consumer<PerformanceModeProvider>(
-                  builder: (context, perfProvider, _) =>
-                      SettingsTiles.buildAnimatedTile(
-                    visible: perfProvider.shouldEnableBlur &&
-                        themeProvider.highEndBackground !=
-                            HighEndBackground.solid,
-                    child: SettingsTiles.buildSliderTile(
-                      context,
-                      icon: iconoir.Fog(
-                          color: Theme.of(context).colorScheme.primary,
-                          width: 20,
-                          height: 20),
-                      title: l10n.backgroundBlur,
-                      subtitle: l10n.backgroundBlurDesc,
-                      value: themeProvider.blurIntensity,
-                      min: 5.0,
-                      max: 40.0,
-                      defaultValue: 25.0,
-                      valueFormatter: (v) => v.toStringAsFixed(0),
-                      onChanged: themeProvider.updateBlurIntensity,
-                      onChangeEnd: themeProvider.setBlurIntensity,
-                    ),
-                  ),
-                ),
-                // Overlay darkness
-                Consumer<PerformanceModeProvider>(
-                  builder: (context, perfProvider, _) =>
-                      SettingsTiles.buildAnimatedTile(
-                    visible: !perfProvider.isLowEndDevice &&
-                        themeProvider.highEndBackground !=
-                            HighEndBackground.solid,
-                    child: SettingsTiles.buildSliderTile(
-                      context,
-                      icon: iconoir.Brightness(
-                          color: Theme.of(context).colorScheme.primary,
-                          width: 20,
-                          height: 20),
-                      title: l10n.backgroundDarkness,
-                      subtitle: l10n.backgroundDarknessDesc,
-                      value: themeProvider.overlayOpacity,
-                      min: 0.0,
-                      max: 0.8,
-                      defaultValue: 0.3,
-                      valueFormatter: (v) =>
-                          '${(v * 100).toStringAsFixed(0)}%',
-                      onChanged: themeProvider.updateOverlayOpacity,
-                      onChangeEnd: themeProvider.setOverlayOpacity,
-                    ),
-                  ),
-                ),
-                // Language
-                _LanguageTile(),
-                // Home layout
-                SettingsTiles.buildActionTile(
+                SettingsTiles.buildSwitchTile(
                   context,
-                  icon: iconoir.Dashboard(
+                  icon: iconoir.DashboardSpeed(
                       color: Theme.of(context).colorScheme.primary,
                       width: 20,
                       height: 20),
-                  title: l10n.homeLayout,
-                  subtitle: l10n.homeLayoutDesc,
-                  onTap: () => Navigator.push(
+                  title: l10n.settingsHighendUi,
+                  subtitle: l10n.settingsHighendUiDesc,
+                  value: perfProvider.currentMode == PerformanceLevel.high,
+                  onChanged: (value) => _showRestartDialog(context, value),
+                  isFirst: true,
+                ),
+                // Low-end background style
+                if (perfProvider.isLowEndDevice)
+                  SettingsTiles.buildSegmentedChoiceTile(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const HomeLayoutSettingsScreen(),
-                    ),
+                    icon: iconoir.MultiWindow(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 20,
+                        height: 20),
+                    title: l10n.backgroundLowEndStyle,
+                    subtitle: l10n.backgroundLowEndStyleDesc,
+                    options: [l10n.backgroundBlobs, l10n.backgroundSolid],
+                    selectedIndex:
+                        themeProvider.lowEndBackground == LowEndBackground.blobs
+                            ? 0
+                            : 1,
+                    onChanged: (i) => themeProvider.setLowEndBackground(
+                        i == 0
+                            ? LowEndBackground.blobs
+                            : LowEndBackground.solid),
+                  ),
+                // High-end background style
+                if (perfProvider.shouldEnableBlur)
+                  SettingsTiles.buildSegmentedChoiceTile(
+                    context,
+                    icon: iconoir.MediaImage(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 20,
+                        height: 20),
+                    title: l10n.backgroundHighEndStyle,
+                    subtitle: l10n.backgroundHighEndStyleDesc,
+                    options: [
+                      l10n.backgroundBlurredArtwork,
+                      l10n.backgroundSolid,
+                    ],
+                    selectedIndex: themeProvider.highEndBackground ==
+                            HighEndBackground.blurredArtwork
+                        ? 0
+                        : 1,
+                    onChanged: (i) => themeProvider.setHighEndBackground(
+                        i == 0
+                            ? HighEndBackground.blurredArtwork
+                            : HighEndBackground.solid),
+                  ),
+                // Blur intensity
+                SettingsTiles.buildAnimatedTile(
+                  visible: perfProvider.shouldEnableBlur &&
+                      themeProvider.highEndBackground !=
+                          HighEndBackground.solid,
+                  child: SettingsTiles.buildSliderTile(
+                    context,
+                    icon: iconoir.Fog(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 20,
+                        height: 20),
+                    title: l10n.backgroundBlur,
+                    subtitle: l10n.backgroundBlurDesc,
+                    value: themeProvider.blurIntensity,
+                    min: 5.0,
+                    max: 40.0,
+                    defaultValue: 25.0,
+                    valueFormatter: (v) => v.toStringAsFixed(0),
+                    onChanged: themeProvider.updateBlurIntensity,
+                    onChangeEnd: themeProvider.setBlurIntensity,
+                  ),
+                ),
+                // Overlay darkness
+                SettingsTiles.buildAnimatedTile(
+                  visible: !perfProvider.isLowEndDevice &&
+                      themeProvider.highEndBackground !=
+                          HighEndBackground.solid,
+                  child: SettingsTiles.buildSliderTile(
+                    context,
+                    icon: iconoir.Brightness(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 20,
+                        height: 20),
+                    title: l10n.backgroundDarkness,
+                    subtitle: l10n.backgroundDarknessDesc,
+                    value: themeProvider.overlayOpacity,
+                    min: 0.0,
+                    max: 0.8,
+                    defaultValue: 0.3,
+                    valueFormatter: (v) =>
+                        '${(v * 100).toStringAsFixed(0)}%',
+                    onChanged: themeProvider.updateOverlayOpacity,
+                    onChangeEnd: themeProvider.setOverlayOpacity,
                   ),
                 ),
               ]),
             ),
+
+            // ── LAYOUT ───────────────────────────────────────────────────
+            SettingsTiles.buildSectionHeader(context, 'Layout'),
+            SettingsTiles.buildGlassmorphicCard(context, children: [
+              SettingsTiles.buildActionTile(
+                context,
+                icon: iconoir.Dashboard(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 20,
+                    height: 20),
+                title: l10n.homeLayout,
+                subtitle: l10n.homeLayoutDesc,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const HomeLayoutSettingsScreen(),
+                  ),
+                ),
+                isFirst: true,
+              ),
+            ]),
+
+            // ── LANGUAGE ─────────────────────────────────────────────────
+            SettingsTiles.buildSectionHeader(context, 'Language'),
+            SettingsTiles.buildGlassmorphicCard(context, children: [
+              _LanguageTile(isFirst: true),
+            ]),
+
             const SizedBox(height: 32),
           ],
         ),
       ),
+    ),
     );
   }
 }
@@ -415,6 +411,10 @@ void _showColorPickerDialog(
 // ── Language tile (stateless, self-contained) ─────────────────────────────────
 
 class _LanguageTile extends StatelessWidget {
+  const _LanguageTile({this.isFirst = false});
+
+  final bool isFirst;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -424,15 +424,16 @@ class _LanguageTile extends StatelessWidget {
 
     return Column(
       children: [
-        Divider(
-          height: 1,
-          indent: 64,
-          endIndent: 16,
-          thickness: 0.5,
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.07)
-              : Colors.black.withValues(alpha: 0.05),
-        ),
+        if (!isFirst)
+          Divider(
+            height: 1,
+            indent: 64,
+            endIndent: 16,
+            thickness: 0.5,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.07)
+                : Colors.black.withValues(alpha: 0.05),
+          ),
         ListTile(
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 4),

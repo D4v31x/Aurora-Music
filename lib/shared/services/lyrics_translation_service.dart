@@ -137,22 +137,26 @@ class LyricsTranslationService {
           final data =
               jsonDecode(response.body) as Map<String, dynamic>;
 
-          // On the first batch, detect the source language from the matches
-          // array (e.g. "en-GB" → "en"). If it equals the target language,
-          // abort immediately so we don't waste quota translating a no-op.
+          // On the first batch, detect the source language via majority vote
+          // across all TM matches. Using only matches[0]['source'] is
+          // unreliable — the top match can be a target-language phrase that
+          // appears verbatim in the lyrics (e.g. English words in a K-pop
+          // song), triggering a false positive.
+          // Require > 60 % of available matches AND at least 3 matches before
+          // declaring same-language to minimise false positives.
           if (i == 0) {
             final matches = data['matches'] as List<dynamic>?;
-            if (matches != null && matches.isNotEmpty) {
-              final firstMatch = matches[0] as Map<String, dynamic>?;
-              final detectedFull =
-                  (firstMatch?['source'] as String?) ?? '';
-              if (detectedFull.isNotEmpty) {
-                final detected =
-                    detectedFull.split('-')[0].toLowerCase();
-                final target = targetLang.split('-')[0].toLowerCase();
-                if (detected == target) {
-                  throw SameLanguageException(detected);
-                }
+            if (matches != null && matches.length >= 3) {
+              final target = targetLang.split('-')[0].toLowerCase();
+              int targetCount = 0;
+              for (final m in matches) {
+                final src = (m as Map?)?['source']
+                    ?.split('-')[0]
+                    .toLowerCase();
+                if (src == target) targetCount++;
+              }
+              if (targetCount > matches.length * 0.6) {
+                throw SameLanguageException(target);
               }
             }
           }
@@ -172,6 +176,11 @@ class LyricsTranslationService {
           }
         }
       } catch (e) {
+        // SameLanguageException must propagate so callers can show the
+        // "already in target language" message.  All other exceptions
+        // (network, parse) are swallowed so one bad batch doesn't abort
+        // the whole translation.
+        if (e is SameLanguageException) rethrow;
         debugPrint(
             '[LyricsTranslation] Batch $i–${j - 1} failed: $e');
       }

@@ -398,19 +398,19 @@ class _SleepTimerOptionsSheetState extends State<_SleepTimerOptionsSheet> {
                 child: Row(
                   children: [
                     Container(
-                      width: 44,
-                      height: 44,
+                      width: 32,
+                      height: 32,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.15),
                         ),
                       ),
                       child: const iconoir.HalfMoon(
                         color: Colors.white,
-                        width: 22,
-                        height: 22,
+                        width: 16,
+                        height: 16,
                       ),
                     ),
                     const SizedBox(width: 14),

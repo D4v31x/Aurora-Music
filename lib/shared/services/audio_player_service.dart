@@ -14,6 +14,7 @@ import 'audio_constants.dart';
 import 'background_manager_service.dart';
 import 'artwork_cache_service.dart';
 import 'home_screen_widget_service.dart';
+import 'folder_filter_service.dart';
 import 'smart_suggestions_service.dart';
 import 'audio/replay_gain_reader.dart';
 import '../../main.dart' show audioHandler;
@@ -161,6 +162,10 @@ class AudioPlayerService extends ChangeNotifier {
   final _errorController = StreamController<String>.broadcast();
   Stream<String> get errorStream => _errorController.stream;
 
+  void _addError(String msg) {
+    if (!_errorController.isClosed) _errorController.add(msg);
+  }
+
   // Sleep timer
   Timer? _sleepTimer;
 
@@ -169,6 +174,10 @@ class AudioPlayerService extends ChangeNotifier {
 
   List<SongModel> _songs = [];
   List<SongModel> get songs => _songs;
+
+  /// Unfiltered song list from MediaStore.  Kept so we can instantly
+  /// re-filter when folder exclusions change, without a fresh MediaStore query.
+  List<SongModel> _rawSongs = [];
 
   /// Update songs list and notify listeners efficiently
   void _updateSongs(List<SongModel> newSongs) {
@@ -366,6 +375,8 @@ class AudioPlayerService extends ChangeNotifier {
         unawaited(_updateBackgroundColors());
 
         _scheduleNotify();
+        // Persist the new index so a restart always restores the correct song.
+        unawaited(saveQueueState());
       }
     });
 
@@ -375,16 +386,25 @@ class AudioPlayerService extends ChangeNotifier {
           '🎵 [PROCESSING_STATE] State changed: $state (loopMode: $_loopMode)');
       if (state == ProcessingState.completed) {
         debugPrint('🎵 [PROCESSING_STATE] Playback completed!');
-        // Playback completed - if loop mode is off and we're at end, stop
         if (_loopMode == LoopMode.off) {
-          debugPrint('🎵 [PROCESSING_STATE] Loop OFF, stopping playback');
-          _isPlaying = false;
-          isPlayingNotifier.value = false;
-          // Pause the underlying player so player.playing becomes false.
-          // This causes _broadcastState() to fire with playing:false, which
-          // clears the "playing" indicator in the notification / media controls.
-          unawaited(_audioPlayer.pause());
-          _scheduleNotify();
+          if (!_gaplessPlayback && _currentIndex + 1 < _playlist.length) {
+            // Non-gapless mode: each individual song triggers completed.
+            // Advance to the next song rather than stopping.
+            debugPrint(
+                '🎵 [PROCESSING_STATE] Non-gapless: advancing to next song '
+                '(${_currentIndex + 1} / ${_playlist.length - 1})');
+            unawaited(play(index: _currentIndex + 1));
+          } else {
+            // Gapless (playlist truly finished) or non-gapless at last song.
+            debugPrint('🎵 [PROCESSING_STATE] Loop OFF, stopping playback');
+            _isPlaying = false;
+            isPlayingNotifier.value = false;
+            // Pause the underlying player so player.playing becomes false.
+            // This causes _broadcastState() to fire with playing:false, which
+            // clears the "playing" indicator in the notification / media controls.
+            unawaited(_audioPlayer.pause());
+            _scheduleNotify();
+          }
         } else {
           debugPrint(
               '🎵 [PROCESSING_STATE] Loop mode: $_loopMode, should loop automatically');
@@ -396,6 +416,10 @@ class AudioPlayerService extends ChangeNotifier {
 
     // Restore the queue from the previous session (non-blocking).
     unawaited(loadQueueState());
+
+    // Re-filter the library immediately whenever the user changes folder
+    // exclusions, so search and playlists update without a manual refresh.
+    FolderFilterService().addListener(_onFolderFilterChanged);
 
     // Wire Android Auto browse-tree callbacks into the audio handler.
     // Closures are evaluated lazily so they always reflect the current state.
@@ -501,8 +525,35 @@ class AudioPlayerService extends ChangeNotifier {
     // ValueNotifier handles UI updates - no notifyListeners needed
   }
 
+  /// Called whenever [FolderFilterService] exclusions change.
+  /// Re-filters [_rawSongs] immediately without a new MediaStore query.
+  void _onFolderFilterChanged() {
+    if (_rawSongs.isEmpty) return;
+    final filterService = FolderFilterService();
+    final filtered = filterService.filterSongs(_rawSongs);
+    _updateSongs(filtered);
+    // Remove excluded songs from user-created playlists and persist.
+    _filterExcludedSongsFromPlaylists(filterService.excludedFolders);
+    // Rebuild the liked-songs playlist from the updated filtered list.
+    final likedSongs = filtered
+        .where((s) => _likedSongs.contains(s.id.toString()))
+        .toList();
+    _likedSongsPlaylist = Playlist(
+      id: likedSongsPlaylistId,
+      name: _likedPlaylistName,
+      songs: likedSongs,
+    );
+    // Clear smart-suggestions cache so next refresh excludes filtered folders.
+    _smartSuggestions.invalidateSuggestionCache();
+    // Regenerate auto playlists (Most Played, Recently Added) from the updated
+    // filtered songs list so they no longer contain excluded tracks.
+    _updateAutoPlaylists();
+    _scheduleNotify();
+  }
+
   @override
   void dispose() {
+    FolderFilterService().removeListener(_onFolderFilterChanged);
     // Cancel debounce timers
     _notifyDebounceTimer?.cancel();
     _saveDebounceTimer?.cancel();
@@ -517,9 +568,8 @@ class AudioPlayerService extends ChangeNotifier {
     songsNotifier.dispose();
     currentArtwork.dispose();
 
-    _audioPlayer.dispose();
-
-    // Save any pending data synchronously before disposing
+    // Save any pending data before the audio player is disposed — saveQueueState
+    // reads _audioPlayer.position, so it must run before _audioPlayer.dispose().
     if (_playcountsDirty) {
       _savePlayCounts();
     }
@@ -527,8 +577,11 @@ class AudioPlayerService extends ChangeNotifier {
       savePlaylists();
     }
 
-    // Persist queue state synchronously so it is available on next launch.
+    // Best-effort: persist the final playback position before the player dies.
+    // (The current-song index was already saved on every auto-advance / manual play.)
     saveQueueState();
+
+    _audioPlayer.dispose();
 
     // Clean up widget listeners and service
     currentSongNotifier.removeListener(_onSongChangedForWidget);

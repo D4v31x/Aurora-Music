@@ -36,8 +36,10 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
     final service = Provider.of<AudioPlayerService>(context, listen: false);
     if (_audioPlayerService != service) {
       _audioPlayerService?.removeListener(_onServiceChanged);
+      _audioPlayerService?.songsNotifier.removeListener(_onSongsChanged);
       _audioPlayerService = service;
       _audioPlayerService!.addListener(_onServiceChanged);
+      _audioPlayerService!.songsNotifier.addListener(_onSongsChanged);
     }
   }
 
@@ -51,9 +53,15 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
     }
   }
 
+  void _onSongsChanged() {
+    if (!mounted || _isLoading) return;
+    _loadData();
+  }
+
   @override
   void dispose() {
     _audioPlayerService?.removeListener(_onServiceChanged);
+    _audioPlayerService?.songsNotifier.removeListener(_onSongsChanged);
     super.dispose();
   }
 
@@ -120,7 +128,7 @@ class _RecentlyPlayedSectionState extends State<RecentlyPlayedSection> {
               key: ValueKey(song.id),
               songId: song.id,
               title: song.title,
-              artist: splitArtists(song.artist ?? '').first,
+              artist: splitArtists(song.artist ?? '').firstOrNull ?? AppLocalizations.of(context).unknownArtist,
               artworkService: _artworkService,
               onTap: () {
                 final audioPlayerService =

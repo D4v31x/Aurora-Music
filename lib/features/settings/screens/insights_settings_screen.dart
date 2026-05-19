@@ -1,4 +1,4 @@
-/// Insights settings sub-screen — configure the listening recap period.
+/// Insights settings sub-screen — recap schedule & period.
 library;
 
 import 'package:flutter/material.dart';
@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/font_constants.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/insights_promo_service.dart';
+import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../widgets/settings_tile_builders.dart';
 
@@ -18,23 +19,36 @@ class InsightsSettingsScreen extends StatefulWidget {
 }
 
 class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
-  int _periodDays = InsightsPromoService.defaultPeriodDays;
+  int  _periodDays     = InsightsPromoService.defaultPeriodDays;
+  bool _weeklyEnabled  = true;
+  bool _monthlyEnabled = true;
 
   @override
   void initState() {
     super.initState();
-    InsightsPromoService.getRecapPeriodDays().then((days) {
-      if (mounted) setState(() => _periodDays = days);
-    });
+    _load();
+  }
+
+  Future<void> _load() async {
+    final period  = await InsightsPromoService.getRecapPeriodDays();
+    final weekly  = await InsightsPromoService.getWeeklyEnabled();
+    final monthly = await InsightsPromoService.getMonthlyEnabled();
+    if (mounted) {
+      setState(() {
+        _periodDays     = period;
+        _weeklyEnabled  = weekly;
+        _monthlyEnabled = monthly;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs     = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF0A0A0F) : const Color(0xFFF5F5F7),
+    return AppBackground(child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -65,17 +79,59 @@ class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
                 : MediaQuery.of(context).padding.bottom + 24,
           ),
           children: [
-            SettingsTiles.buildSectionHeader(context, 'Listening Recap'),
+            // ── RECAP SCHEDULE ──────────────────────────────────────────
+            SettingsTiles.buildSectionHeader(context, 'Recap Schedule'),
+            SettingsTiles.buildGlassmorphicCard(context, children: [
+              SettingsTiles.buildSwitchTile(
+                context,
+                icon: Icon(Icons.calendar_view_week_rounded,
+                    color: cs.primary, size: 20),
+                title: 'Weekly Recap',
+                subtitle: 'Show a banner every week after your first play',
+                value: _weeklyEnabled,
+                onChanged: (v) async {
+                  await InsightsPromoService.setWeeklyEnabled(v);
+                  if (mounted) setState(() => _weeklyEnabled = v);
+                },
+                isFirst: true,
+              ),
+              SettingsTiles.buildSwitchTile(
+                context,
+                icon: Icon(Icons.calendar_month_rounded,
+                    color: cs.primary, size: 20),
+                title: 'Monthly Recap',
+                subtitle: 'Show a banner every month (takes precedence over weekly)',
+                value: _monthlyEnabled,
+                onChanged: (v) async {
+                  await InsightsPromoService.setMonthlyEnabled(v);
+                  if (mounted) setState(() => _monthlyEnabled = v);
+                },
+              ),
+            ]),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 10, 22, 0),
+              child: Text(
+                'The banner appears on the home screen at the start of each new '
+                'week or month counted from your very first play. Tapping "Later" '
+                'hides it for the session; tapping "Show" marks it as seen.',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontFamily: FontConstants.fontFamily,
+                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.45),
+                  height: 1.5,
+                ),
+              ),
+            ),
+
+            // ── RECAP CONTENT ────────────────────────────────────────────
+            SettingsTiles.buildSectionHeader(context, 'Recap Content'),
             SettingsTiles.buildGlassmorphicCard(context, children: [
               SettingsTiles.buildSegmentedChoiceTile(
                 context,
-                icon: Icon(
-                  Icons.calendar_month_rounded,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 20,
-                ),
-                title: 'Recap Period',
-                subtitle: 'How far back your recap looks',
+                icon: Icon(Icons.bar_chart_rounded,
+                    color: cs.primary, size: 20),
+                title: 'Data Window',
+                subtitle: 'How far back the recap screen looks',
                 options: const ['Last 7 Days', 'Last 30 Days'],
                 selectedIndex: _periodDays == 7 ? 0 : 1,
                 onChanged: (i) async {
@@ -87,17 +143,14 @@ class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
               ),
             ]),
             Padding(
-              padding: const EdgeInsets.fromLTRB(22, 14, 22, 0),
+              padding: const EdgeInsets.fromLTRB(22, 10, 22, 0),
               child: Text(
-                'Your recap is a period-based overview of your most-played tracks, '
-                'artists and listening habits. Switch between 7-day and 30-day views '
-                'to get a weekly or monthly picture.',
+                'Controls how much history the recap screen displays when you open it '
+                'manually or via the banner.',
                 style: TextStyle(
                   fontSize: 12,
                   fontFamily: FontConstants.fontFamily,
-                  color: isDark
-                      ? Colors.white.withOpacity(0.45)
-                      : Colors.black.withOpacity(0.45),
+                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.45),
                   height: 1.5,
                 ),
               ),
@@ -106,6 +159,7 @@ class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }

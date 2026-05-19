@@ -92,6 +92,12 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
     try {
       // Use cached artwork service for better performance
       final artwork = await _artworkCache.getArtwork(song.id);
+      // Guard against race condition: if the song changed while artwork was
+      // loading, discard this stale result rather than overwriting newer artwork.
+      if (currentSong?.id != song.id) {
+        debugPrint('🎨 [ARTWORK] Discarding stale artwork for "${song.title}" — song changed');
+        return;
+      }
       if (artwork != null && artwork.isNotEmpty) {
         debugPrint('🎨 [ARTWORK] Artwork loaded: ${artwork.length} bytes for "${song.title}"');
       } else {
@@ -114,6 +120,7 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
         ));
       }
     } catch (e) {
+      if (currentSong?.id != song.id) return; // Stale error — don't wipe current artwork
       debugPrint('🎨 [ARTWORK] Error fetching artwork for "${song.title}": $e');
       currentArtwork.value = null;
     }

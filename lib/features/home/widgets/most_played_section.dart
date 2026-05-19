@@ -36,8 +36,10 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
     final service = Provider.of<AudioPlayerService>(context, listen: false);
     if (_audioPlayerService != service) {
       _audioPlayerService?.removeListener(_onServiceChanged);
+      _audioPlayerService?.songsNotifier.removeListener(_onSongsChanged);
       _audioPlayerService = service;
       _audioPlayerService!.addListener(_onServiceChanged);
+      _audioPlayerService!.songsNotifier.addListener(_onSongsChanged);
     }
   }
 
@@ -51,9 +53,15 @@ class _MostPlayedSectionState extends State<MostPlayedSection> {
     }
   }
 
+  void _onSongsChanged() {
+    if (!mounted || _isLoading) return;
+    _loadData();
+  }
+
   @override
   void dispose() {
     _audioPlayerService?.removeListener(_onServiceChanged);
+    _audioPlayerService?.songsNotifier.removeListener(_onSongsChanged);
     super.dispose();
   }
 

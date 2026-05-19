@@ -5,11 +5,11 @@ import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/services/version_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../screens/appearance_settings_screen.dart';
+import '../screens/folder_filter_settings_screen.dart';
 import '../screens/playback_settings_screen.dart';
 import '../screens/storage_settings_screen.dart';
 import '../screens/about_settings_screen.dart';
 import '../screens/insights_settings_screen.dart';
-import '../../../shared/services/insights_promo_service.dart';
 
 /// A glassmorphic settings tab with translations.
 class SettingsTab extends StatefulWidget {
@@ -48,21 +48,6 @@ class _SettingsTabState extends State<SettingsTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.bar_chart_rounded),
-            tooltip: 'Trigger recap banner',
-            onPressed: () {
-              InsightsPromoService.recapBannerNotifier.value = true;
-            },
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
       body: SingleChildScrollView(
         child: _buildSectionWidgets(),
       ),
@@ -114,6 +99,16 @@ class _SettingsTabState extends State<SettingsTab> {
               builder: (_) => StorageSettingsScreen(
                 notificationManager: widget.notificationManager,
               ),
+            ),
+          ),
+        ),
+        _buildCategoryCard(
+          icon: Icons.folder_outlined,
+          title: 'Library Folders',
+          subtitle: 'Include or exclude scan folders',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const FolderFilterSettingsScreen(),
             ),
           ),
         ),

@@ -15,6 +15,7 @@ import '../../../shared/services/donation_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/version_service.dart';
 import '../../../shared/widgets/changelog_dialog.dart';
+import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/feedback_popup_widget.dart';
 import '../widgets/settings_tile_builders.dart';
@@ -145,9 +146,8 @@ class AboutSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final primary = Theme.of(context).colorScheme.primary;
 
-    return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF0A0A0F) : const Color(0xFFF5F5F7),
+    return AppBackground(child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -251,6 +251,7 @@ class AboutSettingsScreen extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

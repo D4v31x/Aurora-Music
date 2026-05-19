@@ -59,3 +59,5 @@ flutter.tar.xz
 sentry-wizard
 sentry.properties
 crowdin.yml.local
+lib/firebase_options.dart
+android/app/google-services.json

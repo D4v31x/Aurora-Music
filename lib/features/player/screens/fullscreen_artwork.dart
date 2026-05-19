@@ -147,7 +147,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
 
   @override
   Widget build(BuildContext context) {
-    final audioService = Provider.of<AudioPlayerService>(context);
+    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
     final song = audioService.currentSong;
     final padding = MediaQuery.of(context).padding;
 
@@ -162,12 +162,7 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
             GestureDetector(
               onTap: _toggleControls,
               behavior: HitTestBehavior.opaque,
-              child: Hero(
-                tag: 'songArtwork',
-                createRectTween: (begin, end) {
-                  return MaterialRectCenterArcTween(begin: begin, end: end);
-                },
-                child: _artworkProvider != null
+              child: _artworkProvider != null
                     ? Image(
                         image: _artworkProvider!,
                         fit: BoxFit.cover,
@@ -176,8 +171,8 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
                         gaplessPlayback: true,
                       )
                     : Container(
-                        color: Colors.grey[900],
-                        child: const Center(
+                      color: Colors.grey[900],
+                      child: const Center(
                           child: Icon(
                             Icons.music_note_rounded,
                             color: Colors.white24,
@@ -185,7 +180,6 @@ class _FullscreenArtworkScreenState extends State<FullscreenArtworkScreen>
                           ),
                         ),
                       ),
-              ),
             ),
 
             // Top gradient (only when controls visible)

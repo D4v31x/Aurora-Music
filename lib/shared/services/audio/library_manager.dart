@@ -94,12 +94,17 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       // Try to load songs - always query fresh from MediaStore
       try {
         // Query with proper parameters to get all songs from external storage
-        final songs = await _audioQuery.querySongs(
+        final rawSongs = await _audioQuery.querySongs(
           orderType: OrderType.ASC_OR_SMALLER,
           uriType: UriType.EXTERNAL,
           ignoreCase: true,
         );
-        debugPrint('Queried ${songs.length} songs from storage');
+        _rawSongs = rawSongs; // cache for instant re-filter on folder exclusion change
+        await FolderFilterService().ensureInitialized();
+        final songs = FolderFilterService().filterSongs(rawSongs);
+        debugPrint(
+            'Queried ${rawSongs.length} songs from storage, '
+            '${songs.length} after folder filter');
         _updateSongs(songs);
 
         // Save the updated library
@@ -455,7 +460,8 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       sortType: SongSortType.DATE_ADDED,
       orderType: OrderType.DESC_OR_GREATER,
     )
-        .then((tracks) {
+        .then((rawTracks) {
+      final tracks = FolderFilterService().filterSongs(rawTracks);
       final existingIndex =
           _playlists.indexWhere((p) => p.id == kRecentlyAddedPlaylistId);
 
@@ -512,4 +518,23 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
 
   // Getter for the playlist name
   String get likedPlaylistName => _likedPlaylistName;
+
+  /// Removes songs whose folder is excluded from every user-created playlist
+  /// and persists the result.  Called whenever the folder filter changes.
+  void _filterExcludedSongsFromPlaylists(Set<String> excludedFolders) {
+    if (excludedFolders.isEmpty || _playlists.isEmpty) return;
+    bool changed = false;
+    for (final playlist in _playlists) {
+      final before = playlist.songs.length;
+      playlist.songs.removeWhere((song) {
+        final folder = File(song.data).parent.path;
+        return excludedFolders.contains(folder);
+      });
+      if (playlist.songs.length != before) changed = true;
+    }
+    if (changed) {
+      _playlistsDirty = true;
+      unawaited(savePlaylists());
+    }
+  }
 }

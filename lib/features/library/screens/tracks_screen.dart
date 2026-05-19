@@ -6,6 +6,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
+import '../../../shared/services/folder_filter_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/optimized_tiles.dart';
@@ -87,6 +88,8 @@ class _TracksScreenState extends State<TracksScreen> {
 
   final TextEditingController _searchController = TextEditingController();
 
+  AudioPlayerService? _audioServiceRef;
+
   @override
   void initState() {
     super.initState();
@@ -95,7 +98,23 @@ class _TracksScreenState extends State<TracksScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final service = Provider.of<AudioPlayerService>(context, listen: false);
+    if (_audioServiceRef == null) {
+      _audioServiceRef = service;
+      service.songsNotifier.addListener(_onSongsChanged);
+    }
+  }
+
+  void _onSongsChanged() {
+    if (!mounted || _isLoading) return;
+    _fetchAllSongs();
+  }
+
+  @override
   void dispose() {
+    _audioServiceRef?.songsNotifier.removeListener(_onSongsChanged);
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _searchController.dispose();
@@ -150,11 +169,13 @@ class _TracksScreenState extends State<TracksScreen> {
         return;
       }
 
-      _allSongs = await _audioQuery.querySongs(
+      final rawSongs = await _audioQuery.querySongs(
         orderType: OrderType.ASC_OR_SMALLER,
         uriType: UriType.EXTERNAL,
         ignoreCase: true,
       );
+      await FolderFilterService().ensureInitialized();
+      _allSongs = FolderFilterService().filterSongs(rawSongs);
 
       debugPrint('🎵 [TRACKS] Fetched ${_allSongs.length} songs from MediaStore');
       setState(() => _isLoading = false);

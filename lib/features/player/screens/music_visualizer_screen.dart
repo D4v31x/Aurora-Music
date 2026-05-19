@@ -84,7 +84,8 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
 
   // ── Mode / UI ──────────────────────────────────────────────────────────────
   VisualizerMode _mode  = VisualizerMode.barSpectrum;
-  bool           _micGranted     = false;
+  bool           _micGranted              = false;
+  bool           _isRequestingPermission  = false;
   ImageProvider? _artworkProvider;
   int?           _loadedSongId;
 
@@ -169,11 +170,17 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
   }
 
   Future<void> _checkAndRequestPermission() async {
-    final status = await Permission.microphone.request();
-    if (!mounted) return;
-    final granted = status.isGranted;
-    setState(() => _micGranted = granted);
-    if (granted) unawaited(_subscribeToSessionId());
+    if (_isRequestingPermission) return;
+    _isRequestingPermission = true;
+    try {
+      final status = await Permission.microphone.request();
+      if (!mounted) return;
+      final granted = status.isGranted;
+      setState(() => _micGranted = granted);
+      if (granted) unawaited(_subscribeToSessionId());
+    } finally {
+      _isRequestingPermission = false;
+    }
   }
 
   void _initFftBinRanges() {
@@ -500,17 +507,24 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
             const SizedBox(height: 28),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: accent),
-              onPressed: () async {
-                final status = await Permission.microphone.request();
-                if (!mounted) return;
-                final granted = status.isGranted;
-                setState(() => _micGranted = granted);
-                if (granted) {
-                  unawaited(_subscribeToSessionId());
-                } else if (status.isPermanentlyDenied) {
-                  await openAppSettings();
-                }
-              },
+              onPressed: _isRequestingPermission
+                  ? null
+                  : () async {
+                      setState(() => _isRequestingPermission = true);
+                      try {
+                        final status = await Permission.microphone.request();
+                        if (!mounted) return;
+                        final granted = status.isGranted;
+                        setState(() => _micGranted = granted);
+                        if (granted) {
+                          unawaited(_subscribeToSessionId());
+                        } else if (status.isPermanentlyDenied) {
+                          await openAppSettings();
+                        }
+                      } finally {
+                        if (mounted) setState(() => _isRequestingPermission = false);
+                      }
+                    },
               child: Text(AppLocalizations.of(context).grantPermission),
             ),
           ],

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
+import 'folder_filter_service.dart';
 import '../models/artist_utils.dart';
 import '../utils/performance_optimizations.dart';
 
@@ -147,6 +148,13 @@ class SmartSuggestionsService {
     _saveDebouncer.call(() => _saveData());
   }
 
+  /// Discard the cached suggestions so the next call recomputes with the
+  /// current folder filter.  Call this whenever folder exclusions change.
+  void invalidateSuggestionCache() {
+    _suggestionsMemoizer.clear();
+    _lastSuggestionTime = null;
+  }
+
   /// Get suggested tracks based on current time and listening patterns
   Future<List<SongModel>> getSuggestedTracks({int count = 3}) async {
     final now = DateTime.now();
@@ -170,7 +178,9 @@ class SmartSuggestionsService {
 
   /// Internal method to compute suggestions (expensive operation)
   Future<List<SongModel>> _computeSuggestedTracks(int count) async {
-    final allSongs = await _audioQuery.querySongs();
+    final rawSongs = await _audioQuery.querySongs();
+    await FolderFilterService().ensureInitialized();
+    final allSongs = FolderFilterService().filterSongs(rawSongs);
     if (allSongs.isEmpty) return [];
 
     final now = DateTime.now();
@@ -438,26 +448,29 @@ class SmartSuggestionsService {
   // ── Period-based analytics ─────────────────────────────────────────────────
 
   /// All non-skipped events within the last [days] days.
-  List<ListeningEvent> getEventsForPeriod(int days) {
-    final cutoff = DateTime.now().subtract(Duration(days: days));
+  /// If [fromDate] is supplied it is used as the lower-bound cutoff directly
+  /// (instead of `now − days`), which lets callers anchor the window to the
+  /// user's first-listen time rather than the current clock.
+  List<ListeningEvent> getEventsForPeriod(int days, {DateTime? fromDate}) {
+    final cutoff = fromDate ?? DateTime.now().subtract(Duration(days: days));
     return _listeningHistory
         .where((e) => e.timestamp.isAfter(cutoff) && !e.wasSkipped)
         .toList();
   }
 
   /// Track play counts for the last [days] days.
-  Map<String, int> trackPlayCountsForPeriod(int days) {
+  Map<String, int> trackPlayCountsForPeriod(int days, {DateTime? fromDate}) {
     final counts = <String, int>{};
-    for (final e in getEventsForPeriod(days)) {
+    for (final e in getEventsForPeriod(days, fromDate: fromDate)) {
       counts[e.trackId] = (counts[e.trackId] ?? 0) + 1;
     }
     return counts;
   }
 
   /// Artist play counts for the last [days] days.
-  Map<String, int> artistPlayCountsForPeriod(int days) {
+  Map<String, int> artistPlayCountsForPeriod(int days, {DateTime? fromDate}) {
     final counts = <String, int>{};
-    for (final e in getEventsForPeriod(days)) {
+    for (final e in getEventsForPeriod(days, fromDate: fromDate)) {
       for (final artist in e.artists) {
         counts[artist] = (counts[artist] ?? 0) + 1;
       }
@@ -466,24 +479,24 @@ class SmartSuggestionsService {
   }
 
   /// Genre play counts for the last [days] days.
-  Map<String, int> genrePlayCountsForPeriod(int days) {
+  Map<String, int> genrePlayCountsForPeriod(int days, {DateTime? fromDate}) {
     final counts = <String, int>{};
-    for (final e in getEventsForPeriod(days)) {
+    for (final e in getEventsForPeriod(days, fromDate: fromDate)) {
       counts[e.genre] = (counts[e.genre] ?? 0) + 1;
     }
     return counts;
   }
 
   /// Estimated listening minutes for the last [days] days.
-  int estimatedMinutesForPeriod(int days) {
-    final totalMs = getEventsForPeriod(days)
+  int estimatedMinutesForPeriod(int days, {DateTime? fromDate}) {
+    final totalMs = getEventsForPeriod(days, fromDate: fromDate)
         .fold<int>(0, (s, e) => s + e.listenDurationMs);
     return (totalMs / 60000).floor();
   }
 
   /// Most active hour (0–23) for the last [days] days, or null if no data.
-  int? mostActiveHourForPeriod(int days) {
-    final events = getEventsForPeriod(days);
+  int? mostActiveHourForPeriod(int days, {DateTime? fromDate}) {
+    final events = getEventsForPeriod(days, fromDate: fromDate);
     if (events.isEmpty) return null;
     final byHour = <int, int>{};
     for (final e in events) {
@@ -493,8 +506,8 @@ class SmartSuggestionsService {
   }
 
   /// Most active weekday (0=Mon…6=Sun) for the last [days] days, or null.
-  int? mostActiveWeekdayForPeriod(int days) {
-    final events = getEventsForPeriod(days);
+  int? mostActiveWeekdayForPeriod(int days, {DateTime? fromDate}) {
+    final events = getEventsForPeriod(days, fromDate: fromDate);
     if (events.isEmpty) return null;
     final byDay = <int, int>{};
     for (final e in events) {

@@ -82,22 +82,19 @@ class RecentlyAddedSection extends StatelessWidget {
             cacheExtent: AppConfig.horizontalListCacheExtent,
             itemBuilder: (context, index) {
               final song = displaySongs[index];
-              // Find the index in the full playlist
-              final fullPlaylistIndex =
-                  fullPlaylist.indexWhere((s) => s.id == song.id);
               return RepaintBoundary(
                 child: GlassmorphicCard.song(
                   key: ValueKey(song.id),
                   songId: song.id,
                   title: song.title,
-                  artist: splitArtists(song.artist ?? '').first,
+                  artist: splitArtists(song.artist ?? '').firstOrNull ?? AppLocalizations.of(context).unknownArtist,
                   artworkService: _artworkService,
                   badge: CardBadge(text: AppLocalizations.of(context).badgeNew),
                   onTap: () {
-                    // Play from full playlist, starting at the correct index
+                    // Both lists share the same sort, so displaySongs[i] == fullPlaylist[i]
                     audioPlayerService.setPlaylist(
                       fullPlaylist,
-                      fullPlaylistIndex >= 0 ? fullPlaylistIndex : index,
+                      index,
                       source: const PlaybackSourceInfo(
                           source: PlaybackSource.recentlyAdded),
                     );

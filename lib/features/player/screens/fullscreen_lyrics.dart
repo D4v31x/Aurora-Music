@@ -227,7 +227,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final audioService = Provider.of<AudioPlayerService>(context);
+    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
 
     if (audioService.currentSong != null &&
         audioService.currentSong!.id != _lastSongId) {

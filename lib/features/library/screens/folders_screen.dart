@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/services/folder_filter_service.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
@@ -40,16 +41,23 @@ class _FoldersScreenState extends State<FoldersScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    FolderFilterService().addListener(_onFilterChanged);
     _loadFolders();
   }
 
   @override
   void dispose() {
+    FolderFilterService().removeListener(_onFilterChanged);
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _searchController.dispose();
     _debounce?.cancel();
     super.dispose();
+  }
+
+  void _onFilterChanged() {
+    if (!mounted) return;
+    _loadFolders();
   }
 
   void _scrollListener() {
@@ -84,9 +92,13 @@ class _FoldersScreenState extends State<FoldersScreen> {
   Future<void> _loadFolders() async {
     try {
       final folders = await OnAudioQuery().queryAllPath();
+      // Hide excluded folders from the list.
+      final visible = folders
+          .where((f) => !FolderFilterService().isExcluded(f))
+          .toList();
       setState(() {
-        _allFolders = folders;
-        _filteredFolders = folders;
+        _allFolders = visible;
+        _filteredFolders = visible;
         _isLoading = false;
       });
       _applySorting();

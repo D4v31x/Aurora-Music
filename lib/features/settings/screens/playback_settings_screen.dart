@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/font_constants.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../screens/artist_separator_settings.dart';
 import '../screens/equalizer_screen.dart';
@@ -20,9 +21,8 @@ class PlaybackSettingsScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF0A0A0F) : const Color(0xFFF5F5F7),
+    return AppBackground(child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -53,7 +53,8 @@ class PlaybackSettingsScreen extends StatelessWidget {
                 : MediaQuery.of(context).padding.bottom + 24,
           ),
           children: [
-            SettingsTiles.buildSectionHeader(context, l10n.settingsPlayback),
+            // ── AUDIO ─────────────────────────────────────────────────────
+            SettingsTiles.buildSectionHeader(context, 'Audio'),
             Consumer<AudioPlayerService>(
               builder: (context, audioService, _) =>
                   SettingsTiles.buildGlassmorphicCard(context, children: [
@@ -80,6 +81,14 @@ class PlaybackSettingsScreen extends StatelessWidget {
                   value: audioService.volumeNormalization,
                   onChanged: audioService.setVolumeNormalization,
                 ),
+              ]),
+            ),
+
+            // ── PLAYBACK ──────────────────────────────────────────────────
+            SettingsTiles.buildSectionHeader(context, 'Playback'),
+            Consumer<AudioPlayerService>(
+              builder: (context, audioService, _) =>
+                  SettingsTiles.buildGlassmorphicCard(context, children: [
                 SettingsTiles.buildSliderTile(
                   context,
                   icon: iconoir.DashboardSpeed(
@@ -99,6 +108,7 @@ class PlaybackSettingsScreen extends StatelessWidget {
                     final rounded = (v * 20).round() / 20;
                     audioService.setPlaybackSpeed(rounded);
                   },
+                  isFirst: true,
                 ),
                 SettingsTiles.buildSwitchTile(
                   context,
@@ -111,42 +121,50 @@ class PlaybackSettingsScreen extends StatelessWidget {
                   value: audioService.pitchWithSpeed,
                   onChanged: audioService.setPitchWithSpeed,
                 ),
-                SettingsTiles.buildActionTile(
-                  context,
-                  icon: iconoir.Group(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 20,
-                      height: 20),
-                  title: l10n.artistSeparation,
-                  subtitle: l10n.artistSeparationDesc,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const ArtistSeparatorSettingsScreen(),
-                    ),
-                  ),
-                ),
-                SettingsTiles.buildActionTile(
-                  context,
-                  icon: iconoir.SoundHigh(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 20,
-                      height: 20),
-                  title: 'Equalizer',
-                  subtitle: 'Adjust audio frequencies per band',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const EqualizerScreen(),
-                    ),
-                  ),
-                ),
               ]),
             ),
+
+            // ── TOOLS ─────────────────────────────────────────────────────
+            SettingsTiles.buildSectionHeader(context, 'Tools'),
+            SettingsTiles.buildGlassmorphicCard(context, children: [
+              SettingsTiles.buildActionTile(
+                context,
+                icon: iconoir.Group(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 20,
+                    height: 20),
+                title: l10n.artistSeparation,
+                subtitle: l10n.artistSeparationDesc,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ArtistSeparatorSettingsScreen(),
+                  ),
+                ),
+                isFirst: true,
+              ),
+              SettingsTiles.buildActionTile(
+                context,
+                icon: iconoir.SoundHigh(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 20,
+                    height: 20),
+                title: 'Equalizer',
+                subtitle: 'Adjust audio frequencies per band',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const EqualizerScreen(),
+                  ),
+                ),
+              ),
+            ]),
+
             const SizedBox(height: 32),
           ],
         ),
       ),
+    ),
     );
   }
 }

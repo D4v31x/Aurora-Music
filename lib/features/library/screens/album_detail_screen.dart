@@ -10,6 +10,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'dart:typed_data';
 import '../../../shared/services/artwork_cache_service.dart';
+import '../../../shared/services/folder_filter_service.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -88,11 +89,13 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
   }
 
   Future<void> _loadSongs() async {
-    final songs = await _audioQuery.querySongs(
+    final rawSongs = await _audioQuery.querySongs(
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
+    await FolderFilterService().ensureInitialized();
+    final songs = FolderFilterService().filterSongs(rawSongs);
 
     final albumSongs = songs
         .where((song) => song.album == widget.albumName)

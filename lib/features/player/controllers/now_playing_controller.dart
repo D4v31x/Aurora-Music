@@ -166,11 +166,12 @@ class NowPlayingController {
     try {
       final provider =
           await _artworkService.getCachedImageProvider(song.id, highQuality: true);
+      if (song.id != _lastSongId) return; // Song changed — discard stale artwork
       currentArtwork = provider;
-      onArtworkChanged?.call();
     } catch (e) {
+      if (song.id != _lastSongId) return;
       currentArtwork = const AssetImage('assets/images/logo/default_art.png');
-      onArtworkChanged?.call();
     }
+    onArtworkChanged?.call();
   }
 }

@@ -79,6 +79,9 @@ extension AudioPlayCountsExtension on AudioPlayerService {
   /// Check if user has enough listening history for smart suggestions
   bool hasListeningHistory() => _smartSuggestions.hasListeningHistory();
 
+  /// Timestamp of the user's very first recorded play, or null if no history.
+  DateTime? get firstListenTime => _smartSuggestions.firstListenTime;
+
   // Most Played Queries
 
   /// Returns the top [count] most-played tracks.
@@ -88,8 +91,10 @@ extension AudioPlayCountsExtension on AudioPlayerService {
   /// was the single biggest blocking operation on the main thread.
   Future<List<SongModel>> getMostPlayedTracks() async {
     // Use the already-loaded in-memory song list. Fall back to a fresh query
-    // only when the cache is empty (e.g. first cold-start before library loads).
-    final allSongs = _songs.isNotEmpty
+    // only when the library hasn't loaded yet (cold-start before initializeMusicLibrary).
+    // We check _rawSongs (not _songs) so that an all-excluded filter still
+    // returns an empty list instead of falling through to the raw MediaStore.
+    final allSongs = _rawSongs.isNotEmpty
         ? _songs
         : await _audioQuery.querySongs(
             orderType: OrderType.ASC_OR_SMALLER,
@@ -106,6 +111,11 @@ extension AudioPlayCountsExtension on AudioPlayerService {
 
   Future<List<AlbumModel>> getMostPlayedAlbums() async {
     final albums = await _audioQuery.queryAlbums();
+    // Restrict to albums that contain at least one visible (non-excluded) song.
+    if (_rawSongs.isNotEmpty) {
+      final allowedAlbumIds = _songs.map((s) => s.albumId).toSet();
+      albums.retainWhere((a) => allowedAlbumIds.contains(a.id));
+    }
     albums.sort((a, b) => (_albumPlayCounts[b.id.toString()] ?? 0)
         .compareTo(_albumPlayCounts[a.id.toString()] ?? 0));
     return albums.take(10).toList();
@@ -113,6 +123,11 @@ extension AudioPlayCountsExtension on AudioPlayerService {
 
   Future<List<ArtistModel>> getMostPlayedArtists() async {
     final allArtists = await _audioQuery.queryArtists();
+    // Restrict to artists that have at least one visible (non-excluded) song.
+    if (_rawSongs.isNotEmpty) {
+      final visibleArtistNames = _songs.map((s) => s.artist ?? '').toSet();
+      allArtists.retainWhere((a) => visibleArtistNames.contains(a.artist));
+    }
     final artistPlayCounts = <String, int>{};
 
     for (final artist in allArtists) {
@@ -137,7 +152,10 @@ extension AudioPlayCountsExtension on AudioPlayerService {
   }
 
   List<String> getThreeFolders() {
-    final folderAccessCounts = _folderAccessCounts.entries.toList()
+    final filterService = FolderFilterService();
+    final folderAccessCounts = _folderAccessCounts.entries
+        .where((e) => !filterService.isExcluded(e.key))
+        .toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     return folderAccessCounts.take(3).map((entry) => entry.key).toList();
   }
@@ -148,7 +166,7 @@ extension AudioPlayCountsExtension on AudioPlayerService {
   /// issuing a new `querySongs` MediaStore call on every invocation.
   /// [count] – number of songs to return (default 3, -1 = all).
   Future<List<SongModel>> getRecentlyPlayed({int count = 3}) async {
-    final allSongs = _songs.isNotEmpty
+    final allSongs = _rawSongs.isNotEmpty
         ? _songs
         : await _audioQuery.querySongs(
             orderType: OrderType.ASC_OR_SMALLER,
@@ -178,7 +196,7 @@ extension AudioPlayCountsExtension on AudioPlayerService {
   /// Performance: derives the list from the cached [_songs] and sorts
   /// in-memory by [dateAdded] rather than firing a new MediaStore query.
   Future<List<SongModel>> getAllRecentlyAdded() async {
-    final allSongs = _songs.isNotEmpty
+    final allSongs = _rawSongs.isNotEmpty
         ? List<SongModel>.from(_songs)
         : await _audioQuery.querySongs(
             sortType: SongSortType.DATE_ADDED,
@@ -187,7 +205,7 @@ extension AudioPlayCountsExtension on AudioPlayerService {
             ignoreCase: true,
           );
     // If the cache was used, sort by dateAdded descending in-memory.
-    if (_songs.isNotEmpty) {
+    if (_rawSongs.isNotEmpty) {
       allSongs.sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
     }
     return allSongs;

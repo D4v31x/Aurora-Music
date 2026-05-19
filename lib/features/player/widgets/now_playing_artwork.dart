@@ -10,7 +10,6 @@ import '../../../shared/services/artwork_cache_service.dart';
 // MARK: - Constants
 
 const _kDefaultBorderRadius = 16.0;
-const _kPhoneBorderRadius = 27.0;
 const _kShadowBlur = 15.0;
 const _kShadowOffset = 8.0;
 const _kShadowOpacity = 0.2;
@@ -75,19 +74,9 @@ class NowPlayingArtwork extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Hero(
-      tag: heroTag,
-      createRectTween: (begin, end) {
-        return MaterialRectCenterArcTween(begin: begin, end: end);
-      },
-      flightShuttleBuilder: _artworkFlightShuttleBuilder,
-      child: Material(
-        color: Colors.transparent,
-        child: GestureDetector(
-          onTap: onTap,
-          child: _buildArtworkContainer(),
-        ),
-      ),
+    return GestureDetector(
+      onTap: onTap,
+      child: _buildArtworkContainer(),
     );
   }
 
@@ -167,45 +156,6 @@ class NowPlayingArtwork extends StatelessWidget {
       fit: BoxFit.cover,
       width: size,
       height: size,
-    );
-  }
-
-  /// Flight shuttle builder for hero animation.
-  Widget _artworkFlightShuttleBuilder(
-    BuildContext flightContext,
-    Animation<double> animation,
-    HeroFlightDirection flightDirection,
-    BuildContext fromHeroContext,
-    BuildContext toHeroContext,
-  ) {
-    final Hero toHero = toHeroContext.widget as Hero;
-    return Material(
-      color: Colors.transparent,
-      child: AnimatedBuilder(
-        animation: animation,
-        builder: (context, child) {
-          final curvedValue = Curves.easeOutCubic.transform(animation.value);
-          final animatedBorderRadius = BorderRadius.circular(
-            _kPhoneBorderRadius + (_kDefaultBorderRadius - _kPhoneBorderRadius) * curvedValue,
-          );
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: animatedBorderRadius,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: _kShadowOpacity),
-                  blurRadius: _kShadowBlur,
-                  offset: const Offset(0, _kShadowOffset),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: animatedBorderRadius,
-              child: toHero.child,
-            ),
-          );
-        },
-      ),
     );
   }
 }

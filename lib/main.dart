@@ -25,6 +25,7 @@ import 'shared/widgets/performance_debug_overlay.dart';
 import 'shared/widgets/expanding_player.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'firebase_options.dart';
@@ -139,7 +140,7 @@ void main() async {
           // Use lazy initialization for better startup performance
           ChangeNotifierProvider(create: (_) => AudioPlayerService()),
           ChangeNotifierProvider(create: (_) => ThemeProvider(), lazy: false),
-          ChangeNotifierProvider(create: (_) => EqualizerService(), lazy: true),
+          ChangeNotifierProvider(create: (_) => EqualizerService(), lazy: false),
           ChangeNotifierProvider(
               create: (_) => PerformanceModeProvider(), lazy: false),
           ChangeNotifierProvider(
@@ -163,9 +164,14 @@ void main() async {
             // Set the background manager in the audio player service
             audioPlayerService.setBackgroundManager(backgroundManager);
 
-            // Initialize performance provider
-            WidgetsBinding.instance.addPostFrameCallback((_) {
+            // Initialize performance provider and equalizer eagerly
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
               performanceProvider.initialize();
+              final equalizerService =
+                  Provider.of<EqualizerService>(context, listen: false);
+              if (!equalizerService.initialized) {
+                await equalizerService.init(equalizer);
+              }
             });
 
             return MyApp(
@@ -249,12 +255,15 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late ui.Locale _locale;
   final _MiniPlayerObserver _miniPlayerObserver = _MiniPlayerObserver();
+  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
+  late final FirebaseAnalyticsObserver _analyticsObserver;
   StreamSubscription<bool>? _notificationClickSub;
 
   @override
   void initState() {
     super.initState();
     _locale = ui.Locale(widget.languageCode);
+    _analyticsObserver = FirebaseAnalyticsObserver(analytics: _analytics);
     WidgetsBinding.instance.addObserver(this);
 
     // Listen for notification clicks to expand the player
@@ -343,7 +352,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             // Custom hero controller for faster, smoother transitions
-            navigatorObservers: [_miniPlayerObserver],
+            navigatorObservers: [_miniPlayerObserver, _analyticsObserver],
             builder: (context, child) {
               return HeroControllerScope(
                 controller: HeroController(

@@ -27,6 +27,45 @@ class _LibraryTabState extends State<LibraryTab>
   // Make artwork service static to prevent recreation on every build
   static final _artworkService = ArtworkCacheService();
 
+  AudioPlayerService? _serviceRef;
+
+  // Cached futures — only recreated when songs actually change, not on every setState.
+  Future<List<SongModel>>? _tracksFuture;
+  Future<List<AlbumModel>>? _albumsFuture;
+  Future<List<ArtistModel>>? _artistsFuture;
+
+  void _refreshFutures() {
+    final svc = _serviceRef;
+    if (svc == null) return;
+    _tracksFuture = svc.getMostPlayedTracks();
+    _albumsFuture = svc.getMostPlayedAlbums();
+    _artistsFuture = svc.getMostPlayedArtists();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final service = Provider.of<AudioPlayerService>(context, listen: false);
+    if (_serviceRef == null) {
+      _serviceRef = service;
+      service.songsNotifier.addListener(_onSongsChanged);
+      _refreshFutures();
+    }
+  }
+
+  void _onSongsChanged() {
+    if (mounted) {
+      _refreshFutures();
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _serviceRef?.songsNotifier.removeListener(_onSongsChanged);
+    super.dispose();
+  }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -43,7 +82,7 @@ class _LibraryTabState extends State<LibraryTab>
 
     return Selector<AudioPlayerService, bool>(
       selector: (context, service) => service.currentSong != null,
-      builder: (context, hasCurrentSong, child) {
+      builder: (context, hasCurrentSong, _) {
         return SingleChildScrollView(
           padding: EdgeInsets.only(
             left: horizontalPadding,
@@ -59,12 +98,11 @@ class _LibraryTabState extends State<LibraryTab>
               constraints: BoxConstraints(
                 maxWidth: ResponsiveUtils.getContentMaxWidth(context),
               ),
-              child: child,
+              child: _buildContent(audioPlayerService, isTablet, layoutMode),
             ),
           ),
         );
       },
-      child: _buildContent(audioPlayerService, isTablet, layoutMode),
     );
   }
 
@@ -89,7 +127,7 @@ class _LibraryTabState extends State<LibraryTab>
           children: [
             buildCategorySection(
               title: AppLocalizations.of(context).tracks,
-              items: audioPlayerService.getMostPlayedTracks(),
+              items: _tracksFuture ?? audioPlayerService.getMostPlayedTracks(),
               onDetailsTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -110,7 +148,7 @@ class _LibraryTabState extends State<LibraryTab>
             const SizedBox(height: 24.0),
             buildCategorySection(
               title: AppLocalizations.of(context).albums,
-              items: audioPlayerService.getMostPlayedAlbums(),
+              items: _albumsFuture ?? audioPlayerService.getMostPlayedAlbums(),
               onDetailsTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AlbumsScreen()),
@@ -154,7 +192,7 @@ class _LibraryTabState extends State<LibraryTab>
             const SizedBox(height: 24.0),
             buildCategorySection(
               title: AppLocalizations.of(context).artists,
-              items: audioPlayerService.getMostPlayedArtists(),
+              items: _artistsFuture ?? audioPlayerService.getMostPlayedArtists(),
               onDetailsTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ArtistsScreen()),
@@ -223,7 +261,7 @@ class _LibraryTabState extends State<LibraryTab>
                 Expanded(
                   child: _buildTabletCategorySection(
                     title: AppLocalizations.of(context).tracks,
-                    items: audioPlayerService.getMostPlayedTracks(),
+                    items: _tracksFuture ?? audioPlayerService.getMostPlayedTracks(),
                     onDetailsTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -247,7 +285,7 @@ class _LibraryTabState extends State<LibraryTab>
                 Expanded(
                   child: _buildTabletCategorySection(
                     title: AppLocalizations.of(context).albums,
-                    items: audioPlayerService.getMostPlayedAlbums(),
+                    items: _albumsFuture ?? audioPlayerService.getMostPlayedAlbums(),
                     onDetailsTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -306,7 +344,7 @@ class _LibraryTabState extends State<LibraryTab>
                 Expanded(
                   child: _buildTabletCategorySection(
                     title: AppLocalizations.of(context).artists,
-                    items: audioPlayerService.getMostPlayedArtists(),
+                    items: _artistsFuture ?? audioPlayerService.getMostPlayedArtists(),
                     onDetailsTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(

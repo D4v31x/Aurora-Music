@@ -151,13 +151,32 @@ class _ListeningRecapScreenState extends State<ListeningRecapScreen> {
     final svc = SmartSuggestionsService();
     await svc.initialize();
 
+    // Anchor the recap window to firstListenTime so data from day 0 is never
+    // accidentally excluded by a "now − period" cutoff.
+    // e.g. at day 8 with period=7: currentPeriodNum=1 → windowStart = firstListen + 0*7 = day 0.
+    DateTime? windowStart;
+    final firstListen = svc.firstListenTime;
+    if (firstListen != null) {
+      final daysSince = DateTime.now().difference(firstListen).inDays;
+      final currentPeriodNum = daysSince ~/ period;
+      if (currentPeriodNum > 0) {
+        windowStart =
+            firstListen.add(Duration(days: (currentPeriodNum - 1) * period));
+      } else {
+        windowStart = firstListen;
+      }
+    }
+
     final songById = {
       for (final s in audioService.songs) s.id.toString(): s,
     };
 
-    final trackCounts = svc.trackPlayCountsForPeriod(period);
-    final artistCounts = svc.artistPlayCountsForPeriod(period);
-    final genreCounts = svc.genrePlayCountsForPeriod(period);
+    final trackCounts =
+        svc.trackPlayCountsForPeriod(period, fromDate: windowStart);
+    final artistCounts =
+        svc.artistPlayCountsForPeriod(period, fromDate: windowStart);
+    final genreCounts =
+        svc.genrePlayCountsForPeriod(period, fromDate: windowStart);
 
     List<MapEntry<String, int>> sorted(Map<String, int> m, int take) =>
         (m.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
@@ -260,9 +279,12 @@ class _ListeningRecapScreenState extends State<ListeningRecapScreen> {
           periodDays: period,
           totalListens: trackCounts.values.fold(0, (a, b) => a + b),
           uniqueTracks: trackCounts.keys.length,
-          estimatedMinutes: svc.estimatedMinutesForPeriod(period),
-          mostActiveHour: svc.mostActiveHourForPeriod(period),
-          mostActiveWeekday: svc.mostActiveWeekdayForPeriod(period),
+          estimatedMinutes:
+              svc.estimatedMinutesForPeriod(period, fromDate: windowStart),
+          mostActiveHour:
+              svc.mostActiveHourForPeriod(period, fromDate: windowStart),
+          mostActiveWeekday:
+              svc.mostActiveWeekdayForPeriod(period, fromDate: windowStart),
           topTracks: topTracks,
           topArtists: topArtists,
           topGenres: topGenres,

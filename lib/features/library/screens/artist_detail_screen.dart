@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
 import '../../../shared/services/local_caching_service.dart';
+import '../../../shared/services/folder_filter_service.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/expanding_player.dart';
@@ -89,11 +90,13 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
   }
 
   Future<void> _loadSongs() async {
-    final songs = await _audioQuery.querySongs(
+    final rawSongs = await _audioQuery.querySongs(
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
+    await FolderFilterService().ensureInitialized();
+    final songs = FolderFilterService().filterSongs(rawSongs);
 
     // Load albums for this artist
     final allAlbums = await _audioQuery.queryAlbums(
@@ -222,7 +225,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                       ? '${_allSongs.length} ${localizations.songs} · ${_albums.length} ${localizations.albums} · ${_formatDuration(_totalDuration)}'
                       : null,
                   badge: localizations.artist,
-                  heroTag: 'artist_image_${widget.artistName}',
+                  heroTag: null,
                   accentColor: _dominantColor == Colors.deepPurple.shade900
                       ? Colors.cyan
                       : _dominantColor,

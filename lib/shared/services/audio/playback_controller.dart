@@ -13,7 +13,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
     try {
       if (songs.isEmpty || startIndex < 0 || startIndex >= songs.length) {
         debugPrint('Invalid playlist or start index');
-        _errorController.add('Invalid playlist or start index');
+        _addError('Invalid playlist or start index');
         return;
       }
 
@@ -162,7 +162,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
         return;
       }
       debugPrint('Failed to set playlist: $e');
-      _errorController.add('Failed to set playlist: $e');
+      _addError('Failed to set playlist: $e');
       _isPlaying = false;
       isPlayingNotifier.value = false;
       _isLoading = false;
@@ -207,7 +207,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
         await setPlaylist(newSongs, 0);
       }
     } catch (e) {
-      _errorController.add('Failed to update playlist: $e');
+      _addError('Failed to update playlist: $e');
       _scheduleNotify();
     }
   }

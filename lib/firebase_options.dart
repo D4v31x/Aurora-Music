@@ -53,10 +53,11 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDQA6L_seYssE62g9ULLiBj2ippcfRgyig',
+    apiKey: 'AIzaSyC5s7N3cUMMDmqZJStztnu3UrekTmI_HUo',
     appId: '1:631238127682:android:57509e0d536498dfa53ddb',
     messagingSenderId: '631238127682',
     projectId: 'aurora-music-14da5',
     storageBucket: 'aurora-music-14da5.firebasestorage.app',
   );
+
 }

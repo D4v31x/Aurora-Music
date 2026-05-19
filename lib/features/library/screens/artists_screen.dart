@@ -47,15 +47,34 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
   final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
 
+  AudioPlayerService? _audioServiceRef;
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    // _loadArtists() is called from didChangeDependencies once the service is ready.
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final service = Provider.of<AudioPlayerService>(context, listen: false);
+    if (_audioServiceRef == null) {
+      _audioServiceRef = service;
+      service.songsNotifier.addListener(_onSongsChanged);
+      _loadArtists();
+    }
+  }
+
+  void _onSongsChanged() {
+    if (!mounted || _isLoading) return;
     _loadArtists();
   }
 
   @override
   void dispose() {
+    _audioServiceRef?.songsNotifier.removeListener(_onSongsChanged);
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _searchController.dispose();
@@ -93,11 +112,20 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
   }
 
   Future<void> _loadArtists() async {
-    final artists = await _artistAggregator.getAllArtists();
+    final artists = await _artistAggregator.getAllArtists(forceRefresh: true);
+
+    // Only keep artists with at least one song visible in the filtered set.
+    final allowedSongIds =
+        (_audioServiceRef?.songs ?? []).map((s) => s.id).toSet();
+    final visibleArtists = allowedSongIds.isEmpty && (_audioServiceRef == null)
+        ? artists
+        : artists
+            .where((a) => a.songIds.any((id) => allowedSongIds.contains(id)))
+            .toList();
 
     setState(() {
-      _allArtists = artists;
-      _filteredArtists = artists;
+      _allArtists = visibleArtists;
+      _filteredArtists = visibleArtists;
       _isLoading = false;
     });
     _applySorting();

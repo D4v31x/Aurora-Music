@@ -5,6 +5,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/notification_manager.dart';
+import '../../../shared/services/folder_filter_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -46,15 +47,34 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
 
+  AudioPlayerService? _audioServiceRef;
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    // _loadAlbums() is called from didChangeDependencies once the service is ready.
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final service = Provider.of<AudioPlayerService>(context, listen: false);
+    if (_audioServiceRef == null) {
+      _audioServiceRef = service;
+      service.songsNotifier.addListener(_onSongsChanged);
+      _loadAlbums();
+    }
+  }
+
+  void _onSongsChanged() {
+    if (!mounted || _isLoading) return;
     _loadAlbums();
   }
 
   @override
   void dispose() {
+    _audioServiceRef?.songsNotifier.removeListener(_onSongsChanged);
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _searchController.dispose();
@@ -98,9 +118,15 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
+    // Only keep albums that have at least one song in the visible (filtered) set.
+    final allowedAlbumIds =
+        (_audioServiceRef?.songs ?? []).map((s) => s.albumId).toSet();
+    final visibleAlbums = allowedAlbumIds.isEmpty && (_audioServiceRef == null)
+        ? albums
+        : albums.where((a) => allowedAlbumIds.contains(a.id)).toList();
     setState(() {
-      _allAlbums = albums;
-      _filteredAlbums = albums;
+      _allAlbums = visibleAlbums;
+      _filteredAlbums = visibleAlbums;
       _isLoading = false;
     });
     _applySorting();
@@ -633,11 +659,13 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   Future<void> _playAlbum(AlbumModel album) async {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    final songs = await _audioQuery.querySongs(
+    final rawSongs = await _audioQuery.querySongs(
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
+    await FolderFilterService().ensureInitialized();
+    final songs = FolderFilterService().filterSongs(rawSongs);
     final albumSongs = songs.where((s) => s.album == album.album).toList();
     if (albumSongs.isNotEmpty) {
       unawaited(audioPlayerService.setPlaylist(
@@ -654,11 +682,13 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   Future<void> _shuffleAlbum(AlbumModel album) async {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    final songs = await _audioQuery.querySongs(
+    final rawSongs = await _audioQuery.querySongs(
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
+    await FolderFilterService().ensureInitialized();
+    final songs = FolderFilterService().filterSongs(rawSongs);
     final albumSongs = songs.where((s) => s.album == album.album).toList()
       ..shuffle();
     if (albumSongs.isNotEmpty) {
@@ -676,11 +706,13 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   Future<void> _addAlbumToQueue(AlbumModel album) async {
     final audioPlayerService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    final songs = await _audioQuery.querySongs(
+    final rawSongs = await _audioQuery.querySongs(
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
+    await FolderFilterService().ensureInitialized();
+    final songs = FolderFilterService().filterSongs(rawSongs);
     final albumSongs = songs.where((s) => s.album == album.album).toList();
 
     if (albumSongs.isNotEmpty) {

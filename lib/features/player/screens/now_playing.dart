@@ -5,6 +5,7 @@
 library;
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ import '../../../shared/models/models.dart';
 import '../../../shared/services/artist_separator_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/services/local_caching_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/background_manager_service.dart';
 import '../../../shared/services/lyrics_service.dart';
@@ -480,31 +482,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           SizedBox(
             width: artworkSize,
             height: artworkSize,
-            child: Hero(
-              tag: 'songArtwork',
-              createRectTween: (begin, end) {
-                return MaterialRectCenterArcTween(begin: begin, end: end);
-              },
-              child: Material(
-                color: Colors.transparent,
-                child: GestureDetector(
-                  onTap: _openFullscreenArtwork,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
+            child: GestureDetector(
+              onTap: _openFullscreenArtwork,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: _buildArtworkImage(),
-                    ),
-                  ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: _buildArtworkImage(),
                 ),
               ),
             ),
@@ -542,31 +535,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   }
 
   Widget _buildHeroArtwork() {
-    return Hero(
-      tag: 'songArtwork',
-      createRectTween: (begin, end) {
-        return MaterialRectCenterArcTween(begin: begin, end: end);
-      },
-      child: Material(
-        color: Colors.transparent,
-        child: GestureDetector(
-          onTap: _openFullscreenArtwork,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+    return GestureDetector(
+      onTap: _openFullscreenArtwork,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: _buildArtworkImage(),
-            ),
-          ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: _buildArtworkImage(),
         ),
       ),
     );
@@ -630,19 +614,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   Widget _buildTitleText(AudioPlayerService audioPlayerService,
       {required bool isTablet}) {
-    return Hero(
-      tag: 'songTitle',
-      child: Material(
-        color: Colors.transparent,
-        child: ScrollingText(
-          text: audioPlayerService.currentSong?.title ?? 'No song playing',
-          style: TextStyle(
-            fontSize: isTablet ? 22 : 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-            fontFamily: FontConstants.fontFamily,
-          ),
-        ),
+    return ScrollingText(
+      text: audioPlayerService.currentSong?.title ?? 'No song playing',
+      style: TextStyle(
+        fontSize: isTablet ? 22 : 18,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+        fontFamily: FontConstants.fontFamily,
       ),
     );
   }
@@ -653,22 +631,16 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         audioPlayerService.currentSong?.artist ?? 'Unknown artist';
     final artists = ArtistSeparatorService().splitArtists(artistString);
 
-    return Hero(
-      tag: 'songArtist',
-      child: Material(
-        color: Colors.transparent,
-        child: Text(
-          artists.join(', '),
-          style: TextStyle(
-            fontSize: isTablet ? 16 : 14,
-            color: Colors.white.withValues(alpha: 0.7),
-            fontFamily: FontConstants.fontFamily,
-          ),
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+    return Text(
+      artists.join(', '),
+      style: TextStyle(
+        fontSize: isTablet ? 16 : 14,
+        color: Colors.white.withValues(alpha: 0.7),
+        fontFamily: FontConstants.fontFamily,
       ),
+      textAlign: TextAlign.center,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -773,7 +745,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
 // MARK: - Artist Selection Sheet
 
-class _ArtistSelectionSheet extends StatelessWidget {
+class _ArtistSelectionSheet extends StatefulWidget {
   final List<String> artists;
   final void Function(String artist) onArtistSelected;
 
@@ -781,6 +753,28 @@ class _ArtistSelectionSheet extends StatelessWidget {
     required this.artists,
     required this.onArtistSelected,
   });
+
+  @override
+  State<_ArtistSelectionSheet> createState() => _ArtistSelectionSheetState();
+}
+
+class _ArtistSelectionSheetState extends State<_ArtistSelectionSheet> {
+  final _imageCache = <String, String?>{};
+  final _artistService = LocalCachingArtistService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImages();
+  }
+
+  Future<void> _loadImages() async {
+    await _artistService.initialize();
+    for (final name in widget.artists) {
+      final path = await _artistService.fetchArtistImage(name);
+      if (mounted) setState(() => _imageCache[name] = path);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -810,36 +804,15 @@ class _ArtistSelectionSheet extends StatelessWidget {
               ),
               // Header
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.15),
-                        ),
-                      ),
-                      child: const iconoir.Group(
-                        color: Colors.white,
-                        width: 20,
-                        height: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Text(
-                      AppLocalizations.of(context).selectArtist,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                  ],
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                child: Text(
+                  AppLocalizations.of(context).selectArtist,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
               Divider(
@@ -847,57 +820,59 @@ class _ArtistSelectionSheet extends StatelessWidget {
                 height: 1,
               ),
               // Artist rows
-              ...artists.map(
-                (artist) => Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => onArtistSelected(artist),
-                    splashColor: Colors.white.withValues(alpha: 0.08),
-                    highlightColor: Colors.white.withValues(alpha: 0.05),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 14,
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(22),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.12),
+              ...widget.artists.map(
+                (artist) {
+                  final imagePath = _imageCache[artist];
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => widget.onArtistSelected(artist),
+                      splashColor: Colors.white.withValues(alpha: 0.08),
+                      highlightColor: Colors.white.withValues(alpha: 0.05),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        child: Row(
+                          children: [
+                            // Artist avatar — image if cached, else initials
+                            ClipOval(
+                              child: SizedBox(
+                                width: 36,
+                                height: 36,
+                                child: imagePath != null
+                                    ? Image.file(
+                                        File(imagePath),
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            _ArtistInitialAvatar(name: artist),
+                                      )
+                                    : _ArtistInitialAvatar(name: artist),
                               ),
                             ),
-                            child: const iconoir.User(
-                              color: Colors.white,
-                              width: 22,
-                              height: 22,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Text(
-                              artist,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                artist,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
-                          ),
-                          iconoir.NavArrowRight(
-                            color: Colors.white.withValues(alpha: 0.4),
-                            width: 24,
-                            height: 24,
-                          ),
-                        ],
+                            iconoir.NavArrowRight(
+                              color: Colors.white.withValues(alpha: 0.4),
+                              width: 20,
+                              height: 20,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
               SizedBox(height: 12 + bottomInset),
             ],
@@ -915,3 +890,29 @@ class _ArtistSelectionSheet extends StatelessWidget {
   }
 }
 
+// MARK: - Artist Initial Avatar
+
+class _ArtistInitialAvatar extends StatelessWidget {
+  final String name;
+  const _ArtistInitialAvatar({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
+    final color = Theme.of(context).colorScheme.primary.withValues(alpha: 0.25);
+    return ColoredBox(
+      color: color,
+      child: Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            fontFamily: FontConstants.fontFamily,
+          ),
+        ),
+      ),
+    );
+  }
+}

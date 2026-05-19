@@ -48,6 +48,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final LocalCachingArtistService _artistService =
       LocalCachingArtistService();
   final ArtistAggregatorService _artistAggregator = ArtistAggregatorService();
+
+  /// Kept so we can remove the songsNotifier listener in dispose() without
+  /// needing a BuildContext at that point.
+  AudioPlayerService? _audioServiceRef;
   List<SongModel> songs = [];
   List<String> randomArtists = [];
   List<SongModel> randomSongs = [];
@@ -98,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _showWelcomeMessage();
     _checkAndShowFeedbackReminder();
     _checkAndShowTranslationReminder();
+    _checkRecapBanner();
   }
 
   // Initialize the home screen and check permissions
@@ -105,6 +110,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     try {
       // Set the toast context for notifications
       NotificationManager.setToastContext(context);
+
+      // Subscribe to instant song-list updates (e.g. folder exclusion toggles).
+      final audioService =
+          Provider.of<AudioPlayerService>(context, listen: false);
+      if (_audioServiceRef == null) {
+        _audioServiceRef = audioService;
+        audioService.songsNotifier.addListener(_onSongsListChanged);
+      }
 
       // Set initialized state
       if (mounted) {
@@ -154,6 +167,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         );
       }
     });
+  }
+
+  Future<void> _checkRecapBanner() async {
+    // Wait for library to load so SmartSuggestionsService is initialised.
+    await Future.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+    await InsightsPromoService.checkAndTriggerBanner(audioService.firstListenTime);
   }
 
   Future<void> _checkAndShowFeedbackReminder() async {
@@ -245,8 +267,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  /// Called when [AudioPlayerService.songsNotifier] updates (e.g. a folder
+  /// exclusion toggle).  Refreshes the song list used by [SearchTab] and
+  /// reloads the For You / smart-suggestions section.
+  void _onSongsListChanged() {
+    if (!mounted) return;
+    final audioService = _audioServiceRef;
+    if (audioService == null) return;
+    setState(() {
+      songs = audioService.songs;
+    });
+    unawaited(_loadSmartSuggestions());
+  }
+
   @override
   void dispose() {
+    _audioServiceRef?.songsNotifier.removeListener(_onSongsListChanged);
     _animationController?.dispose();
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
@@ -830,9 +866,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         ? _RecapAppBarContent(
                                             key: const ValueKey('recap'),
                                             onShow: () {
+                                              final period = InsightsPromoService
+                                                  .recapBannerPeriodNotifier.value;
                                               InsightsPromoService
                                                   .recapBannerNotifier
                                                   .value = false;
+                                              // Persist the period so the recap screen
+                                              // opens with the right data window.
+                                              InsightsPromoService
+                                                  .setRecapPeriodDays(period);
+                                              // Record that this week/month was viewed.
+                                              final audioService =
+                                                  Provider.of<AudioPlayerService>(
+                                                      context, listen: false);
+                                              final first =
+                                                  audioService.firstListenTime;
+                                              if (first != null) {
+                                                InsightsPromoService
+                                                    .markRecapViewed(period, first);
+                                              }
                                               Navigator.of(context).push(
                                                 MaterialPageRoute(
                                                   builder: (_) => const

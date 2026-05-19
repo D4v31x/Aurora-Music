@@ -283,7 +283,7 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final audioService = Provider.of<AudioPlayerService>(context);
+    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
     final song = audioService.currentSong;
 
     return AppBackground(
