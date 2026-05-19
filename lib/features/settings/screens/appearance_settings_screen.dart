@@ -84,7 +84,7 @@ class AppearanceSettingsScreen extends StatelessWidget {
                         width: 20,
                         height: 20),
                     title: l10n.settingsAccentColor,
-                    subtitle: l10n.settingsAccentColorDesc,
+                    subtitle: _selectedPresetName(themeProvider),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -264,6 +264,14 @@ class AppearanceSettingsScreen extends StatelessWidget {
   }
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+String _selectedPresetName(ThemeProvider themeProvider) {
+  final idx = themeProvider.selectedPresetIndex;
+  if (idx < 0 || idx >= AppThemePreset.presets.length) return 'Custom color';
+  return AppThemePreset.presets[idx].name;
+}
+
 // ── Dialogs ───────────────────────────────────────────────────────────────────
 
 void _showRestartDialog(BuildContext context, bool newIsHighEnd) {
@@ -330,84 +338,111 @@ void _showRestartDialog(BuildContext context, bool newIsHighEnd) {
 
 void _showColorPickerDialog(
     BuildContext context, ThemeProvider themeProvider) {
-  const presetColors = [
-    Color(0xFF673AB7),
-    Color(0xFF3F51B5),
-    Color(0xFF2196F3),
-    Color(0xFF009688),
-    Color(0xFF4CAF50),
-    Color(0xFFFFC107),
-    Color(0xFFFF9800),
-    Color(0xFFF44336),
-    Color(0xFFE91E63),
-    Color(0xFF00BCD4),
-  ];
-
   showDialog(
     context: context,
-    builder: (dialogContext) => AlertDialog(
-      backgroundColor: Colors.grey[900]?.withValues(alpha: 0.95),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
-      ),
-      title: const Text('Accent Color',
-          style: TextStyle(
-              fontFamily: FontConstants.fontFamily,
-              color: Colors.white,
-              fontWeight: FontWeight.bold)),
-      content: Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: presetColors.map((color) {
-          final isSelected =
-              color.toARGB32() == themeProvider.customSeedColor.toARGB32();
-          return GestureDetector(
-            onTap: () {
-              themeProvider.setCustomSeedColor(color);
-              Navigator.pop(dialogContext);
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                border: isSelected
-                    ? Border.all(color: Colors.white, width: 3)
-                    : Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 1.5),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                            color: color.withValues(alpha: 0.6),
-                            blurRadius: 12)
-                      ]
-                    : null,
-              ),
-              child: isSelected
-                  ? const iconoir.Check(
-                      color: Colors.white, width: 22, height: 22)
-                  : null,
-            ),
-          );
-        }).toList(),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogContext),
-          child: const Text('Cancel',
-              style: TextStyle(
-                  fontFamily: FontConstants.fontFamily,
-                  color: Colors.white70)),
+    builder: (dialogContext) {
+      final presets = AppThemePreset.presets;
+      return AlertDialog(
+        backgroundColor: Colors.grey[900]?.withValues(alpha: 0.95),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
         ),
-      ],
-    ),
+        title: const Text('Color Theme',
+            style: TextStyle(
+                fontFamily: FontConstants.fontFamily,
+                color: Colors.white,
+                fontWeight: FontWeight.bold)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: GridView.builder(
+            shrinkWrap: true,
+            itemCount: presets.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 2.8,
+            ),
+            itemBuilder: (_, i) {
+              final preset = presets[i];
+              final isSelected = !themeProvider.useDynamicColor &&
+                  themeProvider.selectedPresetIndex == i;
+              return GestureDetector(
+                onTap: () {
+                  themeProvider.setPreset(i);
+                  Navigator.pop(dialogContext);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? preset.seedColor.withValues(alpha: 0.35)
+                        : Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected
+                          ? preset.seedColor
+                          : Colors.white.withValues(alpha: 0.12),
+                      width: isSelected ? 2 : 1,
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: preset.seedColor,
+                          shape: BoxShape.circle,
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                      color: preset.seedColor
+                                          .withValues(alpha: 0.5),
+                                      blurRadius: 8)
+                                ]
+                              : null,
+                        ),
+                        child: isSelected
+                            ? const iconoir.Check(
+                                color: Colors.white, width: 16, height: 16)
+                            : null,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        preset.name,
+                        style: TextStyle(
+                          fontFamily: FontConstants.fontFamily,
+                          fontSize: 13,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color:
+                              isSelected ? Colors.white : Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel',
+                style: TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    color: Colors.white70)),
+          ),
+        ],
+      );
+    },
   );
 }
-
 // ── Language tile (stateless, self-contained) ─────────────────────────────────
 
 class _LanguageTile extends StatelessWidget {

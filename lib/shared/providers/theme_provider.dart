@@ -5,9 +5,29 @@ import 'package:shared_preferences/shared_preferences.dart';
 enum LowEndBackground { blobs, solid }
 enum HighEndBackground { blurredArtwork, solid }
 
+class AppThemePreset {
+  const AppThemePreset({required this.name, required this.seedColor});
+  final String name;
+  final Color seedColor;
+
+  static const List<AppThemePreset> presets = [
+    AppThemePreset(name: 'Aurora', seedColor: Color(0xFF8B5CF6)),
+    AppThemePreset(name: 'Midnight', seedColor: Color(0xFF304FFE)),
+    AppThemePreset(name: 'Ocean', seedColor: Color(0xFF0091EA)),
+    AppThemePreset(name: 'Teal', seedColor: Color(0xFF00B8D4)),
+    AppThemePreset(name: 'Forest', seedColor: Color(0xFF00C853)),
+    AppThemePreset(name: 'Neon', seedColor: Color(0xFF76FF03)),
+    AppThemePreset(name: 'Gold', seedColor: Color(0xFFFFC107)),
+    AppThemePreset(name: 'Ember', seedColor: Color(0xFFFF6D00)),
+    AppThemePreset(name: 'Rose', seedColor: Color(0xFFD50000)),
+    AppThemePreset(name: 'Sakura', seedColor: Color(0xFFFF4081)),
+  ];
+}
+
 class ThemeProvider with ChangeNotifier {
   static const String _useDynamicColorKey = 'use_dynamic_color';
   static const String _customSeedColorKey = 'custom_seed_color';
+  static const String _selectedPresetIndexKey = 'selected_preset_index';
   static const String _blurIntensityKey = 'blur_intensity';
   static const String _overlayOpacityKey = 'overlay_opacity';
   static const String _lowEndBackgroundKey = 'low_end_background';
@@ -19,6 +39,7 @@ class ThemeProvider with ChangeNotifier {
   bool _useDynamicColor = true;
   ColorScheme? _darkDynamicColorScheme;
   Color _customSeedColor = Colors.deepPurple;
+  int _selectedPresetIndex = 0; // -1 = custom (no preset)
   double _blurIntensity = 25.0;
   double _overlayOpacity = 0.3;
   LowEndBackground _lowEndBackground = LowEndBackground.solid;
@@ -30,6 +51,7 @@ class ThemeProvider with ChangeNotifier {
   bool get useDynamicColor => _useDynamicColor;
   ThemeMode get themeMode => ThemeMode.dark;
   Color get customSeedColor => _customSeedColor;
+  int get selectedPresetIndex => _selectedPresetIndex;
   double get blurIntensity => _blurIntensity;
   double get overlayOpacity => _overlayOpacity;
   LowEndBackground get lowEndBackground => _lowEndBackground;
@@ -147,6 +169,7 @@ class ThemeProvider with ChangeNotifier {
     if (savedColor != null) {
       _customSeedColor = Color(savedColor);
     }
+    _selectedPresetIndex = prefs.getInt(_selectedPresetIndexKey) ?? 0;
     _blurIntensity = (prefs.getDouble(_blurIntensityKey) ?? 25.0).clamp(5.0, 40.0);
     _overlayOpacity = prefs.getDouble(_overlayOpacityKey) ?? 0.3;
     final lowEndBgIndex = prefs.getInt(_lowEndBackgroundKey);
@@ -190,9 +213,24 @@ class ThemeProvider with ChangeNotifier {
 
   Future<void> setCustomSeedColor(Color color) async {
     _customSeedColor = color;
+    _selectedPresetIndex = -1;
     _cachedDarkTheme = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_customSeedColorKey, color.toARGB32());
+    await prefs.setInt(_selectedPresetIndexKey, -1);
+    notifyListeners();
+  }
+
+  Future<void> setPreset(int index) async {
+    assert(index >= 0 && index < AppThemePreset.presets.length);
+    _selectedPresetIndex = index;
+    _customSeedColor = AppThemePreset.presets[index].seedColor;
+    _useDynamicColor = false;
+    _cachedDarkTheme = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_selectedPresetIndexKey, index);
+    await prefs.setInt(_customSeedColorKey, _customSeedColor.toARGB32());
+    await prefs.setBool(_useDynamicColorKey, false);
     notifyListeners();
   }
 
