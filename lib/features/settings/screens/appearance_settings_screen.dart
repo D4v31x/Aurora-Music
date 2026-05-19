@@ -59,7 +59,7 @@ class AppearanceSettingsScreen extends StatelessWidget {
           ),
           children: [
             // ── THEME ────────────────────────────────────────────────────
-            SettingsTiles.buildSectionHeader(context, 'Theme'),
+            SettingsTiles.buildSectionHeader(context, l10n.settingsTheme),
             Consumer<ThemeProvider>(
               builder: (context, themeProvider, _) =>
                   SettingsTiles.buildGlassmorphicCard(context, children: [
@@ -83,8 +83,8 @@ class AppearanceSettingsScreen extends StatelessWidget {
                         color: Theme.of(context).colorScheme.primary,
                         width: 20,
                         height: 20),
-                    title: 'Accent Color',
-                    subtitle: 'Choose the app accent color',
+                    title: l10n.settingsAccentColor,
+                    subtitle: l10n.settingsAccentColorDesc,
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -120,7 +120,7 @@ class AppearanceSettingsScreen extends StatelessWidget {
             ),
 
             // ── BACKGROUND ───────────────────────────────────────────────
-            SettingsTiles.buildSectionHeader(context, 'Background'),
+            SettingsTiles.buildSectionHeader(context, l10n.settingsBackground),
             Consumer2<ThemeProvider, PerformanceModeProvider>(
               builder: (context, themeProvider, perfProvider, _) =>
                   SettingsTiles.buildGlassmorphicCard(context, children: [
@@ -229,7 +229,7 @@ class AppearanceSettingsScreen extends StatelessWidget {
             ),
 
             // ── LAYOUT ───────────────────────────────────────────────────
-            SettingsTiles.buildSectionHeader(context, 'Layout'),
+            SettingsTiles.buildSectionHeader(context, l10n.settingsLayout),
             SettingsTiles.buildGlassmorphicCard(context, children: [
               SettingsTiles.buildActionTile(
                 context,
@@ -250,7 +250,7 @@ class AppearanceSettingsScreen extends StatelessWidget {
             ]),
 
             // ── LANGUAGE ─────────────────────────────────────────────────
-            SettingsTiles.buildSectionHeader(context, 'Language'),
+            SettingsTiles.buildSectionHeader(context, l10n.settingsLanguage),
             SettingsTiles.buildGlassmorphicCard(context, children: [
               _LanguageTile(isFirst: true),
             ]),

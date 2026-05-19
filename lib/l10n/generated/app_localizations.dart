@@ -1922,11 +1922,47 @@ abstract class AppLocalizations {
   /// **'About Aurora Music'**
   String get settingsAboutApp;
 
+  /// No description provided for @settingsAboutSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Version, feedback & updates'**
+  String get settingsAboutSubtitle;
+
+  /// No description provided for @settingsAccentColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent Color'**
+  String get settingsAccentColor;
+
+  /// No description provided for @settingsAccentColorDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the app accent color'**
+  String get settingsAccentColorDesc;
+
   /// No description provided for @settingsAppearance.
   ///
   /// In en, this message translates to:
   /// **'Appearance'**
   String get settingsAppearance;
+
+  /// No description provided for @settingsAppearanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme, colors & layout'**
+  String get settingsAppearanceSubtitle;
+
+  /// No description provided for @settingsAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get settingsAudio;
+
+  /// No description provided for @settingsBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get settingsBackground;
 
   /// No description provided for @settingsCacheCleared.
   ///
@@ -2012,6 +2048,18 @@ abstract class AppLocalizations {
   /// **'Enabled'**
   String get settingsEnabled;
 
+  /// No description provided for @settingsDataWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Window'**
+  String get settingsDataWindow;
+
+  /// No description provided for @settingsDataWindowDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'How far back the recap screen looks'**
+  String get settingsDataWindowDesc;
+
   /// No description provided for @settingsGapless.
   ///
   /// In en, this message translates to:
@@ -2024,11 +2072,53 @@ abstract class AppLocalizations {
   /// **'Seamless track transitions'**
   String get settingsGaplessDesc;
 
+  /// No description provided for @settingsInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Insights'**
+  String get settingsInsights;
+
+  /// No description provided for @settingsInsightsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening recap period'**
+  String get settingsInsightsSubtitle;
+
+  /// No description provided for @settingsLast7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 Days'**
+  String get settingsLast7Days;
+
+  /// No description provided for @settingsLast30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 Days'**
+  String get settingsLast30Days;
+
   /// No description provided for @settingsLanguage.
   ///
   /// In en, this message translates to:
   /// **'Language'**
   String get settingsLanguage;
+
+  /// No description provided for @settingsLayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get settingsLayout;
+
+  /// No description provided for @settingsLibraryFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Library Folders'**
+  String get settingsLibraryFolders;
+
+  /// No description provided for @settingsLibraryFoldersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Include or exclude scan folders'**
+  String get settingsLibraryFoldersSubtitle;
 
   /// No description provided for @settingsMaterialYou.
   ///
@@ -2041,6 +2131,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dynamic colors from wallpaper'**
   String get settingsMaterialYouDesc;
+
+  /// No description provided for @settingsMonthlyRecap.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Recap'**
+  String get settingsMonthlyRecap;
+
+  /// No description provided for @settingsMonthlyRecapDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show a banner every month (takes precedence over weekly)'**
+  String get settingsMonthlyRecapDesc;
 
   /// No description provided for @settingsNormalization.
   ///
@@ -2084,11 +2186,83 @@ abstract class AppLocalizations {
   /// **'Playback'**
   String get settingsPlayback;
 
+  /// No description provided for @settingsPlaybackSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed, gapless & normalization'**
+  String get settingsPlaybackSubtitle;
+
+  /// No description provided for @settingsRecapBannerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The banner appears on the home screen at the start of each new week or month counted from your very first play. Tapping \"Later\" hides it for the session; tapping \"Show\" marks it as seen.'**
+  String get settingsRecapBannerDesc;
+
+  /// No description provided for @settingsRecapContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recap Content'**
+  String get settingsRecapContent;
+
+  /// No description provided for @settingsRecapContentDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Controls how much history the recap screen displays when you open it manually or via the banner.'**
+  String get settingsRecapContentDesc;
+
+  /// No description provided for @settingsRecapSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Recap Schedule'**
+  String get settingsRecapSchedule;
+
   /// No description provided for @settingsStorage.
   ///
   /// In en, this message translates to:
   /// **'Storage'**
   String get settingsStorage;
+
+  /// No description provided for @settingsCacheItems.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String settingsCacheItems(String count);
+
+  /// No description provided for @settingsMemoryCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory Cache'**
+  String get settingsMemoryCache;
+
+  /// No description provided for @settingsStorageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache & media files'**
+  String get settingsStorageSubtitle;
+
+  /// No description provided for @settingsTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsTheme;
+
+  /// No description provided for @settingsTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get settingsTools;
+
+  /// No description provided for @settingsResetSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Setup'**
+  String get settingsResetSetup;
+
+  /// No description provided for @settingsResetSetupDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart the onboarding flow'**
+  String get settingsResetSetupDesc;
 
   /// No description provided for @settingsUpdateAvailable.
   ///
@@ -2101,6 +2275,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You\'re up to date'**
   String get settingsUpToDate;
+
+  /// No description provided for @settingsWeeklyRecap.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Recap'**
+  String get settingsWeeklyRecap;
+
+  /// No description provided for @settingsWeeklyRecapDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show a banner every week after your first play'**
+  String get settingsWeeklyRecapDesc;
 
   /// No description provided for @settingsVersion.
   ///
@@ -3235,6 +3421,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Later'**
   String get recapBannerLater;
+
+  /// No description provided for @eqTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Equalizer'**
+  String get eqTitle;
+
+  /// No description provided for @eqOn.
+  ///
+  /// In en, this message translates to:
+  /// **'ON'**
+  String get eqOn;
+
+  /// No description provided for @eqOff.
+  ///
+  /// In en, this message translates to:
+  /// **'OFF'**
+  String get eqOff;
+
+  /// No description provided for @eqNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Equalizer not available on this device.'**
+  String get eqNotAvailable;
+
+  /// No description provided for @eqSavePreset.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Preset'**
+  String get eqSavePreset;
+
+  /// No description provided for @eqPresetNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. My Bass Boost'**
+  String get eqPresetNameHint;
+
+  /// No description provided for @eqPresetNameEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Name cannot be empty.'**
+  String get eqPresetNameEmpty;
+
+  /// No description provided for @eqPresetNameBuiltIn.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{name}\" is a built-in preset name.'**
+  String eqPresetNameBuiltIn(String name);
+
+  /// No description provided for @eqResetAllBands.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset all bands'**
+  String get eqResetAllBands;
+
+  /// No description provided for @eqPresetsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PRESETS'**
+  String get eqPresetsLabel;
+
+  /// No description provided for @eqYourPresetsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR PRESETS'**
+  String get eqYourPresetsLabel;
+
+  /// No description provided for @eqSaveCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Save current'**
+  String get eqSaveCurrent;
+
+  /// No description provided for @eqSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust audio frequencies per band'**
+  String get eqSettingsSubtitle;
+
+  /// No description provided for @eqEmptyPresets.
+  ///
+  /// In en, this message translates to:
+  /// **'Dial in your sound, then tap \"Save current\".'**
+  String get eqEmptyPresets;
+
+  /// No description provided for @whatsNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s New'**
+  String get whatsNewTitle;
+
+  /// No description provided for @whatsNewIn.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s New in {version}'**
+  String whatsNewIn(String version);
+
+  /// No description provided for @whatsNewContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it!'**
+  String get whatsNewContinue;
+
+  /// No description provided for @whatsNewNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get whatsNewNext;
+
+  /// No description provided for @whatsNewPrev.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get whatsNewPrev;
 }
 
 class _AppLocalizationsDelegate

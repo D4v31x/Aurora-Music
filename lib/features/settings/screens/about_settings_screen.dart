@@ -241,8 +241,8 @@ class AboutSettingsScreen extends StatelessWidget {
                   context,
                   icon: iconoir.WarningTriangle(
                       color: Colors.orange, width: 20, height: 20),
-                  title: 'Reset Setup',
-                  subtitle: 'Restart the onboarding flow',
+                  title: l10n.settingsResetSetup,
+                  subtitle: l10n.settingsResetSetupDesc,
                   iconColor: Colors.orange,
                   onTap: onResetSetup!,
                 ),

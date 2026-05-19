@@ -309,7 +309,13 @@
   "settings": "Settings",
   "settingsAbout": "About",
   "settingsAboutApp": "About Aurora Music",
+  "settingsAboutSubtitle": "Version, feedback & updates",
+  "settingsAccentColor": "Accent Color",
+  "settingsAccentColorDesc": "Choose the app accent color",
   "settingsAppearance": "Appearance",
+  "settingsAppearanceSubtitle": "Theme, colors & layout",
+  "settingsAudio": "Audio",
+  "settingsBackground": "Background",
   "settingsCacheCleared": "Cache cleared",
   "settingsCacheInfo": "Cache Information",
   "settingsCacheInfoDesc": "View storage usage",
@@ -324,11 +330,22 @@
   "settingsDarkModeDesc": "Switch to dark theme",
   "settingsDisabled": "Disabled",
   "settingsEnabled": "Enabled",
+  "settingsDataWindow": "Data Window",
+  "settingsDataWindowDesc": "How far back the recap screen looks",
   "settingsGapless": "Gapless Playback",
   "settingsGaplessDesc": "Seamless track transitions",
+  "settingsInsights": "Insights",
+  "settingsInsightsSubtitle": "Listening recap period",
+  "settingsLast7Days": "Last 7 Days",
+  "settingsLast30Days": "Last 30 Days",
   "settingsLanguage": "Language",
+  "settingsLayout": "Layout",
+  "settingsLibraryFolders": "Library Folders",
+  "settingsLibraryFoldersSubtitle": "Include or exclude scan folders",
   "settingsMaterialYou": "Material You",
   "settingsMaterialYouDesc": "Dynamic colors from wallpaper",
+  "settingsMonthlyRecap": "Monthly Recap",
+  "settingsMonthlyRecapDesc": "Show a banner every month (takes precedence over weekly)",
   "settingsNormalization": "Volume Normalization",
   "settingsNormalizationDesc": "Consistent volume levels · Requires ReplayGain tags in your files",
   "playbackSpeed": "Playback Speed",
@@ -336,9 +353,28 @@
   "adjustPitchWithSpeed": "Adjust pitch with speed",
   "adjustPitchWithSpeedDesc": "When off, tempo changes without pitch shift",
   "settingsPlayback": "Playback",
+  "settingsPlaybackSubtitle": "Speed, gapless & normalization",
+  "settingsRecapBannerDesc": "The banner appears on the home screen at the start of each new week or month counted from your very first play. Tapping \"Later\" hides it for the session; tapping \"Show\" marks it as seen.",
+  "settingsRecapContent": "Recap Content",
+  "settingsRecapContentDesc": "Controls how much history the recap screen displays when you open it manually or via the banner.",
+  "settingsRecapSchedule": "Recap Schedule",
   "settingsStorage": "Storage",
+  "settingsCacheItems": "{count} items",
+  "@settingsCacheItems": {
+    "placeholders": {
+      "count": {"type": "String"}
+    }
+  },
+  "settingsMemoryCache": "Memory Cache",
+  "settingsStorageSubtitle": "Cache & media files",
+  "settingsTheme": "Theme",
+  "settingsTools": "Tools",
+  "settingsResetSetup": "Reset Setup",
+  "settingsResetSetupDesc": "Restart the onboarding flow",
   "settingsUpdateAvailable": "Update available!",
   "settingsUpToDate": "You're up to date",
+  "settingsWeeklyRecap": "Weekly Recap",
+  "settingsWeeklyRecapDesc": "Show a banner every week after your first play",
   "settingsVersion": "Version",
   "share": "Share",
   "showChangelog": "Show Changelog",
@@ -608,5 +644,36 @@
   "recapWeekdaySunday": "Sunday",
   "recapBannerTitle": "Music recap is here",
   "recapBannerShow": "Show",
-  "recapBannerLater": "Later"
+  "recapBannerLater": "Later",
+
+  "eqTitle": "Equalizer",
+  "eqOn": "ON",
+  "eqOff": "OFF",
+  "eqNotAvailable": "Equalizer not available on this device.",
+  "eqSavePreset": "Save Preset",
+  "eqPresetNameHint": "e.g. My Bass Boost",
+  "eqPresetNameEmpty": "Name cannot be empty.",
+  "eqPresetNameBuiltIn": "\"{name}\" is a built-in preset name.",
+  "@eqPresetNameBuiltIn": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "eqResetAllBands": "Reset all bands",
+  "eqPresetsLabel": "PRESETS",
+  "eqYourPresetsLabel": "YOUR PRESETS",
+  "eqSaveCurrent": "Save current",
+  "eqSettingsSubtitle": "Adjust audio frequencies per band",
+  "eqEmptyPresets": "Dial in your sound, then tap \"Save current\".",
+
+  "whatsNewTitle": "What's New",
+  "whatsNewIn": "What's New in {version}",
+  "@whatsNewIn": {
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
+  "whatsNewContinue": "Got it!",
+  "whatsNewNext": "Next",
+  "whatsNewPrev": "Back"
 }

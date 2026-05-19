@@ -1,6 +1,7 @@
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/services/version_service.dart';
 import '../../../shared/services/notification_manager.dart';
@@ -55,14 +56,15 @@ class _SettingsTabState extends State<SettingsTab> {
   }
 
   Widget _buildSectionWidgets() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 8),
         _buildCategoryCard(
           icon: Icons.palette_outlined,
-          title: 'Appearance',
-          subtitle: 'Theme, colors & layout',
+          title: l10n.settingsAppearance,
+          subtitle: l10n.settingsAppearanceSubtitle,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => const AppearanceSettingsScreen(),
@@ -72,8 +74,8 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
         _buildCategoryCard(
           icon: Icons.play_circle_outline,
-          title: 'Playback',
-          subtitle: 'Speed, gapless & normalization',
+          title: l10n.settingsPlayback,
+          subtitle: l10n.settingsPlaybackSubtitle,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => const PlaybackSettingsScreen(),
@@ -82,8 +84,8 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
         _buildCategoryCard(
           icon: Icons.insights_outlined,
-          title: 'Insights',
-          subtitle: 'Listening recap period',
+          title: l10n.settingsInsights,
+          subtitle: l10n.settingsInsightsSubtitle,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => const InsightsSettingsScreen(),
@@ -92,8 +94,8 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
         _buildCategoryCard(
           icon: Icons.storage_outlined,
-          title: 'Storage',
-          subtitle: 'Cache & media files',
+          title: l10n.settingsStorage,
+          subtitle: l10n.settingsStorageSubtitle,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => StorageSettingsScreen(
@@ -104,8 +106,8 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
         _buildCategoryCard(
           icon: Icons.folder_outlined,
-          title: 'Library Folders',
-          subtitle: 'Include or exclude scan folders',
+          title: l10n.settingsLibraryFolders,
+          subtitle: l10n.settingsLibraryFoldersSubtitle,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => const FolderFilterSettingsScreen(),
@@ -114,8 +116,8 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
         _buildCategoryCard(
           icon: Icons.info_outline,
-          title: 'About',
-          subtitle: 'Version, feedback & updates',
+          title: l10n.settingsAbout,
+          subtitle: l10n.settingsAboutSubtitle,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => AboutSettingsScreen(

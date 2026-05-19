@@ -1,6 +1,56 @@
 class ChangelogContent {
   static const Map<String, List<Map<String, List<String>>>> versions = {
     // Latest version at the top
+    '1.3.2': [
+      {
+        '_': ['Aurora Music 1.3 — Insights, Equalizer & Folder Filtering'],
+      },
+      {
+        'New Features': [
+          'Aurora Wrapped — a personalised year-in-review of your listening habits',
+          'Listening Insights — detailed stats about your most played artists, albums, and tracks',
+          'Equalizer — built-in 5-band EQ with presets and custom profiles',
+          'Folder Filtering — exclude specific folders from your library in Settings'
+        ],
+      },
+      {
+        'Now Playing': [
+          'Improved artwork transitions and track info animations',
+          'Sleep timer UI improvements',
+        ],
+      },
+      {
+        'Library': [
+          'Refreshed Albums, Artists, and Tracks screens',
+          'Smart suggestions algorithm improvements',
+        ],
+      },
+      {
+        'Settings': [
+          'Appearance settings redesigned and expanded',
+          'New Playback settings screen',
+          'Insights settings for controlling listening data',
+          'Folder filter management screen',
+        ],
+      },
+      {
+        'Performance': [
+          'Fixed unnecessary full-screen rebuilds in Now Playing, Fullscreen Lyrics, and Lyrics Editor during active playback',
+          'Eliminated redundant widget rebuilds in Library tab sections',
+          'Optimised animated background — color blend listenable is now cached instead of recreated each frame',
+          'Reduced list sort overhead in Recently Added section',
+          'Various state management and rendering optimisations',
+        ],
+      },
+      {
+        'Under the Hood': [
+          'Bluetooth playback service improvements',
+          'Lyrics translation service refactored',
+          'Play count tracking accuracy improved',
+          'Minor code cleanup and dependency updates',
+        ],
+      },
+    ],
     '1.0.5': [
       {
         '_': ['Aurora Music 1.0 — the first production release'],

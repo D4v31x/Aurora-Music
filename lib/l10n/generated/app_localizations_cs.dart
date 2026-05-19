@@ -967,7 +967,25 @@ class AppLocalizationsCs extends AppLocalizations {
   String get settingsAboutApp => 'O Aurora Music';
 
   @override
+  String get settingsAboutSubtitle => 'Verze, zpětná vazba a aktualizace';
+
+  @override
+  String get settingsAccentColor => 'Barva zvýraznění';
+
+  @override
+  String get settingsAccentColorDesc => 'Zvolte barvu zvýraznění aplikace';
+
+  @override
   String get settingsAppearance => 'Vzhled';
+
+  @override
+  String get settingsAppearanceSubtitle => 'Motiv, barvy a rozložení';
+
+  @override
+  String get settingsAudio => 'Zvuk';
+
+  @override
+  String get settingsBackground => 'Pozadí';
 
   @override
   String get settingsCacheCleared => 'Mezipaměť vymazána';
@@ -1013,19 +1031,54 @@ class AppLocalizationsCs extends AppLocalizations {
   String get settingsEnabled => 'Zapnuto';
 
   @override
+  String get settingsDataWindow => 'Časové okno dat';
+
+  @override
+  String get settingsDataWindowDesc => 'Jak daleko zpět přehled zobrazuje';
+
+  @override
   String get settingsGapless => 'Plynulé přehrávání';
 
   @override
   String get settingsGaplessDesc => 'Bez mezer mezi skladbami';
 
   @override
+  String get settingsInsights => 'Přehledy';
+
+  @override
+  String get settingsInsightsSubtitle => 'Období přehledu poslechu';
+
+  @override
+  String get settingsLast7Days => 'Posledních 7 dní';
+
+  @override
+  String get settingsLast30Days => 'Posledních 30 dní';
+
+  @override
   String get settingsLanguage => 'Jazyk';
+
+  @override
+  String get settingsLayout => 'Rozložení';
+
+  @override
+  String get settingsLibraryFolders => 'Složky knihovny';
+
+  @override
+  String get settingsLibraryFoldersSubtitle =>
+      'Zahrňte nebo vylučte složky ze skenování';
 
   @override
   String get settingsMaterialYou => 'Material You';
 
   @override
   String get settingsMaterialYouDesc => 'Dynamické barvy z tapety';
+
+  @override
+  String get settingsMonthlyRecap => 'Měsíční přehled';
+
+  @override
+  String get settingsMonthlyRecapDesc =>
+      'Zobrazovat banner každý měsíc (má přednost před týdenním)';
 
   @override
   String get settingsNormalization => 'Normalizace hlasitosti';
@@ -1050,13 +1103,61 @@ class AppLocalizationsCs extends AppLocalizations {
   String get settingsPlayback => 'Přehrávání';
 
   @override
+  String get settingsPlaybackSubtitle =>
+      'Rychlost, plynulé přehrávání a normalizace';
+
+  @override
+  String get settingsRecapBannerDesc =>
+      'Banner se zobrazuje na domovské obrazovce na začátku každého nového týdne nebo měsíce počítaného od vašeho úplně prvního přehrání. Klepnutím na \"Později\" ho skryjete na tuto relaci; klepnutím na \"Zobrazit\" ho označíte jako zobrazený.';
+
+  @override
+  String get settingsRecapContent => 'Obsah přehledu';
+
+  @override
+  String get settingsRecapContentDesc =>
+      'Ovládá, jak velkou historii přehled zobrazuje, když ho otevřete ručně nebo přes banner.';
+
+  @override
+  String get settingsRecapSchedule => 'Plán přehledů';
+
+  @override
   String get settingsStorage => 'Úložiště';
+
+  @override
+  String settingsCacheItems(String count) {
+    return '$count položek';
+  }
+
+  @override
+  String get settingsMemoryCache => 'Paměťová mezipaměť';
+
+  @override
+  String get settingsStorageSubtitle => 'Mezipaměť a mediální soubory';
+
+  @override
+  String get settingsTheme => 'Motiv';
+
+  @override
+  String get settingsTools => 'Nástroje';
+
+  @override
+  String get settingsResetSetup => 'Resetovat nastavení';
+
+  @override
+  String get settingsResetSetupDesc => 'Restartovat průvodce nastavením';
 
   @override
   String get settingsUpdateAvailable => 'Aktualizace k dispozici!';
 
   @override
   String get settingsUpToDate => 'Máte nejnovější verzi';
+
+  @override
+  String get settingsWeeklyRecap => 'Týdenní přehled';
+
+  @override
+  String get settingsWeeklyRecapDesc =>
+      'Zobrazovat banner každý týden po vašem prvním přehrání';
 
   @override
   String get settingsVersion => 'Verze';
@@ -1672,4 +1773,66 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get recapBannerLater => 'Později';
+
+  @override
+  String get eqTitle => 'Ekvalizér';
+
+  @override
+  String get eqOn => 'ZAP';
+
+  @override
+  String get eqOff => 'VYP';
+
+  @override
+  String get eqNotAvailable => 'Ekvalizér na tomto zařízení není k dispozici.';
+
+  @override
+  String get eqSavePreset => 'Uložit předvolbu';
+
+  @override
+  String get eqPresetNameHint => 'např. Můj basový boost';
+
+  @override
+  String get eqPresetNameEmpty => 'Název nemůže být prázdný.';
+
+  @override
+  String eqPresetNameBuiltIn(String name) {
+    return '\"$name\" je název vestavěné předvolby.';
+  }
+
+  @override
+  String get eqResetAllBands => 'Resetovat všechna pásma';
+
+  @override
+  String get eqPresetsLabel => 'PŘEDVOLBY';
+
+  @override
+  String get eqYourPresetsLabel => 'VAŠE PŘEDVOLBY';
+
+  @override
+  String get eqSaveCurrent => 'Uložit aktuální';
+
+  @override
+  String get eqSettingsSubtitle => 'Upravte zvukové frekvence pro každé pásmo';
+
+  @override
+  String get eqEmptyPresets =>
+      'Nastavte zvuk a pak klepněte na \"Uložit aktuální\".';
+
+  @override
+  String get whatsNewTitle => 'Co je nového';
+
+  @override
+  String whatsNewIn(String version) {
+    return 'Co je nového ve verzi $version';
+  }
+
+  @override
+  String get whatsNewContinue => 'Rozumím!';
+
+  @override
+  String get whatsNewNext => 'Další';
+
+  @override
+  String get whatsNewPrev => 'Zpět';
 }

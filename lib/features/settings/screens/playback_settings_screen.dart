@@ -54,7 +54,7 @@ class PlaybackSettingsScreen extends StatelessWidget {
           ),
           children: [
             // ── AUDIO ─────────────────────────────────────────────────────
-            SettingsTiles.buildSectionHeader(context, 'Audio'),
+            SettingsTiles.buildSectionHeader(context, l10n.settingsAudio),
             Consumer<AudioPlayerService>(
               builder: (context, audioService, _) =>
                   SettingsTiles.buildGlassmorphicCard(context, children: [
@@ -85,7 +85,7 @@ class PlaybackSettingsScreen extends StatelessWidget {
             ),
 
             // ── PLAYBACK ──────────────────────────────────────────────────
-            SettingsTiles.buildSectionHeader(context, 'Playback'),
+            SettingsTiles.buildSectionHeader(context, l10n.settingsPlayback),
             Consumer<AudioPlayerService>(
               builder: (context, audioService, _) =>
                   SettingsTiles.buildGlassmorphicCard(context, children: [
@@ -125,7 +125,7 @@ class PlaybackSettingsScreen extends StatelessWidget {
             ),
 
             // ── TOOLS ─────────────────────────────────────────────────────
-            SettingsTiles.buildSectionHeader(context, 'Tools'),
+            SettingsTiles.buildSectionHeader(context, l10n.settingsTools),
             SettingsTiles.buildGlassmorphicCard(context, children: [
               SettingsTiles.buildActionTile(
                 context,
@@ -149,8 +149,8 @@ class PlaybackSettingsScreen extends StatelessWidget {
                     color: Theme.of(context).colorScheme.primary,
                     width: 20,
                     height: 20),
-                title: 'Equalizer',
-                subtitle: 'Adjust audio frequencies per band',
+                title: l10n.eqTitle,
+                subtitle: l10n.eqSettingsSubtitle,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(

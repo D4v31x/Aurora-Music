@@ -964,7 +964,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAboutApp => 'About Aurora Music';
 
   @override
+  String get settingsAboutSubtitle => 'Version, feedback & updates';
+
+  @override
+  String get settingsAccentColor => 'Accent Color';
+
+  @override
+  String get settingsAccentColorDesc => 'Choose the app accent color';
+
+  @override
   String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsAppearanceSubtitle => 'Theme, colors & layout';
+
+  @override
+  String get settingsAudio => 'Audio';
+
+  @override
+  String get settingsBackground => 'Background';
 
   @override
   String get settingsCacheCleared => 'Cache cleared';
@@ -1010,19 +1028,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsEnabled => 'Enabled';
 
   @override
+  String get settingsDataWindow => 'Data Window';
+
+  @override
+  String get settingsDataWindowDesc => 'How far back the recap screen looks';
+
+  @override
   String get settingsGapless => 'Gapless Playback';
 
   @override
   String get settingsGaplessDesc => 'Seamless track transitions';
 
   @override
+  String get settingsInsights => 'Insights';
+
+  @override
+  String get settingsInsightsSubtitle => 'Listening recap period';
+
+  @override
+  String get settingsLast7Days => 'Last 7 Days';
+
+  @override
+  String get settingsLast30Days => 'Last 30 Days';
+
+  @override
   String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsLayout => 'Layout';
+
+  @override
+  String get settingsLibraryFolders => 'Library Folders';
+
+  @override
+  String get settingsLibraryFoldersSubtitle =>
+      'Include or exclude scan folders';
 
   @override
   String get settingsMaterialYou => 'Material You';
 
   @override
   String get settingsMaterialYouDesc => 'Dynamic colors from wallpaper';
+
+  @override
+  String get settingsMonthlyRecap => 'Monthly Recap';
+
+  @override
+  String get settingsMonthlyRecapDesc =>
+      'Show a banner every month (takes precedence over weekly)';
 
   @override
   String get settingsNormalization => 'Volume Normalization';
@@ -1048,13 +1101,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsPlayback => 'Playback';
 
   @override
+  String get settingsPlaybackSubtitle => 'Speed, gapless & normalization';
+
+  @override
+  String get settingsRecapBannerDesc =>
+      'The banner appears on the home screen at the start of each new week or month counted from your very first play. Tapping \"Later\" hides it for the session; tapping \"Show\" marks it as seen.';
+
+  @override
+  String get settingsRecapContent => 'Recap Content';
+
+  @override
+  String get settingsRecapContentDesc =>
+      'Controls how much history the recap screen displays when you open it manually or via the banner.';
+
+  @override
+  String get settingsRecapSchedule => 'Recap Schedule';
+
+  @override
   String get settingsStorage => 'Storage';
+
+  @override
+  String settingsCacheItems(String count) {
+    return '$count items';
+  }
+
+  @override
+  String get settingsMemoryCache => 'Memory Cache';
+
+  @override
+  String get settingsStorageSubtitle => 'Cache & media files';
+
+  @override
+  String get settingsTheme => 'Theme';
+
+  @override
+  String get settingsTools => 'Tools';
+
+  @override
+  String get settingsResetSetup => 'Reset Setup';
+
+  @override
+  String get settingsResetSetupDesc => 'Restart the onboarding flow';
 
   @override
   String get settingsUpdateAvailable => 'Update available!';
 
   @override
   String get settingsUpToDate => 'You\'re up to date';
+
+  @override
+  String get settingsWeeklyRecap => 'Weekly Recap';
+
+  @override
+  String get settingsWeeklyRecapDesc =>
+      'Show a banner every week after your first play';
 
   @override
   String get settingsVersion => 'Version';
@@ -1670,4 +1770,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recapBannerLater => 'Later';
+
+  @override
+  String get eqTitle => 'Equalizer';
+
+  @override
+  String get eqOn => 'ON';
+
+  @override
+  String get eqOff => 'OFF';
+
+  @override
+  String get eqNotAvailable => 'Equalizer not available on this device.';
+
+  @override
+  String get eqSavePreset => 'Save Preset';
+
+  @override
+  String get eqPresetNameHint => 'e.g. My Bass Boost';
+
+  @override
+  String get eqPresetNameEmpty => 'Name cannot be empty.';
+
+  @override
+  String eqPresetNameBuiltIn(String name) {
+    return '\"$name\" is a built-in preset name.';
+  }
+
+  @override
+  String get eqResetAllBands => 'Reset all bands';
+
+  @override
+  String get eqPresetsLabel => 'PRESETS';
+
+  @override
+  String get eqYourPresetsLabel => 'YOUR PRESETS';
+
+  @override
+  String get eqSaveCurrent => 'Save current';
+
+  @override
+  String get eqSettingsSubtitle => 'Adjust audio frequencies per band';
+
+  @override
+  String get eqEmptyPresets => 'Dial in your sound, then tap \"Save current\".';
+
+  @override
+  String get whatsNewTitle => 'What\'s New';
+
+  @override
+  String whatsNewIn(String version) {
+    return 'What\'s New in $version';
+  }
+
+  @override
+  String get whatsNewContinue => 'Got it!';
+
+  @override
+  String get whatsNewNext => 'Next';
+
+  @override
+  String get whatsNewPrev => 'Back';
 }

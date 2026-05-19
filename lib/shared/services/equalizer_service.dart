@@ -79,7 +79,10 @@ class EqualizerService extends ChangeNotifier {
   Future<void> init(AndroidEqualizer eq) async {
     if (_initialized) return;
     try {
-      _params = await eq.parameters;
+      _params = await eq.parameters.timeout(
+        const Duration(seconds: 8),
+        onTimeout: () => throw StateError('Equalizer parameters timed out — no audio pipeline active yet'),
+      );
       final prefs = await SharedPreferences.getInstance();
       _enabled = prefs.getBool('eq_enabled') ?? false;
       _preset = prefs.getString('eq_preset') ?? 'Flat';

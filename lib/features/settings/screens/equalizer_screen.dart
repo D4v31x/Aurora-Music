@@ -6,6 +6,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/font_constants.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../main.dart' show equalizer;
 import '../../../shared/services/equalizer_service.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -45,16 +46,17 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) {
+          final l10n = AppLocalizations.of(ctx);
           void validate() {
             final name = controller.text.trim();
             if (name.isEmpty) {
-              setState(() => errorMsg = 'Name cannot be empty.');
+              setState(() => errorMsg = l10n.eqPresetNameEmpty);
               return;
             }
             final isBuiltIn = EqualizerService.builtInPresets
                 .any((p) => p.name.toLowerCase() == name.toLowerCase());
             if (isBuiltIn) {
-              setState(() => errorMsg = '"$name" is a built-in preset name.');
+              setState(() => errorMsg = l10n.eqPresetNameBuiltIn(name));
               return;
             }
             svc.saveCurrentAsPreset(name);
@@ -71,9 +73,9 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Save Preset',
-                    style: TextStyle(
+                  Text(
+                    l10n.eqSavePreset,
+                    style: const TextStyle(
                       fontFamily: FontConstants.fontFamily,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -89,7 +91,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                       fontFamily: FontConstants.fontFamily,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'e.g. My Bass Boost',
+                      hintText: l10n.eqPresetNameHint,
                       hintStyle:
                           TextStyle(color: Colors.white.withValues(alpha: 0.35)),
                       filled: true,
@@ -127,7 +129,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                       TextButton(
                         onPressed: () => Navigator.pop(ctx),
                         child: Text(
-                          'Cancel',
+                          l10n.cancel,
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.5),
                             fontFamily: FontConstants.fontFamily,
@@ -137,7 +139,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                       TextButton(
                         onPressed: validate,
                         child: Text(
-                          'Save',
+                          l10n.save,
                           style: TextStyle(
                             color: Theme.of(ctx).colorScheme.primary,
                             fontFamily: FontConstants.fontFamily,
@@ -181,7 +183,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Equalizer',
+          AppLocalizations.of(context).eqTitle,
           style: TextStyle(
             fontFamily: FontConstants.fontFamily,
             fontWeight: FontWeight.bold,
@@ -209,7 +211,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    svc.enabled ? 'ON' : 'OFF',
+                    svc.enabled ? AppLocalizations.of(context).eqOn : AppLocalizations.of(context).eqOff,
                     style: TextStyle(
                       fontFamily: FontConstants.fontFamily,
                       fontWeight: FontWeight.w700,
@@ -237,7 +239,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Text(
-                  'Equalizer not available on this device.',
+                  AppLocalizations.of(context).eqNotAvailable,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.grey,
@@ -338,17 +340,20 @@ class _InteractiveCurveState extends State<_InteractiveCurve> {
   static const double _kTopPad  = 20.0;
   static const double _kBotPad  = 28.0; // frequency label space
   static const double _kLeftPad = 40.0; // dB label space
-  static const double _kRightPad = 8.0;
+  static const double _kRightPad = 16.0;
+  static const double _kBandInset = 20.0; // extra inset for outermost dots
 
   double _freqToX(double hz, double w) {
     final bands = widget.params.bands;
-    if (bands.length < 2) return (w - _kLeftPad - _kRightPad) / 2 + _kLeftPad;
+    final usableLeft = _kLeftPad + _kBandInset;
+    final usableRight = _kRightPad + _kBandInset;
+    if (bands.length < 2) return (w - usableLeft - usableRight) / 2 + usableLeft;
     final minHz = bands.first.centerFrequency.toDouble();
     final maxHz = bands.last.centerFrequency.toDouble();
-    if (minHz == maxHz) return (w - _kLeftPad - _kRightPad) / 2 + _kLeftPad;
+    if (minHz == maxHz) return (w - usableLeft - usableRight) / 2 + usableLeft;
     final t = (math.log(hz) - math.log(minHz)) /
         (math.log(maxHz) - math.log(minHz));
-    return _kLeftPad + t * (w - _kLeftPad - _kRightPad);
+    return usableLeft + t * (w - usableLeft - usableRight);
   }
 
   double _gainToY(double db) {
@@ -392,7 +397,7 @@ class _InteractiveCurveState extends State<_InteractiveCurve> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(20),
@@ -733,7 +738,7 @@ class _BandValueRow extends StatelessWidget {
         : Colors.black.withValues(alpha: 0.28);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         decoration: BoxDecoration(
           color: isDark
@@ -825,7 +830,7 @@ class _BandValueRow extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Reset all bands',
+                  AppLocalizations.of(context).eqResetAllBands,
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     fontSize: 12,
@@ -874,14 +879,14 @@ class _PresetsSection extends StatelessWidget {
       children: [
         // ── Built-in presets ──────────────────────────────────────────────
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-          child: Text('PRESETS', style: _labelStyle(isDark)),
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+          child: Text(AppLocalizations.of(context).eqPresetsLabel, style: _labelStyle(isDark)),
         ),
         SizedBox(
           height: 40,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: EqualizerService.builtInPresets.length,
             separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (_, i) {
@@ -903,16 +908,16 @@ class _PresetsSection extends StatelessWidget {
 
         // ── Your Presets ──────────────────────────────────────────────────
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 12, 10),
+          padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
           child: Row(
             children: [
-              Text('YOUR PRESETS', style: _labelStyle(isDark)),
+              Text(AppLocalizations.of(context).eqYourPresetsLabel, style: _labelStyle(isDark)),
               const Spacer(),
               TextButton.icon(
                 onPressed: onSavePressed,
                 icon: Icon(Icons.add_rounded, size: 16, color: cs.primary),
                 label: Text(
-                  'Save current',
+                  AppLocalizations.of(context).eqSaveCurrent,
                   style: TextStyle(
                     fontSize: 12,
                     fontFamily: FontConstants.fontFamily,
@@ -932,9 +937,9 @@ class _PresetsSection extends StatelessWidget {
         ),
         if (svc.customPresets.isEmpty)
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Text(
-              'Dial in your sound, then tap "Save current".',
+              AppLocalizations.of(context).eqEmptyPresets,
               style: TextStyle(
                 fontSize: 13,
                 fontFamily: FontConstants.fontFamily,
@@ -949,7 +954,7 @@ class _PresetsSection extends StatelessWidget {
             height: 40,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
               itemCount: svc.customPresets.length,
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (_, i) {

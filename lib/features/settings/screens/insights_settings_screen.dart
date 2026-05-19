@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:provider/provider.dart';
 import '../../../core/constants/font_constants.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/insights_promo_service.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -46,6 +47,7 @@ class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cs     = Theme.of(context).colorScheme;
+    final l10n   = AppLocalizations.of(context);
 
     return AppBackground(child: Scaffold(
       backgroundColor: Colors.transparent,
@@ -61,7 +63,7 @@ class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Insights',
+          l10n.settingsInsights,
           style: TextStyle(
             fontFamily: FontConstants.fontFamily,
             fontWeight: FontWeight.bold,
@@ -80,14 +82,14 @@ class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
           ),
           children: [
             // ── RECAP SCHEDULE ──────────────────────────────────────────
-            SettingsTiles.buildSectionHeader(context, 'Recap Schedule'),
+            SettingsTiles.buildSectionHeader(context, l10n.settingsRecapSchedule),
             SettingsTiles.buildGlassmorphicCard(context, children: [
               SettingsTiles.buildSwitchTile(
                 context,
                 icon: Icon(Icons.calendar_view_week_rounded,
                     color: cs.primary, size: 20),
-                title: 'Weekly Recap',
-                subtitle: 'Show a banner every week after your first play',
+                title: l10n.settingsWeeklyRecap,
+                subtitle: l10n.settingsWeeklyRecapDesc,
                 value: _weeklyEnabled,
                 onChanged: (v) async {
                   await InsightsPromoService.setWeeklyEnabled(v);
@@ -99,8 +101,8 @@ class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
                 context,
                 icon: Icon(Icons.calendar_month_rounded,
                     color: cs.primary, size: 20),
-                title: 'Monthly Recap',
-                subtitle: 'Show a banner every month (takes precedence over weekly)',
+                title: l10n.settingsMonthlyRecap,
+                subtitle: l10n.settingsMonthlyRecapDesc,
                 value: _monthlyEnabled,
                 onChanged: (v) async {
                   await InsightsPromoService.setMonthlyEnabled(v);
@@ -111,9 +113,7 @@ class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(22, 10, 22, 0),
               child: Text(
-                'The banner appears on the home screen at the start of each new '
-                'week or month counted from your very first play. Tapping "Later" '
-                'hides it for the session; tapping "Show" marks it as seen.',
+                l10n.settingsRecapBannerDesc,
                 style: TextStyle(
                   fontSize: 12,
                   fontFamily: FontConstants.fontFamily,
@@ -124,15 +124,15 @@ class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
             ),
 
             // ── RECAP CONTENT ────────────────────────────────────────────
-            SettingsTiles.buildSectionHeader(context, 'Recap Content'),
+            SettingsTiles.buildSectionHeader(context, l10n.settingsRecapContent),
             SettingsTiles.buildGlassmorphicCard(context, children: [
               SettingsTiles.buildSegmentedChoiceTile(
                 context,
                 icon: Icon(Icons.bar_chart_rounded,
                     color: cs.primary, size: 20),
-                title: 'Data Window',
-                subtitle: 'How far back the recap screen looks',
-                options: const ['Last 7 Days', 'Last 30 Days'],
+                title: l10n.settingsDataWindow,
+                subtitle: l10n.settingsDataWindowDesc,
+                options: [l10n.settingsLast7Days, l10n.settingsLast30Days],
                 selectedIndex: _periodDays == 7 ? 0 : 1,
                 onChanged: (i) async {
                   final days = i == 0 ? 7 : 30;
@@ -145,8 +145,7 @@ class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(22, 10, 22, 0),
               child: Text(
-                'Controls how much history the recap screen displays when you open it '
-                'manually or via the banner.',
+                l10n.settingsRecapContentDesc,
                 style: TextStyle(
                   fontSize: 12,
                   fontFamily: FontConstants.fontFamily,

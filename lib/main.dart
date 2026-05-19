@@ -128,11 +128,6 @@ void main() async {
       options.tracesSampleRate = 0.2;
       // ignore: experimental_member_use
       options.profilesSampleRate = 0.2;
-      // Session Replay — capture every session during testing; lower
-      // sessionSampleRate in production once validated.
-      options.replay.sessionSampleRate = 1.0;
-      options.replay.onErrorSampleRate = 1.0;
-      // maskAllText / maskAllImages are not yet exposed in the Flutter SDK.
     },
     appRunner: () {
       final app = MultiProvider(
