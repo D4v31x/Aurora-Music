@@ -10,7 +10,8 @@ class ChangelogContent {
           'Aurora Wrapped — a personalised year-in-review of your listening habits',
           'Listening Insights — detailed stats about your most played artists, albums, and tracks',
           'Equalizer — built-in 5-band EQ with presets and custom profiles',
-          'Folder Filtering — exclude specific folders from your library in Settings'
+          'Folder Filtering — exclude specific folders from your library in Settings',
+          'Color themes - Pick your favorite color instead of using Material You colors and background artwork-based theming',
         ],
       },
       {
