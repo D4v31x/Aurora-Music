@@ -14,6 +14,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/utils/sort_preferences.dart';
 import 'artist_detail_screen.dart';
 
 enum ArtistSortOption { name, tracks, albums }
@@ -49,11 +50,36 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
 
   AudioPlayerService? _audioServiceRef;
 
+  static const String _sortPrefsKey = 'artists';
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    _loadSortPreferences();
     // _loadArtists() is called from didChangeDependencies once the service is ready.
+  }
+
+  Future<void> _loadSortPreferences() async {
+    final saved = await SortPreferences.load(_sortPrefsKey);
+    if (!mounted) return;
+    final index = saved.index;
+    if (index != null && index >= 0 && index < ArtistSortOption.values.length) {
+      _sortOption = ArtistSortOption.values[index];
+      _isAscending = saved.ascending;
+      if (_allArtists.isNotEmpty) {
+        _applySorting();
+        setState(() => _resetPaging());
+      }
+    }
+  }
+
+  void _persistSort() {
+    unawaited(SortPreferences.save(
+      _sortPrefsKey,
+      optionIndex: _sortOption.index,
+      ascending: _isAscending,
+    ));
   }
 
   @override
@@ -215,6 +241,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                     child: PopupMenuButton<ArtistSortOption>(
                       onSelected: (option) {
                         setState(() => _sortOption = option);
+                        _persistSort();
                         _applySorting();
                         setState(() => _resetPaging());
                       },
@@ -252,6 +279,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                   LibraryControlPill(
                     onTap: () {
                       setState(() => _isAscending = !_isAscending);
+                      _persistSort();
                       _applySorting();
                       setState(() => _resetPaging());
                     },
@@ -581,6 +609,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(),
       barrierColor: Colors.black.withValues(alpha: 0.75),

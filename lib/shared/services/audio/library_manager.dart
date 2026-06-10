@@ -69,8 +69,27 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     }
   }
 
-  // Public method to initialize music library - should be called only from HomeScreen
   Future<bool> initializeMusicLibrary({bool forceRescan = false}) async {
+    if (!forceRescan && _libraryInitialized) return true;
+    if (!forceRescan && _libraryInitializationFuture != null) {
+      return _libraryInitializationFuture!;
+    }
+
+    if (forceRescan) _libraryInitialized = false;
+
+    final initialization = _initializeMusicLibrary(forceRescan: forceRescan);
+    if (!forceRescan) _libraryInitializationFuture = initialization;
+
+    try {
+      final success = await initialization;
+      if (success) _libraryInitialized = true;
+      return success;
+    } finally {
+      if (!forceRescan) _libraryInitializationFuture = null;
+    }
+  }
+
+  Future<bool> _initializeMusicLibrary({bool forceRescan = false}) async {
     try {
       final hasPermissions = await _checkPermissionStatus();
 
@@ -99,11 +118,11 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
           uriType: UriType.EXTERNAL,
           ignoreCase: true,
         );
-        _rawSongs = rawSongs; // cache for instant re-filter on folder exclusion change
+        _rawSongs =
+            rawSongs; // cache for instant re-filter on folder exclusion change
         await FolderFilterService().ensureInitialized();
         final songs = FolderFilterService().filterSongs(rawSongs);
-        debugPrint(
-            'Queried ${rawSongs.length} songs from storage, '
+        debugPrint('Queried ${rawSongs.length} songs from storage, '
             '${songs.length} after folder filter');
         _updateSongs(songs);
 
@@ -402,12 +421,38 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
   /// and current-song notifiers without reloading the entire library.
   /// Called after metadata has been edited and MediaStore has been rescanned.
   void refreshSongInPlaylist(SongModel updatedSong) {
+    // 0. Drop any cached artwork for this song so edited cover art shows up
+    // everywhere immediately instead of the stale thumbnail.
+    _artworkCache.invalidate(updatedSong.id, albumId: updatedSong.albumId);
+
     // 1. Replace in the master songs list
     final songIdx = _songs.indexWhere((s) => s.id == updatedSong.id);
     if (songIdx != -1) {
       final updated = List<SongModel>.from(_songs);
       updated[songIdx] = updatedSong;
       _updateSongs(updated);
+    }
+
+    // 1b. Replace in the unfiltered master list so folder re-filtering keeps
+    // the updated metadata.
+    final rawIdx = _rawSongs.indexWhere((s) => s.id == updatedSong.id);
+    if (rawIdx != -1) {
+      _rawSongs[rawIdx] = updatedSong;
+    }
+
+    // 1c. Replace in every playlist that contains the song so playlist views
+    // reflect the new metadata too.
+    bool playlistsChanged = false;
+    for (final playlist in _playlists) {
+      final idx = playlist.songs.indexWhere((s) => s.id == updatedSong.id);
+      if (idx != -1) {
+        playlist.songs[idx] = updatedSong;
+        playlistsChanged = true;
+      }
+    }
+    if (playlistsChanged) {
+      _playlistsDirty = true;
+      unawaited(savePlaylists());
     }
 
     // 2. Replace in the active playback queue
@@ -422,6 +467,52 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
       currentSongNotifier.value = updatedSong;
     }
 
+    _scheduleNotify();
+  }
+
+  /// Removes a deleted song from every in-memory collection so the change is
+  /// reflected across the whole app immediately, without waiting for a full
+  /// MediaStore rescan. Call this right after the file has been deleted.
+  Future<void> removeSongFromLibrary(SongModel song) async {
+    final songId = song.id;
+
+    // 1. Drop it from the active playback queue (handles skipping/stopping if
+    // it's the currently playing track).
+    final queueIdx = _playlist.indexWhere((s) => s.id == songId);
+    if (queueIdx != -1) {
+      await removeFromQueue(queueIdx);
+    }
+
+    // 2. Remove from the unfiltered + filtered master song lists.
+    _rawSongs.removeWhere((s) => s.id == songId);
+    if (_songs.any((s) => s.id == songId)) {
+      _updateSongs(_songs.where((s) => s.id != songId).toList());
+    }
+
+    // 3. Remove from all user-created and auto playlists, then persist.
+    bool playlistsChanged = false;
+    for (final playlist in _playlists) {
+      final before = playlist.songs.length;
+      playlist.songs.removeWhere((s) => s.id == songId);
+      if (playlist.songs.length != before) playlistsChanged = true;
+    }
+
+    // 4. Remove from liked songs + rebuild the liked-songs playlist.
+    if (_likedSongs.remove(songId.toString())) {
+      likedSongsNotifier.value = Set<String>.from(_likedSongs);
+      _updateLikedSongsPlaylist();
+      unawaited(saveLikedSongs());
+    }
+
+    if (playlistsChanged) {
+      _playlistsDirty = true;
+      unawaited(savePlaylists());
+    }
+
+    // 5. Refresh auto playlists (Most Played / Recently Added) and clear the
+    // smart-suggestions cache so analytics no longer reference the song.
+    _smartSuggestions.invalidateSuggestionCache();
+    _updateAutoPlaylists();
     _scheduleNotify();
   }
 

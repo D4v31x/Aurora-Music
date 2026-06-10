@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +11,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
 import '../../../shared/widgets/glassmorphic_card.dart';
+import '../../../shared/utils/sort_preferences.dart';
 import 'playlist_detail_screen.dart';
 
 /// Data class to hold playlist-related state for efficient rebuilds
@@ -71,6 +74,36 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
   String _searchQuery = '';
   PlaylistSortOption _sortOption = PlaylistSortOption.name;
   bool _isAscending = true;
+
+  static const String _sortPrefsKey = 'playlists';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSortPreferences();
+  }
+
+  Future<void> _loadSortPreferences() async {
+    final saved = await SortPreferences.load(_sortPrefsKey);
+    if (!mounted) return;
+    final index = saved.index;
+    if (index != null &&
+        index >= 0 &&
+        index < PlaylistSortOption.values.length) {
+      setState(() {
+        _sortOption = PlaylistSortOption.values[index];
+        _isAscending = saved.ascending;
+      });
+    }
+  }
+
+  void _persistSort() {
+    unawaited(SortPreferences.save(
+      _sortPrefsKey,
+      optionIndex: _sortOption.index,
+      ascending: _isAscending,
+    ));
+  }
 
   @override
   void dispose() {
@@ -144,6 +177,41 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                       icon: const Icon(Icons.add_rounded, color: Colors.white),
                       onPressed: () => _showCreatePlaylistDialog(context),
                     ),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert_rounded,
+                          color: Colors.white),
+                      color: Colors.grey.shade900,
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'import':
+                            _importPlaylist(context, audioService);
+                            break;
+                          case 'sync_folder':
+                            _chooseSyncFolder(context, audioService);
+                            break;
+                          case 'sync_now':
+                            _syncNow(context, audioService);
+                            break;
+                        }
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: 'import',
+                          child: Text('Import playlist (.m3u)',
+                              style: TextStyle(color: Colors.white)),
+                        ),
+                        PopupMenuItem(
+                          value: 'sync_folder',
+                          child: Text('Set sync folder…',
+                              style: TextStyle(color: Colors.white)),
+                        ),
+                        PopupMenuItem(
+                          value: 'sync_now',
+                          child: Text('Sync now',
+                              style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                    ),
                     const SizedBox(width: 8),
                   ],
                   searchField: LibrarySearchField(
@@ -160,8 +228,10 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                     children: [
                       Expanded(
                         child: PopupMenuButton<PlaylistSortOption>(
-                          onSelected: (opt) =>
-                              setState(() => _sortOption = opt),
+                          onSelected: (opt) {
+                            setState(() => _sortOption = opt);
+                            _persistSort();
+                          },
                           color: Colors.grey.shade900,
                           child: LibraryControlPill(
                             child: Row(
@@ -191,8 +261,10 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                       ),
                       const SizedBox(width: 8),
                       LibraryControlPill(
-                        onTap: () =>
-                            setState(() => _isAscending = !_isAscending),
+                        onTap: () {
+                          setState(() => _isAscending = !_isAscending);
+                          _persistSort();
+                        },
                         child: Icon(
                           _isAscending
                               ? Icons.arrow_upward_rounded
@@ -204,7 +276,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                     ],
                   ),
                 ),
-                if (likedPlaylist != null && likedPlaylist.songs.isNotEmpty)
+                if (likedPlaylist != null)
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -598,6 +670,67 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
     );
   }
 
+  Future<void> _importPlaylist(
+      BuildContext context, AudioPlayerService audioService) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final result = await FilePicker.platform.pickFiles();
+      final path = result?.files.single.path;
+      if (path == null) return;
+      final lower = path.toLowerCase();
+      if (!lower.endsWith('.m3u') && !lower.endsWith('.m3u8')) {
+        messenger.showSnackBar(const SnackBar(
+            content: Text('Please select an .m3u or .m3u8 file')));
+        return;
+      }
+      final playlist = await audioService.importPlaylistFromM3uFile(path);
+      if (playlist == null) {
+        messenger.showSnackBar(const SnackBar(
+            content: Text('No matching songs found for that playlist')));
+      } else {
+        messenger.showSnackBar(SnackBar(
+            content: Text(
+                'Imported "${playlist.name}" (${playlist.songs.length} songs)')));
+      }
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Import failed: $e')));
+    }
+  }
+
+  Future<void> _chooseSyncFolder(
+      BuildContext context, AudioPlayerService audioService) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final folder = await FilePicker.platform.getDirectoryPath();
+      if (folder == null) return;
+      await audioService.setPlaylistSyncFolder(folder);
+      await audioService.syncPlaylistsWithFolder();
+      messenger.showSnackBar(
+          SnackBar(content: Text('Playlists will sync with: $folder')));
+    } catch (e) {
+      messenger.showSnackBar(
+          SnackBar(content: Text('Could not set sync folder: $e')));
+    }
+  }
+
+  Future<void> _syncNow(
+      BuildContext context, AudioPlayerService audioService) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final folder = await audioService.playlistSyncFolder();
+    if (folder == null) {
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Set a sync folder first')));
+      return;
+    }
+    try {
+      final changed = await audioService.syncPlaylistsWithFolder();
+      messenger.showSnackBar(SnackBar(
+          content: Text(changed ? 'Playlists synced' : 'Already up to date')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Sync failed: $e')));
+    }
+  }
+
   void _showCreatePlaylistDialog(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final localizations = AppLocalizations.of(context);
@@ -735,6 +868,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),

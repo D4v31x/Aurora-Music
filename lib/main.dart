@@ -21,7 +21,6 @@ import 'l10n/generated/app_localizations.dart';
 import 'features/features.dart';
 import 'l10n/locale_provider.dart';
 import 'shared/providers/providers.dart';
-import 'shared/widgets/performance_debug_overlay.dart';
 import 'shared/widgets/expanding_player.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -31,8 +30,19 @@ import 'package:firebase_performance/firebase_performance.dart';
 import 'firebase_options.dart';
 import 'shared/services/equalizer_service.dart';
 
-/// Global navigator key for accessing navigator from anywhere
+/// Global navigator key for the ROOT navigator.
+///
+/// The root navigator hosts only transient popups that must appear *above* the
+/// mini player: dialogs, menus and bottom sheets (the latter via
+/// `useRootNavigator: true`). All in-app pages live in [pageNavigatorKey].
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+/// Global navigator key for the inner PAGE navigator.
+///
+/// Hosts every full-screen page (splash, home, detail, settings, now playing).
+/// The mini player is painted directly above this navigator but below the root
+/// navigator, so it floats over pages yet stays beneath dialogs/menus/sheets.
+final GlobalKey<NavigatorState> pageNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Global audio handler instance
 late AuroraAudioHandler audioHandler;
@@ -188,55 +198,6 @@ void main() async {
   }
 }
 
-/// Navigator observer that hides the mini player whenever a [PopupRoute]
-/// (dialog, bottom sheet, menu) is on the stack, so popups always appear
-/// above the mini player which lives in the MaterialApp.builder Stack.
-class _MiniPlayerObserver extends NavigatorObserver {
-  int _popupCount = 0;
-
-  void _update() {
-    ExpandingPlayer.popupActiveNotifier.value = _popupCount > 0;
-  }
-
-  @override
-  void didPush(Route route, Route? previousRoute) {
-    if (route is PopupRoute) {
-      _popupCount++;
-      _update();
-    } else {
-      // Screen navigation: bring the mini player back into view.
-      ExpandingPlayer.resetScrollHide();
-    }
-  }
-
-  @override
-  void didPop(Route route, Route? previousRoute) {
-    if (route is PopupRoute) {
-      _popupCount = (_popupCount - 1).clamp(0, 999);
-      _update();
-    }
-  }
-
-  @override
-  void didRemove(Route route, Route? previousRoute) {
-    if (route is PopupRoute) {
-      _popupCount = (_popupCount - 1).clamp(0, 999);
-      _update();
-    }
-  }
-
-  @override
-  void didReplace({Route? newRoute, Route? oldRoute}) {
-    if (oldRoute is PopupRoute && newRoute is! PopupRoute) {
-      _popupCount = (_popupCount - 1).clamp(0, 999);
-      _update();
-    } else if (newRoute is PopupRoute && oldRoute is! PopupRoute) {
-      _popupCount++;
-      _update();
-    }
-  }
-}
-
 /// Root application widget
 class MyApp extends StatefulWidget {
   final String languageCode;
@@ -249,7 +210,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late ui.Locale _locale;
-  final _MiniPlayerObserver _miniPlayerObserver = _MiniPlayerObserver();
   final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
   late final FirebaseAnalyticsObserver _analyticsObserver;
   StreamSubscription<bool>? _notificationClickSub;
@@ -289,6 +249,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         final audioService =
             Provider.of<AudioPlayerService>(context, listen: false);
         audioService.syncPlaybackState();
+        // Two-way sync playlists with the configured folder (no-op if unset).
+        unawaited(audioService.syncPlaylistsWithFolder());
       } catch (e) {
         // Ignore errors if context is not available
       }
@@ -346,8 +308,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             darkTheme: themeProvider.darkTheme,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            // Custom hero controller for faster, smoother transitions
-            navigatorObservers: [_miniPlayerObserver, _analyticsObserver],
             builder: (context, child) {
               return HeroControllerScope(
                 controller: HeroController(
@@ -355,37 +315,78 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     return MaterialRectCenterArcTween(begin: begin, end: end);
                   },
                 ),
-                // Mini player overlaid above all routes. The _MiniPlayerObserver
-                // hides it automatically whenever a PopupRoute (dialog / bottom
-                // sheet) is active so popups always appear on top.
-                // NotificationListener catches scroll events from all descendant
-                // scrollables to drive the mini player's slide-away behaviour.
-                child: NotificationListener<ScrollUpdateNotification>(
-                  onNotification: (notification) {
-                    ExpandingPlayer.handleScrollDelta(
-                        notification.scrollDelta ?? 0);
-                    return false;
-                  },
-                  child: Stack(
-                    children: [
-                      child ?? const SizedBox.shrink(),
-                      const ExpandingPlayer(),
-                    ],
-                  ),
-                ),
+                child: child ?? const SizedBox.shrink(),
               );
             },
-            home: Builder(
-              builder: (context) {
-                // Wrap the entire app with the performance debug overlay and AppBackground widget
-                return const PerformanceDebugOverlay(
-                  child: SplashScreen(),
-                );
-              },
-            ),
+            // The root navigator's single page is the app shell: an inner page
+            // navigator with the mini player painted directly above it. Dialogs,
+            // menus and sheets are pushed onto the root navigator (sheets use
+            // `useRootNavigator: true`), so they render above the mini player,
+            // while normal pages — hosted by the inner navigator — render below
+            // it. This separation is what keeps the mini player layered
+            // correctly without fighting the navigator's overlay ordering.
+            home: _AppShell(observers: [_analyticsObserver]),
           ),
         );
       },
+    );
+  }
+}
+
+/// The app shell: an inner page [Navigator] with the mini player painted on
+/// top of it. The inner navigator hosts every full-screen page; the mini
+/// player floats above those pages. Because dialogs/menus/sheets are pushed
+/// onto the *root* navigator (above this whole shell), they always cover the
+/// mini player.
+class _AppShell extends StatefulWidget {
+  final List<NavigatorObserver> observers;
+
+  const _AppShell({required this.observers});
+
+  @override
+  State<_AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<_AppShell> {
+  // The inner navigator needs its own hero controller so hero animations work
+  // between pages (the root navigator has a separate one from MaterialApp).
+  final HeroController _heroController = HeroController(
+    createRectTween: (Rect? begin, Rect? end) =>
+        MaterialRectCenterArcTween(begin: begin, end: end),
+  );
+
+  @override
+  void dispose() {
+    _heroController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Page layer — every full-screen route lives here, below the mini player.
+        Positioned.fill(
+          child: NavigatorPopHandler(
+            // System back: when the root navigator has nothing to pop (no
+            // dialog/sheet open), forward the gesture to the inner navigator.
+            onPop: () => pageNavigatorKey.currentState?.maybePop(),
+            child: HeroControllerScope(
+              controller: _heroController,
+              child: Navigator(
+                key: pageNavigatorKey,
+                observers: widget.observers,
+                onGenerateRoute: (settings) => MaterialPageRoute<void>(
+                  settings: settings,
+                  builder: (_) => const SplashScreen(),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Mini player layer — floats above pages, below root-navigator popups.
+        const Positioned.fill(child: ExpandingPlayer()),
+      ],
     );
   }
 }

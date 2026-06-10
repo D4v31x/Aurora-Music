@@ -389,6 +389,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get metadataSaved => 'Metadata saved successfully';
 
   @override
+  String get metadataApplied => 'Metadata downloaded successfully';
+
+  @override
+  String get metadataDownloadFailed =>
+      'Download failed. Check your connection and try again.';
+
+  @override
   String get moreResults => 'More Results';
 
   @override
@@ -1113,6 +1120,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsRecapContentDesc =>
       'Controls how much history the recap screen displays when you open it manually or via the banner.';
+
+  @override
+  String get settingsPreviewRecap => 'Preview Recap';
+
+  @override
+  String get settingsPreviewRecapDesc =>
+      'See how your recap looks right now with the current settings';
 
   @override
   String get settingsRecapSchedule => 'Recap Schedule';

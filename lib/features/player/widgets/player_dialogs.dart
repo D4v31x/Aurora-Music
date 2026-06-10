@@ -135,6 +135,7 @@ void showQueueDialog(
     BuildContext context, AudioPlayerService audioPlayerService) {
   showModalBottomSheet(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     shape: const RoundedRectangleBorder(),

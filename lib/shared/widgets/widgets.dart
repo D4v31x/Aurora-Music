@@ -45,5 +45,4 @@ export 'grainy_gradient_background.dart';
 export 'animated_progress_line.dart';
 
 // Debug and performance
-export 'performance_debug_overlay.dart';
 export 'optimized_widgets.dart';

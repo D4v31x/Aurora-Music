@@ -167,6 +167,7 @@ class _SleepTimerIndicatorState extends State<SleepTimerIndicator> {
 void showSleepTimerOptions(BuildContext context) {
   showModalBottomSheet(
     context: context,
+    useRootNavigator: true,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(),

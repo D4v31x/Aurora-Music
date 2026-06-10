@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/folder_filter_service.dart';
 import '../../../shared/services/notification_manager.dart';
@@ -215,8 +218,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           onTap: () =>
                               _showPlaylistOptions(context, updatedPlaylist),
                           child: Container(
-                                width: 40,
-                                height: 40,
+                                width: 36,
+                                height: 36,
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
@@ -226,8 +229,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                 ),
                                 child: const iconoir.MoreVert(
                                   color: Colors.white,
-                                  width: 20,
-                                  height: 20,
+                                  width: 16,
+                                  height: 16,
                                 ),
                           ),
                         ),
@@ -416,10 +419,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         color: color.withValues(alpha: 0.4),
                       ),
                     ),
-                    child: iconoir.PlusCircle(
-                      color: color,
-                      width: 24,
-                      height: 24,
+                    child: const iconoir.PlusCircle(
+                      color: Colors.white,
+                      width: 20,
+                      height: 20,
                     ),
                   ),
                 ),
@@ -746,17 +749,40 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         )));
   }
 
+  Future<void> _exportPlaylist(
+      BuildContext context, Playlist playlist,
+      {String extension = 'm3u8'}) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final audioService = context.read<AudioPlayerService>();
+    try {
+      final path = await audioService.exportPlaylistToTempFile(playlist,
+          extension: extension);
+      await Share.shareXFiles(
+        [XFile(path, mimeType: 'audio/x-mpegurl')],
+        subject: playlist.name,
+      );
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Export failed: $e')));
+    }
+  }
+
   void _showPlaylistOptions(BuildContext context, Playlist playlist) {
     final localizations = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false)
+        .isLowEndDevice;
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      builder: (context) {
+        final sheetContent = Container(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: isLowEnd
+                  ? Theme.of(context).colorScheme.surfaceContainerHigh
+                  : Colors.grey[900]!.withValues(alpha: 0.85),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(20)),
               border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
@@ -807,6 +833,36 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     _isEditingNotifier.value = true;
                   },
                 ),
+                // Export / Share as .m3u8
+                _buildOptionTile(
+                  context,
+                  iconoir.ShareAndroid(
+                    color: isDark ? Colors.white70 : Colors.black54,
+                    width: 22,
+                    height: 22,
+                  ),
+                  'Export (.m3u8)',
+                  isDark,
+                  () {
+                    Navigator.pop(context);
+                    _exportPlaylist(context, playlist, extension: 'm3u8');
+                  },
+                ),
+                // Export / Share as .m3u
+                _buildOptionTile(
+                  context,
+                  iconoir.ShareAndroid(
+                    color: isDark ? Colors.white70 : Colors.black54,
+                    width: 22,
+                    height: 22,
+                  ),
+                  'Export (.m3u)',
+                  isDark,
+                  () {
+                    Navigator.pop(context);
+                    _exportPlaylist(context, playlist, extension: 'm3u');
+                  },
+                ),
                 // Delete
                 _buildOptionTile(
                   context,
@@ -825,7 +881,18 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 ),
               ],
             ),
+          );
+
+        if (isLowEnd) return sheetContent;
+
+        return ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: sheetContent,
           ),
+        );
+      },
     );
   }
 

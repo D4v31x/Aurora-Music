@@ -387,7 +387,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       audioPlayerService: audioPlayerService,
                       size: isTablet ? 34 : 30,
                     ),
-
                   ],
                 ),
               ),
@@ -723,6 +722,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     // Multiple artists: show selection sheet
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(),

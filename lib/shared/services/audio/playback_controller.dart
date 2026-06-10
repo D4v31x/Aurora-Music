@@ -12,7 +12,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
 
     try {
       if (songs.isEmpty || startIndex < 0 || startIndex >= songs.length) {
-        debugPrint('Invalid playlist or start index');
+        if (kDebugMode) debugPrint('Invalid playlist or start index');
         _addError('Invalid playlist or start index');
         return;
       }
@@ -43,7 +43,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
       _isSettingPlaylist = true; // Guard against currentIndexStream race
 
       final startSongInfo = songs[startIndex];
-      debugPrint(
+      if (kDebugMode) debugPrint(
           '🎵 [PLAYBACK] setPlaylist: ${songs.length} songs, starting at index $startIndex — "${startSongInfo.title}" by ${startSongInfo.artist ?? 'Unknown'}');
 
       if (_gaplessPlayback) {
@@ -80,7 +80,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
           // Apply current shuffle and loop settings to the player.
           // We manage shuffle ordering ourselves by reordering _playlist, so
           // just_audio's internal shuffle mode is always kept off.
-          debugPrint(
+          if (kDebugMode) debugPrint(
               '🎵 [AUDIO_SOURCE] Applying loopMode: $_loopMode (shuffle managed in _playlist)');
           await _audioPlayer.setShuffleModeEnabled(false);
           await _audioPlayer.setLoopMode(_loopMode);
@@ -114,7 +114,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
           // arrive during/after the play command are handled correctly.
           _isSettingPlaylist = false;
 
-          debugPrint('🎵 [PLAYBACK] ▶️ Starting playback: "${_playlist[_currentIndex].title}" by ${_playlist[_currentIndex].artist ?? 'Unknown'} (id: ${_playlist[_currentIndex].id})');
+          if (kDebugMode) debugPrint('🎥 [PLAYBACK] ▶️ Starting playback: "${_playlist[_currentIndex].title}" by ${_playlist[_currentIndex].artist ?? 'Unknown'} (id: ${_playlist[_currentIndex].id})');
           // Fire and forget — do NOT await; see comment above.
           unawaited(_audioPlayer.play());
 
@@ -133,10 +133,10 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
           audioHandler.resumeIndexUpdates(); // Resume notification updates
           // "Loading interrupted" is expected when rapidly changing songs - don't treat as error
           if (e.toString().contains('Loading interrupted')) {
-            debugPrint('Audio load interrupted (new song selected)');
+            if (kDebugMode) debugPrint('Audio load interrupted (new song selected)');
             return;
           }
-          debugPrint('Error setting audio source: $e');
+          if (kDebugMode) debugPrint('Error setting audio source: $e');
           _isPlaying = false;
           isPlayingNotifier.value = false;
           _scheduleNotify();
@@ -158,10 +158,10 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
       audioHandler.resumeIndexUpdates(); // Resume notification updates
       // "Loading interrupted" is expected when rapidly changing songs - don't treat as error
       if (e.toString().contains('Loading interrupted')) {
-        debugPrint('Audio load interrupted (new song selected)');
+        if (kDebugMode) debugPrint('Audio load interrupted (new song selected)');
         return;
       }
-      debugPrint('Failed to set playlist: $e');
+      if (kDebugMode) debugPrint('Failed to set playlist: $e');
       _addError('Failed to set playlist: $e');
       _isPlaying = false;
       isPlayingNotifier.value = false;
@@ -221,7 +221,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
 
     // Prevent concurrent play calls
     if (_isLoading) {
-      debugPrint('Already loading, ignoring play request');
+      if (kDebugMode) debugPrint('Already loading, ignoring play request');
       return;
     }
 
@@ -234,15 +234,15 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
         _updateQueueCountForIndexChange(oldIndex, index);
       }
 
-      debugPrint(
+      if (kDebugMode) debugPrint(
           'Play called with index: $index, current index: $_currentIndex, playlist length: ${_playlist.length}');
 
       if (_currentIndex >= 0 && _currentIndex < _playlist.length) {
         final song = _playlist[_currentIndex];
-        debugPrint('Playing song: ${song.title} by ${song.artist}');
+        if (kDebugMode) debugPrint('Playing song: ${song.title} by ${song.artist}');
 
         if (_gaplessPlayback) {
-          debugPrint(
+          if (kDebugMode) debugPrint(
               'Using gapless playback, seeking to index: $_currentIndex');
           await _audioPlayer.seek(Duration.zero, index: _currentIndex);
 
@@ -261,7 +261,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
           unawaited(_audioPlayer.play()); // fire-and-forget
         } else {
           final url = song.uri ?? song.data;
-          debugPrint('Non-gapless playback, loading URL: $url');
+          if (kDebugMode) debugPrint('Non-gapless playback, loading URL: $url');
 
           final mediaItem = await _createMediaItem(song);
 
@@ -300,11 +300,13 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
         // Single notification at the end
         _scheduleNotify();
       } else {
-        debugPrint('Invalid index or empty playlist');
+        if (kDebugMode) debugPrint('Invalid index or empty playlist');
       }
     } catch (e, stackTrace) {
-      debugPrint('Failed to play song: $e');
-      debugPrint('Stack trace: $stackTrace');
+      if (kDebugMode) {
+        debugPrint('Failed to play song: $e');
+        debugPrint('Stack trace: $stackTrace');
+      }
       _isPlaying = false;
       isPlayingNotifier.value = false;
       _currentSongController.addError('Failed to play song: $e');
@@ -334,6 +336,8 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
   }
 
   Future<void> stop() async {
+    // Commit the real listened time of the current song before stopping.
+    _finalizeListenTime();
     await _audioPlayer.stop();
     _isPlaying = false;
     isPlayingNotifier.value = false;
@@ -368,31 +372,31 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
   void skip() async {
     _isLoading = false; // Reset loading flag to allow new song to play
 
-    debugPrint(
+    if (kDebugMode) debugPrint(
         '⏭️ [SKIP] Called - hasNext: ${_audioPlayer.hasNext}, currentIndex: $_currentIndex, shuffle: $_isShuffle, loopMode: $_loopMode');
 
     if (_loopMode == LoopMode.one) {
       // Repeat ONE: restart the current track.
-      debugPrint('⏭️ [SKIP] Repeat ONE — restarting current track');
+      if (kDebugMode) debugPrint('⏭️ [SKIP] Repeat ONE — restarting current track');
       await _audioPlayer.seek(Duration.zero);
       return;
     }
 
     if (_audioPlayer.hasNext) {
       // Normal case: advance to the next track.
-      debugPrint('⏭️ [SKIP] Seeking to next track');
+      if (kDebugMode) debugPrint('⏭️ [SKIP] Seeking to next track');
       await _audioPlayer.seekToNext();
     } else {
       // Last song in the queue.
       if (_loopMode == LoopMode.all) {
-        debugPrint('⏭️ [SKIP] At end of queue, wrapping to start (repeat ALL)');
+        if (kDebugMode) debugPrint('⏭️ [SKIP] At end of queue, wrapping to start (repeat ALL)');
         await _audioPlayer.seek(Duration.zero, index: 0);
         // just_audio ^0.10.x: play() completes on interrupt, not start —
         // awaiting would block skip() for the entire track duration.
         unawaited(_audioPlayer.play());
       } else {
         // Repeat OFF: stop playback.
-        debugPrint('⏭️ [SKIP] At end of queue, stopping (repeat OFF)');
+        if (kDebugMode) debugPrint('⏭️ [SKIP] At end of queue, stopping (repeat OFF)');
         await _audioPlayer.pause();
         await _audioPlayer.seek(Duration.zero);
         _isPlaying = false;
@@ -409,7 +413,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
 
     // If more than 3 seconds have elapsed, restart the current track.
     if (currentPosition > const Duration(seconds: kPreviousThresholdSeconds)) {
-      debugPrint(
+      if (kDebugMode) debugPrint(
           '⏮️ [BACK] Past 3s — restarting current song (position: ${currentPosition.inSeconds}s)');
       await _audioPlayer.seek(Duration.zero);
       return;
@@ -417,17 +421,17 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
 
     // Within 3 seconds: move to the previous track.
     if (_audioPlayer.hasPrevious) {
-      debugPrint('⏮️ [BACK] Within 3s and has previous — seeking to previous');
+      if (kDebugMode) debugPrint('⏮️ [BACK] Within 3s and has previous — seeking to previous');
       await _audioPlayer.seekToPrevious();
     } else {
       // At the very first track in the queue.
       if (_loopMode == LoopMode.all && _playlist.isNotEmpty) {
         // Repeat ALL: jump to the last track.
-        debugPrint('⏮️ [BACK] At first track, repeat ALL — jumping to last');
+        if (kDebugMode) debugPrint('⏮️ [BACK] At first track, repeat ALL — jumping to last');
         await _audioPlayer.seek(Duration.zero, index: _playlist.length - 1);
       } else {
         // Repeat OFF / ONE at first track: restart.
-        debugPrint(
+        if (kDebugMode) debugPrint(
             '⏮️ [BACK] At first track (position: ${currentPosition.inSeconds}s) — restarting');
         await _audioPlayer.seek(Duration.zero);
       }

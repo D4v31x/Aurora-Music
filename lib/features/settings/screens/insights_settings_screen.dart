@@ -10,6 +10,7 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/insights_promo_service.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
+import '../../home/screens/listening_recap_screen.dart';
 import '../widgets/settings_tile_builders.dart';
 
 class InsightsSettingsScreen extends StatefulWidget {
@@ -140,6 +141,20 @@ class _InsightsSettingsScreenState extends State<InsightsSettingsScreen> {
                   if (mounted) setState(() => _periodDays = days);
                 },
                 isFirst: true,
+              ),
+              SettingsTiles.buildActionTile(
+                context,
+                icon: Icon(Icons.play_circle_outline_rounded,
+                    color: cs.primary, size: 20),
+                title: l10n.settingsPreviewRecap,
+                subtitle: l10n.settingsPreviewRecapDesc,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const ListeningRecapScreen(),
+                    ),
+                  );
+                },
               ),
             ]),
             Padding(

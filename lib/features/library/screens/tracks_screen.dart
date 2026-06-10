@@ -15,6 +15,7 @@ import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
 import '../../../shared/widgets/song_context_menu.dart';
 import '../../../shared/utils/responsive_utils.dart';
+import '../../../shared/utils/sort_preferences.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 enum TrackSortOption { title, artist, duration, dateAdded }
@@ -90,11 +91,35 @@ class _TracksScreenState extends State<TracksScreen> {
 
   AudioPlayerService? _audioServiceRef;
 
+  static const String _sortPrefsKey = 'tracks';
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    _loadSortPreferences();
     _fetchAllSongs();
+  }
+
+  Future<void> _loadSortPreferences() async {
+    final saved = await SortPreferences.load(_sortPrefsKey);
+    if (!mounted) return;
+    final index = saved.index;
+    if (index != null && index >= 0 && index < TrackSortOption.values.length) {
+      setState(() {
+        _sortOption = TrackSortOption.values[index];
+        _isAscending = saved.ascending;
+      });
+      unawaited(_applySorting());
+    }
+  }
+
+  void _persistSort() {
+    unawaited(SortPreferences.save(
+      _sortPrefsKey,
+      optionIndex: _sortOption.index,
+      ascending: _isAscending,
+    ));
   }
 
   @override
@@ -341,6 +366,7 @@ class _TracksScreenState extends State<TracksScreen> {
                     child: PopupMenuButton<TrackSortOption>(
                       onSelected: (opt) {
                         setState(() => _sortOption = opt);
+                        _persistSort();
                         unawaited(_applySorting());
                       },
                       color: Colors.grey.shade900,
@@ -376,6 +402,7 @@ class _TracksScreenState extends State<TracksScreen> {
                   LibraryControlPill(
                     onTap: () {
                       setState(() => _isAscending = !_isAscending);
+                      _persistSort();
                       unawaited(_applySorting());
                     },
                     child: Icon(
@@ -587,7 +614,8 @@ class _TracksScreenState extends State<TracksScreen> {
       child: OptimizedSongTile(
         key: ValueKey(song.id),
         song: song,
-        selected: audioPlayerService.currentSong?.id == song.id,
+        currentSongListenable: audioPlayerService.currentSongNotifier,
+        isPlayingListenable: audioPlayerService.isPlayingNotifier,
         onTap: () {
           debugPrint('🎵 [TRACKS] Song tapped: "${song.title}" by ${song.artist ?? 'Unknown'} (id: ${song.id}, index: $index)');
           audioPlayerService.setPlaylist(

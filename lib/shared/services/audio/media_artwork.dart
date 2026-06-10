@@ -66,7 +66,7 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
         }
       }
     } catch (e) {
-      debugPrint('Error updating notification queue: $e');
+      if (kDebugMode) debugPrint('Error updating notification queue: $e');
     }
   }
 
@@ -84,24 +84,26 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
     // Capture song now — currentSong is a getter that could change across awaits.
     final song = currentSong;
     if (song == null) {
-      debugPrint('🎨 [ARTWORK] updateCurrentArtwork called but currentSong is null (playlist: ${_playlist.length} songs, index: $_currentIndex)');
+      if (kDebugMode) debugPrint('🎨 [ARTWORK] updateCurrentArtwork called but currentSong is null (playlist: ${_playlist.length} songs, index: $_currentIndex)');
       currentArtwork.value = null;
       return;
     }
-    debugPrint('🎨 [ARTWORK] Fetching artwork for "${song.title}" (id: ${song.id})');
+    if (kDebugMode) debugPrint('🎨 [ARTWORK] Fetching artwork for "${song.title}" (id: ${song.id})');
     try {
       // Use cached artwork service for better performance
       final artwork = await _artworkCache.getArtwork(song.id);
       // Guard against race condition: if the song changed while artwork was
       // loading, discard this stale result rather than overwriting newer artwork.
       if (currentSong?.id != song.id) {
-        debugPrint('🎨 [ARTWORK] Discarding stale artwork for "${song.title}" — song changed');
+        if (kDebugMode) debugPrint('🎨 [ARTWORK] Discarding stale artwork for "${song.title}" — song changed');
         return;
       }
-      if (artwork != null && artwork.isNotEmpty) {
-        debugPrint('🎨 [ARTWORK] Artwork loaded: ${artwork.length} bytes for "${song.title}"');
-      } else {
-        debugPrint('🎨 [ARTWORK] No artwork found for "${song.title}" (id: ${song.id})');
+      if (kDebugMode) {
+        if (artwork != null && artwork.isNotEmpty) {
+          debugPrint('🎨 [ARTWORK] Artwork loaded: ${artwork.length} bytes for "${song.title}"');
+        } else {
+          debugPrint('🎨 [ARTWORK] No artwork found for "${song.title}" (id: ${song.id})');
+        }
       }
       currentArtwork.value = artwork;
 
@@ -121,7 +123,7 @@ extension AudioMediaArtworkExtension on AudioPlayerService {
       }
     } catch (e) {
       if (currentSong?.id != song.id) return; // Stale error — don't wipe current artwork
-      debugPrint('🎨 [ARTWORK] Error fetching artwork for "${song.title}": $e');
+      if (kDebugMode) debugPrint('🎨 [ARTWORK] Error fetching artwork for "${song.title}": $e');
       currentArtwork.value = null;
     }
   }

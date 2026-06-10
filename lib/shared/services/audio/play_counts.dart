@@ -38,6 +38,10 @@ extension AudioPlayCountsExtension on AudioPlayerService {
   }
 
   void _incrementPlayCount(SongModel song) {
+    // Commit the real listened time of the previously-playing song before
+    // we start counting this new one separately.
+    _finalizeListenTime(nextTrackId: song.id.toString());
+
     _trackPlayCounts[song.id.toString()] =
         (_trackPlayCounts[song.id.toString()] ?? 0) + 1;
 
@@ -67,13 +71,19 @@ extension AudioPlayCountsExtension on AudioPlayerService {
   /// Get smart suggested tracks based on listening patterns and time of day
   Future<List<SongModel>> getSuggestedTracks({int count = 3}) async {
     await _smartSuggestions.initialize();
-    return _smartSuggestions.getSuggestedTracks(count: count);
+    return _smartSuggestions.getSuggestedTracks(
+      count: count,
+      songs: _rawSongs.isNotEmpty ? _songs : null,
+    );
   }
 
   /// Get smart suggested artists based on listening patterns and time of day
   Future<List<String>> getSuggestedArtists({int count = 3}) async {
     await _smartSuggestions.initialize();
-    return _smartSuggestions.getSuggestedArtists(count: count);
+    return _smartSuggestions.getSuggestedArtists(
+      count: count,
+      songs: _rawSongs.isNotEmpty ? _songs : null,
+    );
   }
 
   /// Check if user has enough listening history for smart suggestions
@@ -148,6 +158,10 @@ extension AudioPlayCountsExtension on AudioPlayerService {
     final sortedPlaylists = _playlists.toList()
       ..sort((a, b) => (_playlistPlayCounts[b.id] ?? 0)
           .compareTo(_playlistPlayCounts[a.id] ?? 0));
+    final liked = _likedSongsPlaylist;
+    if (liked != null) {
+      return [liked, ...sortedPlaylists.take(2)];
+    }
     return sortedPlaylists.take(3).toList();
   }
 

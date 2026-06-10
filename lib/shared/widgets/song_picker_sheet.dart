@@ -20,6 +20,7 @@ class SongPickerSheet extends HookWidget {
   static Future<void> show(BuildContext context, Playlist playlist) async {
     await showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => SongPickerSheet(playlist: playlist),

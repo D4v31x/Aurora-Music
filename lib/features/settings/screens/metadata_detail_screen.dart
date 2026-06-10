@@ -56,6 +56,8 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   final TextEditingController _autoTagSearchController = TextEditingController();
   List<Map<String, dynamic>>? _autoTagResults;
   bool _autoTagIsLoading = false;
+  // Index of the result currently being applied/downloaded (null = none).
+  int? _applyingIndex;
 
   @override
   void initState() {
@@ -278,60 +280,111 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
       _autoTagIsLoading = true;
       _autoTagResults = null;
     });
-    final res =
-        await MetadataService().searchMetadata(_autoTagSearchController.text);
-    if (mounted) {
-      setState(() {
-        _autoTagResults = res;
-        _autoTagIsLoading = false;
-      });
-    }
-  }
-
-  Future<void> _applyMetadata(Map<String, dynamic> data) async {
-    final service = MetadataService();
-
-    // Fetch enriched data (year, genre, track#) and cover art in parallel.
-    final results = await Future.wait([
-      service.fetchFullTrackDetails(data),
-      service.fetchCoverArt('${data['title']} ${(data['artist'] as Map?)?['name'] ?? ''}'),
-    ]);
-
-    final enriched = results[0] as Map<String, dynamic>;
-    final coverUrl = results[1] as String?;
-
-    // Parse year from release_date string ("YYYY-MM-DD" or "YYYY").
-    String year = '';
-    final releaseDate = enriched['_release_date'] as String? ?? '';
-    if (releaseDate.length >= 4) year = releaseDate.substring(0, 4);
-
-    // Track position and genre.
-    final trackPos = enriched['_track_position'];
-    final genre = enriched['_genre'] as String? ?? '';
-
-    setState(() {
-      _titleController.text = enriched['title'] as String? ?? '';
-      _artistController.text = (enriched['artist'] as Map?)?['name'] as String? ?? '';
-      _albumController.text = (enriched['album'] as Map?)?['title'] as String? ?? '';
-      if (genre.isNotEmpty) _genreController.text = genre;
-      if (year.isNotEmpty) _yearController.text = year;
-      if (trackPos != null) _trackController.text = trackPos.toString();
-      _isEditing = true;
-      _hasChanges = true;
-    });
-
-    if (coverUrl != null && mounted) {
-      final bytes = await service.downloadImage(coverUrl);
-      if (bytes != null && mounted) {
+    try {
+      final res =
+          await MetadataService().searchMetadata(_autoTagSearchController.text);
+      if (mounted) {
         setState(() {
-          _pendingCoverArt = Uint8List.fromList(bytes);
-          _hasChanges = true;
+          _autoTagResults = res;
+          _autoTagIsLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _autoTagResults = [];
+          _autoTagIsLoading = false;
         });
         NotificationManager.showMessage(
           context,
-          AppLocalizations.of(context).coverArtUpdated,
+          AppLocalizations.of(context).metadataDownloadFailed,
         );
       }
+    }
+  }
+
+  /// Returns the best available Deezer album cover URL from a track/album map,
+  /// preferring the highest resolution. Used as an artwork fallback when iTunes
+  /// has no match.
+  String? _deezerCoverUrl(Map<String, dynamic> data) {
+    final album = data['album'] as Map?;
+    if (album == null) return null;
+    for (final key in ['cover_xl', 'cover_big', 'cover_medium', 'cover']) {
+      final url = album[key];
+      if (url is String && url.isNotEmpty) return url;
+    }
+    return null;
+  }
+
+  Future<void> _applyMetadata(Map<String, dynamic> data, {int? index}) async {
+    // Guard against concurrent applies while a download is in progress.
+    if (_applyingIndex != null) return;
+    setState(() => _applyingIndex = index);
+    final service = MetadataService();
+
+    try {
+      // Fetch enriched data (year, genre, track#) and cover art in parallel.
+      final results = await Future.wait([
+        service.fetchFullTrackDetails(data),
+        service.fetchCoverArt(
+            '${data['title']} ${(data['artist'] as Map?)?['name'] ?? ''}'),
+      ]);
+
+      final enriched = results[0] as Map<String, dynamic>;
+      // Prefer the iTunes high-res cover, but fall back to the Deezer album
+      // cover from the selected result so artwork is applied even when iTunes
+      // has no match for this song/artist.
+      String? coverUrl = results[1] as String?;
+      coverUrl ??= _deezerCoverUrl(data) ?? _deezerCoverUrl(enriched);
+
+      // Parse year from release_date string ("YYYY-MM-DD" or "YYYY").
+      String year = '';
+      final releaseDate = enriched['_release_date'] as String? ?? '';
+      if (releaseDate.length >= 4) year = releaseDate.substring(0, 4);
+
+      // Track position and genre.
+      final trackPos = enriched['_track_position'];
+      final genre = enriched['_genre'] as String? ?? '';
+
+      if (!mounted) return;
+      setState(() {
+        _titleController.text = enriched['title'] as String? ?? '';
+        _artistController.text =
+            (enriched['artist'] as Map?)?['name'] as String? ?? '';
+        _albumController.text =
+            (enriched['album'] as Map?)?['title'] as String? ?? '';
+        if (genre.isNotEmpty) _genreController.text = genre;
+        if (year.isNotEmpty) _yearController.text = year;
+        if (trackPos != null) _trackController.text = trackPos.toString();
+        _isEditing = true;
+        _hasChanges = true;
+      });
+
+      if (coverUrl != null && mounted) {
+        final bytes = await service.downloadImage(coverUrl);
+        if (bytes != null && mounted) {
+          setState(() {
+            _pendingCoverArt = Uint8List.fromList(bytes);
+            _hasChanges = true;
+          });
+        }
+      }
+
+      if (mounted) {
+        NotificationManager.showMessage(
+          context,
+          AppLocalizations.of(context).metadataApplied,
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        NotificationManager.showMessage(
+          context,
+          AppLocalizations.of(context).metadataDownloadFailed,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _applyingIndex = null);
     }
   }
 
@@ -1311,8 +1364,11 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                         (item['album'] as Map?)?['title'] as String? ?? '';
                     final coverUrl =
                         (item['album'] as Map?)?['cover_medium'] as String?;
+                    final isApplying = _applyingIndex == index;
                     return GestureDetector(
-                      onTap: () => _applyMetadata(item),
+                      onTap: _applyingIndex != null
+                          ? null
+                          : () => _applyMetadata(item, index: index),
                       child: Container(
                         width: 104,
                         decoration: BoxDecoration(
@@ -1330,14 +1386,17 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                                 topLeft: Radius.circular(12),
                                 topRight: Radius.circular(12),
                               ),
-                              child: coverUrl != null && coverUrl.isNotEmpty
-                                  ? Image.network(
-                                      coverUrl,
-                                      width: 104,
-                                      height: 104,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
-                                        width: 104,
+                              child: Stack(
+                                children: [
+                                  coverUrl != null && coverUrl.isNotEmpty
+                                      ? Image.network(
+                                          coverUrl,
+                                          width: 104,
+                                          height: 104,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              Container(
+                                            width: 104,
                                         height: 104,
                                         color: Colors.grey[800],
                                         child: const Icon(Icons.music_note,
@@ -1351,6 +1410,29 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                                       child: const Icon(Icons.music_note,
                                           color: Colors.white54),
                                     ),
+                                  // Loading indicator overlay while this
+                                  // result's metadata/artwork is downloading.
+                                  if (isApplying)
+                                    Positioned.fill(
+                                      child: Container(
+                                        color:
+                                            Colors.black.withValues(alpha: 0.55),
+                                        child: const Center(
+                                          child: SizedBox(
+                                            width: 26,
+                                            height: 26,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.5,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                      Colors.white),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ),
                             // Text
                             Expanded(

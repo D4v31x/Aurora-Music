@@ -42,12 +42,34 @@ class MainActivity : AudioServiceActivity() {
     // Holds state for a pending delete awaiting MediaStore.createDeleteRequest approval.
     private var pendingDeleteResult: MethodChannel.Result? = null
 
+    // ---- Visualizer lifecycle fields ----------------------------------------
+    // Kept as instance fields so onDestroy() can always release them, even if
+    // the EventChannel's onCancel() was never called (e.g. app force-stopped).
+    private var activeVisualizer: Visualizer? = null
+    private val visualizerHandler = Handler(Looper.getMainLooper())
+    // Set false in onCancel / onDestroy so pending mainHandler posts are
+    // dropped before they reach a detached FlutterJNI.
+    @Volatile private var isStreamingFft = false
+    // -------------------------------------------------------------------------
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Enable edge-to-edge display for Android 15+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             WindowCompat.setDecorFitsSystemWindows(window, false)
         }
+    }
+
+    override fun onDestroy() {
+        // Stop all pending FFT posts and release the Visualizer before the
+        // Flutter engine detaches. Without this, mainHandler.post() callbacks
+        // keep firing into a dead FlutterJNI, producing hundreds of
+        // "Could not send. Channel: aurora/visualizer" warnings.
+        isStreamingFft = false
+        visualizerHandler.removeCallbacksAndMessages(null)
+        activeVisualizer?.release()
+        activeVisualizer = null
+        super.onDestroy()
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -101,14 +123,12 @@ class MainActivity : AudioServiceActivity() {
      * argument. When the stream is cancelled the Visualizer is released.
      */
     private fun setupVisualizerChannel(flutterEngine: FlutterEngine) {
-        val mainHandler = Handler(Looper.getMainLooper())
-        var activeVisualizer: Visualizer? = null
-
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, VISUALIZER_CHANNEL)
             .setStreamHandler(object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                     activeVisualizer?.release()
                     activeVisualizer = null
+                    isStreamingFft = false
 
                     val sessionId = when (arguments) {
                         is Int  -> arguments
@@ -136,7 +156,13 @@ class MainActivity : AudioServiceActivity() {
                                         val copy = ByteArray(fft.size + 1)
                                         copy[0] = 1
                                         fft.copyInto(copy, destinationOffset = 1)
-                                        mainHandler.post { events?.success(copy) }
+                                        // Guard: drop the post if the stream was
+                                        // cancelled or the engine has detached.
+                                        if (isStreamingFft) {
+                                            visualizerHandler.post {
+                                                if (isStreamingFft) events?.success(copy)
+                                            }
+                                        }
                                     }
                                 },
                                 Visualizer.getMaxCaptureRate(),
@@ -145,12 +171,17 @@ class MainActivity : AudioServiceActivity() {
                             )
                             enabled = true
                         }
+                        isStreamingFft = true
                     } catch (e: Exception) {
                         events?.error("VISUALIZER_ERROR", e.message ?: "Visualizer init failed", null)
                     }
                 }
 
                 override fun onCancel(arguments: Any?) {
+                    isStreamingFft = false
+                    // Remove any already-queued FFT posts so they don't fire
+                    // after FlutterJNI has detached.
+                    visualizerHandler.removeCallbacksAndMessages(null)
                     activeVisualizer?.release()
                     activeVisualizer = null
                 }

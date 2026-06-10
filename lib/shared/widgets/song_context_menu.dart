@@ -26,6 +26,7 @@ import '../services/notification_manager.dart';
 Future<void> showSongContextMenu(BuildContext context, SongModel song) {
   return showModalBottomSheet(
     context: context,
+    useRootNavigator: true,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(),
@@ -301,6 +302,8 @@ class _SongContextMenu extends StatelessWidget {
   }
 
   Future<void> _deleteSong(BuildContext context) async {
+    final audioService =
+        Provider.of<AudioPlayerService>(context, listen: false);
     Navigator.pop(context);
 
     final confirmed = await showDialog<bool>(
@@ -359,6 +362,9 @@ class _SongContextMenu extends StatelessWidget {
 
     try {
       await _channel.invokeMethod('deleteSong', {'path': song.data});
+      // Reflect the deletion across the whole app immediately, without waiting
+      // for a full MediaStore rescan.
+      await audioService.removeSongFromLibrary(song);
       if (context.mounted) {
         NotificationManager.showMessage(context, AppLocalizations.of(context).songDeleted(song.title));
       }

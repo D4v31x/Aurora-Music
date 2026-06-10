@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'dart:ui';
-import 'dart:math' as math;
 import '../../shared/services/audio_player_service.dart';
+import '../../shared/services/artist_aggregator_service.dart';
 import '../../shared/services/artwork_cache_service.dart';
 import '../../shared/services/user_preferences.dart';
 import '../../shared/services/logging_service.dart';
-import '../../core/constants/animation_constants.dart';
 import '../../core/constants/font_constants.dart';
 import '../onboarding/screens/onboarding_screen.dart';
 import '../home/screens/home_screen.dart';
@@ -28,6 +26,7 @@ class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _transitionController;
+  late Animation<double> _logoFadeAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _backgroundFadeAnimation;
   String _versionNumber = '';
@@ -41,6 +40,7 @@ class _SplashScreenState extends State<SplashScreen>
   double _progress = 0.0;
   final List<String> _warnings = [];
   bool _hasConnectivityIssues = false;
+  static const Duration _minimumSplashDuration = Duration(milliseconds: 2600);
 
   @override
   void initState() {
@@ -63,12 +63,14 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _initializeApp() async {
     try {
-      final tasks = [
-        ('Warming shaders', _warmupShaders()),
-        ('Initializing Services', _initializeServices()),
-        ('Loading Library', _loadAppData()),
-        ('Caching Artwork', _preloadImages()),
-        ('Final Preparations', _finalizeInitialization()),
+      final startedAt = DateTime.now();
+      final tasks = <(String, Future<void> Function())>[
+        ('Warming shaders', _warmupShaders),
+        ('Initializing Services', _initializeServices),
+        ('Loading Library', _loadAppData),
+        ('Preparing Home', _prepareHomeData),
+        ('Caching Artwork', _preloadImages),
+        ('Final Preparations', _finalizeInitialization),
       ];
 
       for (int i = 0; i < tasks.length; i++) {
@@ -82,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen>
         });
 
         try {
-          await task.$2;
+          await task.$2();
           if (mounted) {
             // Batch completed task update
             setState(() {
@@ -109,6 +111,8 @@ class _SplashScreenState extends State<SplashScreen>
       if (_hasConnectivityIssues && _warnings.isNotEmpty) {
         await Future.delayed(const Duration(seconds: 2));
       }
+
+      await _waitForMinimumSplashDuration(startedAt);
 
       if (mounted) {
         // Batch final state update
@@ -140,7 +144,8 @@ class _SplashScreenState extends State<SplashScreen>
       // Check network interface connectivity without pinging external hosts
       try {
         final result = await Connectivity().checkConnectivity();
-        if (result.isEmpty || result.every((r) => r == ConnectivityResult.none)) {
+        if (result.isEmpty ||
+            result.every((r) => r == ConnectivityResult.none)) {
           throw Exception('No internet connection');
         }
       } catch (e) {
@@ -153,7 +158,6 @@ class _SplashScreenState extends State<SplashScreen>
         await Future.delayed(const Duration(seconds: 1));
         return;
       }
-
     } catch (e) {
       if (!_warnings.contains('Some features may be limited')) {
         // Batch update for error warnings
@@ -168,10 +172,40 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _loadAppData() async {
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
+      final audioPlayerService = context.read<AudioPlayerService>();
+      await audioPlayerService.initializeMusicLibrary();
     } catch (e) {
       debugPrint('Error in splash screen: $e');
     }
+  }
+
+  Future<void> _prepareHomeData() async {
+    if (!mounted) return;
+
+    final audioPlayerService = context.read<AudioPlayerService>();
+    if (!audioPlayerService.isLibraryInitialized ||
+        audioPlayerService.songs.isEmpty) {
+      return;
+    }
+
+    await Future.wait<void>([
+      _boundedPreparation(
+        audioPlayerService.getSuggestedTracks(count: 3).then((_) {}),
+      ),
+      _boundedPreparation(
+        audioPlayerService.getSuggestedArtists(count: 5).then((_) {}),
+      ),
+      _boundedPreparation(
+        ArtistAggregatorService().getAllArtists().then((_) {}),
+      ),
+    ]);
+  }
+
+  Future<void> _boundedPreparation(Future<void> future) async {
+    try {
+      await future.timeout(const Duration(seconds: 4));
+    } catch (_) {}
   }
 
   Future<void> _preloadImages() async {
@@ -192,12 +226,22 @@ class _SplashScreenState extends State<SplashScreen>
         return;
       }
 
-      // Only preload artwork from songs already loaded in audioPlayerService
-      // Don't query for additional songs or artists
       if (audioPlayerService.songs.isNotEmpty) {
-        final songsToPreload = audioPlayerService.songs.take(10).toList();
-        for (final song in songsToPreload) {
-          await artworkService.preloadArtwork(song.id);
+        final songsToPreload = [
+          if (audioPlayerService.currentSong != null)
+            audioPlayerService.currentSong!,
+          ...audioPlayerService.songs.take(18),
+        ];
+        final seenIds = <int>{};
+        final uniqueSongs = songsToPreload
+            .where((song) => seenIds.add(song.id))
+            .toList(growable: false);
+
+        for (var i = 0; i < uniqueSongs.length; i += 4) {
+          if (!mounted) return;
+          final chunk = uniqueSongs.skip(i).take(4);
+          await Future.wait(
+              chunk.map((song) => artworkService.preloadArtwork(song.id)));
         }
       }
 
@@ -218,8 +262,15 @@ class _SplashScreenState extends State<SplashScreen>
     // Pre-warm home screen components for smooth transition
     await _preWarmHomeScreen();
 
-    // Reduced delay for faster initialization
-    await Future.delayed(AnimationConstants.shortDelay);
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
+
+  Future<void> _waitForMinimumSplashDuration(DateTime startedAt) async {
+    final elapsed = DateTime.now().difference(startedAt);
+    final remaining = _minimumSplashDuration - elapsed;
+    if (remaining > Duration.zero) {
+      await Future.delayed(remaining);
+    }
   }
 
   /// Pre-warm home screen components to prevent transition lag
@@ -284,7 +335,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _loadVersionInfo() async {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    const String codeName = String.fromEnvironment('CODE_NAME', defaultValue: 'Unknown');
+    const String codeName =
+        String.fromEnvironment('CODE_NAME', defaultValue: 'Unknown');
 
     setState(() {
       _versionNumber = packageInfo.version;
@@ -293,10 +345,16 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _initializeAnimations() {
-    // Primary controller drives the Lottie animation
+    // Primary controller drives a simple logo fade-in.
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
+    );
+
+    // Logo gently fades in.
+    _logoFadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
     );
 
     // Transition controller for exit
@@ -337,6 +395,9 @@ class _SplashScreenState extends State<SplashScreen>
         _performActualTransition();
       }
     });
+
+    // Start the logo fade-in immediately.
+    _fadeController.forward();
   }
 
   void _checkAndTransition() {
@@ -424,55 +485,19 @@ class _SplashScreenState extends State<SplashScreen>
                 // ── Background ──────────────────────────────────────────────
                 Positioned.fill(child: _buildBackground(size)),
 
-                // ── Ambient orbs ────────────────────────────────────────────
-                _buildOrb(
-                  size: size,
-                  alignment: const Alignment(-0.6, -0.55),
-                  color: const Color(0xFF6C3FD4),
-                  radius: 220,
-                  blur: 80,
-                ),
-                _buildOrb(
-                  size: size,
-                  alignment: const Alignment(0.7, 0.4),
-                  color: const Color(0xFF1E3FBF),
-                  radius: 180,
-                  blur: 80,
-                ),
-                _buildOrb(
-                  size: size,
-                  alignment: const Alignment(0.1, 0.65),
-                  color: const Color(0xFF8B2FC9),
-                  radius: 120,
-                  blur: 60,
-                ),
-
-                // ── Noise / grain overlay ────────────────────────────────────
-                Positioned.fill(
-                  child: Opacity(
-                    opacity: 0.04,
-                    child: CustomPaint(painter: _NoisePainter()),
-                  ),
-                ),
-
-                // ── Lottie animation (centre) ─────────────────────────────
+                // ── Logo (centre) ─────────────────────────────────────────
                 Center(
                   child: Transform.scale(
                     scale: _scaleAnimation.value,
-                    child: Hero(
-                      tag: 'app_logo_hero',
-                      child: RepaintBoundary(
-                        child: Lottie.asset(
-                          'assets/animations/Splash.json',
-                          controller: _fadeController,
+                    child: FadeTransition(
+                      opacity: _logoFadeAnimation,
+                      child: Hero(
+                        tag: 'app_logo_hero',
+                        child: Image.asset(
+                          'assets/images/logo/Music_full_logo.png',
                           fit: BoxFit.contain,
-                          width: 300,
-                          height: 300,
-                          frameRate: FrameRate.composition,
-                          onLoaded: (composition) {
-                            _fadeController.duration = composition.duration;
-                            _fadeController.forward();
-                          },
+                          width: size.width * 0.5,
+                          filterQuality: FilterQuality.high,
                         ),
                       ),
                     ),
@@ -507,7 +532,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
 
-                        // Progress bar — pill shape, glassy
+                        // Progress bar — matches the library refresh line, but thicker
                         _GlassProgressBar(progress: _progress),
 
                         const SizedBox(height: 20),
@@ -530,48 +555,134 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  // ── Helper: full-screen gradient background ──────────────────────────────
+  // ── Helper: full-screen mesh-gradient background ─────────────────────────
+  // A smoky blurred-artwork mesh inspired by dark album covers: charcoal depth,
+  // silver haze and crimson light bands melting through the middle.
   Widget _buildBackground(Size size) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment(0, -0.3),
-          radius: 1.4,
-          colors: [
-            Color(0xFF12172A),
-            Color(0xFF080B14),
-          ],
+    final width = size.width;
+    final height = size.height;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const ColoredBox(color: Color(0xFF151515)),
+        Positioned.fill(
+          child: ImageFiltered(
+            imageFilter: ImageFilter.blur(sigmaX: 95, sigmaY: 95),
+            child: Stack(
+              children: [
+                _meshOval(
+                  width * 1.15,
+                  height * 0.42,
+                  top: -height * 0.14,
+                  right: -width * 0.22,
+                  color: const Color(0xFFECECEA),
+                  alpha: 0.95,
+                ),
+                _meshOval(
+                  width * 1.05,
+                  height * 0.36,
+                  top: height * 0.30,
+                  left: -width * 0.32,
+                  color: const Color(0xFFFF254C),
+                  alpha: 0.95,
+                ),
+                _meshOval(
+                  width * 1.05,
+                  height * 0.34,
+                  top: height * 0.27,
+                  right: -width * 0.18,
+                  color: const Color(0xFFFF355C),
+                  alpha: 0.90,
+                ),
+                _meshOval(
+                  width * 1.10,
+                  height * 0.48,
+                  top: height * 0.18,
+                  left: width * 0.18,
+                  color: const Color(0xFF171717),
+                  alpha: 1.0,
+                ),
+                _meshOval(
+                  width * 0.95,
+                  height * 0.28,
+                  bottom: height * 0.12,
+                  left: -width * 0.10,
+                  color: const Color(0xFF9B9B96),
+                  alpha: 0.72,
+                ),
+                _meshOval(
+                  width * 1.05,
+                  height * 0.42,
+                  bottom: -height * 0.15,
+                  left: -width * 0.28,
+                  color: const Color(0xFFE3E3E0),
+                  alpha: 0.84,
+                ),
+                _meshOval(
+                  width * 1.18,
+                  height * 0.45,
+                  bottom: -height * 0.12,
+                  right: -width * 0.16,
+                  color: const Color(0xFF101010),
+                  alpha: 1.0,
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.black.withValues(alpha: 0.24),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.35),
+                ],
+                stops: const [0.0, 0.45, 1.0],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  // ── Helper: soft ambient orb ─────────────────────────────────────────────
-  Widget _buildOrb({
-    required Size size,
-    required Alignment alignment,
+  // A soft oval used to shape wide blurred colour bands.
+  Widget _meshOval(
+    double ovalWidth,
+    double ovalHeight, {
+    double? top,
+    double? left,
+    double? right,
+    double? bottom,
     required Color color,
-    required double radius,
-    required double blur,
+    double alpha = 0.95,
   }) {
-    return Positioned.fill(
-      child: Align(
-        alignment: alignment,
-        child: ImageFiltered(
-          imageFilter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Container(
-            width: radius * 2,
-            height: radius * 2,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color.withValues(alpha: 0.28),
-            ),
+    return Positioned(
+      top: top,
+      left: left,
+      right: right,
+      bottom: bottom,
+      child: Container(
+        width: ovalWidth,
+        height: ovalHeight,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(ovalHeight),
+          gradient: RadialGradient(
+            colors: [
+              color.withValues(alpha: alpha),
+              color.withValues(alpha: 0.0),
+            ],
           ),
         ),
       ),
     );
   }
 
+  // ── Helper: shader warmup ────────────────────────────────────────────────
   Future<void> _warmupShaders() async {
     // Simplified shader warmup for better performance on low-end devices
     const size = Size(25, 25); // Even smaller size for faster warmup
@@ -597,38 +708,81 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// ── Glassmorphic progress bar ─────────────────────────────────────────────────
+// ── Splash progress bar ───────────────────────────────────────────────────────
 class _GlassProgressBar extends StatelessWidget {
   final double progress;
   const _GlassProgressBar({required this.progress});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-          height: 3,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(100),
-          ),
-          child: FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: progress.clamp(0.0, 1.0),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(100),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF9B73F0), Color(0xFF6C8FED)],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF7B5FDC).withValues(alpha: 0.6),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: progress.clamp(0.0, 1.0)),
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return SizedBox(
+          width: double.infinity,
+          height: 8,
+          child: CustomPaint(
+            painter: _SplashProgressPainter(
+              progress: value,
+              lineColor: Colors.white,
+              lineHeight: 6,
             ),
           ),
+        );
+      },
     );
+  }
+}
+
+class _SplashProgressPainter extends CustomPainter {
+  final double progress;
+  final Color lineColor;
+  final double lineHeight;
+
+  const _SplashProgressPainter({
+    required this.progress,
+    required this.lineColor,
+    required this.lineHeight,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final y = size.height / 2;
+    final inset = lineHeight / 2;
+    final start = Offset(inset, y);
+    final end = Offset(size.width - inset, y);
+    final usableWidth = (size.width - lineHeight).clamp(0.0, double.infinity);
+
+    final backgroundPaint = Paint()
+      ..color = lineColor.withValues(alpha: 0.2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = lineHeight
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(start, end, backgroundPaint);
+
+    if (progress <= 0) return;
+
+    final foregroundPaint = Paint()
+      ..color = lineColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = lineHeight
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(
+      start,
+      Offset(inset + usableWidth * progress.clamp(0.0, 1.0), y),
+      foregroundPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SplashProgressPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.lineColor != lineColor ||
+        oldDelegate.lineHeight != lineHeight;
   }
 }
 
@@ -642,48 +796,24 @@ class _VersionChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final label = codeName.isNotEmpty ? 'v$version · $codeName' : 'v$version';
     return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(100),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
-            ),
-          ),
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontFamily: FontConstants.fontFamily,
-              color: Color(0xFF5A5F74),
-              fontSize: 11,
-              fontWeight: FontWeight.w400,
-              letterSpacing: 0.6,
-            ),
-          ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontFamily: FontConstants.fontFamily,
+          color: Color(0xFF5A5F74),
+          fontSize: 11,
+          fontWeight: FontWeight.w400,
+          letterSpacing: 0.6,
+        ),
+      ),
     );
   }
-}
-
-// ── Subtle grain/noise texture overlay ───────────────────────────────────────
-class _NoisePainter extends CustomPainter {
-  static final math.Random _rng = math.Random(42);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white;
-    // Sparse dot grid for a film-grain feel — cheap and fast
-    for (int i = 0; i < 600; i++) {
-      canvas.drawCircle(
-        Offset(
-          _rng.nextDouble() * size.width,
-          _rng.nextDouble() * size.height,
-        ),
-        0.6,
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

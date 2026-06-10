@@ -1,0 +1,1717 @@
+{
+  "/home/david/Documents/Aurora-Music/.vscode/settings.json": {
+    "mtime": 1772980230.9254825,
+    "ast_hash": "ada4d7b4e09d753d883f1b53f97fc43b",
+    "semantic_hash": "ada4d7b4e09d753d883f1b53f97fc43b"
+  },
+  "/home/david/Documents/Aurora-Music/.vscode/tasks.json": {
+    "mtime": 1771940103.68,
+    "ast_hash": "6c41f6ac77ddcaa854747ff0cc31b1aa",
+    "semantic_hash": "6c41f6ac77ddcaa854747ff0cc31b1aa"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/.cmake/api/v1/reply/cache-v2-7f4bbda679ce599240ef.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "350ae4d74a4eefb171646df8004d4c4c",
+    "semantic_hash": "350ae4d74a4eefb171646df8004d4c4c"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/.cmake/api/v1/reply/cmakeFiles-v1-7543cf715179e1108fbe.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "a0474c931c271fd86d03b9dedb3d9dc9",
+    "semantic_hash": "a0474c931c271fd86d03b9dedb3d9dc9"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/.cmake/api/v1/reply/codemodel-v2-72cdafd6c33b95c506c4.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "61dc7ab1462675ea8f7477d46bddb38c",
+    "semantic_hash": "61dc7ab1462675ea8f7477d46bddb38c"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/.cmake/api/v1/reply/directory-.-Debug-d0094a50bb2071803777.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "9f40cd23d42f6f64a253672a38c7ce57",
+    "semantic_hash": "9f40cd23d42f6f64a253672a38c7ce57"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/.cmake/api/v1/reply/index-2025-04-16T20-42-56-0706.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "a9396cb01097b684815a04ff8e052dbc",
+    "semantic_hash": "a9396cb01097b684815a04ff8e052dbc"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdC/CMakeCCompilerId.c": {
+    "mtime": 1755287592.24,
+    "ast_hash": "245b894a1d9b5e1b569506b0cfe5d36b",
+    "semantic_hash": "245b894a1d9b5e1b569506b0cfe5d36b"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdCXX/CMakeCXXCompilerId.cpp": {
+    "mtime": 1755287592.24,
+    "ast_hash": "493a7cc5e29a3cf2b0d95a50ee58d987",
+    "semantic_hash": "493a7cc5e29a3cf2b0d95a50ee58d987"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/android_gradle_build.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "b174262377f817ad2c02f56cc2f1b86a",
+    "semantic_hash": "b174262377f817ad2c02f56cc2f1b86a"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/android_gradle_build_mini.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "53475774808e998f3087a6fb09407af0",
+    "semantic_hash": "53475774808e998f3087a6fb09407af0"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/prefab_config.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "053b2e56bb53f9d316b0f6b5e31b3649",
+    "semantic_hash": "053b2e56bb53f9d316b0f6b5e31b3649"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/.cmake/api/v1/reply/cache-v2-91069afbdb341483b73c.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "a3a8faa04c4278da2d1bcc0d32c4d27c",
+    "semantic_hash": "a3a8faa04c4278da2d1bcc0d32c4d27c"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/.cmake/api/v1/reply/cmakeFiles-v1-706c5ef5716dc171c1f5.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "c2e480acf2df0020c64b53fd484c0245",
+    "semantic_hash": "c2e480acf2df0020c64b53fd484c0245"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/.cmake/api/v1/reply/codemodel-v2-31a50e761f24f54ae6dc.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "ec02fccb11e24d6251ccf4ac4a2c628e",
+    "semantic_hash": "ec02fccb11e24d6251ccf4ac4a2c628e"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/.cmake/api/v1/reply/directory-.-Debug-d0094a50bb2071803777.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "9f40cd23d42f6f64a253672a38c7ce57",
+    "semantic_hash": "9f40cd23d42f6f64a253672a38c7ce57"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/.cmake/api/v1/reply/index-2025-04-16T20-43-00-0162.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "4532c01e514ff7d2849a18822c80e2ea",
+    "semantic_hash": "4532c01e514ff7d2849a18822c80e2ea"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdC/CMakeCCompilerId.c": {
+    "mtime": 1755287592.24,
+    "ast_hash": "245b894a1d9b5e1b569506b0cfe5d36b",
+    "semantic_hash": "245b894a1d9b5e1b569506b0cfe5d36b"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdCXX/CMakeCXXCompilerId.cpp": {
+    "mtime": 1755287592.24,
+    "ast_hash": "493a7cc5e29a3cf2b0d95a50ee58d987",
+    "semantic_hash": "493a7cc5e29a3cf2b0d95a50ee58d987"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/android_gradle_build.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "82358a7a65b0e79dce85fa6a36794013",
+    "semantic_hash": "82358a7a65b0e79dce85fa6a36794013"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/android_gradle_build_mini.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "4d62f1257f406e91899b70bee66e0553",
+    "semantic_hash": "4d62f1257f406e91899b70bee66e0553"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/prefab_config.json": {
+    "mtime": 1755287592.24,
+    "ast_hash": "053b2e56bb53f9d316b0f6b5e31b3649",
+    "semantic_hash": "053b2e56bb53f9d316b0f6b5e31b3649"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/build.gradle": {
+    "mtime": 1779144506.3448482,
+    "ast_hash": "1b25e59fda25852dbf8ce2fdd7775b22",
+    "semantic_hash": "1b25e59fda25852dbf8ce2fdd7775b22"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/gradlew": {
+    "mtime": 1761495615.31,
+    "ast_hash": "f092910dfa8e47c5a37a452c3f6baf8a",
+    "semantic_hash": "f092910dfa8e47c5a37a452c3f6baf8a"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/java/io/flutter/app/FlutterMultiDexApplication.java": {
+    "mtime": 1755287592.25,
+    "ast_hash": "b980747b714e1cc4cacebd6d33b0109a",
+    "semantic_hash": "b980747b714e1cc4cacebd6d33b0109a"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java": {
+    "mtime": 1780261638.727739,
+    "ast_hash": "25d55ec1c1ecdccf9f5d92f538ae5663",
+    "semantic_hash": "25d55ec1c1ecdccf9f5d92f538ae5663"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/kotlin/com/aurorasoftware/music/AuroraMusicWidgetProvider.kt": {
+    "mtime": 1780864195.9102097,
+    "ast_hash": "883f20c540b9ad3ea11b413ba6c941d8",
+    "semantic_hash": "883f20c540b9ad3ea11b413ba6c941d8"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/kotlin/com/aurorasoftware/music/MainActivity.kt": {
+    "mtime": 1780862246.3129294,
+    "ast_hash": "756dee7d70d4c4fef0c78e823e0189f6",
+    "semantic_hash": "756dee7d70d4c4fef0c78e823e0189f6"
+  },
+  "/home/david/Documents/Aurora-Music/android/build.gradle": {
+    "mtime": 1779154147.2249024,
+    "ast_hash": "ba12a9838fed23ded919dc8db8ae1ba9",
+    "semantic_hash": "ba12a9838fed23ded919dc8db8ae1ba9"
+  },
+  "/home/david/Documents/Aurora-Music/android/gradlew": {
+    "mtime": 1761495614.71,
+    "ast_hash": "f092910dfa8e47c5a37a452c3f6baf8a",
+    "semantic_hash": "f092910dfa8e47c5a37a452c3f6baf8a"
+  },
+  "/home/david/Documents/Aurora-Music/android/settings.gradle": {
+    "mtime": 1779154147.2249024,
+    "ast_hash": "24ab5f4a3a62095f5ec86cc41f0c1e4e",
+    "semantic_hash": "24ab5f4a3a62095f5ec86cc41f0c1e4e"
+  },
+  "/home/david/Documents/Aurora-Music/android/spotify-app-remote/build.gradle": {
+    "mtime": 1755287592.26,
+    "ast_hash": "90844e06e14697b0c4b8f8f9303a2d41",
+    "semantic_hash": "90844e06e14697b0c4b8f8f9303a2d41"
+  },
+  "/home/david/Documents/Aurora-Music/assets/animations/Splash.json": {
+    "mtime": 1776469698.7374249,
+    "ast_hash": "d336786bcb062b6b9d2c48c1d81c8917",
+    "semantic_hash": "d336786bcb062b6b9d2c48c1d81c8917"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Flutter/ephemeral/flutter_lldb_helper.py": {
+    "mtime": 1779155114.3817654,
+    "ast_hash": "98fc75412162af387e2e3461e4e58094",
+    "semantic_hash": "98fc75412162af387e2e3461e4e58094"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Flutter/flutter_export_environment.sh": {
+    "mtime": 1779155114.3892763,
+    "ast_hash": "7043ba145deceb86fec8c7e143e44efe",
+    "semantic_hash": "7043ba145deceb86fec8c7e143e44efe"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/AppDelegate.swift": {
+    "mtime": 1755287592.27,
+    "ast_hash": "e269f4fb5db1d2e47d19c3d779118c04",
+    "semantic_hash": "e269f4fb5db1d2e47d19c3d779118c04"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json": {
+    "mtime": 1755287592.27,
+    "ast_hash": "31a08e429403e265cabfb31b3d65f049",
+    "semantic_hash": "31a08e429403e265cabfb31b3d65f049"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/LaunchBackground.imageset/Contents.json": {
+    "mtime": 1755287592.27,
+    "ast_hash": "ee0c724360b283e6064afe939219c770",
+    "semantic_hash": "ee0c724360b283e6064afe939219c770"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/LaunchImage.imageset/Contents.json": {
+    "mtime": 1755287592.27,
+    "ast_hash": "c8291e6bfadb5fb24d7bf4e98e3fb013",
+    "semantic_hash": "c8291e6bfadb5fb24d7bf4e98e3fb013"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/AudioSessionHandler.swift": {
+    "mtime": 1755287592.27,
+    "ast_hash": "38d7b74decce7e0bca8eb28efd375d7e",
+    "semantic_hash": "38d7b74decce7e0bca8eb28efd375d7e"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/GeneratedPluginRegistrant.h": {
+    "mtime": 1755299420.29,
+    "ast_hash": "decb9041b5e91a07e66f4664e5dac408",
+    "semantic_hash": "decb9041b5e91a07e66f4664e5dac408"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/GeneratedPluginRegistrant.m": {
+    "mtime": 1780261638.7338514,
+    "ast_hash": "b80d4ea4bea28e1ebba1808dd66991be",
+    "semantic_hash": "b80d4ea4bea28e1ebba1808dd66991be"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Runner-Bridging-Header.h": {
+    "mtime": 1755287592.27,
+    "ast_hash": "7ad7b5cea096132de13ba526b2b9efbe",
+    "semantic_hash": "7ad7b5cea096132de13ba526b2b9efbe"
+  },
+  "/home/david/Documents/Aurora-Music/ios/RunnerTests/RunnerTests.swift": {
+    "mtime": 1755287592.27,
+    "ast_hash": "24e5d095048eb86c30423f4e04b6e57b",
+    "semantic_hash": "24e5d095048eb86c30423f4e04b6e57b"
+  },
+  "/home/david/Documents/Aurora-Music/lib/core/constants/animation_constants.dart": {
+    "mtime": 1772796109.375884,
+    "ast_hash": "e1bb295aefcac06b137e23c1c757e536",
+    "semantic_hash": "e1bb295aefcac06b137e23c1c757e536"
+  },
+  "/home/david/Documents/Aurora-Music/lib/core/constants/app_config.dart": {
+    "mtime": 1779103328.2464952,
+    "ast_hash": "f6bcec490b7ba4af9b7e82b6cc7a6e73",
+    "semantic_hash": "f6bcec490b7ba4af9b7e82b6cc7a6e73"
+  },
+  "/home/david/Documents/Aurora-Music/lib/core/constants/font_constants.dart": {
+    "mtime": 1772796109.3756678,
+    "ast_hash": "33cedd93c3d058e469ebf7826d09e692",
+    "semantic_hash": "33cedd93c3d058e469ebf7826d09e692"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/features.dart": {
+    "mtime": 1778920420.509878,
+    "ast_hash": "84fbd347242052993b34ab8e0d9425b9",
+    "semantic_hash": "84fbd347242052993b34ab8e0d9425b9"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/home_feature.dart": {
+    "mtime": 1778920420.5101204,
+    "ast_hash": "cfdf0e03c56ccaec4833c0270d96a6a9",
+    "semantic_hash": "cfdf0e03c56ccaec4833c0270d96a6a9"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/screens/home_screen.dart": {
+    "mtime": 1780272648.2011235,
+    "ast_hash": "ebd4921d2c32b46482eb1e0a80f025b5",
+    "semantic_hash": "ebd4921d2c32b46482eb1e0a80f025b5"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/screens/listening_insights_screen.dart": {
+    "mtime": 1779106175.9890661,
+    "ast_hash": "ef6da1c561d6cc3e4297399c841ecd49",
+    "semantic_hash": "ef6da1c561d6cc3e4297399c841ecd49"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/screens/listening_recap_screen.dart": {
+    "mtime": 1779213731.7068834,
+    "ast_hash": "402f1c34240d684a3c4fb32c16c944b2",
+    "semantic_hash": "402f1c34240d684a3c4fb32c16c944b2"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/widgets/for_you_section.dart": {
+    "mtime": 1776115568.9046755,
+    "ast_hash": "492a240425f122185fed811bd4e8a147",
+    "semantic_hash": "492a240425f122185fed811bd4e8a147"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/widgets/home_tab.dart": {
+    "mtime": 1779048645.3396704,
+    "ast_hash": "f24a468800d7c2174c6e461be2476704",
+    "semantic_hash": "f24a468800d7c2174c6e461be2476704"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/widgets/home_widgets.dart": {
+    "mtime": 1778920420.509878,
+    "ast_hash": "af5e3cf65c55fa9b7fa291b3f6bc4a3a",
+    "semantic_hash": "af5e3cf65c55fa9b7fa291b3f6bc4a3a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/widgets/library_tab.dart": {
+    "mtime": 1779213731.7118835,
+    "ast_hash": "7e6ea5fd0f1ad37c7bc3768e1369805d",
+    "semantic_hash": "7e6ea5fd0f1ad37c7bc3768e1369805d"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/widgets/listening_history_card.dart": {
+    "mtime": 1773778933.6894233,
+    "ast_hash": "40278d0a886ffcb739fbb8c4ff03fefb",
+    "semantic_hash": "40278d0a886ffcb739fbb8c4ff03fefb"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/widgets/most_played_section.dart": {
+    "mtime": 1779213731.7118835,
+    "ast_hash": "98c7f0038fd86195cb98f97d1c91cef5",
+    "semantic_hash": "98c7f0038fd86195cb98f97d1c91cef5"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/widgets/music_stats_card.dart": {
+    "mtime": 1779106175.9906259,
+    "ast_hash": "56a12b071bd9e12e19abff9315b7a6e2",
+    "semantic_hash": "56a12b071bd9e12e19abff9315b7a6e2"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/widgets/recently_added_section.dart": {
+    "mtime": 1779213731.6948836,
+    "ast_hash": "942e94628c17c94074d2beed80db49c7",
+    "semantic_hash": "942e94628c17c94074d2beed80db49c7"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/widgets/recently_played_section.dart": {
+    "mtime": 1779213731.6968837,
+    "ast_hash": "4414393d7ebecff1d018bd138bdc0bfd",
+    "semantic_hash": "4414393d7ebecff1d018bd138bdc0bfd"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/home/widgets/suggested_artists_section.dart": {
+    "mtime": 1772980230.9264827,
+    "ast_hash": "69a17cce9d7d66e8a2f47f6aa8adfd98",
+    "semantic_hash": "69a17cce9d7d66e8a2f47f6aa8adfd98"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/library/library.dart": {
+    "mtime": 1772796109.3887866,
+    "ast_hash": "2e3e4191c598ab634f329590b6b09a14",
+    "semantic_hash": "2e3e4191c598ab634f329590b6b09a14"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/library/library_feature.dart": {
+    "mtime": 1772796109.3888714,
+    "ast_hash": "4b740a45616005cfa7e963cbc4ff0213",
+    "semantic_hash": "4b740a45616005cfa7e963cbc4ff0213"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/library/screens/album_detail_screen.dart": {
+    "mtime": 1779213731.7118835,
+    "ast_hash": "41b31c1c8ef18e591115117cba9849ba",
+    "semantic_hash": "41b31c1c8ef18e591115117cba9849ba"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/library/screens/albums_screen.dart": {
+    "mtime": 1780268344.0789478,
+    "ast_hash": "790bfada42a64d4f5429d555cdfa29df",
+    "semantic_hash": "790bfada42a64d4f5429d555cdfa29df"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/library/screens/artist_detail_screen.dart": {
+    "mtime": 1780268344.0789478,
+    "ast_hash": "be4e9ad9c1fa07890fa1dcdf9213a5ff",
+    "semantic_hash": "be4e9ad9c1fa07890fa1dcdf9213a5ff"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/library/screens/artists_screen.dart": {
+    "mtime": 1780268344.0779479,
+    "ast_hash": "4c877cf60d048afc89031416b16ae8e7",
+    "semantic_hash": "4c877cf60d048afc89031416b16ae8e7"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/library/screens/categories.dart": {
+    "mtime": 1772796109.3883657,
+    "ast_hash": "d84e31528322d1268a458a6c1c0a50b6",
+    "semantic_hash": "d84e31528322d1268a458a6c1c0a50b6"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/library/screens/folder_detail_screen.dart": {
+    "mtime": 1776406780.8407576,
+    "ast_hash": "8721685e94f0be9cc3bc30a6d405f2ff",
+    "semantic_hash": "8721685e94f0be9cc3bc30a6d405f2ff"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/library/screens/folders_screen.dart": {
+    "mtime": 1780261515.6671743,
+    "ast_hash": "73e43b51d79b3b6ca09123122e476670",
+    "semantic_hash": "73e43b51d79b3b6ca09123122e476670"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/library/screens/tracks_screen.dart": {
+    "mtime": 1780268870.1154728,
+    "ast_hash": "283b1c93495932f95805bc8875e2eefc",
+    "semantic_hash": "283b1c93495932f95805bc8875e2eefc"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/onboarding_feature.dart": {
+    "mtime": 1773176253.2458508,
+    "ast_hash": "53351206258162829d0473af658e877b",
+    "semantic_hash": "53351206258162829d0473af658e877b"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/pages/app_info_page.dart": {
+    "mtime": 1776406780.839402,
+    "ast_hash": "7d066394328d0056c3e35365864d9acd",
+    "semantic_hash": "7d066394328d0056c3e35365864d9acd"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/pages/beta_welcome_page.dart": {
+    "mtime": 1776406780.840199,
+    "ast_hash": "bea1673e061956c3944f925eaeaf1b69",
+    "semantic_hash": "bea1673e061956c3944f925eaeaf1b69"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/pages/completion_page.dart": {
+    "mtime": 1776406780.8395402,
+    "ast_hash": "a04d5f7e327d9aad3cf3775e1d345ca4",
+    "semantic_hash": "a04d5f7e327d9aad3cf3775e1d345ca4"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/pages/donation_page.dart": {
+    "mtime": 1776406780.8392606,
+    "ast_hash": "c4842e651df74f80c254a5626a7a67f4",
+    "semantic_hash": "c4842e651df74f80c254a5626a7a67f4"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/pages/internet_usage_page.dart": {
+    "mtime": 1776406780.8400311,
+    "ast_hash": "e4333bbd2f9cc081c6874cf88387894a",
+    "semantic_hash": "e4333bbd2f9cc081c6874cf88387894a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/pages/language_selection_page.dart": {
+    "mtime": 1776406780.8396366,
+    "ast_hash": "b658d5954cc9c15102e815f4317fb5dd",
+    "semantic_hash": "b658d5954cc9c15102e815f4317fb5dd"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/pages/permissions_page.dart": {
+    "mtime": 1779213731.6968837,
+    "ast_hash": "4abab0b6673f89615cfc3a4866e36f97",
+    "semantic_hash": "4abab0b6673f89615cfc3a4866e36f97"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/pages/theme_selection_page.dart": {
+    "mtime": 1776406780.8398895,
+    "ast_hash": "0e49ce35f8ba04231401b7e6cd43a868",
+    "semantic_hash": "0e49ce35f8ba04231401b7e6cd43a868"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/pages/translation_contribution_page.dart": {
+    "mtime": 1776406905.0961566,
+    "ast_hash": "10419e8a4d4bebe384edfdb77e25a69f",
+    "semantic_hash": "10419e8a4d4bebe384edfdb77e25a69f"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/pages/welcome_page.dart": {
+    "mtime": 1773778933.6894233,
+    "ast_hash": "44c894bef30cddea39de4df60041a1d9",
+    "semantic_hash": "44c894bef30cddea39de4df60041a1d9"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/onboarding/screens/onboarding_screen.dart": {
+    "mtime": 1776470824.2695434,
+    "ast_hash": "f65efb40c12ef82af212ac1dae80e221",
+    "semantic_hash": "f65efb40c12ef82af212ac1dae80e221"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/controllers/now_playing_controller.dart": {
+    "mtime": 1779213731.7118835,
+    "ast_hash": "895799612dc6a75302b88ea6ca0a5ab3",
+    "semantic_hash": "895799612dc6a75302b88ea6ca0a5ab3"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/player.dart": {
+    "mtime": 1772796109.3913927,
+    "ast_hash": "c79876eb5bba096cf14a639068894eba",
+    "semantic_hash": "c79876eb5bba096cf14a639068894eba"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/player_feature.dart": {
+    "mtime": 1776108554.5148578,
+    "ast_hash": "626ed0948f46c3ed3e5c4f51e349e747",
+    "semantic_hash": "626ed0948f46c3ed3e5c4f51e349e747"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/screens/fullscreen_artwork.dart": {
+    "mtime": 1779213731.6998837,
+    "ast_hash": "6ce11e6bf406f2387c85879468e8cbd0",
+    "semantic_hash": "6ce11e6bf406f2387c85879468e8cbd0"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/screens/fullscreen_lyrics.dart": {
+    "mtime": 1779213731.7168834,
+    "ast_hash": "059f2a31f5e3b75560b81148efce8ea6",
+    "semantic_hash": "059f2a31f5e3b75560b81148efce8ea6"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/screens/lyrics_editor_screen.dart": {
+    "mtime": 1779213731.7188835,
+    "ast_hash": "aad9ff60ca6c8cd83b760026b63fd163",
+    "semantic_hash": "aad9ff60ca6c8cd83b760026b63fd163"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/screens/music_visualizer_screen.dart": {
+    "mtime": 1779213731.6948836,
+    "ast_hash": "fcd075391fb80ca9ff7e722ef05e5964",
+    "semantic_hash": "fcd075391fb80ca9ff7e722ef05e5964"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/screens/now_playing.dart": {
+    "mtime": 1780268344.0598438,
+    "ast_hash": "c5cc3d8b5c542dcbf1eb2ccf815a784f",
+    "semantic_hash": "c5cc3d8b5c542dcbf1eb2ccf815a784f"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/album_section.dart": {
+    "mtime": 1776470824.2684526,
+    "ast_hash": "173363f472d07ffb2cc90898d72662a3",
+    "semantic_hash": "173363f472d07ffb2cc90898d72662a3"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/artist_section.dart": {
+    "mtime": 1773090713.6662898,
+    "ast_hash": "7e354212c628c7869574398a99887f48",
+    "semantic_hash": "7e354212c628c7869574398a99887f48"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/lyrics/lyric_line_widget.dart": {
+    "mtime": 1776108554.5148578,
+    "ast_hash": "358875971ba0bdc0b3bbeedb916d2a62",
+    "semantic_hash": "358875971ba0bdc0b3bbeedb916d2a62"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/lyrics/lyrics_constants.dart": {
+    "mtime": 1772980230.9284825,
+    "ast_hash": "af86af3878568d4c91fb4c68f0bd6811",
+    "semantic_hash": "af86af3878568d4c91fb4c68f0bd6811"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/lyrics/lyrics_widgets.dart": {
+    "mtime": 1776108554.5148578,
+    "ast_hash": "cc5fe4f4419ade6fdf531111cf1d3f6b",
+    "semantic_hash": "cc5fe4f4419ade6fdf531111cf1d3f6b"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/lyrics_section.dart": {
+    "mtime": 1776470824.2515438,
+    "ast_hash": "5858eaf47b7b37b1e5d550c086292b80",
+    "semantic_hash": "5858eaf47b7b37b1e5d550c086292b80"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/now_playing_artwork.dart": {
+    "mtime": 1779213731.6998837,
+    "ast_hash": "404f8a0ef789ffa05f99b23a0ed38e57",
+    "semantic_hash": "404f8a0ef789ffa05f99b23a0ed38e57"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/player_controls.dart": {
+    "mtime": 1773091721.6493142,
+    "ast_hash": "1a1fd5b8491bb1ca3cdd0cf6603f66ca",
+    "semantic_hash": "1a1fd5b8491bb1ca3cdd0cf6603f66ca"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/player_dialogs.dart": {
+    "mtime": 1780268344.0779479,
+    "ast_hash": "ea0556c8ab1f611562f0b9ba55c7c5f3",
+    "semantic_hash": "ea0556c8ab1f611562f0b9ba55c7c5f3"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/player_menu.dart": {
+    "mtime": 1776406780.841522,
+    "ast_hash": "3469c1523fc56742b75736a21dc6290f",
+    "semantic_hash": "3469c1523fc56742b75736a21dc6290f"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/player_progress_bar.dart": {
+    "mtime": 1776331970.2210348,
+    "ast_hash": "47896b4c33488eb1ed3d836735df0b34",
+    "semantic_hash": "47896b4c33488eb1ed3d836735df0b34"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/player_widgets.dart": {
+    "mtime": 1776108554.5148578,
+    "ast_hash": "a18760b1547c48b7048ed9fd337cc572",
+    "semantic_hash": "a18760b1547c48b7048ed9fd337cc572"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/playing_from_header.dart": {
+    "mtime": 1778920420.4911206,
+    "ast_hash": "c119a5a0b402c3c5255435e24ebf1a02",
+    "semantic_hash": "c119a5a0b402c3c5255435e24ebf1a02"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/sleep_timer_widgets.dart": {
+    "mtime": 1780268344.0759478,
+    "ast_hash": "707b7fc1d414411a676bf950f066aad9",
+    "semantic_hash": "707b7fc1d414411a676bf950f066aad9"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/song_like_button.dart": {
+    "mtime": 1773146428.7780008,
+    "ast_hash": "6122cfbd77ce387df5d8d03f82298c2a",
+    "semantic_hash": "6122cfbd77ce387df5d8d03f82298c2a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/player/widgets/track_info_display.dart": {
+    "mtime": 1779213731.6998837,
+    "ast_hash": "2070e368a8bbf4881048e331b77c30ec",
+    "semantic_hash": "2070e368a8bbf4881048e331b77c30ec"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/playlists/playlists_feature.dart": {
+    "mtime": 1772796109.3790634,
+    "ast_hash": "d0b93c5052b61e253236d99b15f754f5",
+    "semantic_hash": "d0b93c5052b61e253236d99b15f754f5"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/playlists/screens/playlist_detail_screen.dart": {
+    "mtime": 1781103427.5893435,
+    "ast_hash": "675ed08ab9c92ad6ef9b97c0e0dc2014",
+    "semantic_hash": "675ed08ab9c92ad6ef9b97c0e0dc2014"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/playlists/screens/playlists_screen.dart": {
+    "mtime": 1781103390.848094,
+    "ast_hash": "ddefbf495c9eb53b6da4f9e5336744e8",
+    "semantic_hash": "ddefbf495c9eb53b6da4f9e5336744e8"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/search/search_feature.dart": {
+    "mtime": 1772796109.3789444,
+    "ast_hash": "2948550bd7212f227493f49feda41d34",
+    "semantic_hash": "2948550bd7212f227493f49feda41d34"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/search/widgets/search_tab.dart": {
+    "mtime": 1773778933.6894233,
+    "ast_hash": "a9c198d7b82a65ea270b9b945e4e2f0d",
+    "semantic_hash": "a9c198d7b82a65ea270b9b945e4e2f0d"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/screens/about_settings_screen.dart": {
+    "mtime": 1779231665.4725115,
+    "ast_hash": "9c4c5ad146cdf9f7e229807b61d072b6",
+    "semantic_hash": "9c4c5ad146cdf9f7e229807b61d072b6"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/screens/appearance_settings_screen.dart": {
+    "mtime": 1779232785.2498593,
+    "ast_hash": "4224735ef1172238cd33ac09bfd5ea13",
+    "semantic_hash": "4224735ef1172238cd33ac09bfd5ea13"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/screens/artist_separator_settings.dart": {
+    "mtime": 1776406780.83801,
+    "ast_hash": "5bd04dcaab3eb1dc80c9a1d281206502",
+    "semantic_hash": "5bd04dcaab3eb1dc80c9a1d281206502"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/screens/equalizer_screen.dart": {
+    "mtime": 1779231665.4387808,
+    "ast_hash": "170a403dccafacc90234d2843451335c",
+    "semantic_hash": "170a403dccafacc90234d2843451335c"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/screens/folder_filter_settings_screen.dart": {
+    "mtime": 1779213731.7118835,
+    "ast_hash": "3bfa78c75381186625db492a4bf90c5e",
+    "semantic_hash": "3bfa78c75381186625db492a4bf90c5e"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/screens/home_layout_settings.dart": {
+    "mtime": 1779213731.7078836,
+    "ast_hash": "973db64ad2da8826d939976307f36baf",
+    "semantic_hash": "973db64ad2da8826d939976307f36baf"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/screens/insights_settings_screen.dart": {
+    "mtime": 1780268669.5659487,
+    "ast_hash": "3c422f9668f2ad0c6214ec5f4e83fda2",
+    "semantic_hash": "3c422f9668f2ad0c6214ec5f4e83fda2"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/screens/metadata_detail_screen.dart": {
+    "mtime": 1780271782.054377,
+    "ast_hash": "24c730611011c7f44ead541174ea3152",
+    "semantic_hash": "24c730611011c7f44ead541174ea3152"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/screens/playback_settings_screen.dart": {
+    "mtime": 1779231665.4725115,
+    "ast_hash": "7278bd3dcabb740584a7aafd7b3df24a",
+    "semantic_hash": "7278bd3dcabb740584a7aafd7b3df24a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/screens/storage_settings_screen.dart": {
+    "mtime": 1779231665.4725115,
+    "ast_hash": "6957ff1ffdbf6db96ce738bcc97ed48a",
+    "semantic_hash": "6957ff1ffdbf6db96ce738bcc97ed48a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/settings.dart": {
+    "mtime": 1772796109.3767452,
+    "ast_hash": "baecff486cec152489c31ebb1207bff9",
+    "semantic_hash": "baecff486cec152489c31ebb1207bff9"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/settings_feature.dart": {
+    "mtime": 1772796109.378017,
+    "ast_hash": "1668fdfc87d6b06c733db5e2f59f38a4",
+    "semantic_hash": "1668fdfc87d6b06c733db5e2f59f38a4"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/widgets/settings_tab.dart": {
+    "mtime": 1779231665.4679043,
+    "ast_hash": "7c9db3e78da0d7bab48a307923481a05",
+    "semantic_hash": "7c9db3e78da0d7bab48a307923481a05"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/settings/widgets/settings_tile_builders.dart": {
+    "mtime": 1779106175.993066,
+    "ast_hash": "823dc52ffa839b26cb6f0d14aea01e83",
+    "semantic_hash": "823dc52ffa839b26cb6f0d14aea01e83"
+  },
+  "/home/david/Documents/Aurora-Music/lib/features/splash/splash_screen.dart": {
+    "mtime": 1780272648.182508,
+    "ast_hash": "db056dfb709571d7fb7ed2d80271843b",
+    "semantic_hash": "db056dfb709571d7fb7ed2d80271843b"
+  },
+  "/home/david/Documents/Aurora-Music/lib/l10n/generated/app_localizations.dart": {
+    "mtime": 1781103513.3824863,
+    "ast_hash": "d1a47576c66748df3a3188c173f58079",
+    "semantic_hash": "d1a47576c66748df3a3188c173f58079"
+  },
+  "/home/david/Documents/Aurora-Music/lib/l10n/generated/app_localizations_cs.dart": {
+    "mtime": 1781103513.3584864,
+    "ast_hash": "384668adac0f451b936ca48b56f40b97",
+    "semantic_hash": "384668adac0f451b936ca48b56f40b97"
+  },
+  "/home/david/Documents/Aurora-Music/lib/l10n/generated/app_localizations_en.dart": {
+    "mtime": 1781103513.3684864,
+    "ast_hash": "b6729f454018b40df7934d81f0bed425",
+    "semantic_hash": "b6729f454018b40df7934d81f0bed425"
+  },
+  "/home/david/Documents/Aurora-Music/lib/l10n/locale_provider.dart": {
+    "mtime": 1772796109.3965325,
+    "ast_hash": "6fcc8a61a4d959ed2bc944c7a380b528",
+    "semantic_hash": "6fcc8a61a4d959ed2bc944c7a380b528"
+  },
+  "/home/david/Documents/Aurora-Music/lib/l10n/supported_languages.dart": {
+    "mtime": 1773090713.6672897,
+    "ast_hash": "78e3fd0d522cb3b80ec42fd595963fe9",
+    "semantic_hash": "78e3fd0d522cb3b80ec42fd595963fe9"
+  },
+  "/home/david/Documents/Aurora-Music/lib/main.dart": {
+    "mtime": 1781103795.416863,
+    "ast_hash": "9403761383e89c1db5002ec5686c7e2a",
+    "semantic_hash": "9403761383e89c1db5002ec5686c7e2a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/mixins/artwork_mixin.dart": {
+    "mtime": 1772796109.3750913,
+    "ast_hash": "57e665aba2411de6ba1d7fb48177d185",
+    "semantic_hash": "57e665aba2411de6ba1d7fb48177d185"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/mixins/detail_screen_mixin.dart": {
+    "mtime": 1776406780.8373532,
+    "ast_hash": "d0274cc28e5a4fa8138712d80693bd4c",
+    "semantic_hash": "d0274cc28e5a4fa8138712d80693bd4c"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/mixins/lazy_loading_mixin.dart": {
+    "mtime": 1773040523.1533844,
+    "ast_hash": "e20df95adb1ed0cb961f0957c0d5dd5e",
+    "semantic_hash": "e20df95adb1ed0cb961f0957c0d5dd5e"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/mixins/mixins.dart": {
+    "mtime": 1772796109.3748925,
+    "ast_hash": "b5c8f07b53b29ab8734dd5692ecc52ee",
+    "semantic_hash": "b5c8f07b53b29ab8734dd5692ecc52ee"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/mixins/playback_mixin.dart": {
+    "mtime": 1772796109.374986,
+    "ast_hash": "d9e781b68347279b4f851fd2a999aa28",
+    "semantic_hash": "d9e781b68347279b4f851fd2a999aa28"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/mixins/search_mixin.dart": {
+    "mtime": 1772980230.9304826,
+    "ast_hash": "d3f2cceb442b5887fa1bc161e140c075",
+    "semantic_hash": "d3f2cceb442b5887fa1bc161e140c075"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/models/artist_utils.dart": {
+    "mtime": 1772796109.3628726,
+    "ast_hash": "a5b7273a663b967dc7f9c74fa3467f95",
+    "semantic_hash": "a5b7273a663b967dc7f9c74fa3467f95"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/models/models.dart": {
+    "mtime": 1772796109.3629844,
+    "ast_hash": "40adf7e90c9540e78af0e52768ed2395",
+    "semantic_hash": "40adf7e90c9540e78af0e52768ed2395"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/models/playlist_model.dart": {
+    "mtime": 1776108554.5148578,
+    "ast_hash": "2a6c95301a21eaf5cde2f8752a2ff28e",
+    "semantic_hash": "2a6c95301a21eaf5cde2f8752a2ff28e"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/models/separated_artist.dart": {
+    "mtime": 1772796109.362595,
+    "ast_hash": "605c170e2bc82a967c65403a6ac3e990",
+    "semantic_hash": "605c170e2bc82a967c65403a6ac3e990"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/models/timed_lyrics.dart": {
+    "mtime": 1772796109.3624406,
+    "ast_hash": "a37f0bc4f7ffd4649a3952a4c33b9af7",
+    "semantic_hash": "a37f0bc4f7ffd4649a3952a4c33b9af7"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/providers/performance_mode_provider.dart": {
+    "mtime": 1776459367.701418,
+    "ast_hash": "43655f25a4a44e6bc7f77de6307624b6",
+    "semantic_hash": "43655f25a4a44e6bc7f77de6307624b6"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/providers/providers.dart": {
+    "mtime": 1772796109.3620684,
+    "ast_hash": "a691ab17f3e2b01f5f86e64f3bf3d9c9",
+    "semantic_hash": "a691ab17f3e2b01f5f86e64f3bf3d9c9"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/providers/theme_provider.dart": {
+    "mtime": 1779232785.2502697,
+    "ast_hash": "7b71b94431b9a8e4fb0e46ce5ee1f448",
+    "semantic_hash": "7b71b94431b9a8e4fb0e46ce5ee1f448"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/artist_aggregator_service.dart": {
+    "mtime": 1772796109.3710058,
+    "ast_hash": "1ec9ce70940d745fdaf3395997ef3b05",
+    "semantic_hash": "1ec9ce70940d745fdaf3395997ef3b05"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/artist_separator_service.dart": {
+    "mtime": 1772980230.9304826,
+    "ast_hash": "e0752a5f1ffe11eea77dbaa86499e344",
+    "semantic_hash": "e0752a5f1ffe11eea77dbaa86499e344"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/artwork_cache_service.dart": {
+    "mtime": 1780771611.9658892,
+    "ast_hash": "53c6544c73bdf88672418cc46b195d6e",
+    "semantic_hash": "53c6544c73bdf88672418cc46b195d6e"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio/library_manager.dart": {
+    "mtime": 1780272648.221507,
+    "ast_hash": "04960699733237b1d10e7504b7541796",
+    "semantic_hash": "04960699733237b1d10e7504b7541796"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio/media_artwork.dart": {
+    "mtime": 1780771377.8731778,
+    "ast_hash": "ee3fbd5c5ea404c55ae6a86f2c441bd3",
+    "semantic_hash": "ee3fbd5c5ea404c55ae6a86f2c441bd3"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio/play_counts.dart": {
+    "mtime": 1781104061.9580014,
+    "ast_hash": "b83a88635c484ea2248373e14da277ce",
+    "semantic_hash": "b83a88635c484ea2248373e14da277ce"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio/playback_controller.dart": {
+    "mtime": 1780771436.2402105,
+    "ast_hash": "71ccf4b00d34be779697eafeed193178",
+    "semantic_hash": "71ccf4b00d34be779697eafeed193178"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio/playlist_m3u_sync.dart": {
+    "mtime": 1781103390.8388608,
+    "ast_hash": "649828bc581871eb38906408a6b48a73",
+    "semantic_hash": "649828bc581871eb38906408a6b48a73"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio/queue_manager.dart": {
+    "mtime": 1776470824.251506,
+    "ast_hash": "f3b2c87389bb9a09bcd4071eb6157564",
+    "semantic_hash": "f3b2c87389bb9a09bcd4071eb6157564"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio/queue_persistence.dart": {
+    "mtime": 1776108554.515858,
+    "ast_hash": "1ba287f8c0b6874f654160c4f163e698",
+    "semantic_hash": "1ba287f8c0b6874f654160c4f163e698"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio/replay_gain_reader.dart": {
+    "mtime": 1780263812.2896054,
+    "ast_hash": "ca28a10a2d0339d926b97a0304514a30",
+    "semantic_hash": "ca28a10a2d0339d926b97a0304514a30"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio/settings_manager.dart": {
+    "mtime": 1780261136.8548186,
+    "ast_hash": "171826e1649cd19ab5e7885b9021ac9a",
+    "semantic_hash": "171826e1649cd19ab5e7885b9021ac9a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio_constants.dart": {
+    "mtime": 1772796109.3641326,
+    "ast_hash": "4dd2daa610f8a5d084fe87dfc085bf4e",
+    "semantic_hash": "4dd2daa610f8a5d084fe87dfc085bf4e"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio_handler.dart": {
+    "mtime": 1776406905.0961566,
+    "ast_hash": "9606c2e2ecca97346fd44611f2c5709a",
+    "semantic_hash": "9606c2e2ecca97346fd44611f2c5709a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio_player_service.dart": {
+    "mtime": 1780272648.2115073,
+    "ast_hash": "ebdad1b1bb99cea86b16631d2a01971f",
+    "semantic_hash": "ebdad1b1bb99cea86b16631d2a01971f"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/audio_settings_service.dart": {
+    "mtime": 1776108554.515858,
+    "ast_hash": "2ed02986f5b7eff4b2ccd4fb15ccb790",
+    "semantic_hash": "2ed02986f5b7eff4b2ccd4fb15ccb790"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/background_manager_service.dart": {
+    "mtime": 1779106176.001066,
+    "ast_hash": "503d58442978211ed676b98bb61ec9ab",
+    "semantic_hash": "503d58442978211ed676b98bb61ec9ab"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/batch_download_service.dart": {
+    "mtime": 1772796109.3684063,
+    "ast_hash": "3e82fbdc1889c5d7f9aa09b53164e0c5",
+    "semantic_hash": "3e82fbdc1889c5d7f9aa09b53164e0c5"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/bluetooth_service.dart": {
+    "mtime": 1779213731.6978679,
+    "ast_hash": "f3c213cf0a0ab5b44a978b537114e63e",
+    "semantic_hash": "f3c213cf0a0ab5b44a978b537114e63e"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/cache_manager.dart": {
+    "mtime": 1772796109.3724444,
+    "ast_hash": "d89e8b836a5d8bbe126417243c6e1167",
+    "semantic_hash": "d89e8b836a5d8bbe126417243c6e1167"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/device_performance_service.dart": {
+    "mtime": 1773505491.9562213,
+    "ast_hash": "b49a7abf8797478ab528d5860f1aa4ff",
+    "semantic_hash": "b49a7abf8797478ab528d5860f1aa4ff"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/donation_service.dart": {
+    "mtime": 1773494878.409501,
+    "ast_hash": "3372baf350f3afff33632c8a25f9e465",
+    "semantic_hash": "3372baf350f3afff33632c8a25f9e465"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/download_progress_monitor.dart": {
+    "mtime": 1772796109.3687277,
+    "ast_hash": "2633efdf5037e3446eedeca24ee2c963",
+    "semantic_hash": "2633efdf5037e3446eedeca24ee2c963"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/equalizer_service.dart": {
+    "mtime": 1779231665.4836326,
+    "ast_hash": "36a72a5ef9c4c653d470790ab9395060",
+    "semantic_hash": "36a72a5ef9c4c653d470790ab9395060"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/error_tracking_service.dart": {
+    "mtime": 1776331970.2236876,
+    "ast_hash": "53f52fcaf3945c0d626f9bc9fc552a29",
+    "semantic_hash": "53f52fcaf3945c0d626f9bc9fc552a29"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/feedback_email_service.dart": {
+    "mtime": 1776344681.4064505,
+    "ast_hash": "8d21b93606afb1246147099da314f3aa",
+    "semantic_hash": "8d21b93606afb1246147099da314f3aa"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/feedback_reminder_service.dart": {
+    "mtime": 1772796109.364973,
+    "ast_hash": "7d9f76a12a9d143ed92251880ec70b2a",
+    "semantic_hash": "7d9f76a12a9d143ed92251880ec70b2a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/folder_filter_service.dart": {
+    "mtime": 1779213731.7078836,
+    "ast_hash": "f761d4f495a9be91ea930e9e63bd5cf8",
+    "semantic_hash": "f761d4f495a9be91ea930e9e63bd5cf8"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/home_layout_service.dart": {
+    "mtime": 1778920420.5031624,
+    "ast_hash": "11a6363bccb71b1906eb89adf8c381ae",
+    "semantic_hash": "11a6363bccb71b1906eb89adf8c381ae"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/home_screen_widget_service.dart": {
+    "mtime": 1773074532.7941532,
+    "ast_hash": "11eeaf2c22dd7172ff7f53a6dab31260",
+    "semantic_hash": "11eeaf2c22dd7172ff7f53a6dab31260"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/insights_promo_service.dart": {
+    "mtime": 1779213731.700952,
+    "ast_hash": "4fafb826e8f98f6c49ea5e4041c20c18",
+    "semantic_hash": "4fafb826e8f98f6c49ea5e4041c20c18"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/liked_songs_service.dart": {
+    "mtime": 1776108554.515858,
+    "ast_hash": "8dafd6a9dcdae4cf054e049c036bdc46",
+    "semantic_hash": "8dafd6a9dcdae4cf054e049c036bdc46"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/local_caching_service.dart": {
+    "mtime": 1773494868.0337052,
+    "ast_hash": "14b938b8258e689b13551779f93f72c6",
+    "semantic_hash": "14b938b8258e689b13551779f93f72c6"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/logging_service.dart": {
+    "mtime": 1776331970.225293,
+    "ast_hash": "62cc71c8f8991fcdcb614b7ae9f85442",
+    "semantic_hash": "62cc71c8f8991fcdcb614b7ae9f85442"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/lyrics_isolate.dart": {
+    "mtime": 1776108554.515858,
+    "ast_hash": "b31455eb931b1b9be7f8a129952624e7",
+    "semantic_hash": "b31455eb931b1b9be7f8a129952624e7"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/lyrics_service.dart": {
+    "mtime": 1773224075.6472077,
+    "ast_hash": "84ef6ab2bf74c856445a478eeb092dfb",
+    "semantic_hash": "84ef6ab2bf74c856445a478eeb092dfb"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/lyrics_translation_service.dart": {
+    "mtime": 1779213731.7118835,
+    "ast_hash": "cc30a57c02c01a788de6fa387a37b9e6",
+    "semantic_hash": "cc30a57c02c01a788de6fa387a37b9e6"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/metadata_service.dart": {
+    "mtime": 1780271186.088751,
+    "ast_hash": "cd7be286896d835e66b448a908c12d67",
+    "semantic_hash": "cd7be286896d835e66b448a908c12d67"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/music_search_service.dart": {
+    "mtime": 1776108554.515858,
+    "ast_hash": "602d39d00b3273254052db7e9695d4eb",
+    "semantic_hash": "602d39d00b3273254052db7e9695d4eb"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/notification_manager.dart": {
+    "mtime": 1773178380.0980692,
+    "ast_hash": "1f67131b431c71a46bbaf73176c97843",
+    "semantic_hash": "1f67131b431c71a46bbaf73176c97843"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/performance_manager.dart": {
+    "mtime": 1776108554.5168579,
+    "ast_hash": "997b1b325ea34aa4178089c64e440541",
+    "semantic_hash": "997b1b325ea34aa4178089c64e440541"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/play_count_service.dart": {
+    "mtime": 1776108554.5168579,
+    "ast_hash": "ac9f6d3e1d63b07bae02f72573e856d6",
+    "semantic_hash": "ac9f6d3e1d63b07bae02f72573e856d6"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/playlist_m3u_service.dart": {
+    "mtime": 1780261687.3244689,
+    "ast_hash": "c254da7d02c73d3644a4c44fb1d94f18",
+    "semantic_hash": "c254da7d02c73d3644a4c44fb1d94f18"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/playlist_persistence_service.dart": {
+    "mtime": 1776108554.5168579,
+    "ast_hash": "cfb957846edda1dae2de164f8c3ef01d",
+    "semantic_hash": "cfb957846edda1dae2de164f8c3ef01d"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/services.dart": {
+    "mtime": 1778920420.5091205,
+    "ast_hash": "95ef239e66e748b0c66d270a3b51dd39",
+    "semantic_hash": "95ef239e66e748b0c66d270a3b51dd39"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/shader_warmup_service.dart": {
+    "mtime": 1772796109.3666358,
+    "ast_hash": "55eb5e2281f1fc82ee637bb408a02a3a",
+    "semantic_hash": "55eb5e2281f1fc82ee637bb408a02a3a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/sleep_timer_controller.dart": {
+    "mtime": 1772796109.3711934,
+    "ast_hash": "e303033b6480acb62d7cfd0560dac649",
+    "semantic_hash": "e303033b6480acb62d7cfd0560dac649"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/smart_suggestions_service.dart": {
+    "mtime": 1780272648.2415066,
+    "ast_hash": "ff68ec6a60a57c33ccf743193c5f75be",
+    "semantic_hash": "ff68ec6a60a57c33ccf743193c5f75be"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/translation_reminder_service.dart": {
+    "mtime": 1773174712.0975237,
+    "ast_hash": "14e6beddd6fb2d437bdbaa0d6ff3f19a",
+    "semantic_hash": "14e6beddd6fb2d437bdbaa0d6ff3f19a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/user_preferences.dart": {
+    "mtime": 1776331970.2236876,
+    "ast_hash": "c8d9a387c783f17c57240c8e9dca95f3",
+    "semantic_hash": "c8d9a387c783f17c57240c8e9dca95f3"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/services/version_service.dart": {
+    "mtime": 1773174712.0870242,
+    "ast_hash": "eb8693f02fd83ff16b660b6a11e0ba61",
+    "semantic_hash": "eb8693f02fd83ff16b660b6a11e0ba61"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/audio_service_selectors.dart": {
+    "mtime": 1776108554.5168579,
+    "ast_hash": "10754b1b31090df6a2f47238ecd37b7a",
+    "semantic_hash": "10754b1b31090df6a2f47238ecd37b7a"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/changelog_content.dart": {
+    "mtime": 1779232952.435432,
+    "ast_hash": "1f5ca5148818b021ffc529feec4da7b1",
+    "semantic_hash": "1f5ca5148818b021ffc529feec4da7b1"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/device_capabilities.dart": {
+    "mtime": 1772796109.3732603,
+    "ast_hash": "db1b626d1827903ce46d13c3b0c808df",
+    "semantic_hash": "db1b626d1827903ce46d13c3b0c808df"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/formatters/duration_formatter.dart": {
+    "mtime": 1776108554.5168579,
+    "ast_hash": "22295fcdd0e405bed71476734eb0e565",
+    "semantic_hash": "22295fcdd0e405bed71476734eb0e565"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/formatters/file_size_formatter.dart": {
+    "mtime": 1776108554.5168579,
+    "ast_hash": "20d93c31022db18947fcf7e89273a1b9",
+    "semantic_hash": "20d93c31022db18947fcf7e89273a1b9"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/formatters/formatters.dart": {
+    "mtime": 1772796109.3744073,
+    "ast_hash": "5c9e2167c863420f15b987b399317ada",
+    "semantic_hash": "5c9e2167c863420f15b987b399317ada"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/frame_rate_monitor.dart": {
+    "mtime": 1776108554.5168579,
+    "ast_hash": "b286409950c599c85d7446e01878fabc",
+    "semantic_hash": "b286409950c599c85d7446e01878fabc"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/performance_optimizations.dart": {
+    "mtime": 1772796109.3730116,
+    "ast_hash": "4d0166bf17ad25c8000115a17f85759b",
+    "semantic_hash": "4d0166bf17ad25c8000115a17f85759b"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/responsive_utils.dart": {
+    "mtime": 1772796109.374533,
+    "ast_hash": "f43b1e96d073688025539f336409b856",
+    "semantic_hash": "f43b1e96d073688025539f336409b856"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/sort_preferences.dart": {
+    "mtime": 1780261400.329452,
+    "ast_hash": "689c23aac38bda69a571a5f44fc80694",
+    "semantic_hash": "689c23aac38bda69a571a5f44fc80694"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/utils.dart": {
+    "mtime": 1776108554.5168579,
+    "ast_hash": "0b4b5a2e8d706ab0ca6aad908998fd73",
+    "semantic_hash": "0b4b5a2e8d706ab0ca6aad908998fd73"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/validators/audio_validators.dart": {
+    "mtime": 1776108554.5168579,
+    "ast_hash": "eba9a965f3493a1cfd4360e1c6074c63",
+    "semantic_hash": "eba9a965f3493a1cfd4360e1c6074c63"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/utils/validators/validators.dart": {
+    "mtime": 1776108554.5178835,
+    "ast_hash": "93fa47886fa7737bcfbfa708aa0dcc42",
+    "semantic_hash": "93fa47886fa7737bcfbfa708aa0dcc42"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/about_dialog.dart": {
+    "mtime": 1776406780.8369632,
+    "ast_hash": "1b4fa7c5c85624914307bb0f040df3d8",
+    "semantic_hash": "1b4fa7c5c85624914307bb0f040df3d8"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/album_card.dart": {
+    "mtime": 1773064988.1730306,
+    "ast_hash": "e02e36b8dc97d6154fb339a520c10f22",
+    "semantic_hash": "e02e36b8dc97d6154fb339a520c10f22"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/animated_artwork_background.dart": {
+    "mtime": 1779213731.7231855,
+    "ast_hash": "93543cba48c5e852dbd0d770f8382919",
+    "semantic_hash": "93543cba48c5e852dbd0d770f8382919"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/animated_progress_line.dart": {
+    "mtime": 1772796109.3604257,
+    "ast_hash": "335cfeb35b105b968eeaf2866bab864b",
+    "semantic_hash": "335cfeb35b105b968eeaf2866bab864b"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/app_background.dart": {
+    "mtime": 1776112543.3149545,
+    "ast_hash": "53408c20f4efd09c7084bc82d170479b",
+    "semantic_hash": "53408c20f4efd09c7084bc82d170479b"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/artist_card.dart": {
+    "mtime": 1779213731.6998837,
+    "ast_hash": "3b270322e7d2490b980f4cf32b822303",
+    "semantic_hash": "3b270322e7d2490b980f4cf32b822303"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/auto_scroll_text.dart": {
+    "mtime": 1773090713.6682897,
+    "ast_hash": "092001a33b87ec4b73aaa84c0fb1e8a8",
+    "semantic_hash": "092001a33b87ec4b73aaa84c0fb1e8a8"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/blur_dialog.dart": {
+    "mtime": 1776406780.8371346,
+    "ast_hash": "3995816ff66964d46670fb0b578c9786",
+    "semantic_hash": "3995816ff66964d46670fb0b578c9786"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/changelog_dialog.dart": {
+    "mtime": 1776464298.6850781,
+    "ast_hash": "7076afc3574db27ae05e40223ae16068",
+    "semantic_hash": "7076afc3574db27ae05e40223ae16068"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/common/common.dart": {
+    "mtime": 1776108554.5178835,
+    "ast_hash": "202ddc74c8576d1982d9e92f2e0f6af6",
+    "semantic_hash": "202ddc74c8576d1982d9e92f2e0f6af6"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/common/scrolling_text.dart": {
+    "mtime": 1772796109.358656,
+    "ast_hash": "5b90538c913ba6918bf1861e479a1676",
+    "semantic_hash": "5b90538c913ba6918bf1861e479a1676"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/common/settings_tiles.dart": {
+    "mtime": 1776108554.5178835,
+    "ast_hash": "c582b8c13552c0e6cbbe49d96a809a1d",
+    "semantic_hash": "c582b8c13552c0e6cbbe49d96a809a1d"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/common_screen_scaffold.dart": {
+    "mtime": 1776406780.8360965,
+    "ast_hash": "2a3bbaee3dd46f22669092539a5b65c9",
+    "semantic_hash": "2a3bbaee3dd46f22669092539a5b65c9"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/detail_header.dart": {
+    "mtime": 1776406780.836257,
+    "ast_hash": "594ad69f2b094d6409657773bbaa77b4",
+    "semantic_hash": "594ad69f2b094d6409657773bbaa77b4"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/expanding_player.dart": {
+    "mtime": 1780268259.3342965,
+    "ast_hash": "785ad0a796e0b0311f00d4202fbb2045",
+    "semantic_hash": "785ad0a796e0b0311f00d4202fbb2045"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/feedback_popup_widget.dart": {
+    "mtime": 1776406905.0961566,
+    "ast_hash": "dd271089f2641b46b5b602b014d6ea8b",
+    "semantic_hash": "dd271089f2641b46b5b602b014d6ea8b"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/glassmorphic_card.dart": {
+    "mtime": 1773178380.0888026,
+    "ast_hash": "12d708be7ea72ef0c3e8f2824f430354",
+    "semantic_hash": "12d708be7ea72ef0c3e8f2824f430354"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/glassmorphic_container.dart": {
+    "mtime": 1773074532.7931533,
+    "ast_hash": "050e423a430120c6807ceb92c397e169",
+    "semantic_hash": "050e423a430120c6807ceb92c397e169"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/glassmorphic_dialog.dart": {
+    "mtime": 1780268344.0799477,
+    "ast_hash": "16433d237585434bdc386e23b2e3ed21",
+    "semantic_hash": "16433d237585434bdc386e23b2e3ed21"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/grainy_gradient_background.dart": {
+    "mtime": 1773224075.637568,
+    "ast_hash": "9cf89cbec565a4452936a7e8f5902df1",
+    "semantic_hash": "9cf89cbec565a4452936a7e8f5902df1"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/insights_aurora_banner.dart": {
+    "mtime": 1779106175.993066,
+    "ast_hash": "8d0c0a493c3f04e78f0eeae3b56b7267",
+    "semantic_hash": "8d0c0a493c3f04e78f0eeae3b56b7267"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/insights_promo_dialog.dart": {
+    "mtime": 1779106175.9906259,
+    "ast_hash": "dc11fb9a57119546fe4b6da9d7af1ce5",
+    "semantic_hash": "dc11fb9a57119546fe4b6da9d7af1ce5"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/library_screen_header.dart": {
+    "mtime": 1776406780.8364317,
+    "ast_hash": "d3a00e918439d1d2b9adec10b6b2f9b7",
+    "semantic_hash": "d3a00e918439d1d2b9adec10b6b2f9b7"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/music_metadata_widget.dart": {
+    "mtime": 1780264519.6941266,
+    "ast_hash": "70bd858caead01b1bd5d3cb92dae9f76",
+    "semantic_hash": "70bd858caead01b1bd5d3cb92dae9f76"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/optimized_tiles.dart": {
+    "mtime": 1780857546.5951006,
+    "ast_hash": "bf2b8efb3ea16f08f8dfad59566af418",
+    "semantic_hash": "bf2b8efb3ea16f08f8dfad59566af418"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/optimized_widgets.dart": {
+    "mtime": 1776108554.5178835,
+    "ast_hash": "27311ab469f15caf7608480572034981",
+    "semantic_hash": "27311ab469f15caf7608480572034981"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/outline_indicator.dart": {
+    "mtime": 1772796109.3612256,
+    "ast_hash": "6ab16217870a2e41c90bf2e1ddd053ed",
+    "semantic_hash": "6ab16217870a2e41c90bf2e1ddd053ed"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/packages_dialog.dart": {
+    "mtime": 1776108554.5178835,
+    "ast_hash": "ef9e85833fa3496893afdf5975e5bb6d",
+    "semantic_hash": "ef9e85833fa3496893afdf5975e5bb6d"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/pill_button.dart": {
+    "mtime": 1773505430.9337656,
+    "ast_hash": "2b44f68037dd89b310016f386b051c53",
+    "semantic_hash": "2b44f68037dd89b310016f386b051c53"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/responsive_scaffold.dart": {
+    "mtime": 1776108554.5178835,
+    "ast_hash": "3fe89c2ca992eb2b26e9ed8186064515",
+    "semantic_hash": "3fe89c2ca992eb2b26e9ed8186064515"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/shimmer_loading.dart": {
+    "mtime": 1772980230.9334826,
+    "ast_hash": "01732112122f30be721506bcedeb4a09",
+    "semantic_hash": "01732112122f30be721506bcedeb4a09"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/song_context_menu.dart": {
+    "mtime": 1780269723.1252177,
+    "ast_hash": "0c168168fdfd18a4d249534b800bddba",
+    "semantic_hash": "0c168168fdfd18a4d249534b800bddba"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/song_picker_sheet.dart": {
+    "mtime": 1780268344.0759478,
+    "ast_hash": "c92631a15be17f6d1dda3c2fa821c2e4",
+    "semantic_hash": "c92631a15be17f6d1dda3c2fa821c2e4"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/toast_notification.dart": {
+    "mtime": 1773074532.7921534,
+    "ast_hash": "a26bc7b3a193997d2453f40bf88361e4",
+    "semantic_hash": "a26bc7b3a193997d2453f40bf88361e4"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/translation_reminder_dialog.dart": {
+    "mtime": 1776406780.8365762,
+    "ast_hash": "7b78fbac6a25b2f8668cacf2f76c42fe",
+    "semantic_hash": "7b78fbac6a25b2f8668cacf2f76c42fe"
+  },
+  "/home/david/Documents/Aurora-Music/lib/shared/widgets/widgets.dart": {
+    "mtime": 1781103725.9073946,
+    "ast_hash": "4d91b7ee73327a5e34ab4396c0c0c8bc",
+    "semantic_hash": "4d91b7ee73327a5e34ab4396c0c0c8bc"
+  },
+  "/home/david/Documents/Aurora-Music/test/widget_test.dart": {
+    "mtime": 1773494873.7491317,
+    "ast_hash": "3f7c9666c1decd4d397091b5c5417e3f",
+    "semantic_hash": "3f7c9666c1decd4d397091b5c5417e3f"
+  },
+  "/home/david/Documents/Aurora-Music/.github/copilot-instructions.md": {
+    "mtime": 1780606569.7597232,
+    "ast_hash": "ec2dc0dc7bef63488889f34de2f5584d",
+    "semantic_hash": "ec2dc0dc7bef63488889f34de2f5584d"
+  },
+  "/home/david/Documents/Aurora-Music/CONTRIBUTING_TRANSLATIONS.md": {
+    "mtime": 1773173357.2863166,
+    "ast_hash": "cbeac8da6c917fcec7ad578f5e56ae84",
+    "semantic_hash": "cbeac8da6c917fcec7ad578f5e56ae84"
+  },
+  "/home/david/Documents/Aurora-Music/README.md": {
+    "mtime": 1771934709.94,
+    "ast_hash": "ce5813887185e991ced917ca09ab4c5a",
+    "semantic_hash": "ce5813887185e991ced917ca09ab4c5a"
+  },
+  "/home/david/Documents/Aurora-Music/analysis_options.yaml": {
+    "mtime": 1771225923.55,
+    "ast_hash": "0798475ea2ba0030f218918cb10d9707",
+    "semantic_hash": "0798475ea2ba0030f218918cb10d9707"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/CMakeCache.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "388a3867023c98c63f6abe2911086b3b",
+    "semantic_hash": "388a3867023c98c63f6abe2911086b3b"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/CMakeFiles/TargetDirectories.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "689767a287bebdc8fcb3248ca2723b8b",
+    "semantic_hash": "689767a287bebdc8fcb3248ca2723b8b"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/additional_project_files.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/build_file_index.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "9e4b0ac0d82f6ac00b537b0cd2062954",
+    "semantic_hash": "9e4b0ac0d82f6ac00b537b0cd2062954"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/metadata_generation_command.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "460848165817ffff07ddfb693bf86299",
+    "semantic_hash": "460848165817ffff07ddfb693bf86299"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/arm64-v8a/symbol_folder_index.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "f194f3e2cc8d806e8871d7e85ac7fd88",
+    "semantic_hash": "f194f3e2cc8d806e8871d7e85ac7fd88"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/CMakeCache.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "fabecaa7f4c7251aeb0b01cb7ba35fcb",
+    "semantic_hash": "fabecaa7f4c7251aeb0b01cb7ba35fcb"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/CMakeFiles/TargetDirectories.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "d5029026c78424efda6b5023a993230f",
+    "semantic_hash": "d5029026c78424efda6b5023a993230f"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/additional_project_files.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/build_file_index.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "9e4b0ac0d82f6ac00b537b0cd2062954",
+    "semantic_hash": "9e4b0ac0d82f6ac00b537b0cd2062954"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/metadata_generation_command.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "13727e7d76c4c20da8fc418230439828",
+    "semantic_hash": "13727e7d76c4c20da8fc418230439828"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/armeabi-v7a/symbol_folder_index.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "9c22d7ce064b858e085385a4295e282d",
+    "semantic_hash": "9c22d7ce064b858e085385a4295e282d"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/.cxx/Debug/6p5f3i11/hash_key.txt": {
+    "mtime": 1755287592.24,
+    "ast_hash": "cfdbc89efa517a3cbbede409c921cd23",
+    "semantic_hash": "cfdbc89efa517a3cbbede409c921cd23"
+  },
+  "/home/david/Documents/Aurora-Music/crowdin.yml": {
+    "mtime": 1773174712.0975237,
+    "ast_hash": "da9a28a46820723388ea1bd3d1fc7fc2",
+    "semantic_hash": "da9a28a46820723388ea1bd3d1fc7fc2"
+  },
+  "/home/david/Documents/Aurora-Music/devtools_options.yaml": {
+    "mtime": 1766954278.48,
+    "ast_hash": "9627ddf1ca132049f8b3ede19590c2c7",
+    "semantic_hash": "9627ddf1ca132049f8b3ede19590c2c7"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md": {
+    "mtime": 1755287592.27,
+    "ast_hash": "f7ee1b402881509d197f34963e569927",
+    "semantic_hash": "f7ee1b402881509d197f34963e569927"
+  },
+  "/home/david/Documents/Aurora-Music/l10n.yaml": {
+    "mtime": 1770043092.12,
+    "ast_hash": "5d94293ab62b11fe12b1007fbed41f41",
+    "semantic_hash": "5d94293ab62b11fe12b1007fbed41f41"
+  },
+  "/home/david/Documents/Aurora-Music/lib/README.md": {
+    "mtime": 1769632746.21,
+    "ast_hash": "62d3c864a7d58d7643e48e2f8683ac67",
+    "semantic_hash": "62d3c864a7d58d7643e48e2f8683ac67"
+  },
+  "/home/david/Documents/Aurora-Music/pubspec.yaml": {
+    "mtime": 1780272743.5865586,
+    "ast_hash": "2ff381bb8d284f52b7ef3ab1d950f671",
+    "semantic_hash": "2ff381bb8d284f52b7ef3ab1d950f671"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/ic_launcher-playstore.png": {
+    "mtime": 1755287592.25,
+    "ast_hash": "e36eff62be709e53d4a12191b74dd17c",
+    "semantic_hash": "e36eff62be709e53d4a12191b74dd17c"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/play_store_512.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "c1984ca932a64c3381bc342eef95374a",
+    "semantic_hash": "c1984ca932a64c3381bc342eef95374a"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-hdpi/ic_stat_music.png": {
+    "mtime": 1776467355.5691643,
+    "ast_hash": "9c912feb3bcce6a45928f04a24ac1339",
+    "semantic_hash": "9c912feb3bcce6a45928f04a24ac1339"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-hdpi/ic_stat_music1.png": {
+    "mtime": 1771937601.83,
+    "ast_hash": "0e0c82c02920dbbb5eadc05f38d05933",
+    "semantic_hash": "0e0c82c02920dbbb5eadc05f38d05933"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-hdpi/splash.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "ca2b1eb9bf6e46cbc4b2451b6a652a7e",
+    "semantic_hash": "ca2b1eb9bf6e46cbc4b2451b6a652a7e"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-mdpi/ic_stat_music.png": {
+    "mtime": 1776467355.573842,
+    "ast_hash": "0c501d91dae1dce29891d1fb43ac07ef",
+    "semantic_hash": "0c501d91dae1dce29891d1fb43ac07ef"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-mdpi/ic_stat_music1.png": {
+    "mtime": 1771937601.79,
+    "ast_hash": "4290cc26a1cb85f5bd3b21d5386baae3",
+    "semantic_hash": "4290cc26a1cb85f5bd3b21d5386baae3"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-mdpi/splash.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "ffe40d8e4cd89f27696e0bfa03ce1516",
+    "semantic_hash": "ffe40d8e4cd89f27696e0bfa03ce1516"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-v21/background.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "b1590e394d831fe78e5cbf0bcc48b0a9",
+    "semantic_hash": "b1590e394d831fe78e5cbf0bcc48b0a9"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-xhdpi/ic_stat_music.png": {
+    "mtime": 1776467355.5791643,
+    "ast_hash": "404257732f04dd2a895030da4044ba45",
+    "semantic_hash": "404257732f04dd2a895030da4044ba45"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-xhdpi/ic_stat_music1.png": {
+    "mtime": 1771937601.85,
+    "ast_hash": "80b1f3812f10e858face71fd0a7a4755",
+    "semantic_hash": "80b1f3812f10e858face71fd0a7a4755"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-xhdpi/splash.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "f31626f9ebe2135ff34c743412ec5c66",
+    "semantic_hash": "f31626f9ebe2135ff34c743412ec5c66"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-xxhdpi/ic_stat_music.png": {
+    "mtime": 1776467355.5251648,
+    "ast_hash": "4d7d8da34b03354eb9c2b2e710efef42",
+    "semantic_hash": "4d7d8da34b03354eb9c2b2e710efef42"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-xxhdpi/ic_stat_music1.png": {
+    "mtime": 1771937601.89,
+    "ast_hash": "ef55acb027152139e6fedcaa4d57e6d1",
+    "semantic_hash": "ef55acb027152139e6fedcaa4d57e6d1"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-xxhdpi/splash.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "2d02b656954fd0385bb2aae5682d94d8",
+    "semantic_hash": "2d02b656954fd0385bb2aae5682d94d8"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-xxxhdpi/ic_stat_music1.png": {
+    "mtime": 1771937601.92,
+    "ast_hash": "37b1432c3c2a778edd87d2802a4539cb",
+    "semantic_hash": "37b1432c3c2a778edd87d2802a4539cb"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable-xxxhdpi/splash.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "1d6fdc7ce638ec3ac79e73c0de7f596e",
+    "semantic_hash": "1d6fdc7ce638ec3ac79e73c0de7f596e"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable/background.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "b1590e394d831fe78e5cbf0bcc48b0a9",
+    "semantic_hash": "b1590e394d831fe78e5cbf0bcc48b0a9"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable/ic_stat_music_1.png": {
+    "mtime": 1771938222.19,
+    "ast_hash": "80b1f3812f10e858face71fd0a7a4755",
+    "semantic_hash": "80b1f3812f10e858face71fd0a7a4755"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/drawable/widget_aurora_full_logo.png": {
+    "mtime": 1771325935.01,
+    "ast_hash": "d02a835f48fba7b5e6b08d34cb72d488",
+    "semantic_hash": "d02a835f48fba7b5e6b08d34cb72d488"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-hdpi/ic_launcher.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "8df5a1ec947b133d1a7451186cc9db8b",
+    "semantic_hash": "8df5a1ec947b133d1a7451186cc9db8b"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-hdpi/ic_launcher_background.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "eb2d319f54768d7466f443a51a6f7463",
+    "semantic_hash": "eb2d319f54768d7466f443a51a6f7463"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "85828fd3eb481ccfb2f9223c1ac3d2cf",
+    "semantic_hash": "85828fd3eb481ccfb2f9223c1ac3d2cf"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-hdpi/ic_launcher_monochrome.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "7f01590c948f4dff9c078fe966acaa1f",
+    "semantic_hash": "7f01590c948f4dff9c078fe966acaa1f"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-mdpi/ic_launcher.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "949c428a4fc3dd36ee656b53207726f7",
+    "semantic_hash": "949c428a4fc3dd36ee656b53207726f7"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-mdpi/ic_launcher_background.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "f450a1eec77cc8ce1855954ead13cc90",
+    "semantic_hash": "f450a1eec77cc8ce1855954ead13cc90"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "b8b9f75aa1b82bd01c8bb0d888c019fc",
+    "semantic_hash": "b8b9f75aa1b82bd01c8bb0d888c019fc"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-mdpi/ic_launcher_monochrome.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "e4daa4aefce7b6fa56645830ea873d86",
+    "semantic_hash": "e4daa4aefce7b6fa56645830ea873d86"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "ee08e8a88bc176d081c933d2ba881fa4",
+    "semantic_hash": "ee08e8a88bc176d081c933d2ba881fa4"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xhdpi/ic_launcher_background.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "2b720360232c1e69e84102da8ef3a244",
+    "semantic_hash": "2b720360232c1e69e84102da8ef3a244"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "a264234108cfa86a7249c5a9dcbc7872",
+    "semantic_hash": "a264234108cfa86a7249c5a9dcbc7872"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xhdpi/ic_launcher_monochrome.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "e9dd1d67bc382d98e5df3ebcfa9c0516",
+    "semantic_hash": "e9dd1d67bc382d98e5df3ebcfa9c0516"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "3445e6332af7880fe2da9dff2f8607ab",
+    "semantic_hash": "3445e6332af7880fe2da9dff2f8607ab"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_background.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "14cd9600a617dc940f7785ba8407ec99",
+    "semantic_hash": "14cd9600a617dc940f7785ba8407ec99"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "8c8dc2aaa3667a19bb1a73878ef45cf0",
+    "semantic_hash": "8c8dc2aaa3667a19bb1a73878ef45cf0"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_monochrome.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "5c6cf60b0623b21540b0db733df5b23f",
+    "semantic_hash": "5c6cf60b0623b21540b0db733df5b23f"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "aed922909d4dabd86ec1184765b44a1c",
+    "semantic_hash": "aed922909d4dabd86ec1184765b44a1c"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_background.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "de6cb1d8af12e8f6ca8961ee2121ffb9",
+    "semantic_hash": "de6cb1d8af12e8f6ca8961ee2121ffb9"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "2d870d26d892772b16c7e69a490d7be6",
+    "semantic_hash": "2d870d26d892772b16c7e69a490d7be6"
+  },
+  "/home/david/Documents/Aurora-Music/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_monochrome.png": {
+    "mtime": 1755287592.26,
+    "ast_hash": "d64d27d08a7e0ef9ec98d99615806679",
+    "semantic_hash": "d64d27d08a7e0ef9ec98d99615806679"
+  },
+  "/home/david/Documents/Aurora-Music/assets/images/UI/liked.png": {
+    "mtime": 1764794801.02,
+    "ast_hash": "913a25c5caffdd850c95b47c6187b585",
+    "semantic_hash": "913a25c5caffdd850c95b47c6187b585"
+  },
+  "/home/david/Documents/Aurora-Music/assets/images/UI/mostplayed.png": {
+    "mtime": 1764797716.06,
+    "ast_hash": "15bd2f6621a9b4fd226c2cd3d1b12c0a",
+    "semantic_hash": "15bd2f6621a9b4fd226c2cd3d1b12c0a"
+  },
+  "/home/david/Documents/Aurora-Music/assets/images/UI/recentlyadded.png": {
+    "mtime": 1764794800.99,
+    "ast_hash": "e17fbdd4bd51282cb806492db3e03b37",
+    "semantic_hash": "e17fbdd4bd51282cb806492db3e03b37"
+  },
+  "/home/david/Documents/Aurora-Music/assets/images/UI/unknown.png": {
+    "mtime": 1767015408.94,
+    "ast_hash": "7881b7f53d77b9a5c05843917deec92e",
+    "semantic_hash": "7881b7f53d77b9a5c05843917deec92e"
+  },
+  "/home/david/Documents/Aurora-Music/assets/images/logo/Music_full_logo.png": {
+    "mtime": 1755287592.27,
+    "ast_hash": "d02a835f48fba7b5e6b08d34cb72d488",
+    "semantic_hash": "d02a835f48fba7b5e6b08d34cb72d488"
+  },
+  "/home/david/Documents/Aurora-Music/assets/images/logo/default_art.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "e6eb26502d349123784a91011e233b7e",
+    "semantic_hash": "e6eb26502d349123784a91011e233b7e"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "e6d6f9e5ce91cc5efc849add374e1cb7",
+    "semantic_hash": "e6d6f9e5ce91cc5efc849add374e1cb7"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "515927743cd94602fb076b39854ecb9b",
+    "semantic_hash": "515927743cd94602fb076b39854ecb9b"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "a7d3aded8dfcf1dc9861b957715c23a1",
+    "semantic_hash": "a7d3aded8dfcf1dc9861b957715c23a1"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "3005b58e7afe3c61f32384f1e4d6b8fb",
+    "semantic_hash": "3005b58e7afe3c61f32384f1e4d6b8fb"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "d3c7dd5546f8c5052850c45e107f78a8",
+    "semantic_hash": "d3c7dd5546f8c5052850c45e107f78a8"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "5217f6a15aa511b298ecdae1474f5974",
+    "semantic_hash": "5217f6a15aa511b298ecdae1474f5974"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "6789b392836d0a72b211db6332c5cdcb",
+    "semantic_hash": "6789b392836d0a72b211db6332c5cdcb"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "a7d3aded8dfcf1dc9861b957715c23a1",
+    "semantic_hash": "a7d3aded8dfcf1dc9861b957715c23a1"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "0fbbb53e644d6535b35376304c519718",
+    "semantic_hash": "0fbbb53e644d6535b35376304c519718"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "490171011d82aef79cbe5f24f7a43e5f",
+    "semantic_hash": "490171011d82aef79cbe5f24f7a43e5f"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-50x50@1x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "0cbbe6581d62e2343bd33bf1d9384224",
+    "semantic_hash": "0cbbe6581d62e2343bd33bf1d9384224"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-50x50@2x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "c5a4a4091c902df449f95cf316d4e948",
+    "semantic_hash": "c5a4a4091c902df449f95cf316d4e948"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-57x57@1x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "36daf1909907e2b3ded2626b15b10df7",
+    "semantic_hash": "36daf1909907e2b3ded2626b15b10df7"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-57x57@2x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "b12032e9c0dcc169c58946b9717148ae",
+    "semantic_hash": "b12032e9c0dcc169c58946b9717148ae"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "490171011d82aef79cbe5f24f7a43e5f",
+    "semantic_hash": "490171011d82aef79cbe5f24f7a43e5f"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "0e3846c206a6836917056ddb961afdc9",
+    "semantic_hash": "0e3846c206a6836917056ddb961afdc9"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-72x72@1x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "f45bc65943822eeb4641fff0c32bbf59",
+    "semantic_hash": "f45bc65943822eeb4641fff0c32bbf59"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-72x72@2x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "0564320cf86c79d22a089cc7e690c772",
+    "semantic_hash": "0564320cf86c79d22a089cc7e690c772"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "6e36b32c3903c656a50cb06c6b06be1e",
+    "semantic_hash": "6e36b32c3903c656a50cb06c6b06be1e"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "d7a6ceae1faad84317d984f58109beb6",
+    "semantic_hash": "d7a6ceae1faad84317d984f58109beb6"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "fe4d47e278784f9ae4e32390d894442b",
+    "semantic_hash": "fe4d47e278784f9ae4e32390d894442b"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/LaunchBackground.imageset/background.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "b1590e394d831fe78e5cbf0bcc48b0a9",
+    "semantic_hash": "b1590e394d831fe78e5cbf0bcc48b0a9"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "ffe40d8e4cd89f27696e0bfa03ce1516",
+    "semantic_hash": "ffe40d8e4cd89f27696e0bfa03ce1516"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "f31626f9ebe2135ff34c743412ec5c66",
+    "semantic_hash": "f31626f9ebe2135ff34c743412ec5c66"
+  },
+  "/home/david/Documents/Aurora-Music/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png": {
+    "mtime": 1731024562.0,
+    "ast_hash": "2d02b656954fd0385bb2aae5682d94d8",
+    "semantic_hash": "2d02b656954fd0385bb2aae5682d94d8"
+  }
+}

@@ -17,6 +17,8 @@ import 'home_screen_widget_service.dart';
 import 'folder_filter_service.dart';
 import 'smart_suggestions_service.dart';
 import 'audio/replay_gain_reader.dart';
+import 'playlist_m3u_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../main.dart' show audioHandler;
 
 part 'audio/playback_controller.dart';
@@ -26,6 +28,7 @@ part 'audio/play_counts.dart';
 part 'audio/media_artwork.dart';
 part 'audio/queue_persistence.dart';
 part 'audio/settings_manager.dart';
+part 'audio/playlist_m3u_sync.dart';
 
 /// Enum to track where the current playback originated from
 enum PlaybackSource {
@@ -89,6 +92,13 @@ class AudioPlayerService extends ChangeNotifier {
       false; // Guard against currentIndexStream race condition
   Set<String> _librarySet = {};
 
+  // ── Real listen-time tracking ──────────────────────────────────────────────
+  // Tracks how far into the *current* song the user has actually listened, so
+  // that when the song is switched/stopped we record the real listened time
+  // (e.g. stopped at 1:25 → 85000ms) rather than the song's full length.
+  String? _currentListenTrackId;
+  int _currentListenMaxPositionMs = 0;
+
   // Debounce timer for batching notifications
   Timer? _notifyDebounceTimer;
   bool _notifyScheduled = false;
@@ -131,7 +141,8 @@ class AudioPlayerService extends ChangeNotifier {
   List<SongModel> get queuedSongs {
     if (_currentIndex < 0 || _queueCount <= 0) return [];
     final start = _currentIndex + 1;
-    final end = (_currentIndex + 1 + _queueCount).clamp(start, _playlist.length);
+    final end =
+        (_currentIndex + 1 + _queueCount).clamp(start, _playlist.length);
     return start < end ? _playlist.sublist(start, end) : [];
   }
 
@@ -175,13 +186,18 @@ class AudioPlayerService extends ChangeNotifier {
   List<SongModel> _songs = [];
   List<SongModel> get songs => _songs;
 
+  bool _libraryInitialized = false;
+  Future<bool>? _libraryInitializationFuture;
+  bool get isLibraryInitialized => _libraryInitialized;
+
   /// Unfiltered song list from MediaStore.  Kept so we can instantly
   /// re-filter when folder exclusions change, without a fresh MediaStore query.
   List<SongModel> _rawSongs = [];
 
   /// Update songs list and notify listeners efficiently
   void _updateSongs(List<SongModel> newSongs) {
-    debugPrint('🎵 [LIBRARY] Song library updated: ${newSongs.length} songs total');
+    debugPrint(
+        '🎵 [LIBRARY] Song library updated: ${newSongs.length} songs total');
     _songs = newSongs;
     songsNotifier.value = newSongs;
   }
@@ -193,6 +209,7 @@ class AudioPlayerService extends ChangeNotifier {
   bool _gaplessPlayback = true;
   bool _volumeNormalization = false;
   double _playbackSpeed = 1.0;
+
   /// When true, pitch shifts with speed (chipmunk effect).
   /// When false, pitch is locked to 1.0 regardless of speed.
   bool _pitchWithSpeed = false;
@@ -289,7 +306,6 @@ class AudioPlayerService extends ChangeNotifier {
       avAudioSessionMode: AVAudioSessionMode.defaultMode,
       androidAudioAttributes: AndroidAudioAttributes(
         contentType: AndroidAudioContentType.music,
-        flags: AndroidAudioFlags.audibilityEnforced,
         usage: AndroidAudioUsage.media,
       ),
       androidWillPauseWhenDucked: true,
@@ -324,6 +340,17 @@ class AudioPlayerService extends ChangeNotifier {
       _scheduleNotify();
     });
 
+    // Track the furthest position reached in the current song so that the real
+    // listened time can be recorded when the song is switched/stopped. Using
+    // the max position keeps the outgoing song's value intact even after the
+    // position stream resets to ~0 for the next track.
+    _audioPlayer.positionStream.listen((position) {
+      final ms = position.inMilliseconds;
+      if (ms > _currentListenMaxPositionMs) {
+        _currentListenMaxPositionMs = ms;
+      }
+    });
+
     // Also listen to playingStream specifically - this is more reliable for
     // catching play/pause changes from external sources like lock screen controls
     _audioPlayer.playingStream.listen((playing) {
@@ -340,6 +367,10 @@ class AudioPlayerService extends ChangeNotifier {
     // we load a single song via setAudioSource, so the player's currentIndex is
     // always 0, which does NOT correspond to _currentIndex in _playlist.
     _audioPlayer.currentIndexStream.listen((index) async {
+      // Drop duplicate events up-front: just_audio re-emits the current index
+      // on many player state changes, which previously triggered redundant
+      // logging, notification and widget churn on every emission.
+      if (index == null || index == _currentIndex) return;
       debugPrint(
           '🎵 [INDEX_STREAM] Index changed: $index (previous: $_currentIndex, shuffle: ${_audioPlayer.shuffleModeEnabled}, loop: ${_audioPlayer.loopMode})');
       // Skip index updates while setPlaylist is in progress to avoid race condition
@@ -354,7 +385,7 @@ class AudioPlayerService extends ChangeNotifier {
         debugPrint('🎵 [INDEX_STREAM] Skipping — non-gapless mode');
         return;
       }
-      if (index != null && index != _currentIndex && index < _playlist.length) {
+      if (index < _playlist.length) {
         final oldIndex = _currentIndex;
         _currentIndex = index;
         _updateQueueCountForIndexChange(oldIndex, index);
@@ -397,6 +428,8 @@ class AudioPlayerService extends ChangeNotifier {
           } else {
             // Gapless (playlist truly finished) or non-gapless at last song.
             debugPrint('🎵 [PROCESSING_STATE] Loop OFF, stopping playback');
+            // The current song played to its end — commit its real listened time.
+            _finalizeListenTime();
             _isPlaying = false;
             isPlayingNotifier.value = false;
             // Pause the underlying player so player.playing becomes false.
@@ -454,6 +487,20 @@ class AudioPlayerService extends ChangeNotifier {
   /// Called when the current song changes — pushes info to the home screen widget.
   /// Kept as a class method (not an extension) so the tearoff is stable for
   /// addListener / removeListener.
+  /// Commit the real listened time for the song currently being tracked, then
+  /// re-arm the tracker. Called when the playing song changes or playback
+  /// stops. Pass [nextTrackId] when a new song is starting (use null when
+  /// playback is just stopping) so the next song is counted separately.
+  void _finalizeListenTime({String? nextTrackId}) {
+    final outgoingId = _currentListenTrackId;
+    if (outgoingId != null) {
+      _smartSuggestions.recordListenDuration(
+          outgoingId, _currentListenMaxPositionMs);
+    }
+    _currentListenTrackId = nextTrackId;
+    _currentListenMaxPositionMs = 0;
+  }
+
   void _onSongChangedForWidget() {
     final song = currentSongNotifier.value;
     if (song != null) {
@@ -535,9 +582,8 @@ class AudioPlayerService extends ChangeNotifier {
     // Remove excluded songs from user-created playlists and persist.
     _filterExcludedSongsFromPlaylists(filterService.excludedFolders);
     // Rebuild the liked-songs playlist from the updated filtered list.
-    final likedSongs = filtered
-        .where((s) => _likedSongs.contains(s.id.toString()))
-        .toList();
+    final likedSongs =
+        filtered.where((s) => _likedSongs.contains(s.id.toString())).toList();
     _likedSongsPlaylist = Playlist(
       id: likedSongsPlaylistId,
       name: _likedPlaylistName,

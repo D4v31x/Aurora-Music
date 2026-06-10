@@ -123,6 +123,8 @@
   "metadataEditInfo": "Úprava metadat vyžaduje aplikaci třetí strany. Změny jsou zobrazeny pouze jako náhled.",
   "metadataInfoTitle": "Upravit metadata",
   "metadataSaved": "Metadata úspěšně uložena",
+  "metadataApplied": "Metadata úspěšně staženy",
+  "metadataDownloadFailed": "Stahování selhalo. Zkontrolujte připojení a zkuste to znovu.",
   "moreResults": "Další výsledky",
   "mostPlayed": "Nejhranější",
   "newPlaylist": "Nový playlist",

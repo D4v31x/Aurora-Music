@@ -1,8 +1,9 @@
+import 'dart:collection';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:flutter/services.dart';
 import 'dart:async';
 import 'local_caching_service.dart';
 
@@ -29,7 +30,7 @@ class ArtworkCacheService {
   // Album artwork cache
   final Map<int, Uint8List?> _albumArtworkCache = {};
   final Map<int, ImageProvider<Object>?> _albumImageProviderCache = {};
-  final List<int> _albumAccessOrder = [];
+  final LinkedHashSet<int> _albumAccessOrder = LinkedHashSet<int>();
 
   // Name-based artist image cache (from Spotify API)
   final Map<String, String?> _artistNameImageCache = {};
@@ -37,9 +38,37 @@ class ArtworkCacheService {
   final LocalCachingArtistService _localCachingService =
       LocalCachingArtistService();
 
-  // LRU tracking for cache eviction
-  final List<int> _artworkAccessOrder = [];
-  final List<int> _artistAccessOrder = [];
+  // LRU tracking for cache eviction — LinkedHashSet gives O(1) remove/add
+  // vs O(n) for List.remove(), which matters when scrolling long libraries.
+  final LinkedHashSet<int> _artworkAccessOrder = LinkedHashSet<int>();
+  final LinkedHashSet<int> _artistAccessOrder = LinkedHashSet<int>();
+
+  /// Per-song-id artwork revision. Bumped whenever a song's artwork is edited
+  /// so that already-built artwork widgets reload instead of showing stale art.
+  final Map<int, int> _artworkRevision = {};
+
+  /// Notifies all artwork widgets that some artwork has been invalidated.
+  /// Widgets compare [artworkRevisionFor] against their last-seen value to
+  /// decide whether their own id needs reloading.
+  final ValueNotifier<int> artworkRevisionNotifier = ValueNotifier<int>(0);
+
+  /// Current revision for [id]. Increments each time the id is invalidated.
+  int artworkRevisionFor(int id) => _artworkRevision[id] ?? 0;
+
+  /// Drops all cached art for a song (and optionally its album) and signals
+  /// every artwork widget so the new art is shown everywhere immediately.
+  void invalidate(int songId, {int? albumId}) {
+    _artworkCache.remove(songId);
+    _imageProviderCache.remove(songId);
+    _artworkAccessOrder.remove(songId);
+    if (albumId != null) {
+      _albumArtworkCache.remove(albumId);
+      _albumImageProviderCache.remove(albumId);
+      _albumAccessOrder.remove(albumId);
+    }
+    _artworkRevision[songId] = (_artworkRevision[songId] ?? 0) + 1;
+    artworkRevisionNotifier.value = artworkRevisionNotifier.value + 1;
+  }
 
   Future<void> initialize() async {
     await _initializeCache();
@@ -64,6 +93,7 @@ class ArtworkCacheService {
 
   void _updateAccessOrder(int id, bool isArtist) {
     final accessOrder = isArtist ? _artistAccessOrder : _artworkAccessOrder;
+    // Remove + re-add moves the id to the "most recently used" end in O(1).
     accessOrder.remove(id);
     accessOrder.add(id);
   }
@@ -76,7 +106,9 @@ class ArtworkCacheService {
     final maxSize = isArtist ? _maxArtistCacheSize : _maxArtworkCacheSize;
 
     if (cache.length >= maxSize && accessOrder.isNotEmpty) {
-      final lruId = accessOrder.removeAt(0);
+      // LinkedHashSet.first is the least recently used entry (O(1)).
+      final lruId = accessOrder.first;
+      accessOrder.remove(lruId);
       cache.remove(lruId);
       imageCache.remove(lruId);
     }
@@ -148,11 +180,11 @@ class ArtworkCacheService {
     if (!highQuality &&
         _artworkCache.containsKey(id) &&
         _artworkCache[id] != null) {
-      debugPrint('🎨 [ART_CACHE] Cache hit (id: $id, ${highQuality ? 'HQ' : 'thumb'})');
+      if (kDebugMode) debugPrint('🎨 [ART_CACHE] Cache hit (id: $id, ${highQuality ? 'HQ' : 'thumb'})');    
       return _artworkCache[id];
     }
 
-    debugPrint('🎨 [ART_CACHE] Cache miss — querying MediaStore for id: $id (${highQuality ? 'HQ' : 'thumb'})');
+    if (kDebugMode) debugPrint('🎨 [ART_CACHE] Cache miss — querying MediaStore for id: $id (${highQuality ? 'HQ' : 'thumb'})');
     try {
       final artwork = await _audioQuery.queryArtwork(
         id,
@@ -163,7 +195,7 @@ class ArtworkCacheService {
 
       // Only cache low-quality thumbnails to save memory
       if (!highQuality && artwork != null && artwork.isNotEmpty) {
-        debugPrint('🎨 [ART_CACHE] Stored ${artwork.length} bytes for id: $id');
+        if (kDebugMode) debugPrint('🎨 [ART_CACHE] Stored ${artwork.length} bytes for id: $id');
         _artworkCache[id] = artwork;
         _updateAccessOrder(id, false);
       }
@@ -276,7 +308,8 @@ class ArtworkCacheService {
   void _evictAlbumLRUIfNeeded() {
     if (_albumArtworkCache.length >= _maxArtworkCacheSize &&
         _albumAccessOrder.isNotEmpty) {
-      final lruId = _albumAccessOrder.removeAt(0);
+      final lruId = _albumAccessOrder.first;
+      _albumAccessOrder.remove(lruId);
       _albumArtworkCache.remove(lruId);
       _albumImageProviderCache.remove(lruId);
     }
@@ -576,17 +609,40 @@ class _ArtworkWidget extends StatefulWidget {
 class _ArtworkWidgetState extends State<_ArtworkWidget> {
   ImageProvider<Object>? _imageProvider;
   bool _isLoading = true;
+  late int _revision;
 
   @override
   void initState() {
     super.initState();
+    _revision = widget.artworkService.artworkRevisionFor(widget.id);
+    widget.artworkService.artworkRevisionNotifier
+        .addListener(_onArtworkRevisionChanged);
     _loadArtwork();
+  }
+
+  @override
+  void dispose() {
+    widget.artworkService.artworkRevisionNotifier
+        .removeListener(_onArtworkRevisionChanged);
+    super.dispose();
+  }
+
+  void _onArtworkRevisionChanged() {
+    final latest = widget.artworkService.artworkRevisionFor(widget.id);
+    if (latest != _revision) {
+      _revision = latest;
+      if (mounted) {
+        setState(() => _isLoading = true);
+        _loadArtwork();
+      }
+    }
   }
 
   @override
   void didUpdateWidget(_ArtworkWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.id != widget.id) {
+      _revision = widget.artworkService.artworkRevisionFor(widget.id);
       _loadArtwork();
     }
   }

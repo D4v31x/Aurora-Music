@@ -517,7 +517,9 @@ class _SearchTabState extends State<SearchTab> {
       subtitle: album.artist ?? '',
       trailing: Icon(Icons.chevron_right,
           color: Colors.white.withValues(alpha: 0.5), size: 32),
-      heroTag: 'album_image_${album.album}',
+      // Unique tag: the album section below may render the same album with
+      // 'album_image_*'; duplicate hero tags abort every hero transition.
+      heroTag: 'search_top_album_${album.id}',
     );
   }
 
@@ -973,7 +975,9 @@ class _TopArtistResultCard extends HookWidget {
       child: Row(
         children: [
           Hero(
-            tag: 'artist_image_${artist.name}',
+            // Unique tag: the artist chips below may render the same artist
+            // with 'artist_image_*'; duplicate hero tags abort transitions.
+            tag: 'search_top_artist_${artist.name}',
             child: ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: artworkService.buildArtistImageByName(

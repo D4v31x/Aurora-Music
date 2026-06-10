@@ -5,6 +5,42 @@ import 'package:shared_preferences/shared_preferences.dart';
 enum LowEndBackground { blobs, solid }
 enum HighEndBackground { blurredArtwork, solid }
 
+/// Fast, GPU-cheap page transition used app-wide for every
+/// [MaterialPageRoute]. A short fade + subtle upward slide reads as snappy
+/// while avoiding the default ZoomPageTransition's scrim/snapshot overhead,
+/// keeping pushes and pops fluid even on low-end devices.
+class _FastFadePageTransitionsBuilder extends PageTransitionsBuilder {
+  const _FastFadePageTransitionsBuilder();
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 220);
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.02),
+          end: Offset.zero,
+        ).animate(curved),
+        child: child,
+      ),
+    );
+  }
+}
+
 class AppThemePreset {
   const AppThemePreset({required this.name, required this.seedColor});
   final String name;
@@ -91,6 +127,13 @@ class ThemeProvider with ChangeNotifier {
       brightness: Brightness.dark,
       fontFamily: FontConstants.fontFamily,
       scaffoldBackgroundColor: colorScheme.surface,
+      // Fast, lightweight transitions for all MaterialPageRoutes.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
+          TargetPlatform.android: _FastFadePageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,

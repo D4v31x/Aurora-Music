@@ -389,6 +389,13 @@ class AppLocalizationsCs extends AppLocalizations {
   String get metadataSaved => 'Metadata úspěšně uložena';
 
   @override
+  String get metadataApplied => 'Metadata úspěšně staženy';
+
+  @override
+  String get metadataDownloadFailed =>
+      'Stahování selhalo. Zkontrolujte připojení a zkuste to znovu.';
+
+  @override
   String get moreResults => 'Další výsledky';
 
   @override
@@ -1116,6 +1123,13 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String get settingsRecapContentDesc =>
       'Ovládá, jak velkou historii přehled zobrazuje, když ho otevřete ručně nebo přes banner.';
+
+  @override
+  String get settingsPreviewRecap => 'Preview Recap';
+
+  @override
+  String get settingsPreviewRecapDesc =>
+      'See how your recap looks right now with the current settings';
 
   @override
   String get settingsRecapSchedule => 'Plán přehledů';

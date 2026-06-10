@@ -148,6 +148,25 @@ class SmartSuggestionsService {
     _saveDebouncer.call(() => _saveData());
   }
 
+  /// Record the real listened duration (in ms) for the most recent play of
+  /// [trackId]. This is the actual time the user spent listening to the song
+  /// (e.g. they stopped/skipped at 1:25), NOT the song's full length. Updates
+  /// the most recent matching event so recap/insight minutes reflect real
+  /// listening time.
+  void recordListenDuration(String trackId, int listenDurationMs) {
+    if (listenDurationMs <= 0 || _listeningHistory.isEmpty) return;
+    // Find the most recent non-skipped event for this track and set its
+    // actual listened duration.
+    for (var i = _listeningHistory.length - 1; i >= 0; i--) {
+      final e = _listeningHistory[i];
+      if (e.trackId == trackId && !e.wasSkipped) {
+        e.listenDurationMs = listenDurationMs;
+        break;
+      }
+    }
+    _saveDebouncer.call(() => _saveData());
+  }
+
   /// Discard the cached suggestions so the next call recomputes with the
   /// current folder filter.  Call this whenever folder exclusions change.
   void invalidateSuggestionCache() {
@@ -156,16 +175,20 @@ class SmartSuggestionsService {
   }
 
   /// Get suggested tracks based on current time and listening patterns
-  Future<List<SongModel>> getSuggestedTracks({int count = 3}) async {
+  Future<List<SongModel>> getSuggestedTracks({
+    int count = 3,
+    List<SongModel>? songs,
+  }) async {
     final now = DateTime.now();
-    final cacheKey = '${now.hour}_${now.weekday}_$count';
+    final cacheKey =
+        '${now.hour}_${now.weekday}_${count}_${songs?.length ?? 'query'}';
 
     // Check if we can use cached suggestions
     if (_lastSuggestionTime != null) {
       final timeSinceLastSuggestion = now.difference(_lastSuggestionTime!);
       if (timeSinceLastSuggestion < _suggestionCacheDuration) {
         return _suggestionsMemoizer.call(
-            cacheKey, () => _computeSuggestedTracks(count));
+            cacheKey, () => _computeSuggestedTracks(count, songs: songs));
       }
     }
 
@@ -173,14 +196,23 @@ class SmartSuggestionsService {
     _suggestionsMemoizer.clear();
     _lastSuggestionTime = now;
     return _suggestionsMemoizer.call(
-        cacheKey, () => _computeSuggestedTracks(count));
+        cacheKey, () => _computeSuggestedTracks(count, songs: songs));
   }
 
   /// Internal method to compute suggestions (expensive operation)
-  Future<List<SongModel>> _computeSuggestedTracks(int count) async {
-    final rawSongs = await _audioQuery.querySongs();
-    await FolderFilterService().ensureInitialized();
-    final allSongs = FolderFilterService().filterSongs(rawSongs);
+  Future<List<SongModel>> _computeSuggestedTracks(
+    int count, {
+    List<SongModel>? songs,
+  }) async {
+    late final List<SongModel> allSongs;
+    if (songs != null) {
+      allSongs = List<SongModel>.from(songs);
+    } else {
+      final rawSongs = await _audioQuery.querySongs();
+      await FolderFilterService().ensureInitialized();
+      allSongs = FolderFilterService().filterSongs(rawSongs);
+    }
+
     if (allSongs.isEmpty) return [];
 
     final now = DateTime.now();
@@ -282,8 +314,13 @@ class SmartSuggestionsService {
   }
 
   /// Get suggested artists based on current time and listening patterns
-  Future<List<String>> getSuggestedArtists({int count = 3}) async {
-    final allSongs = await _audioQuery.querySongs();
+  Future<List<String>> getSuggestedArtists({
+    int count = 3,
+    List<SongModel>? songs,
+  }) async {
+    final allSongs = songs != null
+        ? List<SongModel>.from(songs)
+        : await _audioQuery.querySongs();
     if (allSongs.isEmpty) return [];
 
     // Get all unique artists
@@ -613,7 +650,12 @@ class ListeningEvent {
   final String genre;
   final DateTime timestamp;
   final bool wasSkipped;
-  final int listenDurationMs;
+
+  /// The real time the user spent listening to this play, in milliseconds
+  /// (e.g. they stopped/skipped at 1:25 → 85000). Recorded when the song is
+  /// switched/stopped, NOT derived from the song's full length. Mutable so it
+  /// can be filled in once the play actually ends.
+  int listenDurationMs;
   final int totalDurationMs;
 
   ListeningEvent({

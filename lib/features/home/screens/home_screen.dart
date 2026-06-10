@@ -175,7 +175,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (!mounted) return;
     final audioService =
         Provider.of<AudioPlayerService>(context, listen: false);
-    await InsightsPromoService.checkAndTriggerBanner(audioService.firstListenTime);
+    await InsightsPromoService.checkAndTriggerBanner(
+        audioService.firstListenTime);
   }
 
   Future<void> _checkAndShowFeedbackReminder() async {
@@ -433,6 +434,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             await permissionhandler.Permission.storage.status.isGranted;
 
         if (hasAudioPermission || hasStoragePermission) {
+          if (audioPlayerService.isLibraryInitialized) {
+            if (!mounted) return;
+            setState(() {
+              songs = audioPlayerService.songs;
+            });
+            unawaited(_loadSmartSuggestions());
+            unawaited(_loadAlbumsAndArtists());
+            return;
+          }
+
           // If we already have permissions, initialize the library
           if (!mounted) return;
           _notificationManager.showNotification(
@@ -453,8 +464,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // Get songs from the audio service
             setState(() {
               songs = audioPlayerService.songs;
-              _randomizeContent();
             });
+            unawaited(_loadSmartSuggestions());
             unawaited(_loadAlbumsAndArtists());
           } else {
             _showPermissionDialog();
@@ -464,6 +475,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _showPermissionDialog();
         }
       } else if (Platform.isWindows) {
+        if (audioPlayerService.isLibraryInitialized) {
+          if (!mounted) return;
+          setState(() {
+            songs = audioPlayerService.songs;
+          });
+          unawaited(_loadSmartSuggestions());
+          unawaited(_loadAlbumsAndArtists());
+          return;
+        }
+
         // Initialize for Windows immediately - no permissions needed
         _notificationManager.showNotification(
           localizations.loadingLibrary,
@@ -483,8 +504,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
         setState(() {
           songs = audioPlayerService.songs;
-          _randomizeContent();
         });
+        unawaited(_loadSmartSuggestions());
         unawaited(_loadAlbumsAndArtists());
       }
     } catch (e) {
@@ -504,18 +525,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text(
-              AppLocalizations.of(dialogContext).permissionRequired),
+          title: Text(AppLocalizations.of(dialogContext).permissionRequired),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(AppLocalizations.of(dialogContext)
-                  .permissionExplanation),
+              Text(AppLocalizations.of(dialogContext).permissionExplanation),
               const SizedBox(height: 12),
-              Text(
-                  AppLocalizations.of(dialogContext)
-                      .noPermissionExplanation,
+              Text(AppLocalizations.of(dialogContext).noPermissionExplanation,
                   style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ],
           ),
@@ -532,8 +549,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 // Show a snackbar explaining how to enable later
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context)
-                        .permissionLater),
+                    content: Text(AppLocalizations.of(context).permissionLater),
                     duration: const Duration(seconds: 5),
                     action: SnackBarAction(
                       label: AppLocalizations.of(context).settings,
@@ -546,11 +562,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               },
             ),
             TextButton(
-              child: Text(
-                  AppLocalizations.of(dialogContext).grantPermission),
+              child: Text(AppLocalizations.of(dialogContext).grantPermission),
               onPressed: () async {
-                final audioPlayerService =
-                    Provider.of<AudioPlayerService>(dialogContext, listen: false);
+                final audioPlayerService = Provider.of<AudioPlayerService>(
+                    dialogContext,
+                    listen: false);
                 final localizations = AppLocalizations.of(dialogContext);
                 Navigator.of(dialogContext).pop();
                 // Request permissions
@@ -649,8 +665,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           context: context,
           builder: (context) => GlassmorphicDialog(
             title: Text(AppLocalizations.of(context).exitApp),
-            content: Text(
-                AppLocalizations.of(context).exitAppConfirm),
+            content: Text(AppLocalizations.of(context).exitAppConfirm),
             actions: <Widget>[
               GlassmorphicTextButton(
                 onPressed: () => Navigator.of(context).pop(false),
@@ -711,8 +726,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       duration: const Duration(milliseconds: 300),
                       child: message.isEmpty
                           ? Text(
-                              AppLocalizations.of(context)
-                                  .auroraMusic,
+                              AppLocalizations.of(context).auroraMusic,
                               key: const ValueKey('default'),
                               textAlign: TextAlign.center,
                               style: const TextStyle(
@@ -860,14 +874,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     InsightsPromoService.recapBannerNotifier,
                                 builder: (context, recapAvailable, _) {
                                   return AnimatedSwitcher(
-                                    duration:
-                                        const Duration(milliseconds: 600),
+                                    duration: const Duration(milliseconds: 600),
                                     child: recapAvailable
                                         ? _RecapAppBarContent(
                                             key: const ValueKey('recap'),
                                             onShow: () {
-                                              final period = InsightsPromoService
-                                                  .recapBannerPeriodNotifier.value;
+                                              final period =
+                                                  InsightsPromoService
+                                                      .recapBannerPeriodNotifier
+                                                      .value;
                                               InsightsPromoService
                                                   .recapBannerNotifier
                                                   .value = false;
@@ -876,19 +891,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               InsightsPromoService
                                                   .setRecapPeriodDays(period);
                                               // Record that this week/month was viewed.
-                                              final audioService =
-                                                  Provider.of<AudioPlayerService>(
-                                                      context, listen: false);
+                                              final audioService = Provider.of<
+                                                      AudioPlayerService>(
+                                                  context,
+                                                  listen: false);
                                               final first =
                                                   audioService.firstListenTime;
                                               if (first != null) {
                                                 InsightsPromoService
-                                                    .markRecapViewed(period, first);
+                                                    .markRecapViewed(
+                                                        period, first);
                                               }
                                               Navigator.of(context).push(
                                                 MaterialPageRoute(
-                                                  builder: (_) => const
-                                                      ListeningRecapScreen(),
+                                                  builder: (_) =>
+                                                      const ListeningRecapScreen(),
                                                 ),
                                               );
                                             },
@@ -1067,12 +1084,9 @@ class _HomeTabBarState extends State<_HomeTabBar> {
       ),
       tabs: [
         _buildTabItem(context, AppLocalizations.of(context).home),
-        _buildTabItem(
-            context, AppLocalizations.of(context).library),
-        _buildTabItem(
-            context, AppLocalizations.of(context).search),
-        _buildTabItem(
-            context, AppLocalizations.of(context).settings),
+        _buildTabItem(context, AppLocalizations.of(context).library),
+        _buildTabItem(context, AppLocalizations.of(context).search),
+        _buildTabItem(context, AppLocalizations.of(context).settings),
       ],
     );
   }
@@ -1172,13 +1186,11 @@ class _RecapAppBarContentState extends State<_RecapAppBarContent>
       vsync: this,
       duration: const Duration(milliseconds: 650),
     )..forward();
-    _fadeAnim =
-        CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOut);
+    _fadeAnim = CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.12),
       end: Offset.zero,
-    ).animate(
-        CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOutCubic));
+    ).animate(CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOutCubic));
   }
 
   @override
@@ -1209,8 +1221,8 @@ class _RecapAppBarContentState extends State<_RecapAppBarContent>
           const ColoredBox(color: Color(0xFF08000F)),
           AnimatedBuilder(
             animation: _auroraCtrl,
-            builder: (_, __) => CustomPaint(
-                painter: _RecapAuroraPainter(_auroraCtrl.value)),
+            builder: (_, __) =>
+                CustomPaint(painter: _RecapAuroraPainter(_auroraCtrl.value)),
           ),
           FadeTransition(
             opacity: _fadeAnim,
@@ -1248,14 +1260,14 @@ class _RecapAppBarContentState extends State<_RecapAppBarContent>
                                 Colors.white.withValues(alpha: 0.18),
                             foregroundColor: Colors.white,
                             side: BorderSide(
-                                color:
-                                    Colors.white.withValues(alpha: 0.35)),
+                                color: Colors.white.withValues(alpha: 0.35)),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 10),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(50)),
                           ),
-                          child: Text(AppLocalizations.of(context).recapBannerShow),
+                          child: Text(
+                              AppLocalizations.of(context).recapBannerShow),
                         ),
                         const SizedBox(width: 12),
                         TextButton(
@@ -1266,7 +1278,8 @@ class _RecapAppBarContentState extends State<_RecapAppBarContent>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 10),
                           ),
-                          child: Text(AppLocalizations.of(context).recapBannerLater),
+                          child: Text(
+                              AppLocalizations.of(context).recapBannerLater),
                         ),
                       ],
                     ),
@@ -1313,7 +1326,6 @@ class _RecapAuroraPainter extends CustomPainter {
         cy: 0.42 + 0.12 * math.cos(1 * 2 * pi * t + pi * 1.6),
         rw: size.width * 0.76,
         rh: size.width * 0.76);
-
   }
 
   /// Draws a soft aurora blob: three gradient layers for a deeply blurred glow.
@@ -1344,10 +1356,8 @@ class _RecapAuroraPainter extends CustomPainter {
     // Inner bright core
     p.shader = RadialGradient(
       colors: [color.withValues(alpha: 0.80), color.withValues(alpha: 0.0)],
-    ).createShader(
-        Rect.fromCenter(center: center, width: rw, height: rh));
-    canvas.drawOval(
-        Rect.fromCenter(center: center, width: rw, height: rh), p);
+    ).createShader(Rect.fromCenter(center: center, width: rw, height: rh));
+    canvas.drawOval(Rect.fromCenter(center: center, width: rw, height: rh), p);
   }
 
   @override

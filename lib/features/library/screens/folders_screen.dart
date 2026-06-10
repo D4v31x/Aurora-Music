@@ -8,6 +8,7 @@ import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
+import '../../../shared/utils/sort_preferences.dart';
 import 'folder_detail_screen.dart';
 
 enum FolderSortOption { name, path }
@@ -37,12 +38,37 @@ class _FoldersScreenState extends State<FoldersScreen> {
   final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
 
+  static const String _sortPrefsKey = 'folders';
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
     FolderFilterService().addListener(_onFilterChanged);
+    _loadSortPreferences();
     _loadFolders();
+  }
+
+  Future<void> _loadSortPreferences() async {
+    final saved = await SortPreferences.load(_sortPrefsKey);
+    if (!mounted) return;
+    final index = saved.index;
+    if (index != null && index >= 0 && index < FolderSortOption.values.length) {
+      _sortOption = FolderSortOption.values[index];
+      _isAscending = saved.ascending;
+      if (_allFolders.isNotEmpty) {
+        _applySorting();
+        setState(() => _resetPaging());
+      }
+    }
+  }
+
+  void _persistSort() {
+    unawaited(SortPreferences.save(
+      _sortPrefsKey,
+      optionIndex: _sortOption.index,
+      ascending: _isAscending,
+    ));
   }
 
   @override
@@ -187,6 +213,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
                     child: PopupMenuButton<FolderSortOption>(
                       onSelected: (opt) {
                         setState(() => _sortOption = opt);
+                        _persistSort();
                         _applySorting();
                         setState(() => _resetPaging());
                       },
@@ -221,6 +248,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
                   LibraryControlPill(
                     onTap: () {
                       setState(() => _isAscending = !_isAscending);
+                      _persistSort();
                       _applySorting();
                       setState(() => _resetPaging());
                     },

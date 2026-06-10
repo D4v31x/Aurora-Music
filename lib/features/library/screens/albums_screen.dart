@@ -15,6 +15,7 @@ import '../../../shared/widgets/library_screen_header.dart';
 import '../../../core/constants/font_constants.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/utils/sort_preferences.dart';
 import 'album_detail_screen.dart';
 
 enum AlbumSortOption { name, artist, numSongs, year }
@@ -49,11 +50,36 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
 
   AudioPlayerService? _audioServiceRef;
 
+  static const String _sortPrefsKey = 'albums';
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    _loadSortPreferences();
     // _loadAlbums() is called from didChangeDependencies once the service is ready.
+  }
+
+  Future<void> _loadSortPreferences() async {
+    final saved = await SortPreferences.load(_sortPrefsKey);
+    if (!mounted) return;
+    final index = saved.index;
+    if (index != null && index >= 0 && index < AlbumSortOption.values.length) {
+      _sortOption = AlbumSortOption.values[index];
+      _isAscending = saved.ascending;
+      if (_allAlbums.isNotEmpty) {
+        _applySorting();
+        setState(() => _resetPaging());
+      }
+    }
+  }
+
+  void _persistSort() {
+    unawaited(SortPreferences.save(
+      _sortPrefsKey,
+      optionIndex: _sortOption.index,
+      ascending: _isAscending,
+    ));
   }
 
   @override
@@ -216,6 +242,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                     child: PopupMenuButton<AlbumSortOption>(
                       onSelected: (option) {
                         setState(() => _sortOption = option);
+                        _persistSort();
                         _applySorting();
                         setState(() => _resetPaging());
                       },
@@ -252,6 +279,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                   LibraryControlPill(
                     onTap: () {
                       setState(() => _isAscending = !_isAscending);
+                      _persistSort();
                       _applySorting();
                       setState(() => _resetPaging());
                     },
@@ -570,6 +598,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   void _showAlbumOptions(AlbumModel album) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
         final loc = AppLocalizations.of(context);

@@ -496,6 +496,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
         Provider.of<AudioPlayerService>(context, listen: false);
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
         final loc = AppLocalizations.of(context);

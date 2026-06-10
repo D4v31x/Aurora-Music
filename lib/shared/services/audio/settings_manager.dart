@@ -157,7 +157,6 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
         avAudioSessionMode: AVAudioSessionMode.defaultMode,
         androidAudioAttributes: AndroidAudioAttributes(
           contentType: AndroidAudioContentType.music,
-          flags: AndroidAudioFlags.audibilityEnforced,
           usage: AndroidAudioUsage.media,
         ),
         androidWillPauseWhenDucked: true,
@@ -171,7 +170,6 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
         avAudioSessionMode: AVAudioSessionMode.defaultMode,
         androidAudioAttributes: AndroidAudioAttributes(
           contentType: AndroidAudioContentType.music,
-          flags: AndroidAudioFlags.audibilityEnforced,
           usage: AndroidAudioUsage.media,
         ),
         androidWillPauseWhenDucked: true,

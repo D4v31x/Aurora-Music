@@ -68,7 +68,12 @@ class MetadataService {
   Future<List<Map<String, dynamic>>> _searchDeezer(String query) async {
     try {
       final uri = Uri.parse('$_deezerBaseUrl/search').replace(
-        queryParameters: {'q': query},
+        queryParameters: {
+          'q': query,
+          // Request as many matching results as Deezer will return for this
+          // song/artist so the user has the widest possible choice.
+          'limit': '100',
+        },
       );
       final response = await http
           .get(uri, headers: _englishHeaders)

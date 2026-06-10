@@ -836,6 +836,18 @@ abstract class AppLocalizations {
   /// **'Metadata saved successfully'**
   String get metadataSaved;
 
+  /// No description provided for @metadataApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Metadata downloaded successfully'**
+  String get metadataApplied;
+
+  /// No description provided for @metadataDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed. Check your connection and try again.'**
+  String get metadataDownloadFailed;
+
   /// No description provided for @moreResults.
   ///
   /// In en, this message translates to:
@@ -2209,6 +2221,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Controls how much history the recap screen displays when you open it manually or via the banner.'**
   String get settingsRecapContentDesc;
+
+  /// No description provided for @settingsPreviewRecap.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview Recap'**
+  String get settingsPreviewRecap;
+
+  /// No description provided for @settingsPreviewRecapDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'See how your recap looks right now with the current settings'**
+  String get settingsPreviewRecapDesc;
 
   /// No description provided for @settingsRecapSchedule.
   ///
