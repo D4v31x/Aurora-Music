@@ -1,6 +1,44 @@
 class ChangelogContent {
   static const Map<String, List<Map<String, List<String>>>> versions = {
     // Latest version at the top
+    '1.4.0': [
+      {
+        '_': ['Aurora Music 1.4 — Orbit'],
+      },
+      {
+        'New Features': [
+          'Playlist song reordering — tap ⋮ on any playlist and choose "Reorder Songs" to drag tracks into your preferred order',
+          'M3U / M3U8 playlist import and export — share playlists with other apps or import from files; optional two-way folder sync (Poweramp-style)',
+          'Sort order is now remembered — your chosen sort option and direction for Tracks, Albums, Artists, and Folders is restored after restarting the app',
+        ],
+      },
+      {
+        'Splash Screen': [
+          'Redesigned splash screen ("Orbit")',
+          'Home screen data (suggestions, artwork) is pre-warmed during the splash so the first frame of the home screen is ready immediately',
+        ],
+      },
+      {
+        'Listening Stats & Recap': [
+          'Time-listened figures now reflect the actual time you spent on each song, not its full length — minutes in Recap and Insights are now accurate',
+        ],
+      },
+      {
+        'Performance': [
+          'Smart Suggestions no longer re-queries device storage on each refresh — reuses the already-loaded library for a significant speed-up',
+          'Library initialisation is guarded against double-init races; a future cache prevents redundant scans',
+          'BlurDialog respects low-end device mode and skips backdrop blur where it would hurt performance',
+        ],
+      },
+      {
+        'Under the Hood': [
+          'ReplayGain now reads MP4/M4A/AAC/ALAC files (iTunes freeform atoms), APEv2 tags on MP3, and Opus R128_TRACK_GAIN; tag matching is case-insensitive and whitespace-tolerant; album gain is used as a fallback when track gain is absent',
+          'Metadata changes propagate instantly to playlists and the playback queue without requiring a library rescan',
+          'Liked Songs playlist is always shown first in the Quick Access section',
+          'Page transitions use a faster fade animation for snappier navigation',
+        ],
+      },
+    ],
     '1.3.2': [
       {
         '_': ['Aurora Music 1.3 — Insights, Equalizer & Folder Filtering'],
