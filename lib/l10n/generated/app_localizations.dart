@@ -2438,6 +2438,18 @@ abstract class AppLocalizations {
   /// **'Tap + to add songs'**
   String get tapAddToAddSongs;
 
+  /// No description provided for @reorderSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder Songs'**
+  String get reorderSongs;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
   /// No description provided for @testArtistString.
   ///
   /// In en, this message translates to:
@@ -3469,6 +3481,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Equalizer not available on this device.'**
   String get eqNotAvailable;
+
+  /// No description provided for @eqOpenSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Open System Equalizer'**
+  String get eqOpenSystem;
 
   /// No description provided for @eqSavePreset.
   ///

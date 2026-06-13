@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -216,5 +217,17 @@ class EqualizerService extends ChangeNotifier {
   void dispose() {
     _saveTimer?.cancel();
     super.dispose();
+  }
+
+  /// Launches the device's native audio effects panel (e.g. Samsung Sound
+  /// Experience / Dolby Atmos). Returns true if the dedicated panel opened,
+  /// false if it fell back to system Sound Settings. Throws on hard failure.
+  Future<bool> openSystemEqualizer({int audioSessionId = 0}) async {
+    const _channel = MethodChannel('aurora/media_actions');
+    final result = await _channel.invokeMethod<bool>(
+      'openSystemEqualizer',
+      {'audioSessionId': audioSessionId},
+    );
+    return result ?? false;
   }
 }

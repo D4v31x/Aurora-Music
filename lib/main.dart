@@ -229,6 +229,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ExpandingPlayer.expand();
       }
     });
+
+    // Sync liked playlist name with the current locale
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      try {
+        final audioService =
+            Provider.of<AudioPlayerService>(context, listen: false);
+        audioService.updateLikedPlaylistName(
+            lookupAppLocalizations(_locale).favoriteSongs);
+      } catch (_) {}
+    });
   }
 
   @override
@@ -278,6 +289,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     setState(() {
       _locale = locale;
     });
+
+    // Update liked playlist name for the new locale
+    try {
+      final audioService =
+          Provider.of<AudioPlayerService>(context, listen: false);
+      audioService.updateLikedPlaylistName(
+          lookupAppLocalizations(locale).favoriteSongs);
+    } catch (_) {}
 
     SharedPreferences.getInstance().then((prefs) {
       prefs.setString('languageCode', locale.languageCode);

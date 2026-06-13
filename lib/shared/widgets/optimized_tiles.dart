@@ -1,6 +1,6 @@
-import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mini_music_visualizer/mini_music_visualizer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../core/constants/font_constants.dart';
 import '../services/artwork_cache_service.dart';
@@ -159,13 +159,8 @@ class _OptimizedSongTileState extends State<OptimizedSongTile> {
   }
 }
 
-/// Animated "equalizer" indicator shown on the currently-playing song tile.
-///
-/// Each of the three bars oscillates at its own frequency using |sin()|, so
-/// every bar rises to exactly full height on each cycle (“standing up for one
-/// unit”). A dedicated amplitude controller smoothly slides bars down to a
-/// small stub when playback pauses rather than freezing mid-bounce.
-class NowPlayingBars extends StatefulWidget {
+/// 3-bar now-playing indicator backed by MiniMusicVisualizer.
+class NowPlayingBars extends StatelessWidget {
   final bool isPlaying;
   final Color color;
   final double size;
@@ -174,170 +169,21 @@ class NowPlayingBars extends StatefulWidget {
     super.key,
     required this.isPlaying,
     this.color = Colors.white,
-    this.size = 40,
+    this.size = 30,
   });
-
-  @override
-  State<NowPlayingBars> createState() => _NowPlayingBarsState();
-}
-
-class _NowPlayingBarsState extends State<NowPlayingBars>
-    with TickerProviderStateMixin {
-  // Drives the sine-wave phase; runs continuously while playing.
-  late final AnimationController _controller;
-  // Fades the live amplitude in (play) and out (pause) over 250 ms.
-  late final AnimationController _amplitudeController;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
-    _amplitudeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 250),
-      value: widget.isPlaying ? 1.0 : 0.0,
-    );
-    if (widget.isPlaying) _controller.repeat();
-  }
-
-  @override
-  void didUpdateWidget(NowPlayingBars oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isPlaying == oldWidget.isPlaying) return;
-    if (widget.isPlaying) {
-      _controller.repeat();
-      _amplitudeController.animateTo(1.0);
-    } else {
-      // Slide bars down first, then stop the phase ticker.
-      _amplitudeController.animateTo(0.0).then((_) {
-        if (mounted && !widget.isPlaying) _controller.stop();
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _amplitudeController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: widget.size,
-      height: widget.size,
-      // Merge both animations so the painter redraws on either tick.
-      child: AnimatedBuilder(
-        animation: Listenable.merge([_controller, _amplitudeController]),
-        builder: (context, _) => CustomPaint(
-          painter: _EqBarsPainter(
-            t: _controller.value,
-            amplitude: _amplitudeController.value,
-            color: widget.color,
-          ),
-        ),
-      ),
+    return MiniMusicVisualizer(
+      color: color,
+      width: 4,
+      height: size * 0.5,
+      radius: 1,
+      animate: isPlaying,
     );
   }
 }
 
-/// Paints a 3-group × 3-bar (9-bar) equalizer on the canvas.
-///
-/// Groups simulate distinct audio frequency bands:
-///   Group 0 — **Bass**:    slow, tall bars (0.80–1.10 Hz).
-///   Group 1 — **Voice/Mid**: medium speed, medium height (1.80–2.35 Hz).
-///   Group 2 — **Melody/Treble**: fast, shorter flicker (3.20–4.20 Hz).
-///
-/// Within each group the bars share similar-but-different frequencies with
-/// small phase offsets so they move as a coherent unit while still having
-/// independent micro-motion. [amplitude] (0–1) is animated by a separate
-/// controller and smoothly slides every bar down to its floor stub on pause.
-class _EqBarsPainter extends CustomPainter {
-  static const double _barWidth  = 2.5;
-  static const double _innerGap  = 1.0;  // gap between bars inside one group
-  static const double _groupGap  = 4.5;  // gap between groups
-  static const int    _groups       = 3;
-  static const int    _barsPerGroup = 3;
-
-  // Frequencies in Hz: [group][bar].  Bars inside a group are close together
-  // so they visually "belong" to the same band.
-  static const _freqs = [
-    [0.80, 0.95, 1.10],  // bass
-    [1.80, 2.10, 2.35],  // voice / mid
-    [3.20, 3.70, 4.20],  // melody / treble
-  ];
-
-  // Phase offsets per bar position within a group: 0, π/6, π/3 radians.
-  // Keeps bars slightly staggered so a group ripples rather than pulsing as one.
-  static const _barPhases = [0.0, 0.5236, 1.0472];
-
-  // Floor: minimum height fraction visible even when fully paused.
-  static const _floor = [0.22, 0.13, 0.06];
-
-  // Peak scale: how tall each group's bars can reach at amplitude = 1.
-  // Bass reaches full height; treble stays shorter for a realistic spectrum shape.
-  static const _peakScale = [1.00, 0.80, 0.60];
-
-  final double t;         // AnimationController value [0, 1)
-  final double amplitude; // 0 = paused (bars at floor), 1 = full live motion
-  final Color color;
-
-  const _EqBarsPainter({
-    required this.t,
-    required this.amplitude,
-    required this.color,
-  });
-
-  /// |sin()| always peaks at 1.0 — each bar “stands up for one unit” per cycle.
-  double _fraction(int g, int b) {
-    final angle = t * 2 * math.pi * _freqs[g][b] + _barPhases[b];
-    final wave = math.sin(angle).abs();
-    return _floor[g] + wave * (1.0 - _floor[g]) * _peakScale[g] * amplitude;
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-
-    // Total drawn width (bars + inner gaps + group gaps) for centering.
-    const totalWidth = _groups * _barsPerGroup * _barWidth
-        + _groups * (_barsPerGroup - 1) * _innerGap
-        + (_groups - 1) * _groupGap;
-
-    var x = (size.width - totalWidth) / 2;
-
-    for (var g = 0; g < _groups; g++) {
-      for (var b = 0; b < _barsPerGroup; b++) {
-        final barH = size.height * _fraction(g, b);
-        final top  = size.height - barH;
-        canvas.drawRRect(
-          RRect.fromLTRBR(
-            x, top, x + _barWidth, size.height,
-            const Radius.circular(_barWidth / 2),
-          ),
-          paint,
-        );
-        x += _barWidth;
-        if (b < _barsPerGroup - 1) {
-          x += _innerGap;
-        } else if (g < _groups - 1) {
-          x += _groupGap;
-        }
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_EqBarsPainter old) =>
-      t != old.t || amplitude != old.amplitude || color != old.color;
-}
-
-/// Optimized grid tile for albums/artists
-/// Uses const constructors where possible and RepaintBoundary
 class OptimizedGridTile extends StatefulWidget {
   final int id;
   final String title;

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
@@ -11,6 +12,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/library_screen_header.dart';
 import '../../../shared/widgets/glassmorphic_card.dart';
+import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/utils/sort_preferences.dart';
 import 'playlist_detail_screen.dart';
 
@@ -45,18 +47,25 @@ class _PlaylistsState {
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is _PlaylistsState &&
-          likedPlaylist?.songs.length == other.likedPlaylist?.songs.length &&
-          autoPlaylists.length == other.autoPlaylists.length &&
-          userPlaylists.length == other.userPlaylists.length;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! _PlaylistsState) return false;
+    if (likedPlaylist?.songs.length != other.likedPlaylist?.songs.length) return false;
+    if (autoPlaylists.length != other.autoPlaylists.length) return false;
+    if (userPlaylists.length != other.userPlaylists.length) return false;
+    for (var i = 0; i < userPlaylists.length; i++) {
+      if (userPlaylists[i].id != other.userPlaylists[i].id ||
+          userPlaylists[i].name != other.userPlaylists[i].name) return false;
+    }
+    return true;
+  }
 
   @override
-  int get hashCode =>
-      (likedPlaylist?.songs.length ?? 0).hashCode ^
-      autoPlaylists.length.hashCode ^
-      userPlaylists.length.hashCode;
+  int get hashCode => Object.hash(
+        likedPlaylist?.songs.length ?? 0,
+        autoPlaylists.length,
+        Object.hashAll(userPlaylists.map((p) => Object.hash(p.id, p.name))),
+      );
 }
 
 enum PlaylistSortOption { name, trackCount }
@@ -735,126 +744,143 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final localizations = AppLocalizations.of(context);
     final controller = TextEditingController();
+    final useBlur = Provider.of<PerformanceModeProvider>(context, listen: false)
+        .shouldEnableGlassmorphic;
 
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+      builder: (context) {
+        final dialogContent = Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: useBlur
+                ? Colors.white.withValues(alpha: 0.1)
+                : (isDark ? Colors.grey.shade900 : Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    localizations.newPlaylist,
-                    style: TextStyle(
-                      fontFamily: FontConstants.fontFamily,
-                      color: isDark ? Colors.white : Colors.black87,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : Colors.black.withValues(alpha: 0.04),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.12)
-                            : Colors.black.withValues(alpha: 0.06),
-                      ),
-                    ),
-                    child: TextField(
-                      controller: controller,
-                      autofocus: true,
-                      style: TextStyle(
-                        fontFamily: FontConstants.fontFamily,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: localizations.playlistName,
-                        hintStyle: TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          color: isDark ? Colors.white38 : Colors.black38,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(
-                            localizations.cancel,
-                            style: TextStyle(
-                              fontFamily: FontConstants.fontFamily,
-                              color: isDark ? Colors.white54 : Colors.black45,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            if (controller.text.isNotEmpty) {
-                              final audioService =
-                                  Provider.of<AudioPlayerService>(context,
-                                      listen: false);
-                              audioService.createPlaylist(controller.text, []);
-                              Navigator.pop(context);
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withValues(alpha: 0.8),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Center(
-                              child: Text(
-                                localizations.create,
-                                style: const TextStyle(
-                                  fontFamily: FontConstants.fontFamily,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                localizations.newPlaylist,
+                style: TextStyle(
+                  fontFamily: FontConstants.fontFamily,
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.04),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.12)
+                        : Colors.black.withValues(alpha: 0.06),
+                  ),
+                ),
+                child: TextField(
+                  controller: controller,
+                  autofocus: true,
+                  style: TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: localizations.playlistName,
+                    hintStyle: TextStyle(
+                      fontFamily: FontConstants.fontFamily,
+                      color: isDark ? Colors.white38 : Colors.black38,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        localizations.cancel,
+                        style: TextStyle(
+                          fontFamily: FontConstants.fontFamily,
+                          color: isDark ? Colors.white54 : Colors.black45,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        if (controller.text.isNotEmpty) {
+                          final audioService =
+                              Provider.of<AudioPlayerService>(context,
+                                  listen: false);
+                          audioService.createPlaylist(controller.text, []);
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            localizations.create,
+                            style: const TextStyle(
+                              fontFamily: FontConstants.fontFamily,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          shape: const RoundedRectangleBorder(),
+          child: useBlur
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: dialogContent,
+                  ),
+                )
+              : dialogContent,
+        );
+      },
     );
   }
 

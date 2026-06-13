@@ -109,6 +109,26 @@ class MainActivity : AudioServiceActivity() {
                         }
                         handleDeleteSong(path, result)
                     }
+                    "openSystemEqualizer" -> {
+                        try {
+                            val intent = Intent("android.media.audiofx.AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL").apply {
+                                putExtra("android.media.audiofx.AudioEffect.EXTRA_CONTENT_TYPE", 0)
+                                val sessionId = call.argument<Int>("audioSessionId")
+                                if (sessionId != null && sessionId != 0) {
+                                    putExtra("android.media.audiofx.AudioEffect.EXTRA_AUDIO_SESSION", sessionId)
+                                }
+                            }
+                            if (intent.resolveActivity(packageManager) != null) {
+                                startActivity(intent)
+                                result.success(true)
+                            } else {
+                                startActivity(Intent(Settings.ACTION_SOUND_SETTINGS))
+                                result.success(false)
+                            }
+                        } catch (e: Exception) {
+                            result.error("FAILED", e.message ?: "Could not open system equalizer", null)
+                        }
+                    }
                     else -> result.notImplemented()
                 }
             }

@@ -667,5 +667,10 @@
   },
   "whatsNewContinue": "Rozumím!",
   "whatsNewNext": "Další",
-  "whatsNewPrev": "Zpět"
+  "whatsNewPrev": "Zpět",
+  "settingsPreviewRecap": "Náhled recapu",
+  "settingsPreviewRecapDesc": "Zjistěte, jak bude vypadat váš přehled, s aktuálními statistikami poslechu",
+  "eqOpenSystem": "Otevřít systémový ekvalizér",
+  "reorderSongs": "Přesunout skladby",
+  "done": "Hotovo"
 }

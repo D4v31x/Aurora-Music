@@ -1236,6 +1236,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tapAddToAddSongs => 'Tap + to add songs';
 
   @override
+  String get reorderSongs => 'Reorder Songs';
+
+  @override
+  String get done => 'Done';
+
+  @override
   String get testArtistString => 'Test artist string';
 
   @override
@@ -1796,6 +1802,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get eqNotAvailable => 'Equalizer not available on this device.';
+
+  @override
+  String get eqOpenSystem => 'Open System Equalizer';
 
   @override
   String get eqSavePreset => 'Save Preset';

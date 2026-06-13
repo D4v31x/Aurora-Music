@@ -196,10 +196,25 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
                       padding: const EdgeInsets.all(8.0),
                       child: Align(
                         alignment: Alignment.topLeft,
-                        child: IconButton(
-                          icon:
-                              const iconoir.NavArrowLeft(color: Colors.white, width: 28, height: 28),
-                          onPressed: () => Navigator.pop(context),
+                        child: GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.35),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.18),
+                              ),
+                            ),
+                            child: const iconoir.NavArrowLeft(
+                              color: Colors.white,
+                              width: 26,
+                              height: 26,
+                            ),
+                          ),
                         ),
                       ),
                     ),

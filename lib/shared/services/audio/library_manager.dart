@@ -269,6 +269,7 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     if (playlistIndex != -1) {
       _playlists[playlistIndex] =
           _playlists[playlistIndex].copyWith(name: newName);
+      playlistsNotifier.value = List.from(_playlists);
       _playlistsDirty = true;
       _scheduleSavePlayCounts();
       _scheduleNotify();

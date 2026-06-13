@@ -341,6 +341,7 @@ class LibraryScreenHeader extends StatelessWidget {
         child: Container(
           width: 40,
           height: 40,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.35),
             shape: BoxShape.circle,
@@ -350,8 +351,8 @@ class LibraryScreenHeader extends StatelessWidget {
           ),
           child: const iconoir.NavArrowLeft(
             color: Colors.white,
-            width: 20,
-            height: 20,
+            width: 26,
+            height: 26,
           ),
         ),
       ),

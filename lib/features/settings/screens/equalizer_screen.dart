@@ -238,14 +238,27 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
-                child: Text(
-                  AppLocalizations.of(context).eqNotAvailable,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontFamily: FontConstants.fontFamily,
-                    fontSize: 15,
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context).eqNotAvailable,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontFamily: FontConstants.fontFamily,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton.tonal(
+                      onPressed: () => svc.openSystemEqualizer(),
+                      child: Text(
+                        AppLocalizations.of(context).eqOpenSystem,
+                        style: TextStyle(fontFamily: FontConstants.fontFamily),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );

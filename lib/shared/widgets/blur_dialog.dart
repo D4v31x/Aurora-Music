@@ -6,8 +6,10 @@ library;
 
 import 'dart:ui';
 
+import 'package:aurora_music_v01/shared/providers/performance_mode_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
+import 'package:provider/provider.dart';
 
 // MARK: - Constants
 
@@ -75,51 +77,59 @@ class BlurDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final performance = context.watch<PerformanceModeProvider>();
+    final useGlass = performance.shouldEnableGlassmorphic;
+
+    final dialogContent = DecoratedBox(
+      decoration: BoxDecoration(
+        color: backgroundColor ??
+            (useGlass ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade900),
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: _kDefaultBorderOpacity),
+        ),
+        boxShadow: [
+          if (useGlass)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (title != null) _buildTitleSection(context),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
+              child: content,
+            ),
+          ),
+          if (actions != null && actions!.isNotEmpty) _buildActionsSection(),
+        ],
+      ),
+    );
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: maxWidth ?? MediaQuery.of(context).size.width * 0.9,
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadius),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: backgroundColor ?? Colors.white.withValues(alpha: 0.1),
+        child: useGlass
+            ? ClipRRect(
                 borderRadius: BorderRadius.circular(borderRadius),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: _kDefaultBorderOpacity),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                  child: dialogContent,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (title != null) _buildTitleSection(context),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
-                      ),
-                      child: content,
-                    ),
-                  ),
-                  if (actions != null && actions!.isNotEmpty)
-                    _buildActionsSection(),
-                ],
-              ),
-            ),
-          ),
-        ),
+              )
+            : dialogContent,
       ),
     );
   }

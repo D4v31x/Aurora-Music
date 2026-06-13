@@ -1125,11 +1125,11 @@ class AppLocalizationsCs extends AppLocalizations {
       'Ovládá, jak velkou historii přehled zobrazuje, když ho otevřete ručně nebo přes banner.';
 
   @override
-  String get settingsPreviewRecap => 'Preview Recap';
+  String get settingsPreviewRecap => 'Náhled recapu';
 
   @override
   String get settingsPreviewRecapDesc =>
-      'See how your recap looks right now with the current settings';
+      'Zjistěte, jak bude vypadat váš přehled, s aktuálními statistikami poslechu';
 
   @override
   String get settingsRecapSchedule => 'Plán přehledů';
@@ -1237,6 +1237,12 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get tapAddToAddSongs => 'Klepněte na + pro přidání skladeb';
+
+  @override
+  String get reorderSongs => 'Přesunout skladby';
+
+  @override
+  String get done => 'Hotovo';
 
   @override
   String get testArtistString => 'Testovací řetězec umělců';
@@ -1799,6 +1805,9 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get eqNotAvailable => 'Ekvalizér na tomto zařízení není k dispozici.';
+
+  @override
+  String get eqOpenSystem => 'Otevřít systémový ekvalizér';
 
   @override
   String get eqSavePreset => 'Uložit předvolbu';
