@@ -3,6 +3,7 @@
 /// this one focuses on a specific window and is accessed via the aurora banner.
 library;
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -146,6 +147,7 @@ class _ListeningRecapScreenState extends State<ListeningRecapScreen> {
     if (_pageController.hasClients) _pageController.jumpToPage(0);
 
     final period = await InsightsPromoService.getRecapPeriodDays();
+    if (!mounted) return;
     final audioService =
         Provider.of<AudioPlayerService>(context, listen: false);
     final svc = SmartSuggestionsService();
@@ -534,7 +536,7 @@ class _ListeningRecapScreenState extends State<ListeningRecapScreen> {
             itemBuilder: (ctx, i) {
               final isLast = i == specs.length - 1;
               final isActive = i == _currentPage;
-              return Container(
+              return DecoratedBox(
                 decoration: BoxDecoration(gradient: specs[i].gradient),
                 child: Stack(
                   children: [
@@ -580,7 +582,7 @@ class _ListeningRecapScreenState extends State<ListeningRecapScreen> {
                           currentDays: _periodDays,
                           onChanged: (days) async {
                             await InsightsPromoService.setRecapPeriodDays(days);
-                            _loadRecap();
+                            unawaited(_loadRecap());
                           },
                         ),
                       ),
@@ -637,7 +639,7 @@ class _ListeningRecapScreenState extends State<ListeningRecapScreen> {
                       Text(
                         l10n.recapNothingToWrap,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 32,
                           fontWeight: FontWeight.w900,
                           fontFamily: FontConstants.fontFamily,
@@ -648,7 +650,7 @@ class _ListeningRecapScreenState extends State<ListeningRecapScreen> {
                       Text(
                         l10n.recapNothingToWrapBody(period),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                           fontSize: 16,
                           height: 1.5,
                         ),
@@ -659,7 +661,7 @@ class _ListeningRecapScreenState extends State<ListeningRecapScreen> {
                         currentDays: _periodDays,
                         onChanged: (days) async {
                           await InsightsPromoService.setRecapPeriodDays(days);
-                          _loadRecap();
+                          unawaited(_loadRecap());
                         },
                       ),
                     ],
@@ -689,9 +691,9 @@ class _PeriodToggle extends StatelessWidget {
     return Container(
       height: 32,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.15)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -711,7 +713,7 @@ class _PeriodToggle extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: selected ? Colors.white.withOpacity(0.22) : null,
+          color: selected ? Colors.white.withValues(alpha: 0.22) : null,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
@@ -782,7 +784,7 @@ class _BlobPainter extends CustomPainter {
     void blob(double cx, double cy, double baseR, Color color) {
       final r = baseR * (0.90 + 0.12 * t);
       paint.shader = RadialGradient(
-        colors: [color.withOpacity(0.16 + 0.06 * t), Colors.transparent],
+        colors: [color.withValues(alpha: 0.16 + 0.06 * t), Colors.transparent],
       ).createShader(Rect.fromCircle(
         center: Offset(cx * size.width, cy * size.height),
         radius: r * size.width,
@@ -819,7 +821,7 @@ class _StoryProgressBar extends StatelessWidget {
               duration: const Duration(milliseconds: 250),
               height: 2.5,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(filled ? 0.90 : 0.25),
+                color: Colors.white.withValues(alpha: filled ? 0.90 : 0.25),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -878,7 +880,7 @@ class _SwipeHintState extends State<_SwipeHint>
           Text(
             l10n.recapSwipeUp,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.30),
+              color: Colors.white.withValues(alpha: 0.30),
               fontSize: 10,
               fontWeight: FontWeight.w700,
               letterSpacing: 2,
@@ -1065,7 +1067,7 @@ class _IntroSlide extends StatelessWidget {
             child: Text(
               l10n.recapIntroAppName,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.45),
+                color: Colors.white.withValues(alpha: 0.45),
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 3.5,
@@ -1096,7 +1098,7 @@ class _IntroSlide extends StatelessWidget {
             child: Text(
               l10n.recapIntroSubtitle,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.55),
+                color: Colors.white.withValues(alpha: 0.55),
                 fontSize: 17,
                 height: 1.45,
               ),
@@ -1142,7 +1144,7 @@ class _BigStatSlide extends StatelessWidget {
             child: Text(
               eyebrow,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.70),
+                color: Colors.white.withValues(alpha: 0.70),
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
                 height: 1.3,
@@ -1187,7 +1189,7 @@ class _BigStatSlide extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.55),
+                color: Colors.white.withValues(alpha: 0.55),
                 fontSize: 24,
                 fontWeight: FontWeight.w400,
               ),
@@ -1233,7 +1235,7 @@ class _NameSlide extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Spacer(flex: 1),
+          const Spacer(),
           // Artwork
           if (artwork != null && artwork!.isNotEmpty)
             _AnimatedEntry(
@@ -1247,12 +1249,12 @@ class _NameSlide extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: glow.withOpacity(0.50),
+                        color: glow.withValues(alpha: 0.50),
                         blurRadius: 56,
                         spreadRadius: 4,
                       ),
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.50),
+                        color: Colors.black.withValues(alpha: 0.50),
                         blurRadius: 24,
                         offset: const Offset(0, 10),
                       ),
@@ -1276,7 +1278,7 @@ class _NameSlide extends StatelessWidget {
             child: Text(
               eyebrow.toUpperCase(),
               style: TextStyle(
-                color: Colors.white.withOpacity(0.50),
+                color: Colors.white.withValues(alpha: 0.50),
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 2.5,
@@ -1310,7 +1312,7 @@ class _NameSlide extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Text(
@@ -1365,7 +1367,7 @@ class _ListSlide extends StatelessWidget {
             child: Text(
               title.toUpperCase(),
               style: TextStyle(
-                color: Colors.white.withOpacity(0.50),
+                color: Colors.white.withValues(alpha: 0.50),
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 2.5,
@@ -1391,7 +1393,7 @@ class _ListSlide extends StatelessWidget {
                         style: TextStyle(
                           color: i == 0
                               ? Colors.white
-                              : Colors.white.withOpacity(0.35),
+                              : Colors.white.withValues(alpha: 0.35),
                           fontSize: i == 0 ? 20 : 16,
                           fontWeight: FontWeight.w900,
                           height: 1.2,
@@ -1405,7 +1407,7 @@ class _ListSlide extends StatelessWidget {
                       height: 48,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
-                        color: Colors.white.withOpacity(0.08),
+                        color: Colors.white.withValues(alpha: 0.08),
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: art != null && art.isNotEmpty
@@ -1423,7 +1425,7 @@ class _ListSlide extends StatelessWidget {
                         style: TextStyle(
                           color: i == 0
                               ? Colors.white
-                              : Colors.white.withOpacity(0.70),
+                              : Colors.white.withValues(alpha: 0.70),
                           fontSize: i == 0 ? 16 : 14,
                           fontWeight:
                               i == 0 ? FontWeight.w700 : FontWeight.w500,
@@ -1437,7 +1439,7 @@ class _ListSlide extends StatelessWidget {
                       '${items[i].value}×',
                       style: TextStyle(
                         color: Colors.white
-                            .withOpacity(i == 0 ? 0.65 : 0.35),
+                            .withValues(alpha: i == 0 ? 0.65 : 0.35),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1487,7 +1489,7 @@ class _ArtistListSlide extends StatelessWidget {
             child: Text(
               title.toUpperCase(),
               style: TextStyle(
-                color: Colors.white.withOpacity(0.50),
+                color: Colors.white.withValues(alpha: 0.50),
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 2.5,
@@ -1513,7 +1515,7 @@ class _ArtistListSlide extends StatelessWidget {
                         style: TextStyle(
                           color: i == 0
                               ? Colors.white
-                              : Colors.white.withOpacity(0.35),
+                              : Colors.white.withValues(alpha: 0.35),
                           fontSize: i == 0 ? 20 : 16,
                           fontWeight: FontWeight.w900,
                           height: 1.2,
@@ -1527,7 +1529,7 @@ class _ArtistListSlide extends StatelessWidget {
                       height: 48,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.08),
+                        color: Colors.white.withValues(alpha: 0.08),
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: art != null && art.isNotEmpty
@@ -1545,7 +1547,7 @@ class _ArtistListSlide extends StatelessWidget {
                         style: TextStyle(
                           color: i == 0
                               ? Colors.white
-                              : Colors.white.withOpacity(0.70),
+                              : Colors.white.withValues(alpha: 0.70),
                           fontSize: i == 0 ? 16 : 14,
                           fontWeight:
                               i == 0 ? FontWeight.w700 : FontWeight.w500,
@@ -1559,7 +1561,7 @@ class _ArtistListSlide extends StatelessWidget {
                       '${artists[i].value}×',
                       style: TextStyle(
                         color: Colors.white
-                            .withOpacity(i == 0 ? 0.65 : 0.35),
+                            .withValues(alpha: i == 0 ? 0.65 : 0.35),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1613,7 +1615,7 @@ class _PeakSlide extends StatelessWidget {
             child: Text(
               l10n.recapYouListenMost,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.50),
+                color: Colors.white.withValues(alpha: 0.50),
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 2.5,
@@ -1647,7 +1649,7 @@ class _PeakSlide extends StatelessWidget {
               child: Text(
                 l10n.recapAroundTime(hourLabel(data.mostActiveHour!)),
                 style: TextStyle(
-                  color: Colors.white.withOpacity(hasDay ? 0.65 : 1.0),
+                  color: Colors.white.withValues(alpha: hasDay ? 0.65 : 1.0),
                   fontSize: hasDay ? 34 : 54,
                   fontWeight: FontWeight.w700,
                   height: 1.1,
@@ -1661,7 +1663,7 @@ class _PeakSlide extends StatelessWidget {
             child: Text(
               l10n.recapVibesHitDifferent,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.45),
+                color: Colors.white.withValues(alpha: 0.45),
                 fontSize: 16,
                 height: 1.45,
               ),
@@ -1719,7 +1721,7 @@ class _SummarySlide extends StatelessWidget {
               child: Text(
                 l10n.recapThatsAWrap,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.50),
+                  color: Colors.white.withValues(alpha: 0.50),
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 2.5,
@@ -1768,7 +1770,7 @@ class _SummarySlide extends StatelessWidget {
                           Text(
                             l10n.recapNumberOneTrack,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.45),
+                              color: Colors.white.withValues(alpha: 0.45),
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 2,
@@ -1821,7 +1823,7 @@ class _SummarySlide extends StatelessWidget {
                     Text(
                       l10n.recapYourSoundLabel,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.45),
+                        color: Colors.white.withValues(alpha: 0.45),
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 2,
@@ -1831,7 +1833,7 @@ class _SummarySlide extends StatelessWidget {
                     Text(
                       data.topGenres.map((e) => e.key).join(' · '),
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.80),
+                        color: Colors.white.withValues(alpha: 0.80),
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         height: 1.4,
@@ -1908,9 +1910,9 @@ class _StatCard extends StatelessWidget {
       width: width,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.10)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1918,7 +1920,7 @@ class _StatCard extends StatelessWidget {
           Text(
             item.label.toUpperCase(),
             style: TextStyle(
-              color: Colors.white.withOpacity(0.40),
+              color: Colors.white.withValues(alpha: 0.40),
               fontSize: 9,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.5,

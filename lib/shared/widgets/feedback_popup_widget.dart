@@ -1,11 +1,10 @@
-import 'dart:ui';
-
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../services/feedback_email_service.dart';
 import '../services/feedback_reminder_service.dart';
+import 'glassmorphic_dialog.dart';
 
 enum _Sentiment { love, missing, broken }
 
@@ -13,8 +12,8 @@ extension on _Sentiment {
   /// English label used for Sentry descriptions (internal, not shown in UI).
   String get label => switch (this) {
         _Sentiment.love => 'Love it',
-        _Sentiment.missing => 'Something\'s missing',
-        _Sentiment.broken => 'Something\'s broken',
+        _Sentiment.missing => "Something's missing",
+        _Sentiment.broken => "Something's broken",
       };
 
   String localizedLabel(AppLocalizations l10n) => switch (this) {
@@ -37,37 +36,30 @@ extension on _Sentiment {
       };
 }
 
-/// Full-screen feedback popup shown once after 7+ days of use.
+/// Feedback dialog shown once after 7+ days of use.
 ///
 /// Call [FeedbackPopupWidget.showIfNeeded] from your post-launch hook;
 /// it delegates to [FeedbackReminderService] for all persistence logic.
 class FeedbackPopupWidget extends StatefulWidget {
   const FeedbackPopupWidget({super.key});
 
-  /// Shows the popup unconditionally — use from Settings where the user
+  /// Shows the dialog unconditionally — use from Settings where the user
   /// explicitly tapped the button.
   static Future<void> show(BuildContext context) {
-    return showDialog<void>(
+    return showGlassmorphicDialog<void>(
       context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.45),
       builder: (_) => const FeedbackPopupWidget(),
     );
   }
 
-  /// Shows the popup only when [FeedbackReminderService] decides the time
+  /// Shows the dialog only when [FeedbackReminderService] decides the time
   /// is right (7+ days active, not permanently dismissed, etc.).
   static Future<void> showIfNeeded(BuildContext context) async {
     final shouldShow = await FeedbackReminderService.shouldShowFeedbackPrompt();
     if (!shouldShow || !context.mounted) return;
     await FeedbackReminderService.recordPromptShown();
     if (!context.mounted) return;
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.45),
-      builder: (_) => const FeedbackPopupWidget(),
-    );
+    await show(context);
   }
 
   @override
@@ -79,22 +71,26 @@ class _FeedbackPopupWidgetState extends State<FeedbackPopupWidget>
   _Sentiment? _selected;
   final _textController = TextEditingController();
   bool _submitting = false;
-  late final AnimationController _fadeIn;
+  late final AnimationController _enterAnim;
   late final Animation<double> _opacity;
+  late final Animation<double> _scale;
 
   @override
   void initState() {
     super.initState();
-    _fadeIn = AnimationController(
+    _enterAnim = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 320),
+      duration: const Duration(milliseconds: 300),
     )..forward();
-    _opacity = CurvedAnimation(parent: _fadeIn, curve: Curves.easeOut);
+    _opacity = CurvedAnimation(parent: _enterAnim, curve: Curves.easeOut);
+    _scale = Tween<double>(begin: 0.92, end: 1.0).animate(
+      CurvedAnimation(parent: _enterAnim, curve: Curves.easeOutCubic),
+    );
   }
 
   @override
   void dispose() {
-    _fadeIn.dispose();
+    _enterAnim.dispose();
     _textController.dispose();
     super.dispose();
   }
@@ -127,219 +123,96 @@ class _FeedbackPopupWidgetState extends State<FeedbackPopupWidget>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+
     return FadeTransition(
       opacity: _opacity,
-      child: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(
-            24,
-            24,
-            24,
-            MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
-              child: Material(
-                type: MaterialType.transparency,
-                child: _PopupCard(
-                  selected: _selected,
-                  textController: _textController,
-                  submitting: _submitting,
-                  onSentimentTapped: (s) => setState(() => _selected = s),
-                  onSubmit: _submit,
-                  onDismiss: _dismissPermanently,
+      child: ScaleTransition(
+        scale: _scale,
+        child: GlassmorphicDialog(
+          title: _FeedbackHeader(colorScheme: colorScheme, l10n: l10n),
+          contentPadding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final s in _Sentiment.values) ...[
+                _SentimentTile(
+                  sentiment: s,
+                  isSelected: _selected == s,
+                  onTap: () => setState(() => _selected = s),
+                  l10n: l10n,
+                  colorScheme: colorScheme,
                 ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Card body ────────────────────────────────────────────────────────────────
-
-class _PopupCard extends StatelessWidget {
-  final _Sentiment? selected;
-  final TextEditingController textController;
-  final bool submitting;
-  final ValueChanged<_Sentiment> onSentimentTapped;
-  final VoidCallback onSubmit;
-  final VoidCallback onDismiss;
-
-  static const _accent = Color(0xFF6C63FF);
-
-  const _PopupCard({
-    required this.selected,
-    required this.textController,
-    required this.submitting,
-    required this.onSentimentTapped,
-    required this.onSubmit,
-    required this.onDismiss,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C1B1F).withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.12),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 32,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Header ──────────────────────────────────────────────────
-            Text(
-              AppLocalizations.of(context).feedbackHeaderTitle,
-              style: const TextStyle(
-                fontFamily: FontConstants.fontFamily,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                height: 1.3,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              AppLocalizations.of(context).feedbackHeaderSubtitle,
-              style: TextStyle(
-                fontFamily: FontConstants.fontFamily,
-                fontSize: 14,
-                color: Colors.white.withValues(alpha: 0.6),
-                height: 1.5,
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ── Sentiment options ────────────────────────────────────────
-            for (final s in _Sentiment.values) ...[
-              _SentimentTile(
-                sentiment: s,
-                isSelected: selected == s,
-                onTap: () => onSentimentTapped(s),
-              ),
-              if (s != _Sentiment.broken) const SizedBox(height: 10),
-            ],
-
-            // ── Optional text field ──────────────────────────────────────
-            AnimatedSize(
-              duration: const Duration(milliseconds: 240),
-              curve: Curves.easeInOut,
-              child: selected == null
-                  ? const SizedBox.shrink()
-                  : Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: TextField(
-                        controller: textController,
-                        minLines: 2,
-                        maxLines: 4,
-                        style: const TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(context).feedbackHint,
-                          hintStyle: TextStyle(
+                if (s != _Sentiment.broken) const SizedBox(height: 8),
+              ],
+              // Optional detail field — slides in after a sentiment is picked
+              AnimatedSize(
+                duration: const Duration(milliseconds: 260),
+                curve: Curves.easeOutCubic,
+                child: _selected == null
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 14),
+                        child: TextField(
+                          controller: _textController,
+                          minLines: 2,
+                          maxLines: 4,
+                          style: const TextStyle(
                             fontFamily: FontConstants.fontFamily,
-                            color: Colors.white.withValues(alpha: 0.3),
+                            color: Colors.white,
                             fontSize: 14,
                           ),
-                          filled: true,
-                          fillColor: Colors.white.withValues(alpha: 0.06),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 12,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(
-                              color: _accent.withValues(alpha: 0.5),
+                          decoration: InputDecoration(
+                            hintText: l10n.feedbackHint,
+                            hintStyle: TextStyle(
+                              fontFamily: FontConstants.fontFamily,
+                              color: Colors.white.withValues(alpha: 0.35),
+                              fontSize: 14,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white.withValues(alpha: 0.07),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: colorScheme.primary
+                                    .withValues(alpha: 0.65),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+              ),
+            ],
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          actions: [
+            GlassmorphicTextButton(
+              onPressed: _submitting ? null : _dismissPermanently,
+              child: Text(l10n.dontShowAgain),
             ),
-
-            const SizedBox(height: 22),
-
-            // ── Submit button ────────────────────────────────────────────
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: (selected != null && !submitting) ? onSubmit : null,
-                style: FilledButton.styleFrom(
-                  backgroundColor: _accent,
-                  disabledBackgroundColor: Colors.white.withValues(alpha: 0.08),
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: 0,
-                ),
-                child: submitting
-                    ? SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white.withValues(alpha: 0.7),
-                        ),
-                      )
-                    : Text(
-                        AppLocalizations.of(context).feedbackSend,
-                        style: const TextStyle(
-                          fontFamily: FontConstants.fontFamily,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                          color: Colors.white,
-                        ),
+            GlassmorphicTextButton(
+              isPrimary: true,
+              onPressed: (_selected != null && !_submitting) ? _submit : null,
+              child: _submitting
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation(colorScheme.primary),
                       ),
-              ),
-            ),
-
-            // ── Don't show again ─────────────────────────────────────────
-            Align(
-              child: TextButton(
-                onPressed: submitting ? null : onDismiss,
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white.withValues(alpha: 0.35),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 6,
-                  ),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Text(
-                  AppLocalizations.of(context).dontShowAgain,
-                  style: const TextStyle(
-                    fontFamily: FontConstants.fontFamily,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
+                    )
+                  : Text(l10n.feedbackSend),
             ),
           ],
         ),
@@ -348,79 +221,161 @@ class _PopupCard extends StatelessWidget {
   }
 }
 
-// ── Sentiment tile ───────────────────────────────────────────────────────────
+// ── Header ────────────────────────────────────────────────────────────────────
+
+class _FeedbackHeader extends StatelessWidget {
+  final ColorScheme colorScheme;
+  final AppLocalizations l10n;
+
+  const _FeedbackHeader({required this.colorScheme, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: colorScheme.primaryContainer.withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            Icons.music_note_rounded,
+            color: colorScheme.primary,
+            size: 22,
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.feedbackHeaderTitle,
+                style: const TextStyle(
+                  fontFamily: FontConstants.fontFamily,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                l10n.feedbackHeaderSubtitle,
+                style: TextStyle(
+                  fontFamily: FontConstants.fontFamily,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white.withValues(alpha: 0.55),
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Sentiment tile ────────────────────────────────────────────────────────────
 
 class _SentimentTile extends StatelessWidget {
   final _Sentiment sentiment;
   final bool isSelected;
   final VoidCallback onTap;
-
-  static const _accent = Color(0xFF6C63FF);
+  final AppLocalizations l10n;
+  final ColorScheme colorScheme;
 
   const _SentimentTile({
     required this.sentiment,
     required this.isSelected,
     required this.onTap,
+    required this.l10n,
+    required this.colorScheme,
   });
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
       decoration: BoxDecoration(
         color: isSelected
-            ? _accent.withValues(alpha: 0.16)
+            ? colorScheme.primaryContainer.withValues(alpha: 0.22)
             : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isSelected
-              ? _accent.withValues(alpha: 0.7)
-              : Colors.white.withValues(alpha: 0.10),
-          width: isSelected ? 1.5 : 1,
+              ? colorScheme.primary.withValues(alpha: 0.55)
+              : Colors.white.withValues(alpha: 0.08),
+          width: isSelected ? 1.5 : 1.0,
         ),
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        splashColor: _accent.withValues(alpha: 0.12),
-        highlightColor: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Icon(
-                sentiment.icon,
-                color: isSelected ? _accent : Colors.white.withValues(alpha: 0.5),
-                size: 20,
-              ),
-              const SizedBox(width: 14),
-              Text(
-                sentiment.localizedLabel(AppLocalizations.of(context)),
-                style: TextStyle(
-                  fontFamily: FontConstants.fontFamily,
-                  fontSize: 15,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected
-                      ? Colors.white
-                      : Colors.white.withValues(alpha: 0.75),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          splashColor: colorScheme.primary.withValues(alpha: 0.10),
+          highlightColor: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                // Icon in a small rounded container
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? colorScheme.primary.withValues(alpha: 0.18)
+                        : Colors.white.withValues(alpha: 0.07),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    sentiment.icon,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : Colors.white.withValues(alpha: 0.45),
+                    size: 18,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              AnimatedOpacity(
-                opacity: isSelected ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 180),
-                child: const Icon(
-                  Icons.check_circle_rounded,
-                  color: _accent,
-                  size: 20,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    sentiment.localizedLabel(l10n),
+                    style: TextStyle(
+                      fontFamily: FontConstants.fontFamily,
+                      fontSize: 14,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: isSelected
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.72),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                AnimatedOpacity(
+                  opacity: isSelected ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    Icons.check_circle_rounded,
+                    color: colorScheme.primary,
+                    size: 18,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
+

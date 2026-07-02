@@ -8,6 +8,13 @@
 			"isBackground": true,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "Flutter Run Release",
+			"type": "shell",
+			"command": "flutter run --release",
+			"isBackground": true,
+			"group": "build"
 		}
 	]
 }

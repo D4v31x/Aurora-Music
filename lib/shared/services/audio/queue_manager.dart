@@ -352,13 +352,19 @@ extension AudioQueueManagerExtension on AudioPlayerService {
   /// same initial index (0).
   void _shuffleQueue() {
     if (_playlist.length <= 1) return;
-    final current = _playlist[_currentIndex];
-    final rest = List<SongModel>.from(_playlist)..removeAt(_currentIndex);
-    rest.shuffle(Random());
-    _playlist = [current, ...rest];
+    final n = _playlist.length;
+
+    // Shuffle INDICES (not the SongModel list directly) so we retain a
+    // mapping from each new position back to where that song currently
+    // lives in the still-live audio source order.
+    final restIndices = List<int>.generate(n, (i) => i)..remove(_currentIndex);
+    restIndices.shuffle(Random());
+    final newOrderIndices = [_currentIndex, ...restIndices];
+
+    _playlist = [for (final i in newOrderIndices) _playlist[i]];
     _currentIndex = 0;
     _queueCount = 0; // Queue distinction lost after shuffle
-    unawaited(_rebuildAudioSourcePreservingPosition());
+    unawaited(_reorderAudioSourceInPlace(newOrderIndices));
   }
 
   /// Restores the pre-shuffle queue order while keeping the current track's
@@ -366,6 +372,7 @@ extension AudioQueueManagerExtension on AudioPlayerService {
   void _restoreOriginalQueue() {
     if (_originalPlaylist.isEmpty) return;
     final current = currentSong;
+    final liveOrder = _playlist; // Still-live (shuffled) audio source order.
     _playlist = List<SongModel>.from(_originalPlaylist);
     _originalPlaylist = [];
     _queueCount = 0; // Queue distinction not preserved through shuffle/restore
@@ -373,7 +380,68 @@ extension AudioQueueManagerExtension on AudioPlayerService {
       final restoredIndex = _playlist.indexWhere((s) => s.id == current.id);
       _currentIndex = restoredIndex != -1 ? restoredIndex : 0;
     }
-    unawaited(_rebuildAudioSourcePreservingPosition());
+
+    // Map each song in the restored order back to its index in the still-live
+    // audio source order, so it can be reordered in place.
+    final newOrderIndices =
+        _playlist.map((s) => liveOrder.indexWhere((o) => o.id == s.id)).toList();
+    unawaited(_reorderAudioSourceInPlace(newOrderIndices));
+  }
+
+  /// Reorders the *existing* gapless audio source to match [newOrderIndices]
+  /// — where `newOrderIndices[i]` is the index, in the audio source's current
+  /// live order, of the item that should end up at position `i` — using
+  /// incremental [AudioPlayer.moveAudioSource] calls instead of a full
+  /// [AudioPlayer.setAudioSources] replace.
+  ///
+  /// Unlike a full replace (which reinitializes the entire native media
+  /// source and causes an audible micro-stutter even when the current
+  /// position is preserved), moving items within an existing
+  /// `ConcatenatingAudioSource` is a metadata-only operation — it never
+  /// reloads or rebuffers the currently-playing item, so toggling shuffle no
+  /// longer interrupts playback.
+  Future<void> _reorderAudioSourceInPlace(List<int> newOrderIndices) async {
+    if (!_gaplessPlayback) return;
+    final n = newOrderIndices.length;
+    if (n != _audioPlayer.audioSources.length ||
+        newOrderIndices.toSet().length != n ||
+        newOrderIndices.any((i) => i < 0 || i >= n)) {
+      // Mapping doesn't line up cleanly (shouldn't normally happen) — fall
+      // back to the safe (if heavier) full rebuild rather than risk
+      // corrupting the audio source order.
+      await _rebuildAudioSourcePreservingPosition();
+      return;
+    }
+
+    try {
+      audioHandler.suppressIndexUpdates();
+
+      // Selection-sort style reorder: place the correct item at each
+      // position from left to right, tracking where every original item
+      // currently lives as moves are applied.
+      final working = List<int>.generate(n, (i) => i);
+      for (var target = 0; target < n; target++) {
+        final desired = newOrderIndices[target];
+        final currentPos = working.indexOf(desired);
+        if (currentPos != target) {
+          await _audioPlayer.moveAudioSource(currentPos, target);
+          working.insert(target, working.removeAt(currentPos));
+        }
+      }
+
+      audioHandler.resumeIndexUpdates();
+      // Re-disable just_audio's internal shuffle; we manage ordering ourselves.
+      await _audioPlayer.setShuffleModeEnabled(false);
+
+      final mediaItems = _playlist.map((s) => _createMediaItemSync(s)).toList();
+      audioHandler.updateNotificationQueue(mediaItems);
+      if (_currentIndex < mediaItems.length) {
+        audioHandler.updateNotificationMediaItem(mediaItems[_currentIndex]);
+      }
+    } catch (e) {
+      audioHandler.resumeIndexUpdates();
+      debugPrint('Error reordering audio source in place: $e');
+    }
   }
 
   /// Rebuilds the gapless audio source with the current _playlist

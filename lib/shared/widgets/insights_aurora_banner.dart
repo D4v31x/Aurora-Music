@@ -86,9 +86,9 @@ class _InsightsAuroraBannerState extends State<InsightsAuroraBanner>
         child: Stack(
           children: [
             // ── Dark base gradient ──────────────────────────────────────
-            Positioned.fill(
+            const Positioned.fill(
               child: DecoratedBox(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -128,8 +128,8 @@ class _InsightsAuroraBannerState extends State<InsightsAuroraBanner>
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      Colors.black.withOpacity(0.25),
-                      Colors.black.withOpacity(0.55),
+                      Colors.black.withValues(alpha: 0.25),
+                      Colors.black.withValues(alpha: 0.55),
                     ],
                     stops: const [0.0, 0.40, 1.0],
                   ),
@@ -173,7 +173,7 @@ class _InsightsAuroraBannerState extends State<InsightsAuroraBanner>
               ? 'See your top tracks, artists & listening patterns'
               : 'Discover your top songs and listening trends',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.78),
+            color: Colors.white.withValues(alpha: 0.78),
             fontSize: 13,
             shadows: const [Shadow(color: Colors.black54, blurRadius: 6)],
           ),
@@ -195,7 +195,7 @@ class _InsightsAuroraBannerState extends State<InsightsAuroraBanner>
                   borderRadius: BorderRadius.circular(50),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF00E5FF).withOpacity(0.32),
+                      color: const Color(0xFF00E5FF).withValues(alpha: 0.32),
                       blurRadius: 14,
                       offset: const Offset(0, 4),
                     ),
@@ -221,7 +221,7 @@ class _InsightsAuroraBannerState extends State<InsightsAuroraBanner>
                 child: Text(
                   'Not now',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.52),
+                    color: Colors.white.withValues(alpha: 0.52),
                     fontSize: 13,
                   ),
                 ),
@@ -243,7 +243,7 @@ class _AuroraPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final tau = math.pi * 2;
+    const tau = math.pi * 2;
 
     // Deep purple blob — sweeps left/right
     _blob(
@@ -303,7 +303,7 @@ class _AuroraPainter extends CustomPainter {
   }) {
     final paint = Paint()
       ..shader = RadialGradient(
-        colors: [color.withOpacity(opacity), color.withOpacity(0)],
+        colors: [color.withValues(alpha: opacity), color.withValues(alpha: 0)],
       ).createShader(Rect.fromCircle(center: center, radius: radius));
     canvas.drawCircle(center, radius, paint);
   }

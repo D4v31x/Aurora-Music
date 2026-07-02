@@ -223,8 +223,8 @@ class EqualizerService extends ChangeNotifier {
   /// Experience / Dolby Atmos). Returns true if the dedicated panel opened,
   /// false if it fell back to system Sound Settings. Throws on hard failure.
   Future<bool> openSystemEqualizer({int audioSessionId = 0}) async {
-    const _channel = MethodChannel('aurora/media_actions');
-    final result = await _channel.invokeMethod<bool>(
+    const channel = MethodChannel('aurora/media_actions');
+    final result = await channel.invokeMethod<bool>(
       'openSystemEqualizer',
       {'audioSessionId': audioSessionId},
     );

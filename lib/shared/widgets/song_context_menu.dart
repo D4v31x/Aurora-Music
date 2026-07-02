@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../core/constants/font_constants.dart';
 import '../../features/library/library_feature.dart';
+import '../../features/player/widgets/share_clip_sheet.dart';
 import '../../features/settings/settings_feature.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../models/models.dart';
@@ -107,6 +108,12 @@ class _SongContextMenu extends StatelessWidget {
                   icon: Icons.share_rounded,
                   label: AppLocalizations.of(context).share,
                   onTap: () => _share(context),
+                ),
+                _item(
+                  context,
+                  icon: Icons.movie_creation_outlined,
+                  label: AppLocalizations.of(context).saveAsClip,
+                  onTap: () => _shareClip(context),
                 ),
                 _item(
                   context,
@@ -253,7 +260,17 @@ class _SongContextMenu extends StatelessWidget {
     Navigator.pop(context);
     final text =
         '${song.title} — ${splitArtists(song.artist ?? AppLocalizations.of(context).unknownArtist).join(', ')}';
-    Share.share(text, subject: AppLocalizations.of(context).checkOutThisSong);
+    SharePlus.instance.share(
+      ShareParams(
+        text: text,
+        subject: AppLocalizations.of(context).checkOutThisSong,
+      ),
+    );
+  }
+
+  void _shareClip(BuildContext context) {
+    Navigator.pop(context);
+    showShareClipSheet(context, song: song);
   }
 
   void _editInfo(BuildContext context) {

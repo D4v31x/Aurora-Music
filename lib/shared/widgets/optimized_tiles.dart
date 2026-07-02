@@ -86,7 +86,6 @@ class _OptimizedSongTileState extends State<OptimizedSongTile> {
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: _kNowPlayingAccent.withValues(alpha: 0.45),
-                      width: 1,
                     ),
                   )
                 : null,

@@ -6,6 +6,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
+import '../../../shared/services/smart_playlist_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -15,6 +16,7 @@ import '../../../shared/widgets/glassmorphic_card.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/utils/sort_preferences.dart';
 import 'playlist_detail_screen.dart';
+import 'smart_playlist_editor_screen.dart';
 
 /// Data class to hold playlist-related state for efficient rebuilds
 class _PlaylistsState {
@@ -55,7 +57,9 @@ class _PlaylistsState {
     if (userPlaylists.length != other.userPlaylists.length) return false;
     for (var i = 0; i < userPlaylists.length; i++) {
       if (userPlaylists[i].id != other.userPlaylists[i].id ||
-          userPlaylists[i].name != other.userPlaylists[i].name) return false;
+          userPlaylists[i].name != other.userPlaylists[i].name) {
+        return false;
+      }
     }
     return true;
   }
@@ -201,23 +205,37 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                           case 'sync_now':
                             _syncNow(context, audioService);
                             break;
+                          case 'create_smart':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const SmartPlaylistEditorScreen(),
+                              ),
+                            );
+                            break;
                         }
                       },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
                           value: 'import',
                           child: Text('Import playlist (.m3u)',
                               style: TextStyle(color: Colors.white)),
                         ),
-                        PopupMenuItem(
+                        const PopupMenuItem(
                           value: 'sync_folder',
                           child: Text('Set sync folder…',
                               style: TextStyle(color: Colors.white)),
                         ),
-                        PopupMenuItem(
+                        const PopupMenuItem(
                           value: 'sync_now',
                           child: Text('Sync now',
                               style: TextStyle(color: Colors.white)),
+                        ),
+                        PopupMenuItem(
+                          value: 'create_smart',
+                          child: Text(localizations.createSmartPlaylist,
+                              style: const TextStyle(color: Colors.white)),
                         ),
                       ],
                     ),
@@ -359,6 +377,76 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                       ),
                     ),
                   ),
+
+                // Smart Playlists Section
+                SliverToBoxAdapter(
+                  child: Consumer<SmartPlaylistService>(
+                    builder: (context, smartService, _) {
+                      final smartPlaylists = smartService.smartPlaylists;
+                      if (smartPlaylists.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                            child: Text(
+                              localizations.smartPlaylists,
+                              style: TextStyle(
+                                fontFamily: FontConstants.fontFamily,
+                                color: Colors.white.withValues(alpha: 0.6),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 190,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              itemCount: smartPlaylists.length,
+                              itemBuilder: (context, index) {
+                                final sp = smartPlaylists[index];
+                                final built = smartService.buildPlaylist(
+                                  sp,
+                                  library: audioService.songs,
+                                  isLiked: audioService.isLiked,
+                                  playCountOf: audioService.playCountFor,
+                                );
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  child: GestureDetector(
+                                    onLongPress: () =>
+                                        _showSmartPlaylistOptions(
+                                            context, sp, smartService),
+                                    child: GlassmorphicCard.playlist(
+                                      playlistName: sp.name,
+                                      songCount: built.songs.length,
+                                      subtitle: localizations
+                                          .songCount(built.songs.length),
+                                      playlistId: sp.id,
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => PlaylistDetailScreen(
+                                              playlist: built),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
 
                 // Your Playlists Header
                 SliverToBoxAdapter(
@@ -679,11 +767,83 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
     );
   }
 
+  void _showSmartPlaylistOptions(
+    BuildContext context,
+    SmartPlaylist playlist,
+    SmartPlaylistService smartService,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.grey.shade900,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit_outlined, color: Colors.white),
+              title: Text(l10n.editSmartPlaylist,
+                  style: const TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        SmartPlaylistEditorScreen(existing: playlist),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline_rounded,
+                  color: Colors.redAccent),
+              title: Text(l10n.delete,
+                  style: const TextStyle(color: Colors.redAccent)),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    backgroundColor: Colors.grey.shade900,
+                    title: Text(l10n.editSmartPlaylist,
+                        style: const TextStyle(color: Colors.white)),
+                    content: Text(l10n.deleteSmartPlaylistConfirm,
+                        style: const TextStyle(color: Colors.white70)),
+                    actions: [
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.pop(dialogContext, false),
+                        child: Text(l10n.cancel),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        child: Text(l10n.delete,
+                            style:
+                                const TextStyle(color: Colors.redAccent)),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed == true) {
+                  await smartService.deleteSmartPlaylist(playlist.id);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _importPlaylist(
       BuildContext context, AudioPlayerService audioService) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
-      final result = await FilePicker.platform.pickFiles();
+      final result = await FilePicker.pickFiles();
       final path = result?.files.single.path;
       if (path == null) return;
       final lower = path.toLowerCase();
@@ -710,7 +870,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
       BuildContext context, AudioPlayerService audioService) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
-      final folder = await FilePicker.platform.getDirectoryPath();
+      final folder = await FilePicker.getDirectoryPath();
       if (folder == null) return;
       await audioService.setPlaylistSyncFolder(folder);
       await audioService.syncPlaylistsWithFolder();

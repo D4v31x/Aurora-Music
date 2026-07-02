@@ -172,7 +172,7 @@ class _ListeningInsightsScreenState extends State<ListeningInsightsScreen> {
                 color: Colors.white),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: Text(
+          title: const Text(
             'Music Insights',
             style: TextStyle(
               color: Colors.white,
@@ -290,13 +290,13 @@ class _ListeningInsightsScreenState extends State<ListeningInsightsScreen> {
 
         // ── Empty state ────────────────────────────────────────────────────
         if (data.totalListens == 0)
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(32),
+              padding: EdgeInsets.all(32),
               child: Column(
                 children: [
-                  const Icon(Icons.music_note_rounded, color: Colors.white54, size: 64),
-                  const SizedBox(height: 16),
+                  Icon(Icons.music_note_rounded, color: Colors.white54, size: 64),
+                  SizedBox(height: 16),
                   Text(
                     'No listening data yet',
                     style: TextStyle(
@@ -306,7 +306,7 @@ class _ListeningInsightsScreenState extends State<ListeningInsightsScreen> {
                       fontFamily: FontConstants.fontFamily,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text(
                     'Play some music to start\nbuilding your insights.',
                     textAlign: TextAlign.center,
@@ -476,7 +476,7 @@ class _HourActivityCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   subtitle,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 13,
                     fontFamily: FontConstants.fontFamily,
@@ -498,9 +498,9 @@ class _HourActivityCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               _AxisLabel('12a'),
               _AxisLabel('6a'),
               _AxisLabel('12p'),
@@ -547,7 +547,7 @@ class _WeekdayActivityCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   subtitle,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 13,
                     fontFamily: FontConstants.fontFamily,

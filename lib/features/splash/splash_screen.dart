@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen>
   double _progress = 0.0;
   final List<String> _warnings = [];
   bool _hasConnectivityIssues = false;
-  static const Duration _minimumSplashDuration = Duration(milliseconds: 2600);
+  static const Duration _minimumSplashDuration = Duration.zero;
 
   @override
   void initState() {
@@ -191,7 +191,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     await Future.wait<void>([
       _boundedPreparation(
-        audioPlayerService.getSuggestedTracks(count: 3).then((_) {}),
+        audioPlayerService.getSuggestedTracks().then((_) {}),
       ),
       _boundedPreparation(
         audioPlayerService.getSuggestedArtists(count: 5).then((_) {}),
@@ -261,8 +261,6 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _finalizeInitialization() async {
     // Pre-warm home screen components for smooth transition
     await _preWarmHomeScreen();
-
-    await Future.delayed(const Duration(milliseconds: 500));
   }
 
   Future<void> _waitForMinimumSplashDuration(DateTime startedAt) async {
@@ -576,7 +574,6 @@ class _SplashScreenState extends State<SplashScreen>
                   top: -height * 0.14,
                   right: -width * 0.22,
                   color: const Color(0xFFECECEA),
-                  alpha: 0.95,
                 ),
                 _meshOval(
                   width * 1.05,
@@ -584,7 +581,6 @@ class _SplashScreenState extends State<SplashScreen>
                   top: height * 0.30,
                   left: -width * 0.32,
                   color: const Color(0xFFFF254C),
-                  alpha: 0.95,
                 ),
                 _meshOval(
                   width * 1.05,

@@ -3,6 +3,7 @@ import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -572,6 +573,32 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     );
   }
 
+  /// GETs the lrclib search endpoint with a timeout, retrying once with a
+  /// longer timeout if the first attempt times out. lrclib.net is a free
+  /// public API that occasionally responds slowly under load (surfacing as
+  /// an HTTP 408 in logs) — a single retry avoids spurious "search failed"
+  /// results without blocking the UI indefinitely.
+  Future<http.Response> _getLyricsSearchResponse(Uri url) async {
+    const headers = {
+      'Accept': 'application/json',
+      'User-Agent': 'AuroraMusic v0.0.85',
+    };
+    const timeout = Duration(seconds: 6);
+    const retryTimeout = Duration(seconds: 10);
+    final client = TimedLyricsService.httpClient;
+    try {
+      final response = await client
+          .get(url, headers: headers)
+          .timeout(timeout, onTimeout: () => http.Response('', 408));
+      if (response.statusCode != 408) return response;
+    } catch (_) {
+      // fall through to retry below
+    }
+    return client
+        .get(url, headers: headers)
+        .timeout(retryTimeout, onTimeout: () => http.Response('', 408));
+  }
+
   Future<void> _performLyricsSearch(String artist, String title) async {
     setState(() => _isLoadingLyrics = true);
 
@@ -583,13 +610,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         'track_name': title,
       });
 
-      final response = await http.get(
-        searchUrl,
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'AuroraMusic v0.0.85'
-        },
-      );
+      final response = await _getLyricsSearchResponse(searchUrl);
 
       if (response.statusCode == 200) {
         final List results = json.decode(utf8.decode(response.bodyBytes));
@@ -1001,7 +1022,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         ).createShader(bounds),
         blendMode: BlendMode.dstIn,
         child: ListView.builder(
-          key: _scrollKey,
+          scrollCacheExtent: const ScrollCacheExtent.pixels(1000), key: _scrollKey,
           controller: _scrollController,
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.symmetric(
@@ -1009,8 +1030,6 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
             vertical: MediaQuery.of(context).size.height * 0.3,
           ),
           itemCount: _currentLyrics!.length + (_showTranslated ? 1 : 0),
-          // Optimize list performance with cacheExtent
-          cacheExtent: 1000,
           itemBuilder: (context, index) {
             if (_showTranslated && index == 0) {
               return _buildTranslationDisclaimerHeader();
@@ -1170,7 +1189,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                     opacity: anim,
                     child: SizeTransition(
                       sizeFactor: anim,
-                      axisAlignment: -1,
+                      alignment: const Alignment(-1.0, -1.0),
                       child: child,
                     ),
                   ),

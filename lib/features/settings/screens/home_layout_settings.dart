@@ -113,7 +113,7 @@ class _HomeLayoutSettingsScreenState extends State<HomeLayoutSettingsScreen> {
                     bottom: MediaQuery.of(context).padding.bottom + 16,
                   ),
                   itemCount: layoutService.sectionOrder.length,
-                  onReorder: (oldIndex, newIndex) {
+                  onReorderItem: (oldIndex, newIndex) {
                     HapticFeedback.mediumImpact();
                     layoutService.reorderSections(oldIndex, newIndex);
                   },

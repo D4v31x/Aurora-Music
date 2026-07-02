@@ -35,6 +35,9 @@ import 'package:aurora_music_v01/features/onboarding/screens/onboarding_screen.d
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/services/insights_promo_service.dart';
 import '../screens/listening_recap_screen.dart';
+import 'package:upgrader/upgrader.dart';
+import '../../../shared/widgets/update_dialog.dart';
+import '../../../main.dart' show navigatorKey;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -72,6 +75,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final DownloadProgressMonitor _downloadMonitor = DownloadProgressMonitor();
   final BluetoothService _bluetoothService = BluetoothService();
   StreamSubscription<String>? _downloadStatusSubscription;
+
+  late final Upgrader _upgrader = Upgrader(
+    debugLogging: true,
+    durationUntilAlertAgain: Duration.zero,
+  );
 
   @override
   void initState() {
@@ -816,13 +824,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       (service) => service.currentSong,
     );
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        await _showExitConfirmation();
-      },
-      child: AppBackground(
+    return AuroraUpgradeAlert(
+      navigatorKey: navigatorKey,
+      upgrader: _upgrader,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+          await _showExitConfirmation();
+        },
+        child: AppBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
           resizeToAvoidBottomInset: false,
@@ -1006,6 +1017,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
       ),
+    ),
     );
   }
 }

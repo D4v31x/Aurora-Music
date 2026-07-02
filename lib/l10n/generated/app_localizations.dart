@@ -266,6 +266,228 @@ abstract class AppLocalizations {
   /// **'Auto Tag'**
   String get autoTag;
 
+  /// No description provided for @smartPlaylists.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Playlists'**
+  String get smartPlaylists;
+
+  /// No description provided for @createSmartPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Create smart playlist…'**
+  String get createSmartPlaylist;
+
+  /// No description provided for @editSmartPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Smart Playlist'**
+  String get editSmartPlaylist;
+
+  /// No description provided for @smartPlaylistNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist name'**
+  String get smartPlaylistNameHint;
+
+  /// No description provided for @smartPlaylistRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules'**
+  String get smartPlaylistRules;
+
+  /// No description provided for @addRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add rule'**
+  String get addRule;
+
+  /// No description provided for @saveSmartPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveSmartPlaylist;
+
+  /// No description provided for @matchAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Match ALL rules'**
+  String get matchAll;
+
+  /// No description provided for @matchAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Match ANY rule'**
+  String get matchAny;
+
+  /// No description provided for @limitResultsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit results'**
+  String get limitResultsLabel;
+
+  /// No description provided for @noLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'No limit'**
+  String get noLimit;
+
+  /// No description provided for @deleteSmartPlaylistConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this smart playlist? This only removes the saved rules — your songs are not affected.'**
+  String get deleteSmartPlaylistConfirm;
+
+  /// No description provided for @smartPlaylistPreviewCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches {count} songs right now'**
+  String smartPlaylistPreviewCount(int count);
+
+  /// No description provided for @saveAsClip.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as clip'**
+  String get saveAsClip;
+
+  /// No description provided for @generatingClip.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating clip…'**
+  String get generatingClip;
+
+  /// No description provided for @clipDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Clip duration'**
+  String get clipDuration;
+
+  /// No description provided for @clipStartOffset.
+  ///
+  /// In en, this message translates to:
+  /// **'Start point'**
+  String get clipStartOffset;
+
+  /// No description provided for @saveClip.
+  ///
+  /// In en, this message translates to:
+  /// **'Save clip'**
+  String get saveClip;
+
+  /// No description provided for @clipSavedToDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Clip saved to device'**
+  String get clipSavedToDevice;
+
+  /// No description provided for @clipSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the clip. Please try again.'**
+  String get clipSaveFailed;
+
+  /// No description provided for @playlistSavedToDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist saved to device'**
+  String get playlistSavedToDevice;
+
+  /// No description provided for @trackTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Track Tags'**
+  String get trackTags;
+
+  /// No description provided for @editTrackTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit tags'**
+  String get editTrackTags;
+
+  /// No description provided for @addTrackTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tag'**
+  String get addTrackTag;
+
+  /// No description provided for @noTrackTagsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags yet. Add one to jump straight to a part of this track.'**
+  String get noTrackTagsYet;
+
+  /// No description provided for @trackTagNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Song title or artist'**
+  String get trackTagNameHint;
+
+  /// No description provided for @trackTagPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Position'**
+  String get trackTagPosition;
+
+  /// No description provided for @useCurrentPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Use current position'**
+  String get useCurrentPosition;
+
+  /// No description provided for @isThisASet.
+  ///
+  /// In en, this message translates to:
+  /// **'Is this a set?'**
+  String get isThisASet;
+
+  /// No description provided for @tagPartsForEasySwitching.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag parts of this track for easier switching between songs.'**
+  String get tagPartsForEasySwitching;
+
+  /// No description provided for @tagThisTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag this track'**
+  String get tagThisTrack;
+
+  /// No description provided for @pasteSetlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste setlist'**
+  String get pasteSetlist;
+
+  /// No description provided for @pasteSetlistDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste Setlist'**
+  String get pasteSetlistDialogTitle;
+
+  /// No description provided for @pasteSetlistHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste timestamps here, e.g.\n0:00 Intro\n3:45 Song Name'**
+  String get pasteSetlistHint;
+
+  /// No description provided for @importAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get importAction;
+
+  /// No description provided for @tagsImportedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {count} tags'**
+  String tagsImportedMessage(int count);
+
+  /// No description provided for @noTagsFoundInPaste.
+  ///
+  /// In en, this message translates to:
+  /// **'No timestamps found in the pasted text.'**
+  String get noTagsFoundInPaste;
+
   /// No description provided for @bitrate.
   ///
   /// In en, this message translates to:
@@ -847,6 +1069,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Download failed. Check your connection and try again.'**
   String get metadataDownloadFailed;
+
+  /// No description provided for @chooseArtworkFromDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from device'**
+  String get chooseArtworkFromDevice;
 
   /// No description provided for @moreResults.
   ///
@@ -2083,6 +2311,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Seamless track transitions'**
   String get settingsGaplessDesc;
+
+  /// No description provided for @settingsCrossfade.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossfade'**
+  String get settingsCrossfade;
+
+  /// No description provided for @settingsCrossfadeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Smoothly blend the end of one track into the next'**
+  String get settingsCrossfadeDesc;
+
+  /// No description provided for @crossfadeDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossfade Duration'**
+  String get crossfadeDuration;
+
+  /// No description provided for @crossfadeDurationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'How long the overlap between tracks lasts'**
+  String get crossfadeDurationDesc;
 
   /// No description provided for @settingsInsights.
   ///

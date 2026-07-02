@@ -225,7 +225,6 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                       ? '${_allSongs.length} ${localizations.songs} · ${_albums.length} ${localizations.albums} · ${_formatDuration(_totalDuration)}'
                       : null,
                   badge: localizations.artist,
-                  heroTag: null,
                   accentColor: _dominantColor == Colors.deepPurple.shade900
                       ? Colors.cyan
                       : _dominantColor,

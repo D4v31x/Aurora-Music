@@ -2,9 +2,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
-import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../shared/providers/providers.dart';
+import '../../../core/constants/font_constants.dart';
+import '../../../shared/widgets/glassmorphic_dialog.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/services/audio_player_service.dart';
@@ -124,9 +124,11 @@ void shareSong(AudioPlayerService audioPlayerService) {
   final shareText =
       '${song.title} - ${splitArtists(song.artist ?? "Unknown Artist").join(", ")}';
 
-  Share.share(
-    shareText,
-    subject: 'Check out this song!',
+  SharePlus.instance.share(
+    ShareParams(
+      text: shareText,
+      subject: 'Check out this song!',
+    ),
   );
 }
 
@@ -420,8 +422,7 @@ class _QueueBottomSheetState extends State<_QueueBottomSheet> {
                                     const NeverScrollableScrollPhysics(),
                                 buildDefaultDragHandles: false,
                                 itemCount: queuedSongs.length,
-                                onReorder: (oldIdx, newIdx) async {
-                                  if (oldIdx < newIdx) newIdx -= 1;
+                                onReorderItem: (oldIdx, newIdx) async {
                                   final base = currentIndex + 1;
                                   await audio.moveInQueue(
                                       base + oldIdx, base + newIdx);
@@ -641,82 +642,86 @@ void showSongInfoDialog(
     return;
   }
 
-  final isLowEnd = Provider.of<PerformanceModeProvider>(context, listen: false).isLowEndDevice;
   final colorScheme = Theme.of(context).colorScheme;
-  showDialog(
+  final l10n = AppLocalizations.of(context);
+
+  // Truncate path to last 2 segments for readability
+  final pathParts = song.data.split('/');
+  final shortPath = pathParts.length > 2
+      ? '…/${pathParts[pathParts.length - 2]}/${pathParts.last}'
+      : song.data;
+
+  showGlassmorphicDialog<void>(
     context: context,
-    barrierColor: Colors.black.withValues(alpha: 0.75),
-    builder: (BuildContext context) {
-      return Dialog(
-          backgroundColor: Colors.transparent,
-          shape: const RoundedRectangleBorder(),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isLowEnd ? colorScheme.outlineVariant : Colors.white.withValues(alpha: 0.2),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context).songInfo,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const iconoir.Xmark(color: Colors.white, width: 24, height: 24),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                    const Divider(color: Colors.white24),
-                    const SizedBox(height: 16),
-                    MusicMetadataWidget(song: song),
-                    const SizedBox(height: 16),
-                    InfoRow(
-                        label: 'Title',
-                        value: song.title),
-                    InfoRow(
-                        label: 'Artist',
-                        value: splitArtists(
-                                song.artist ??
-                                    'Unknown')
-                            .join(', ')),
-                    InfoRow(
-                        label: 'Album',
-                        value: song.album ?? 'Unknown'),
-                    InfoRow(
-                        label: 'Path',
-                        value: song.data),
-                  ],
-                ),
-              ),
+    builder: (ctx) => GlassmorphicDialog(
+      title: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(
+              Icons.music_note_rounded,
+              color: colorScheme.primary,
+              size: 20,
             ),
           ),
-      );
-    },
+          const SizedBox(width: 12),
+          Text(
+            l10n.songInfo,
+            style: const TextStyle(
+              fontFamily: FontConstants.fontFamily,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+      contentPadding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MusicMetadataWidget(song: song),
+          const SizedBox(height: 12),
+          Divider(
+              color: Colors.white.withValues(alpha: 0.12), height: 1),
+          const SizedBox(height: 4),
+          InfoRow(
+            icon: Icons.title_rounded,
+            label: 'Title',
+            value: song.title,
+          ),
+          InfoRow(
+            icon: Icons.person_outline_rounded,
+            label: 'Artist',
+            value: splitArtists(song.artist ?? 'Unknown').join(', '),
+          ),
+          InfoRow(
+            icon: Icons.album_outlined,
+            label: 'Album',
+            value: song.album ?? 'Unknown',
+          ),
+          InfoRow(
+            icon: Icons.folder_outlined,
+            label: 'Path',
+            value: shortPath,
+          ),
+        ],
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      actions: [
+        GlassmorphicTextButton(
+          isPrimary: true,
+          onPressed: () => Navigator.pop(ctx),
+          child: Text(l10n.close),
+        ),
+      ],
+    ),
   );
 }
 
@@ -724,39 +729,69 @@ void showSongInfoDialog(
 class InfoRow extends StatelessWidget {
   final String label;
   final String value;
+  final IconData? icon;
+  final Color? iconColor;
   final int maxLines;
 
   const InfoRow({
     super.key,
     required this.label,
     required this.value,
+    this.icon,
+    this.iconColor,
     this.maxLines = 2,
   });
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final color = iconColor ?? cs.primary;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+          if (icon != null)
+            Container(
+              width: 36,
+              height: 36,
+              margin: const EdgeInsets.only(right: 12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                    color: color.withValues(alpha: 0.2), width: 0.8),
+              ),
+              child: Icon(icon, color: color, size: 18),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label.toUpperCase(),
+                  style: TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    color: color.withValues(alpha: 0.6),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    color: Colors.white,
+                    fontSize: 14,
+                    height: 1.3,
+                  ),
+                  maxLines: maxLines,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            maxLines: maxLines,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

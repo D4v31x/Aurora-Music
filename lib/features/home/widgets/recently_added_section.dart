@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:aurora_music_v01/core/constants/app_config.dart';
@@ -75,11 +76,9 @@ class RecentlyAddedSection extends StatelessWidget {
         return SizedBox(
           height: 190,
           child: ListView.builder(
-            scrollDirection: Axis.horizontal,
+            scrollCacheExtent: const ScrollCacheExtent.pixels(AppConfig.horizontalListCacheExtent), scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             itemCount: displaySongs.length,
-            // Performance: Pre-cache items beyond visible area for smoother scrolling
-            cacheExtent: AppConfig.horizontalListCacheExtent,
             itemBuilder: (context, index) {
               final song = displaySongs[index];
               return RepaintBoundary(

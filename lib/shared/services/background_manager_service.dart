@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -173,7 +172,7 @@ class BackgroundManagerService extends ChangeNotifier {
       final imageWidth = image.width;
       final imageHeight = image.height;
       final rawPixels =
-          await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+          await image.toByteData();
       image.dispose();
       codec.dispose();
 

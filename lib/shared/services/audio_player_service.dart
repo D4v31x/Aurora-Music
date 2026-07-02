@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math' show Random;
+import 'dart:math' show Random, cos, sin, pi;
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -29,6 +29,7 @@ part 'audio/media_artwork.dart';
 part 'audio/queue_persistence.dart';
 part 'audio/settings_manager.dart';
 part 'audio/playlist_m3u_sync.dart';
+part 'audio/crossfade_controller.dart';
 
 /// Enum to track where the current playback originated from
 enum PlaybackSource {
@@ -217,6 +218,15 @@ class AudioPlayerService extends ChangeNotifier {
   int _cacheSize = 100; // in MB
   bool _mediaControls = true;
 
+  // ── True timed crossfade (see audio/crossfade_controller.dart) ───────────
+  bool _crossfadeEnabled = false;
+  int _crossfadeDurationMs = 6000; // 1000-12000ms, user-configurable
+  bool _crossfading = false;
+  AudioPlayer? _standbyPlayer;
+  Timer? _crossfadeRampTimer;
+  StreamSubscription<Duration>? _crossfadeWatchSub;
+  AudioPipeline Function()? _crossfadePipelineFactory;
+
   // Settings getters
   bool get gaplessPlayback => _gaplessPlayback;
   bool get volumeNormalization => _volumeNormalization;
@@ -225,6 +235,9 @@ class AudioPlayerService extends ChangeNotifier {
   String get defaultSortOrder => _defaultSortOrder;
   int get cacheSize => _cacheSize;
   bool get mediaControls => _mediaControls;
+  bool get crossfadeEnabled => _crossfadeEnabled;
+  int get crossfadeDurationMs => _crossfadeDurationMs;
+  Duration get crossfadeDuration => Duration(milliseconds: _crossfadeDurationMs);
 
   // Add ValueNotifiers for reactive state
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier<bool>(false);
@@ -311,11 +324,6 @@ class AudioPlayerService extends ChangeNotifier {
       androidWillPauseWhenDucked: true,
     ));
 
-    // Re-activate the audio session so audio focus is explicitly requested
-    // on startup. This prevents the system from silently reclaiming focus
-    // during a long playback session.
-    await session.setActive(true);
-
     await _loadPlayCounts();
     await _loadPlaylists();
 
@@ -333,7 +341,69 @@ class AudioPlayerService extends ChangeNotifier {
       }
     });
 
-    _audioPlayer.playerStateStream.listen((playerState) {
+    _bindCorePlayerListeners();
+
+    _startCacheCleanup();
+
+
+    // Restore the queue from the previous session (non-blocking).
+    unawaited(loadQueueState());
+
+    // Re-filter the library immediately whenever the user changes folder
+    // exclusions, so search and playlists update without a manual refresh.
+    FolderFilterService().addListener(_onFolderFilterChanged);
+
+    // Wire Android Auto browse-tree callbacks into the audio handler.
+    // Closures are evaluated lazily so they always reflect the current state.
+    audioHandler.attachAndroidAutoCallbacks(
+      getSongs: () => _songs,
+      getPlaylists: () => _playlists,
+      getIsShuffle: () => _isShuffle,
+      getLoopMode: () => _loopMode,
+      playSongs: (songs, index) => setPlaylist(songs, index),
+      resume: resume,
+      toggleShuffle: toggleShuffle,
+      toggleRepeat: toggleRepeat,
+    );
+
+    // Start the crossfade engine's position watcher (no-op while disabled).
+    _initCrossfadeEngine();
+  }
+
+  /// Adjusts [_queueCount] when [_currentIndex] transitions from [oldIndex]
+  /// to [newIndex]. Moving forward consumes queued songs; moving backward
+  /// does not restore them.
+  void _updateQueueCountForIndexChange(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex && _queueCount > 0) {
+      final consumed = newIndex - oldIndex;
+      _queueCount = (_queueCount - consumed).clamp(0, _queueCount);
+    }
+  }
+
+  StreamSubscription<PlayerState>? _playerStateSub;
+  StreamSubscription<Duration>? _maxPositionSub;
+  StreamSubscription<bool>? _playingSub;
+  StreamSubscription<int?>? _currentIndexSub;
+  StreamSubscription<ProcessingState>? _processingStateSub;
+
+  /// Binds the 5 core `_audioPlayer`-scoped listeners that drive playback
+  /// bookkeeping (play/pause state, listened-time tracking, gapless index
+  /// advancement, and end-of-queue handling).
+  ///
+  /// Extracted from [_init] so it can be re-run whenever the active player
+  /// instance changes — currently only done by the crossfade engine
+  /// (audio/crossfade_controller.dart) after handing off playback from an
+  /// outgoing player to a newly-swapped-in standby player in non-gapless
+  /// crossfade mode. Without re-binding, these listeners would remain
+  /// attached to the disposed outgoing player and silently stop firing.
+  void _bindCorePlayerListeners() {
+    _playerStateSub?.cancel();
+    _maxPositionSub?.cancel();
+    _playingSub?.cancel();
+    _currentIndexSub?.cancel();
+    _processingStateSub?.cancel();
+
+    _playerStateSub = _audioPlayer.playerStateStream.listen((playerState) {
       _isPlaying = playerState.playing;
       isPlayingNotifier.value = _isPlaying;
       // ValueNotifier handles most UI updates, use debounced notify for other listeners
@@ -344,7 +414,7 @@ class AudioPlayerService extends ChangeNotifier {
     // listened time can be recorded when the song is switched/stopped. Using
     // the max position keeps the outgoing song's value intact even after the
     // position stream resets to ~0 for the next track.
-    _audioPlayer.positionStream.listen((position) {
+    _maxPositionSub = _audioPlayer.positionStream.listen((position) {
       final ms = position.inMilliseconds;
       if (ms > _currentListenMaxPositionMs) {
         _currentListenMaxPositionMs = ms;
@@ -353,7 +423,7 @@ class AudioPlayerService extends ChangeNotifier {
 
     // Also listen to playingStream specifically - this is more reliable for
     // catching play/pause changes from external sources like lock screen controls
-    _audioPlayer.playingStream.listen((playing) {
+    _playingSub = _audioPlayer.playingStream.listen((playing) {
       if (_isPlaying != playing) {
         _isPlaying = playing;
         isPlayingNotifier.value = playing;
@@ -366,7 +436,7 @@ class AudioPlayerService extends ChangeNotifier {
     // IMPORTANT: Only process these events in gapless mode. In non-gapless mode,
     // we load a single song via setAudioSource, so the player's currentIndex is
     // always 0, which does NOT correspond to _currentIndex in _playlist.
-    _audioPlayer.currentIndexStream.listen((index) async {
+    _currentIndexSub = _audioPlayer.currentIndexStream.listen((index) async {
       // Drop duplicate events up-front: just_audio re-emits the current index
       // on many player state changes, which previously triggered redundant
       // logging, notification and widget churn on every emission.
@@ -412,7 +482,7 @@ class AudioPlayerService extends ChangeNotifier {
     });
 
     // Listen for when playback completes (end of playlist with no loop)
-    _audioPlayer.processingStateStream.listen((state) {
+    _processingStateSub = _audioPlayer.processingStateStream.listen((state) {
       debugPrint(
           '🎵 [PROCESSING_STATE] State changed: $state (loopMode: $_loopMode)');
       if (state == ProcessingState.completed) {
@@ -444,38 +514,6 @@ class AudioPlayerService extends ChangeNotifier {
         }
       }
     });
-
-    _startCacheCleanup();
-
-    // Restore the queue from the previous session (non-blocking).
-    unawaited(loadQueueState());
-
-    // Re-filter the library immediately whenever the user changes folder
-    // exclusions, so search and playlists update without a manual refresh.
-    FolderFilterService().addListener(_onFolderFilterChanged);
-
-    // Wire Android Auto browse-tree callbacks into the audio handler.
-    // Closures are evaluated lazily so they always reflect the current state.
-    audioHandler.attachAndroidAutoCallbacks(
-      getSongs: () => _songs,
-      getPlaylists: () => _playlists,
-      getIsShuffle: () => _isShuffle,
-      getLoopMode: () => _loopMode,
-      playSongs: (songs, index) => setPlaylist(songs, index),
-      resume: resume,
-      toggleShuffle: toggleShuffle,
-      toggleRepeat: toggleRepeat,
-    );
-  }
-
-  /// Adjusts [_queueCount] when [_currentIndex] transitions from [oldIndex]
-  /// to [newIndex]. Moving forward consumes queued songs; moving backward
-  /// does not restore them.
-  void _updateQueueCountForIndexChange(int oldIndex, int newIndex) {
-    if (newIndex > oldIndex && _queueCount > 0) {
-      final consumed = newIndex - oldIndex;
-      _queueCount = (_queueCount - consumed).clamp(0, _queueCount);
-    }
   }
 
   void _startCacheCleanup() {
@@ -626,6 +664,10 @@ class AudioPlayerService extends ChangeNotifier {
     // Best-effort: persist the final playback position before the player dies.
     // (The current-song index was already saved on every auto-advance / manual play.)
     saveQueueState();
+
+    _crossfadeWatchSub?.cancel();
+    _crossfadeRampTimer?.cancel();
+    _standbyPlayer?.dispose();
 
     _audioPlayer.dispose();
 

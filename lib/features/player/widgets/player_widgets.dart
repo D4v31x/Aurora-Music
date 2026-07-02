@@ -28,3 +28,4 @@ export 'artist_section.dart';
 export 'album_section.dart';
 export 'lyrics_section.dart';
 export 'player_menu.dart';
+export 'share_clip_sheet.dart';

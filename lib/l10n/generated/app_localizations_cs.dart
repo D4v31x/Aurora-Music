@@ -96,6 +96,125 @@ class AppLocalizationsCs extends AppLocalizations {
   String get autoTag => 'Auto tag';
 
   @override
+  String get smartPlaylists => 'Chytré playlisty';
+
+  @override
+  String get createSmartPlaylist => 'Vytvořit chytrý playlist…';
+
+  @override
+  String get editSmartPlaylist => 'Upravit chytrý playlist';
+
+  @override
+  String get smartPlaylistNameHint => 'Název playlistu';
+
+  @override
+  String get smartPlaylistRules => 'Pravidla';
+
+  @override
+  String get addRule => 'Přidat pravidlo';
+
+  @override
+  String get saveSmartPlaylist => 'Uložit';
+
+  @override
+  String get matchAll => 'Splnit VŠECHNA pravidla';
+
+  @override
+  String get matchAny => 'Splnit ALESPOŇ JEDNO pravidlo';
+
+  @override
+  String get limitResultsLabel => 'Omezit počet výsledků';
+
+  @override
+  String get noLimit => 'Bez omezení';
+
+  @override
+  String get deleteSmartPlaylistConfirm =>
+      'Smazat tento chytrý playlist? Odstraní se pouze uložená pravidla — vaše skladby zůstanou nedotčené.';
+
+  @override
+  String smartPlaylistPreviewCount(int count) {
+    return 'Aktuálně odpovídá $count skladbám';
+  }
+
+  @override
+  String get saveAsClip => 'Save as clip';
+
+  @override
+  String get generatingClip => 'Generuji klip…';
+
+  @override
+  String get clipDuration => 'Délka klipu';
+
+  @override
+  String get clipStartOffset => 'Počáteční bod';
+
+  @override
+  String get saveClip => 'Save clip';
+
+  @override
+  String get clipSavedToDevice => 'Clip saved to device';
+
+  @override
+  String get clipSaveFailed => 'Couldn\'t save the clip. Please try again.';
+
+  @override
+  String get playlistSavedToDevice => 'Playlist saved to device';
+
+  @override
+  String get trackTags => 'Track Tags';
+
+  @override
+  String get editTrackTags => 'Edit tags';
+
+  @override
+  String get addTrackTag => 'Add tag';
+
+  @override
+  String get noTrackTagsYet =>
+      'No tags yet. Add one to jump straight to a part of this track.';
+
+  @override
+  String get trackTagNameHint => 'e.g. Song title or artist';
+
+  @override
+  String get trackTagPosition => 'Position';
+
+  @override
+  String get useCurrentPosition => 'Use current position';
+
+  @override
+  String get isThisASet => 'Is this a set?';
+
+  @override
+  String get tagPartsForEasySwitching =>
+      'Tag parts of this track for easier switching between songs.';
+
+  @override
+  String get tagThisTrack => 'Tag this track';
+
+  @override
+  String get pasteSetlist => 'Paste setlist';
+
+  @override
+  String get pasteSetlistDialogTitle => 'Paste Setlist';
+
+  @override
+  String get pasteSetlistHint =>
+      'Paste timestamps here, e.g.\n0:00 Intro\n3:45 Song Name';
+
+  @override
+  String get importAction => 'Import';
+
+  @override
+  String tagsImportedMessage(int count) {
+    return 'Imported $count tags';
+  }
+
+  @override
+  String get noTagsFoundInPaste => 'No timestamps found in the pasted text.';
+
+  @override
   String get bitrate => 'Datový tok';
 
   @override
@@ -394,6 +513,9 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String get metadataDownloadFailed =>
       'Stahování selhalo. Zkontrolujte připojení a zkuste to znovu.';
+
+  @override
+  String get chooseArtworkFromDevice => 'Choose from device';
 
   @override
   String get moreResults => 'Další výsledky';
@@ -1048,6 +1170,19 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get settingsGaplessDesc => 'Bez mezer mezi skladbami';
+
+  @override
+  String get settingsCrossfade => 'Prolínání skladeb';
+
+  @override
+  String get settingsCrossfadeDesc =>
+      'Plynule prolne konec skladby se začátkem další';
+
+  @override
+  String get crossfadeDuration => 'Délka prolínání';
+
+  @override
+  String get crossfadeDurationDesc => 'Jak dlouho trvá překryv mezi skladbami';
 
   @override
   String get settingsInsights => 'Přehledy';

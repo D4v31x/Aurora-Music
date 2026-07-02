@@ -1,93 +1,129 @@
-![banner](https://github.com/user-attachments/assets/98b65d61-c230-4452-9997-cd10c93b0a22)
-
 # Aurora Music
-Aurora Music is an Android-focused Flutter music player that scans the local library, delivers rich playback controls, and adds intelligent enhancements like timed lyrics, smart recommendations, and dynamic UI theming based on album art.
 
-## Project Overview
-Aurora Music targets on-device playback with a modern, animated UI. The app integrates with Android media services for background playback and notifications, supports permissions-aware library scanning, and augments the experience with synced lyrics, metadata tools, and optional Spotify-powered artist imagery.
+A modern, beautiful local music player for Android (and iOS), built with Flutter. Aurora Music focuses on a polished Material You experience, buttery-smooth performance across low-to-high end devices, synced lyrics, and a rich set of "smart" listening features — all while playing music straight from your device's local library.
 
-## Core Features (from code)
-- Local library scanning and playback (MediaStore via `on_audio_query`)
-- Background playback with media notification controls (`audio_service` + `just_audio`)
-- Mini player + full Now Playing view with shuffle/repeat, gapless playback, playback speed, and sleep timer
-- Synced lyrics fetching and caching (LRCLIB API) with full-screen lyrics view and sync offset controls
-- Smart suggestions based on listening history (time-of-day and day-of-week patterns)
-- Search across songs, albums, artists with fuzzy scoring
-- Playlists, liked songs, and auto playlists (Most Played, Recently Added, Recently Played)
-- Metadata editor (tag reading/writing) with auto-tag suggestions (Deezer/iTunes search)
-- Artwork caching, blurred backgrounds, and dynamic color theming (Material You + palette extraction)
-- Home screen layout customization (reorder/visibility of sections)
-- Bluetooth output detection and status monitoring
-- Batch download tool for lyrics and artwork with progress notifications
-- Localization support via generated `AppLocalizations`
-- Optional analytics/error tracking (`clarity_flutter` and custom error logging)
+**Current version:** 1.4.5+27
 
-## Supported Android Versions
-From [android/app/build.gradle](android/app/build.gradle):
-- minSdk: 29 (Android 10)
-- targetSdk: 35 (Android 15)
-- compileSdk: 36
+---
 
-## Tech Stack & Key Dependencies
-- Flutter + Dart (SDK >= 3.3.3)
-- `just_audio` / `audio_service` / `audio_session`: playback engine, background audio, audio focus
-- `on_audio_query`: local media library access (songs, albums, artists)
-- `permission_handler`: runtime permission handling (media, notifications, Bluetooth, storage)
-- `provider`: app-wide state management
-- `shared_preferences`: settings and user preferences
-- `dynamic_color` + `palette_generator`: dynamic theming and artwork-based palettes
-- `http`: network calls for lyrics and metadata providers
-- `flutter_dotenv`: `.env` support (Spotify API credentials)
-- `spotify`: Spotify Web API (artist imagery)
-- `audiotags`: read/write audio metadata tags
-- `lottie`: animated splash screen
-- `share_plus` / `url_launcher`: sharing and external links
-- `device_info_plus` / `package_info_plus`: device and app version info
+## What it does
 
-## Architecture & Folder Structure
-The app follows a Provider + Services architecture with UI split into screens and reusable widgets.
+Aurora Music scans and indexes the audio files already on your phone (via `on_audio_query`) and gives you a fast, gesture-friendly way to browse, organize, and play them — with a fully custom now-playing experience, background playback, lock-screen/notification controls, synced lyrics, an equalizer, playlists, and detailed listening statistics.
 
-- [lib/main.dart](lib/main.dart): app bootstrap, providers, theme/localization setup
-- [lib/services](lib/services): business logic (audio, lyrics, caching, suggestions, metadata, bluetooth)
-- [lib/providers](lib/providers): global state (theme, performance mode)
-- [lib/screens](lib/screens): high-level UI flows (home, onboarding, player, library, settings)
-- [lib/widgets](lib/widgets): reusable UI components (player, cards, dialogs, tabs)
-- [lib/models](lib/models): data models (playlists, timed lyrics, utilities)
-- [lib/localization](lib/localization) + [lib/l10n](lib/l10n): i18n setup
-- [lib/constants](lib/constants): configuration and style constants
-- [assets](assets): fonts, UI images, and animations
+---
 
-## Setup & Build
-### Prerequisites
-- Flutter SDK (Dart >= 3.3.3)
-- Android SDK with build tools 35.0.0
+## Core Features
 
-### Environment Variables (Optional)
-Spotify artist imagery is enabled only if `.env` contains:
-- `SPOTIFY_CLIENT_ID`
-- `SPOTIFY_CLIENT_SECRET`
+### Playback
+- Local audio playback powered by `just_audio` + `audio_service` (background playback, lock screen & notification controls, media-button/Bluetooth support).
+- Gapless queue management: play, pause, skip, shuffle, repeat (off/one/all), and queue reordering.
+- Sleep timer with configurable duration and fade-out.
+- Custom equalizer with presets and manual band control.
+- ReplayGain-aware volume normalization (reads embedded ReplayGain tags).
+- Bluetooth-aware playback handling (auto pause/resume on device connect/disconnect).
+- Cross-fade / smooth track transitions and fire-and-forget playback calls tuned to avoid audio-interrupt glitches.
 
-### Debug Build
-1. Install dependencies: `flutter pub get`
-2. Run on device/emulator: `flutter run`
+### Now Playing
+- Custom "Now Playing" screen with animated, palette-driven backgrounds generated from the current track's artwork (via `palette_generator`).
+- Expanding mini-player that morphs into the full now-playing screen with Hero animations.
+- Fullscreen artwork view and a fullscreen lyrics view.
+- Music visualizer screen.
+- Synced (time-stamped) lyrics with an in-app lyrics editor, plus lyrics translation support.
 
-### Release Build
-1. `flutter pub get`
-2. `flutter build apk --release`
+### Library
+- Browse by Tracks, Albums, Artists, and Folders, with dedicated detail screens for each.
+- Artist aggregation/separation tools to clean up multi-artist tag strings (e.g. "Artist A feat. Artist B").
+- Folder filtering to include/exclude specific directories from your library.
+- Metadata viewer/editor for track details (title, artist, album, duration, bitrate, etc.).
+- Cached artwork with an LRU artwork cache service for fast scrolling.
 
-Note: [android/app/build.gradle](android/app/build.gradle) currently uses debug signing for release and includes a TODO to add a proper signing configuration.
+### Playlists
+- Create, edit, and manage custom playlists.
+- Import/export playlists via M3U file support.
+- "Liked songs" as a first-class favorites list.
 
-## Permissions & Why They’re Used
-From [android/app/src/main/AndroidManifest.xml](android/app/src/main/AndroidManifest.xml):
-- `INTERNET` / `ACCESS_NETWORK_STATE`: lyrics, metadata lookups, Spotify artist images, version checks
-- `READ_MEDIA_AUDIO` / `READ_EXTERNAL_STORAGE` (maxSdk 32): read local audio library (Android 13+ / 12-)
-- `WRITE_EXTERNAL_STORAGE` (maxSdk 29): legacy metadata writes on Android 9 and below (via direct file copy)
-- Metadata editing on Android 10+ uses the MediaStore `ContentResolver` via a platform channel — no `MANAGE_EXTERNAL_STORAGE` required
-- `POST_NOTIFICATIONS`: playback and download status notifications
-- `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_MEDIA_PLAYBACK`: background audio playback
-- `WAKE_LOCK`: keep playback active when the screen is off
-- `BLUETOOTH`, `BLUETOOTH_ADMIN`, `BLUETOOTH_CONNECT`, `BLUETOOTH_SCAN`: detect Bluetooth output devices
+### Search
+- Fast in-app search across tracks, albums, artists, and playlists.
 
-## License
-Aurora Music is licensed under GNU GPLv3. See [LICENSE](LICENSE).
+### Smart Suggestions & Listening Insights
+- Play-count tracking and "most played" / "recently played" / "recently added" smart lists.
+- Listening Insights screen: all-time stats — top tracks, artists, genres, skip counts, listening-time-by-hour/weekday, most active listening periods, total listening time.
+- Listening Recap screen: a periodic (7/30-day) wrapped-style summary of recent listening activity.
+- Smart suggestions engine that learns from play/skip behavior.
+
+### Personalization & Theming
+- Material You / dynamic color support (`dynamic_color`), following the system wallpaper palette on supported devices.
+- Custom light/dark theme system with a dedicated `ThemeProvider`.
+- Adaptive performance mode: automatically detects device tier (low/medium/high) and scales down animations/effects (e.g. disables heavy blur/mesh gradients) on weaker hardware to keep the UI smooth.
+- Animated mesh-gradient backgrounds and glassmorphic UI elements.
+- Customizable home screen layout (choose which sections/cards appear).
+- Home-screen widget support (`home_widget`) for quick access from the Android launcher.
+
+### Onboarding & Settings
+- First-run onboarding flow (permissions, initial preferences, language selection).
+- Extensive settings: appearance, playback, equalizer, home layout, folder filters, artist separator rules, insights, storage/cache management, and about/app-info screens.
+- Storage settings with cache management and batch download utilities.
+
+### Internationalization
+- Fully localized UI (English and Czech shipped; community-translatable via Crowdin, with a simple ARB-file-based system for adding new languages).
+
+### Reliability & Diagnostics
+- Crash reporting and performance monitoring via Sentry and Firebase Crashlytics/Analytics/Performance.
+- In-app update checks (`in_app_update`, `upgrader`) and version/changelog awareness.
+- User feedback flow (email-based feedback + periodic feedback reminders) and a donation/support entry point.
+- Centralized logging and error-tracking services.
+
+---
+
+## Tech Stack
+
+- **Framework:** Flutter (Dart SDK ^3.3.3)
+- **State management:** Provider (`ChangeNotifier`, `Selector`, `ValueNotifier`) for high-frequency state like playback position/song changes.
+- **Audio:** `just_audio`, `audio_service`, `audio_session`, `audiotags` (tag reading), custom ReplayGain reader.
+- **Media library access:** `on_audio_query`, `sqflite_android`.
+- **Visuals:** `palette_generator` (artwork-driven color palettes), `mesh` (animated gradients), `lottie` (splash animation), `flutter_staggered_animations`, `mini_music_visualizer`, `dynamic_color`.
+- **Platform integration:** `home_widget`, `device_info_plus`, `connectivity_plus`, `permission_handler`, `share_plus`, `url_launcher`, `file_picker`.
+- **Diagnostics/telemetry:** `sentry_flutter`, `firebase_core`/`crashlytics`/`analytics`/`performance`.
+- **Updates:** `in_app_update`, `upgrader`, `package_info_plus`, `version`/`pub_semver`.
+- **Persistence:** `shared_preferences`, `path_provider`.
+
+---
+
+## Project Structure
+
+```
+lib/
+  core/               # Constants, theming primitives
+  features/
+    home/              # Home screen, listening insights & recap
+    library/            # Tracks, albums, artists, folders
+    onboarding/          # First-run setup flow
+    player/              # Now Playing, lyrics, visualizer, fullscreen artwork
+    playlists/           # Playlist management
+    search/              # In-app search
+    settings/             # All settings & preferences screens
+    splash/               # Splash screen
+  l10n/               # Localization (ARB files + generated AppLocalizations)
+  shared/
+    mixins/            # Shared widget mixins (e.g. artwork/dominant color)
+    models/            # Data models
+    providers/          # ThemeProvider, PerformanceModeProvider
+    services/           # Audio engine, caching, metadata, insights, etc.
+    utils/             # Helpers
+    widgets/            # Shared UI (mini/expanding player, glassmorphic UI, etc.)
+```
+
+---
+
+## Platforms
+
+- **Android** — primary target (Material You dynamic color, home-screen widget, Spotify App Remote AAR present in `android/spotify-app-remote`).
+- **iOS** — supported via Flutter's iOS target (`ios/Runner`), with a custom `AudioSessionHandler.swift` for audio session management.
+
+## Building & Running
+
+```bash
+flutter pub get
+flutter run --release
+```
 

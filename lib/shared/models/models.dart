@@ -11,3 +11,5 @@ export 'playlist_model.dart';
 export 'separated_artist.dart';
 export 'timed_lyrics.dart';
 export 'artist_utils.dart';
+export 'smart_playlist_model.dart';
+export 'track_tag_model.dart';

@@ -16,6 +16,8 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
       _defaultSortOrder = json['defaultSortOrder'] ?? 'title';
       _cacheSize = json['cacheSize'] ?? 100;
       _mediaControls = json['mediaControls'] ?? true;
+      _crossfadeEnabled = json['crossfadeEnabled'] ?? false;
+      _crossfadeDurationMs = json['crossfadeDurationMs'] ?? 6000;
 
       // Apply settings to audio player
       await _applySettings();
@@ -34,6 +36,8 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
       'defaultSortOrder': _defaultSortOrder,
       'cacheSize': _cacheSize,
       'mediaControls': _mediaControls,
+      'crossfadeEnabled': _crossfadeEnabled,
+      'crossfadeDurationMs': _crossfadeDurationMs,
     };
 
     await file.writeAsString(jsonEncode(json));
@@ -81,6 +85,25 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
   // Settings update methods
   Future<void> setGaplessPlayback(bool value) async {
     _gaplessPlayback = value;
+    await _saveSettings();
+    _scheduleNotify();
+  }
+
+  /// Enables or disables true timed crossfade between tracks. Cancels any
+  /// in-progress crossfade ramp immediately when disabled.
+  Future<void> setCrossfadeEnabled(bool value) async {
+    _crossfadeEnabled = value;
+    if (!value) {
+      await cancelCrossfadeIfActive();
+    }
+    await _saveSettings();
+    _scheduleNotify();
+  }
+
+  /// Sets the crossfade duration in milliseconds, clamped to a sensible
+  /// 1-12 second range.
+  Future<void> setCrossfadeDurationMs(int value) async {
+    _crossfadeDurationMs = value.clamp(1000, 12000);
     await _saveSettings();
     _scheduleNotify();
   }

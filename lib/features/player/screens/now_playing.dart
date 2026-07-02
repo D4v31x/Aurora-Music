@@ -27,6 +27,7 @@ import '../../../shared/widgets/common/scrolling_text.dart';
 import '../../../shared/widgets/music_metadata_widget.dart';
 import '../../library/screens/artist_detail_screen.dart';
 import '../widgets/player_widgets.dart';
+import '../widgets/track_tags_section.dart';
 import 'fullscreen_artwork.dart';
 import 'music_visualizer_screen.dart';
 import 'fullscreen_lyrics.dart';
@@ -219,11 +220,23 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         }
       },
       child: AppBackground(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          extendBodyBehindAppBar: true,
-          appBar: _buildAppBar(audioPlayerService),
-          body: _buildBody(audioPlayerService),
+        child: Stack(
+          children: [
+            Scaffold(
+              backgroundColor: Colors.transparent,
+              extendBodyBehindAppBar: true,
+              appBar: _buildAppBar(audioPlayerService),
+              body: _buildBody(audioPlayerService),
+            ),
+            // Sleep timer indicator floats in the toolbar area without
+            // affecting AppBar layout or shifting any other widgets.
+            Positioned(
+              top: MediaQuery.of(context).padding.top +
+                  (kToolbarHeight - 32) / 2,
+              right: 56.0, // just left of the single 48px 3-dot button
+              child: const SleepTimerIndicator(),
+            ),
+          ],
         ),
       ),
     );
@@ -246,12 +259,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         onPressed: _handleClose,
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.graphic_eq_rounded, color: Colors.white),
-          onPressed: _openVisualizer,
-          tooltip: 'Visualiser',
-        ),
-        const SleepTimerIndicator(),
         PlayerMoreOptionsMenu(
           onSelected: (value) =>
               _handleMenuSelection(value, audioPlayerService),
@@ -284,6 +291,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   void _handleMenuSelection(
       String value, AudioPlayerService audioPlayerService) {
     switch (value) {
+      case 'visualizer':
+        _openVisualizer();
+        break;
       case 'sleep_timer':
         showSleepTimerOptions(context);
         break;
@@ -298,6 +308,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         break;
       case 'share':
         shareSong(audioPlayerService);
+        break;
+      case 'share_clip':
+        _shareClip(audioPlayerService);
         break;
       case 'queue':
         showQueueDialog(context, audioPlayerService);
@@ -319,6 +332,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           },
         ),
       ),
+    );
+  }
+
+  void _shareClip(AudioPlayerService audioPlayerService) {
+    final song = audioPlayerService.currentSong;
+    if (song == null) {
+      NotificationManager.showMessage(
+        context,
+        AppLocalizations.of(context).noSongPlaying,
+      );
+      return;
+    }
+    showShareClipSheet(
+      context,
+      song: song,
+      initialPosition: audioPlayerService.audioPlayer.position,
     );
   }
 
@@ -389,6 +418,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     ),
                   ],
                 ),
+              ),
+              TrackTagsSection(
+                audioPlayerService: audioPlayerService,
+                isTablet: isTablet,
               ),
               _buildLyricsSection(audioPlayerService, isTablet),
               SizedBox(height: isTablet ? 40 : 30),

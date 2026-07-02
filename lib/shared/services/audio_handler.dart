@@ -8,7 +8,15 @@ import 'audio_constants.dart';
 /// Custom audio handler that provides background playback with customized notification
 /// Shows only: previous, play/pause, next (NO stop button)
 class AuroraAudioHandler extends BaseAudioHandler with SeekHandler {
-  final AudioPlayer player;
+  /// The actively-broadcast player. Normally fixed for the app's lifetime,
+  /// but reassigned by [switchActivePlayer] when the crossfade engine hands
+  /// media-session ownership from an outgoing track's player to the
+  /// incoming track's player.
+  AudioPlayer player;
+
+  StreamSubscription<PlaybackEvent>? _playbackEventSub;
+  StreamSubscription<bool>? _playingSub;
+  StreamSubscription<int?>? _currentIndexSub;
 
   /// Guard to prevent intermediate currentIndexStream events from
   /// overriding the correct mediaItem during setAudioSource calls.
@@ -31,22 +39,30 @@ class AuroraAudioHandler extends BaseAudioHandler with SeekHandler {
   void Function()? _aaToggleRepeat;
 
   AuroraAudioHandler(this.player) {
-    // Broadcast playback state changes.
-    // playbackEventStream covers processingState, position, and buffered
-    // position changes; playingStream covers play/pause toggles.
-    // processingStateStream is intentionally omitted — it is a strict subset
-    // of playbackEventStream and subscribing to all three caused _broadcastState
-    // to fire 2-3× per state change, flooding the system notification pipeline.
-    player.playbackEventStream.listen((_) {
+    _bindPlayerStreams();
+  }
+
+  /// Broadcast playback state changes.
+  /// playbackEventStream covers processingState, position, and buffered
+  /// position changes; playingStream covers play/pause toggles.
+  /// processingStateStream is intentionally omitted — it is a strict subset
+  /// of playbackEventStream and subscribing to all three caused _broadcastState
+  /// to fire 2-3× per state change, flooding the system notification pipeline.
+  void _bindPlayerStreams() {
+    _playbackEventSub?.cancel();
+    _playingSub?.cancel();
+    _currentIndexSub?.cancel();
+
+    _playbackEventSub = player.playbackEventStream.listen((_) {
       _broadcastState();
     });
 
-    player.playingStream.listen((_) {
+    _playingSub = player.playingStream.listen((_) {
       _broadcastState();
     });
 
     // Broadcast current media item changes based on index
-    player.currentIndexStream.listen((index) {
+    _currentIndexSub = player.currentIndexStream.listen((index) {
       if (_suppressIndexUpdates) return;
       if (index != null &&
           queue.value.isNotEmpty &&
@@ -54,6 +70,20 @@ class AuroraAudioHandler extends BaseAudioHandler with SeekHandler {
         mediaItem.add(queue.value[index]);
       }
     });
+  }
+
+  /// Swaps the actively-broadcast player. Used by the crossfade engine once a
+  /// crossfade transition completes: the standby player (already playing the
+  /// next track at full volume) becomes the new "active" player for the media
+  /// session, notification and lock-screen controls, while the old primary
+  /// (now silent) is disposed by the caller.
+  ///
+  /// All stream subscriptions are re-bound to the new player and the current
+  /// state is re-broadcast immediately so the notification stays in sync.
+  void switchActivePlayer(AudioPlayer newPlayer) {
+    player = newPlayer;
+    _bindPlayerStreams();
+    _broadcastState();
   }
 
   /// Suppress automatic mediaItem updates from currentIndexStream.

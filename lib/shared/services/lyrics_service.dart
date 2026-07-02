@@ -8,8 +8,28 @@ import 'dart:math' show min, max;
 import 'package:flutter/foundation.dart';
 
 class TimedLyricsService {
+  /// Singleton: every `TimedLyricsService()` call site (now_playing.dart,
+  /// fullscreen_lyrics.dart, lyrics_editor_screen.dart,
+  /// batch_download_service.dart, etc.) shares ONE instance, so the
+  /// in-memory lyrics cache and HTTP keep-alive connection below are
+  /// actually reused across screens/song changes instead of being
+  /// recreated (and thus empty) on every call — this is what makes
+  /// repeat lyric loads for the same song instant.
+  static final TimedLyricsService _instance = TimedLyricsService._internal();
+  factory TimedLyricsService() => _instance;
+  TimedLyricsService._internal();
+
   static const String apiBaseUrl = 'https://lrclib.net/api';
-  static const Duration _apiTimeout = Duration(seconds: 5);
+  static const Duration _apiTimeout = Duration(seconds: 6);
+  static const Duration _apiTimeoutRetry = Duration(seconds: 10);
+
+  /// Shared keep-alive HTTP client so repeated requests to lrclib.net reuse
+  /// the same TCP/TLS connection instead of paying a fresh handshake for
+  /// every request (the `http.get` top-level helper opens/closes a new
+  /// `Client` per call). Also reused by fullscreen_lyrics.dart's manual
+  /// search via [httpClient].
+  static final http.Client _client = http.Client();
+  static http.Client get httpClient => _client;
 
   void Function(String)? _onLog;
 
@@ -47,6 +67,45 @@ class TimedLyricsService {
       _memoryCache.remove(oldestKey);
     }
     _memoryCache[key] = lyrics;
+  }
+
+  /// GETs [url] with a timeout, then retries once with a longer timeout if
+  /// the first attempt times out (surfaced as a synthetic HTTP 408).
+  /// lrclib.net is a free public API that occasionally responds slowly
+  /// under load, so a single retry with more patience avoids unnecessary
+  /// "no lyrics found" failures without blocking the UI forever.
+  ///
+  /// [timeout] overrides the default first-attempt timeout (used to give
+  /// the best-effort `/get-cached` call a shorter leash). [retryOnTimeout]
+  /// can be set to false to skip the second, longer-timeout attempt
+  /// entirely — used for the best-effort call so it can never end up
+  /// taking longer overall than the reliable `/search` call it runs
+  /// alongside.
+  Future<http.Response> _getWithRetry(
+    Uri url, {
+    Duration? timeout,
+    bool retryOnTimeout = true,
+  }) async {
+    const headers = {
+      'Accept': 'application/json',
+      'User-Agent': 'AuroraMusic v0.0.85',
+    };
+    final firstTimeout = timeout ?? _apiTimeout;
+    try {
+      final response = await _client
+          .get(url, headers: headers)
+          .timeout(firstTimeout, onTimeout: () => http.Response('', 408));
+      if (response.statusCode != 408 || !retryOnTimeout) return response;
+
+      _log(
+          '  ⏳ $url timed out after ${firstTimeout.inSeconds}s — retrying with a ${_apiTimeoutRetry.inSeconds}s timeout...');
+      return await _client
+          .get(url, headers: headers)
+          .timeout(_apiTimeoutRetry, onTimeout: () => http.Response('', 408));
+    } catch (e) {
+      _log('  ✗ Request to $url failed: $e');
+      return http.Response('', 408);
+    }
   }
 
   Future<List<TimedLyric>?> fetchTimedLyrics(
@@ -101,10 +160,23 @@ class TimedLyricsService {
       _log('Search Artist: "$searchArtist"');
       _log('Search Title: "$searchTitle"');
 
-      final directUrl = Uri.parse('$apiBaseUrl/get').replace(queryParameters: {
+      // NOTE: the plain `/get` endpoint is intentionally NOT used here.
+      // Per LRCLIB's docs, `/get` "will attempt to access external sources
+      // in case the lyrics are not found in the internal database"
+      // whenever there's no exact cached match, which means its response
+      // time "will vary significantly" — this is what caused auto search
+      // to time out while manual search (which only calls `/search`)
+      // succeeded. `/get-cached` uses the exact same signature match but
+      // ONLY looks at the internal database, so it's fast and predictable
+      // like `/search`.
+      final directQueryParams = {
         'artist_name': searchArtist,
         'track_name': searchTitle,
-      });
+        if (songDuration != null)
+          'duration': songDuration.inSeconds.toString(),
+      };
+      final directUrl = Uri.parse('$apiBaseUrl/get-cached')
+          .replace(queryParameters: directQueryParams);
 
       final searchUrl =
           Uri.parse('$apiBaseUrl/search').replace(queryParameters: {
@@ -115,22 +187,16 @@ class TimedLyricsService {
       _log('Direct URL: $directUrl');
       _log('Search URL: $searchUrl');
 
-      // Run both API calls in parallel for faster results
+      // Run both API calls in parallel. `/search` is the reliable endpoint
+      // (same one the manual search flow uses) so it gets the full retry
+      // treatment. `/get-cached` (exact match) is supplementary/best-effort
+      // only — it's given a single, shorter-timeout attempt with NO retry
+      // so a slow or stuck request can never hold up (or double the wait
+      // for) the overall fetch when `/search` would have succeeded anyway.
       final results = await Future.wait([
-        http.get(
-          directUrl,
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'AuroraMusic v0.0.85'
-          },
-        ).timeout(_apiTimeout, onTimeout: () => http.Response('', 408)),
-        http.get(
-          searchUrl,
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'AuroraMusic v0.0.85'
-          },
-        ).timeout(_apiTimeout, onTimeout: () => http.Response('', 408)),
+        _getWithRetry(directUrl,
+            retryOnTimeout: false, timeout: const Duration(seconds: 4)),
+        _getWithRetry(searchUrl),
       ]);
 
       final directResponse = results[0];

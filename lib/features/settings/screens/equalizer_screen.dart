@@ -244,7 +244,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                     Text(
                       AppLocalizations.of(context).eqNotAvailable,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.grey,
                         fontFamily: FontConstants.fontFamily,
                         fontSize: 15,
@@ -255,7 +255,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                       onPressed: () => svc.openSystemEqualizer(),
                       child: Text(
                         AppLocalizations.of(context).eqOpenSystem,
-                        style: TextStyle(fontFamily: FontConstants.fontFamily),
+                        style: const TextStyle(fontFamily: FontConstants.fontFamily),
                       ),
                     ),
                   ],
@@ -358,8 +358,8 @@ class _InteractiveCurveState extends State<_InteractiveCurve> {
 
   double _freqToX(double hz, double w) {
     final bands = widget.params.bands;
-    final usableLeft = _kLeftPad + _kBandInset;
-    final usableRight = _kRightPad + _kBandInset;
+    const usableLeft = _kLeftPad + _kBandInset;
+    const usableRight = _kRightPad + _kBandInset;
     if (bands.length < 2) return (w - usableLeft - usableRight) / 2 + usableLeft;
     final minHz = bands.first.centerFrequency.toDouble();
     final maxHz = bands.last.centerFrequency.toDouble();
@@ -374,7 +374,7 @@ class _InteractiveCurveState extends State<_InteractiveCurve> {
     final maxDb = widget.params.maxDecibels.toDouble();
     final range = maxDb - minDb;
     if (range == 0) return _kH / 2;
-    final drawH = _kH - _kTopPad - _kBotPad;
+    const drawH = _kH - _kTopPad - _kBotPad;
     return _kTopPad + drawH * (1.0 - (db - minDb) / range);
   }
 
@@ -383,7 +383,7 @@ class _InteractiveCurveState extends State<_InteractiveCurve> {
     final maxDb = widget.params.maxDecibels.toDouble();
     final range = maxDb - minDb;
     if (range == 0) return 0;
-    final drawH = _kH - _kTopPad - _kBotPad;
+    const drawH = _kH - _kTopPad - _kBotPad;
     final t = 1.0 - ((y - _kTopPad) / drawH);
     return (minDb + t * range).clamp(minDb, maxDb);
   }
@@ -752,7 +752,7 @@ class _BandValueRow extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: isDark
               ? Colors.white.withValues(alpha: 0.04)
@@ -1024,8 +1024,6 @@ class _PresetChip extends StatelessWidget {
         padding: EdgeInsets.only(
           left: 14,
           right: isCustom ? 4 : 14,
-          top: 0,
-          bottom: 0,
         ),
         decoration: BoxDecoration(
           color: selected

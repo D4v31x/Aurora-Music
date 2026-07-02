@@ -29,6 +29,8 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'firebase_options.dart';
 import 'shared/services/equalizer_service.dart';
+import 'shared/services/smart_playlist_service.dart';
+import 'shared/services/track_tag_service.dart';
 
 /// Global navigator key for the ROOT navigator.
 ///
@@ -154,6 +156,10 @@ void main() async {
               create: (_) => SleepTimerController(), lazy: true),
           ChangeNotifierProvider.value(value: ArtistSeparatorService()),
           ChangeNotifierProvider.value(value: HomeLayoutService()),
+          ChangeNotifierProvider(
+              create: (_) => SmartPlaylistService()..load(), lazy: false),
+          ChangeNotifierProvider(
+              create: (_) => TrackTagService()..load(), lazy: false),
           Provider<ErrorTrackingService>.value(value: errorTracker),
         ],
         child: Builder(
@@ -169,9 +175,17 @@ void main() async {
             // Set the background manager in the audio player service
             audioPlayerService.setBackgroundManager(backgroundManager);
 
+            // Give the crossfade engine a way to build an equalizer-equipped
+            // pipeline for the standby player used during non-gapless
+            // crossfade hand-offs (gapless crossfades never swap players, so
+            // they always keep the original equalizer pipeline untouched).
+            audioPlayerService.attachCrossfadePipelineFactory(
+              () => AudioPipeline(androidAudioEffects: [AndroidEqualizer()]),
+            );
+
             // Initialize performance provider and equalizer eagerly
             WidgetsBinding.instance.addPostFrameCallback((_) async {
-              performanceProvider.initialize();
+              unawaited(performanceProvider.initialize());
               final equalizerService =
                   Provider.of<EqualizerService>(context, listen: false);
               if (!equalizerService.initialized) {
@@ -210,15 +224,12 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late ui.Locale _locale;
-  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
-  late final FirebaseAnalyticsObserver _analyticsObserver;
   StreamSubscription<bool>? _notificationClickSub;
 
   @override
   void initState() {
     super.initState();
     _locale = ui.Locale(widget.languageCode);
-    _analyticsObserver = FirebaseAnalyticsObserver(analytics: _analytics);
     WidgetsBinding.instance.addObserver(this);
 
     // Listen for notification clicks to expand the player
@@ -344,7 +355,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             // while normal pages — hosted by the inner navigator — render below
             // it. This separation is what keeps the mini player layered
             // correctly without fighting the navigator's overlay ordering.
-            home: _AppShell(observers: [_analyticsObserver]),
+            home: _AppShell(observers: [FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance)]),
           ),
         );
       },
@@ -389,7 +400,7 @@ class _AppShellState extends State<_AppShell> {
           child: NavigatorPopHandler(
             // System back: when the root navigator has nothing to pop (no
             // dialog/sheet open), forward the gesture to the inner navigator.
-            onPop: () => pageNavigatorKey.currentState?.maybePop(),
+            onPopWithResult: (_) => pageNavigatorKey.currentState?.maybePop(),
             child: HeroControllerScope(
               controller: _heroController,
               child: Navigator(

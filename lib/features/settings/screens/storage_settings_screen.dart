@@ -169,7 +169,7 @@ class _StorageSettingsScreenState extends State<StorageSettingsScreen> {
                 _infoRow('Total', _fmt(lyricsSize + artworkSize), bold: true),
                 const SizedBox(height: 16),
                 Text(l10n.settingsMemoryCache,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontFamily: FontConstants.fontFamily,
                         color: Colors.white,
                         fontWeight: FontWeight.w600)),

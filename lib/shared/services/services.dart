@@ -48,6 +48,7 @@ export 'play_count_service.dart';
 export 'playlist_persistence_service.dart';
 export 'shader_warmup_service.dart';
 export 'sleep_timer_controller.dart';
+export 'smart_playlist_service.dart';
 export 'smart_suggestions_service.dart';
 export 'translation_reminder_service.dart';
 export 'user_preferences.dart';

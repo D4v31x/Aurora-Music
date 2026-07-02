@@ -96,6 +96,125 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoTag => 'Auto Tag';
 
   @override
+  String get smartPlaylists => 'Smart Playlists';
+
+  @override
+  String get createSmartPlaylist => 'Create smart playlist…';
+
+  @override
+  String get editSmartPlaylist => 'Edit Smart Playlist';
+
+  @override
+  String get smartPlaylistNameHint => 'Playlist name';
+
+  @override
+  String get smartPlaylistRules => 'Rules';
+
+  @override
+  String get addRule => 'Add rule';
+
+  @override
+  String get saveSmartPlaylist => 'Save';
+
+  @override
+  String get matchAll => 'Match ALL rules';
+
+  @override
+  String get matchAny => 'Match ANY rule';
+
+  @override
+  String get limitResultsLabel => 'Limit results';
+
+  @override
+  String get noLimit => 'No limit';
+
+  @override
+  String get deleteSmartPlaylistConfirm =>
+      'Delete this smart playlist? This only removes the saved rules — your songs are not affected.';
+
+  @override
+  String smartPlaylistPreviewCount(int count) {
+    return 'Matches $count songs right now';
+  }
+
+  @override
+  String get saveAsClip => 'Save as clip';
+
+  @override
+  String get generatingClip => 'Generating clip…';
+
+  @override
+  String get clipDuration => 'Clip duration';
+
+  @override
+  String get clipStartOffset => 'Start point';
+
+  @override
+  String get saveClip => 'Save clip';
+
+  @override
+  String get clipSavedToDevice => 'Clip saved to device';
+
+  @override
+  String get clipSaveFailed => 'Couldn\'t save the clip. Please try again.';
+
+  @override
+  String get playlistSavedToDevice => 'Playlist saved to device';
+
+  @override
+  String get trackTags => 'Track Tags';
+
+  @override
+  String get editTrackTags => 'Edit tags';
+
+  @override
+  String get addTrackTag => 'Add tag';
+
+  @override
+  String get noTrackTagsYet =>
+      'No tags yet. Add one to jump straight to a part of this track.';
+
+  @override
+  String get trackTagNameHint => 'e.g. Song title or artist';
+
+  @override
+  String get trackTagPosition => 'Position';
+
+  @override
+  String get useCurrentPosition => 'Use current position';
+
+  @override
+  String get isThisASet => 'Is this a set?';
+
+  @override
+  String get tagPartsForEasySwitching =>
+      'Tag parts of this track for easier switching between songs.';
+
+  @override
+  String get tagThisTrack => 'Tag this track';
+
+  @override
+  String get pasteSetlist => 'Paste setlist';
+
+  @override
+  String get pasteSetlistDialogTitle => 'Paste Setlist';
+
+  @override
+  String get pasteSetlistHint =>
+      'Paste timestamps here, e.g.\n0:00 Intro\n3:45 Song Name';
+
+  @override
+  String get importAction => 'Import';
+
+  @override
+  String tagsImportedMessage(int count) {
+    return 'Imported $count tags';
+  }
+
+  @override
+  String get noTagsFoundInPaste => 'No timestamps found in the pasted text.';
+
+  @override
   String get bitrate => 'Bitrate';
 
   @override
@@ -394,6 +513,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get metadataDownloadFailed =>
       'Download failed. Check your connection and try again.';
+
+  @override
+  String get chooseArtworkFromDevice => 'Choose from device';
 
   @override
   String get moreResults => 'More Results';
@@ -1045,6 +1167,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsGaplessDesc => 'Seamless track transitions';
+
+  @override
+  String get settingsCrossfade => 'Crossfade';
+
+  @override
+  String get settingsCrossfadeDesc =>
+      'Smoothly blend the end of one track into the next';
+
+  @override
+  String get crossfadeDuration => 'Crossfade Duration';
+
+  @override
+  String get crossfadeDurationDesc =>
+      'How long the overlap between tracks lasts';
 
   @override
   String get settingsInsights => 'Insights';

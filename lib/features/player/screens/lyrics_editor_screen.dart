@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/font_constants.dart';
@@ -216,17 +218,106 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
     );
   }
 
-  void _parsePastedText(String text) {
-    final lines = text
+  /// Splits raw text into clean lyric lines, stripping any existing LRC
+  /// timestamp tags (e.g. when the user pastes/imports an LRC file as if it
+  /// were plain text).
+  List<String> _extractPlainLines(String text) {
+    return text
         .split('\n')
         .map((l) => l.trim())
-        // Strip existing LRC timestamp tags if the user pasted an LRC file
         .map((l) => l.replaceAll(RegExp(r'^\[[\d:\.]+\]\s*'), ''))
         .where((l) => l.isNotEmpty)
         .toList();
+  }
 
+  void _parsePastedText(String text) {
+    final lines = _extractPlainLines(text);
     if (lines.isEmpty) return;
     _applyLines(lines);
+  }
+
+  // ──────────────────────────────── file import ────────────────────────────
+
+  Future<void> _importLrcFile() async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final result = await FilePicker.pickFiles();
+      final path = result?.files.single.path;
+      if (path == null) return;
+      if (!path.toLowerCase().endsWith('.lrc')) {
+        messenger.showSnackBar(
+            const SnackBar(content: Text('Please select a .lrc file')));
+        return;
+      }
+
+      final content = await File(path).readAsString();
+      final service = TimedLyricsService();
+      final timedLyrics = service.parseLrcContent(content);
+      if (!mounted) return;
+
+      if (timedLyrics.isNotEmpty) {
+        // The file already has timestamps — save it directly, no manual
+        // stamping needed.
+        final audioService =
+            Provider.of<AudioPlayerService>(context, listen: false);
+        final song = audioService.currentSong;
+        if (song == null) return;
+        final artistRaw = song.artist ?? '';
+        final artist =
+            artistRaw.trim().isEmpty ? 'Unknown' : artistRaw.trim();
+        final title =
+            song.title.trim().isEmpty ? 'Unknown' : song.title.trim();
+
+        await service.saveLyricsToCache(artist, title, content);
+
+        if (!mounted) return;
+        widget.onSaved();
+        Navigator.pop(context);
+        return;
+      }
+
+      // No timestamps in the file — just show the plain lyrics: spread
+      // the lines evenly across the song's duration and save immediately,
+      // no manual stamping required.
+      final lines = _extractPlainLines(content);
+      if (lines.isEmpty) {
+        messenger.showSnackBar(
+            const SnackBar(content: Text('No lyrics found in that file')));
+        return;
+      }
+
+      final audioService =
+          Provider.of<AudioPlayerService>(context, listen: false);
+      final song = audioService.currentSong;
+      if (song == null) return;
+
+      final songDurationMs = song.duration ?? 0;
+      final stepMs = songDurationMs > 0
+          ? songDurationMs ~/ (lines.length + 1)
+          : 3000;
+
+      final buffer = StringBuffer();
+      for (var i = 0; i < lines.length; i++) {
+        final t = Duration(milliseconds: stepMs * (i + 1));
+        final m = t.inMinutes.remainder(60).toString().padLeft(2, '0');
+        final s = t.inSeconds.remainder(60).toString().padLeft(2, '0');
+        final cs =
+            (t.inMilliseconds.remainder(1000) ~/ 10).toString().padLeft(2, '0');
+        buffer.writeln('[$m:$s.$cs]${lines[i]}');
+      }
+
+      final artistRaw = song.artist ?? '';
+      final artist = artistRaw.trim().isEmpty ? 'Unknown' : artistRaw.trim();
+      final title = song.title.trim().isEmpty ? 'Unknown' : song.title.trim();
+
+      await service.saveLyricsToCache(artist, title, buffer.toString());
+
+      if (!mounted) return;
+      widget.onSaved();
+      Navigator.pop(context);
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Import failed: $e')));
+    }
   }
 
   // ──────────────────────────────── saving ─────────────────────────────────
@@ -345,6 +436,12 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
                   ),
               ],
             ),
+          ),
+          IconButton(
+            tooltip: 'Import .lrc file',
+            icon: const Icon(Icons.file_open_outlined,
+                color: Colors.white60, size: 20),
+            onPressed: _importLrcFile,
           ),
           TextButton(
             onPressed: _showPasteDialog,
@@ -535,6 +632,18 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
                   color: Colors.white60, size: 20),
               label: const Text(
                 'Paste lyrics to get started',
+                style: TextStyle(
+                  fontFamily: FontConstants.fontFamily,
+                  color: Colors.white60,
+                ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: _importLrcFile,
+              icon: const Icon(Icons.file_open_outlined,
+                  color: Colors.white60, size: 20),
+              label: const Text(
+                'Import .lrc file',
                 style: TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white60,

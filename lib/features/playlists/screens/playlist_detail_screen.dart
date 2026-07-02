@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
@@ -6,7 +7,7 @@ import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/providers/performance_mode_provider.dart';
 import '../../../shared/services/audio_player_service.dart';
@@ -91,7 +92,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     AudioPlayerService audioService,
   ) {
     setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
       final moved = _displayedSongs.removeAt(oldIndex);
       _displayedSongs.insert(newIndex, moved);
       playlist.songs
@@ -465,9 +465,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     _refreshSongs();
                     unawaited(_loadArtwork());
                   },
-                  child: GlassmorphicContainer(
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-                    child: const iconoir.PlusCircle(
+                  child: const GlassmorphicContainer(
+                    padding: EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+                    child: iconoir.PlusCircle(
                       color: Colors.white,
                       width: 22,
                       height: 22,
@@ -496,7 +496,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     if (_reorderMode) {
       return SliverReorderableList(
         itemCount: _displayedSongs.length,
-        onReorder: (oldIndex, newIndex) =>
+        onReorderItem: (oldIndex, newIndex) =>
             _onReorder(oldIndex, newIndex, playlist, audioService),
         proxyDecorator: (child, index, animation) => Material(
           color: Colors.transparent,
@@ -1033,14 +1033,25 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       BuildContext context, Playlist playlist,
       {String extension = 'm3u8'}) async {
     final messenger = ScaffoldMessenger.of(context);
+    final localizations = AppLocalizations.of(context);
     final audioService = context.read<AudioPlayerService>();
     try {
       final path = await audioService.exportPlaylistToTempFile(playlist,
           extension: extension);
-      await Share.shareXFiles(
-        [XFile(path, mimeType: 'audio/x-mpegurl')],
-        subject: playlist.name,
+      final safeName =
+          playlist.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_').trim();
+      final savedPath = await FilePicker.saveFile(
+        fileName: '${safeName.isEmpty ? 'playlist' : safeName}.$extension',
+        bytes: await File(path).readAsBytes(),
       );
+      try {
+        final tempFile = File(path);
+        if (tempFile.existsSync()) unawaited(tempFile.delete());
+      } catch (_) {}
+      if (savedPath != null && context.mounted) {
+        messenger.showSnackBar(
+            SnackBar(content: Text(localizations.playlistSavedToDevice)));
+      }
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Export failed: $e')));
     }
@@ -1141,7 +1152,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   isDark,
                   () {
                     Navigator.pop(context);
-                    _exportPlaylist(context, playlist, extension: 'm3u8');
+                    _exportPlaylist(context, playlist);
                   },
                 ),
                 // Export / Share as .m3u

@@ -152,9 +152,6 @@ class HomeLayoutService extends ChangeNotifier {
 
   /// Reorder sections
   void reorderSections(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
     final section = _sectionOrder.removeAt(oldIndex);
     _sectionOrder.insert(newIndex, section);
     _save();

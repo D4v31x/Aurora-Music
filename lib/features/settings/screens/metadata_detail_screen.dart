@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:flutter/services.dart';
 import 'package:audiotags/audiotags.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +12,7 @@ import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/metadata_service.dart';
 import '../../../shared/services/artwork_cache_service.dart';
+import '../../../shared/services/audio/audio_properties_reader.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -52,6 +54,10 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   // OnAudioQuery instance for MediaStore operations
   final OnAudioQuery _audioQuery = OnAudioQuery();
 
+  // Real sample rate loaded asynchronously from the file binary header.
+  // null = still loading, '—' = could not determine.
+  String? _sampleRate;
+
   // Inline auto-tag search state
   final TextEditingController _autoTagSearchController = TextEditingController();
   List<Map<String, dynamic>>? _autoTagResults;
@@ -66,6 +72,16 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     _initControllers();
     _loadTags();
     _loadCachedArtwork();
+    _loadSampleRate();
+  }
+
+  Future<void> _loadSampleRate() async {
+    final hz = await AudioPropertiesReader.readSampleRate(widget.song.data);
+    if (mounted) {
+      setState(() {
+        _sampleRate = AudioPropertiesReader.format(hz);
+      });
+    }
   }
 
   Future<void> _loadCachedArtwork() async {
@@ -238,20 +254,6 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
     return '${date.day}.${date.month}.${date.year}';
   }
 
-  String _getEstimatedSampleRate() {
-    final format = _getFileFormat();
-    final bitrate = _estimateBitrateValue();
-
-    if (format == 'FLAC' || format == 'WAV' || format == 'ALAC') {
-      if (bitrate > 1400) return '96 kHz';
-      if (bitrate > 1000) return '48 kHz';
-      return '44.1 kHz';
-    }
-    if (bitrate >= 256) return '44.1 kHz';
-    if (bitrate >= 128) return '44.1 kHz';
-    return '22 kHz';
-  }
-
   IconData _getQualityIcon(AppLocalizations loc) {
     final label = _getQualityLabel(loc);
     if (label == loc.lossless) return Icons.diamond_outlined;
@@ -385,6 +387,29 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
       }
     } finally {
       if (mounted) setState(() => _applyingIndex = null);
+    }
+  }
+
+  /// Lets the user pick an image from device storage to use as the song's
+  /// cover art. The chosen image is held as [_pendingCoverArt] and only
+  /// written to the file when metadata changes are saved.
+  Future<void> _pickArtworkFromStorage() async {
+    try {
+      final picked = await FilePicker.pickFile(type: FileType.image);
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
+      setState(() {
+        _pendingCoverArt = bytes;
+        _hasChanges = true;
+      });
+    } catch (_) {
+      if (mounted) {
+        NotificationManager.showMessage(
+          context,
+          AppLocalizations.of(context).error,
+        );
+      }
     }
   }
 
@@ -817,41 +842,69 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
             children: [
               // Artwork
               Center(
-                child: Container(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: _pendingCoverArt != null
-                        ? Image.memory(
-                            _pendingCoverArt!,
-                            fit: BoxFit.cover,
-                            gaplessPlayback: true,
-                          )
-                        : _cachedArtwork != null
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: _pendingCoverArt != null
                             ? Image.memory(
-                                _cachedArtwork!,
+                                _pendingCoverArt!,
                                 fit: BoxFit.cover,
-                                width: 200,
-                                height: 200,
                                 gaplessPlayback: true,
                               )
-                            : Container(
-                                color: Colors.grey[800],
-                                child: const Icon(Icons.music_note,
-                                    size: 80, color: Colors.white54),
+                            : _cachedArtwork != null
+                                ? Image.memory(
+                                    _cachedArtwork!,
+                                    fit: BoxFit.cover,
+                                    width: 200,
+                                    height: 200,
+                                    gaplessPlayback: true,
+                                  )
+                                : Container(
+                                    color: Colors.grey[800],
+                                    child: const Icon(Icons.music_note,
+                                        size: 80, color: Colors.white54),
+                                  ),
+                      ),
+                    ),
+                    if (_isEditing)
+                      Positioned(
+                        right: -8,
+                        bottom: -8,
+                        child: Material(
+                          color: Colors.green,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: _pickArtworkFromStorage,
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Icon(
+                                Icons.photo_library_outlined,
+                                size: 20,
+                                color: Colors.white,
+                                semanticLabel:
+                                    loc.chooseArtworkFromDevice,
                               ),
-                  ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
@@ -875,7 +928,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                   _buildInfoRow(loc.bitrate,
                       '${_estimateBitrateValue()} kbps'),
                   _buildInfoRow(
-                      loc.sampleRate, _getEstimatedSampleRate()),
+                      loc.sampleRate, _sampleRate ?? '…'),
                   _buildInfoRow(loc.duration, _formatDuration()),
                 ],
                 description: loc.audioQualityDesc,
@@ -1414,7 +1467,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                                   // result's metadata/artwork is downloading.
                                   if (isApplying)
                                     Positioned.fill(
-                                      child: Container(
+                                      child: ColoredBox(
                                         color:
                                             Colors.black.withValues(alpha: 0.55),
                                         child: const Center(

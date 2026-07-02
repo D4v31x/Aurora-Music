@@ -447,7 +447,7 @@ class _LyricsSectionState extends State<LyricsSection>
                     opacity: anim,
                     child: SizeTransition(
                       sizeFactor: anim,
-                      axisAlignment: -1,
+                      alignment: const Alignment(-1.0, -1.0),
                       child: child,
                     ),
                   ),

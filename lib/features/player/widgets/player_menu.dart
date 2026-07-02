@@ -104,6 +104,14 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
       ),
       onSelected: onSelected,
       itemBuilder: (BuildContext context) => [
+        // Visualizer
+        PopupMenuItem<String>(
+          value: 'visualizer',
+          child: _MenuItemRow(
+            icon: const Icon(Icons.graphic_eq_rounded, color: Colors.white),
+            label: AppLocalizations.of(context).onboardingVisualizerAccess,
+          ),
+        ),
         // Sleep Timer (with dynamic icon)
         const PopupMenuItem<String>(
           value: 'sleep_timer',
@@ -139,6 +147,14 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
           child: _MenuItemRow(
             icon: const iconoir.ShareAndroid(color: Colors.white),
             label: l10n.share,
+          ),
+        ),
+        // Share as clip
+        PopupMenuItem<String>(
+          value: 'share_clip',
+          child: _MenuItemRow(
+            icon: const iconoir.MediaVideo(color: Colors.white),
+            label: l10n.saveAsClip,
           ),
         ),
         // Queue

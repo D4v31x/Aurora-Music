@@ -252,7 +252,7 @@ class AppearanceSettingsScreen extends StatelessWidget {
             // ── LANGUAGE ─────────────────────────────────────────────────
             SettingsTiles.buildSectionHeader(context, l10n.settingsLanguage),
             SettingsTiles.buildGlassmorphicCard(context, children: [
-              _LanguageTile(isFirst: true),
+              const _LanguageTile(isFirst: true),
             ]),
 
             const SizedBox(height: 32),
@@ -341,7 +341,7 @@ void _showColorPickerDialog(
   showDialog(
     context: context,
     builder: (dialogContext) {
-      final presets = AppThemePreset.presets;
+      const presets = AppThemePreset.presets;
       return AlertDialog(
         backgroundColor: Colors.grey[900]?.withValues(alpha: 0.95),
         shape: RoundedRectangleBorder(
