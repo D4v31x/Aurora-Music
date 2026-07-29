@@ -380,8 +380,8 @@ class _SmartPlaylistEditorScreenState
             ),
 
             const SizedBox(height: 24),
-            const Text('Sort by',
-                style: TextStyle(
+            Text(AppLocalizations.of(context).sortBy,
+                style: const TextStyle(
                     color: Colors.white70,
                     fontWeight: FontWeight.w600,
                     fontSize: 13)),

@@ -50,20 +50,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get allSongs => 'Všechny skladby';
 
   @override
-  String get alphaDescription =>
-      'Děkujeme za testování Aurora Music před jejím veřejným vydáním. Vaše odezva nám pomůže aplikaci dělat stále lepší.';
-
-  @override
-  String get alphaTitle => 'Exkluzivní Alpha přístup';
-
-  @override
-  String get appExit => 'Ukončit Aurora Music';
-
-  @override
   String get appName => 'Aurora Music';
-
-  @override
-  String get appUpToDate => 'Aplikace je aktuální!';
 
   @override
   String get artist => 'Umělec';
@@ -138,7 +125,7 @@ class AppLocalizationsCs extends AppLocalizations {
   }
 
   @override
-  String get saveAsClip => 'Save as clip';
+  String get saveAsClip => 'Uložit jako klip';
 
   @override
   String get generatingClip => 'Generuji klip…';
@@ -150,69 +137,68 @@ class AppLocalizationsCs extends AppLocalizations {
   String get clipStartOffset => 'Počáteční bod';
 
   @override
-  String get saveClip => 'Save clip';
+  String get saveClip => 'Uložit klip';
 
   @override
-  String get clipSavedToDevice => 'Clip saved to device';
+  String get clipSavedToDevice => 'Klip byl uložen';
 
   @override
-  String get clipSaveFailed => 'Couldn\'t save the clip. Please try again.';
+  String get clipSaveFailed => 'Klip se nepodařilo uložit. Zkuste to znovu.';
 
   @override
-  String get playlistSavedToDevice => 'Playlist saved to device';
+  String get playlistSavedToDevice => 'Playlist byl uložen';
 
   @override
-  String get trackTags => 'Track Tags';
+  String get trackTags => 'Časové značky';
 
   @override
-  String get editTrackTags => 'Edit tags';
+  String get editTrackTags => 'Upravit časové značky';
 
   @override
-  String get addTrackTag => 'Add tag';
+  String get addTrackTag => 'Přidat značku';
 
   @override
   String get noTrackTagsYet =>
-      'No tags yet. Add one to jump straight to a part of this track.';
+      'Žádné značky. Přidejte nějakou pro skok na tuto část skladby.';
 
   @override
-  String get trackTagNameHint => 'e.g. Song title or artist';
+  String get trackTagNameHint => 'např. název skladby nebo umělce';
 
   @override
-  String get trackTagPosition => 'Position';
+  String get trackTagPosition => 'Pozice';
 
   @override
-  String get useCurrentPosition => 'Use current position';
+  String get useCurrentPosition => 'Použít aktuální pozici';
 
   @override
-  String get isThisASet => 'Is this a set?';
+  String get isThisASet => 'Přidat časové značky do skladby';
 
   @override
   String get tagPartsForEasySwitching =>
-      'Tag parts of this track for easier switching between songs.';
+      'Označte jakoukoli událost - kapitoly, významné části, nebo cokoli jiného.';
 
   @override
-  String get tagThisTrack => 'Tag this track';
+  String get tagThisTrack => 'Přidat značku';
 
   @override
-  String get pasteSetlist => 'Paste setlist';
+  String get pasteSetlist => 'Importovat značky';
 
   @override
-  String get pasteSetlistDialogTitle => 'Paste Setlist';
+  String get pasteSetlistDialogTitle => 'Importovat';
 
   @override
-  String get pasteSetlistHint =>
-      'Paste timestamps here, e.g.\n0:00 Intro\n3:45 Song Name';
+  String get pasteSetlistHint => 'Zde vložte časové značky, např. 0:00 Intro';
 
   @override
   String get importAction => 'Import';
 
   @override
   String tagsImportedMessage(int count) {
-    return 'Imported $count tags';
+    return 'Importováno $count značek';
   }
 
   @override
-  String get noTagsFoundInPaste => 'No timestamps found in the pasted text.';
+  String get noTagsFoundInPaste => 'Nebyly nalezeny žádné značky';
 
   @override
   String get bitrate => 'Datový tok';
@@ -224,23 +210,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get cancel => 'Zavřít';
 
   @override
-  String get checkForUpdates => 'Vyhledat aktualizace';
-
-  @override
-  String get checkingForUpdates => 'Hledám aktualizace';
-
-  @override
   String get coffeeSupport => 'Podpořte kávou';
-
-  @override
-  String get comingSoon => 'Již brzy';
-
-  @override
-  String get communityDescription =>
-      'Chete vědět co se děje v zákulisí? Sledujte nás na Instagramu pro exkluzivní obsah a aktualizace.';
-
-  @override
-  String get communityTitle => 'Připojte se k naší komunitě';
 
   @override
   String get composer => 'Skladatel';
@@ -253,9 +223,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get copy => 'Kopírovat';
-
-  @override
-  String get coverArtUpdated => 'Obal alba aktualizován';
 
   @override
   String get create => 'Vytvořit';
@@ -296,9 +263,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get details => 'Detaily';
 
   @override
-  String get directDonation => 'Přímý dar';
-
-  @override
   String get discard => 'Zahodit';
 
   @override
@@ -306,9 +270,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get duration => 'Délka';
-
-  @override
-  String get editPlaylist => 'Upravit playlist';
 
   @override
   String get enableArtistSeparation => 'Povolit oddělování umělců';
@@ -323,9 +284,6 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String get enjoyingAuroraDesc =>
       'Pokud rádi používáte Aurora Music, zvažte podporu jejího vývoje. Vaše podpora pomáhá udržet aplikaci zdarma!';
-
-  @override
-  String get enterPlaylistName => 'Zadejte název playlistu';
 
   @override
   String get error => 'Chyba';
@@ -349,9 +307,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get exitAppConfirm => 'Chcete aplikaci ukončit?';
 
   @override
-  String get exitDesc => 'Jste si jisti, že chcete ukončit Aurora Music?';
-
-  @override
   String get expandLyrics => 'Rozbalit texty';
 
   @override
@@ -373,23 +328,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get filePath => 'Cesta k souboru';
 
   @override
-  String get finalizing => 'Dokončování';
-
-  @override
-  String get finishDescription =>
-      'Máte nastaveno! Přejeme příjemný poslech plný zážitků!';
-
-  @override
-  String get finishTitle => 'Vše je připraveno!';
-
-  @override
   String get folder => 'Složka';
 
   @override
   String get folders => 'Složky';
-
-  @override
-  String get followInstagram => 'Sledujte nás na Instagramu';
 
   @override
   String get fontSize => 'Velikost písma';
@@ -438,9 +380,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get language => 'Jazyk';
 
   @override
-  String get languageTitle => 'Vyberte si jazyk';
-
-  @override
   String get large => 'Velké';
 
   @override
@@ -459,13 +398,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get libraryUpdated => 'Knihovna aktualizována';
 
   @override
-  String get lightMode => 'Světlý režim';
-
-  @override
   String get loading => 'Načítání';
-
-  @override
-  String get loadingImages => 'Načítání obrázků';
 
   @override
   String get loadingLibrary => 'Načítání knihovny';
@@ -498,13 +431,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get metadata => 'Metadata';
 
   @override
-  String get metadataEditInfo =>
-      'Úprava metadat vyžaduje aplikaci třetí strany. Změny jsou zobrazeny pouze jako náhled.';
-
-  @override
-  String get metadataInfoTitle => 'Upravit metadata';
-
-  @override
   String get metadataSaved => 'Metadata úspěšně uložena';
 
   @override
@@ -515,10 +441,7 @@ class AppLocalizationsCs extends AppLocalizations {
       'Stahování selhalo. Zkontrolujte připojení a zkuste to znovu.';
 
   @override
-  String get chooseArtworkFromDevice => 'Choose from device';
-
-  @override
-  String get moreResults => 'Další výsledky';
+  String get chooseArtworkFromDevice => 'Vybrat z úložiště';
 
   @override
   String get mostPlayed => 'Nejhranější';
@@ -564,9 +487,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get noPlaylists => 'Žádné playlisty';
 
   @override
-  String get noPlaylistsCreated => 'Žádné playlisty';
-
-  @override
   String get noResults => 'Žádné výsledky';
 
   @override
@@ -582,23 +502,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get noSongsInPlaylist => 'V playlistu nejsou žádné skladby';
 
   @override
-  String get noUpdateFound => 'Nebyla nalezena žádná aktualizace';
-
-  @override
-  String get noUpper => 'Ne';
-
-  @override
   String get nowPlaying => 'Právě hraje';
 
   @override
-  String get ofMusic => 'hudby';
-
-  @override
   String get onboardingAlbumArt => 'Krásné obaly alb';
-
-  @override
-  String get onboardingAlbumArtDesc =>
-      'Automaticky stahuje a zobrazuje obaly alb';
 
   @override
   String get onboardingAlbumArtwork => 'Obaly alb';
@@ -654,15 +561,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get onboardingContinue => 'Pokračovat';
 
   @override
-  String get onboardingDarkMode => 'Tmavý režim';
-
-  @override
-  String get onboardingDarkModeDesc => 'Šetrné pro oči při slabém osvětlení';
-
-  @override
-  String get alwaysOn => 'Vždy zapnuto';
-
-  @override
   String get onboardingDynamicColors => 'Dynamické barvy';
 
   @override
@@ -677,19 +575,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get onboardingInternetTitle => 'Využití internetu';
-
-  @override
-  String get onboardingLightMode => 'Světlý režim';
-
-  @override
-  String get onboardingLightModeDesc => 'Jasné a čisté rozhraní';
-
-  @override
-  String get onboardingLocalLibrary => 'Lokální hudební knihovna';
-
-  @override
-  String get onboardingLocalLibraryDesc =>
-      'Přehrávejte hudební soubory uložené na vašem zařízení';
 
   @override
   String get onboardingLocalMusic => 'Hudba na vašem zařízení';
@@ -761,12 +646,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get onboardingSelectLanguage => 'Vyberte si svůj preferovaný jazyk';
 
   @override
-  String get onboardingSetupExperience => 'Pojďme nastavit váš zážitek';
-
-  @override
-  String get onboardingSkip => 'Přeskočit';
-
-  @override
   String get onboardingSmartPlaylists => 'Chytré playlisty';
 
   @override
@@ -791,20 +670,10 @@ class AppLocalizationsCs extends AppLocalizations {
       'Umožňuje vizualizéru číst audio session vašeho zařízení pro zobrazení vizualizéru. Mikrofon není nikdy použit pro nahrávání ani ukládání zvuku.';
 
   @override
-  String get onboardingSyncBackup => 'Synchronizace a záloha';
-
-  @override
-  String get onboardingSyncBackupDesc =>
-      'Volitelná cloudová synchronizace playlistů a nastavení';
-
-  @override
   String get onboardingThemeSubtitle => 'Vyberte si téma, které vám vyhovuje';
 
   @override
   String get onboardingThemeTitle => 'Upravte si vzhled';
-
-  @override
-  String get onboardingWelcome => 'Vítejte v Aurora Music';
 
   @override
   String get beta_welcome_title => 'Program Beta Testování';
@@ -835,9 +704,6 @@ class AppLocalizationsCs extends AppLocalizations {
       'Nové funkce a opravy jsou vydávány pravidelně během dalšího vývoje.';
 
   @override
-  String get beta_build_label => 'Beta Verze';
-
-  @override
   String get oneTimeSupport => 'Rychlá jednorázová podpora';
 
   @override
@@ -848,13 +714,7 @@ class AppLocalizationsCs extends AppLocalizations {
       'Použijte správce souborů pro navigaci na toto umístění';
 
   @override
-  String get openSettings => 'Otevřít nastavení';
-
-  @override
   String get ownTimer => 'Vlastní nastavení';
-
-  @override
-  String get paypal => 'PayPal';
 
   @override
   String get permDeny => 'Oprávnění odepřeno';
@@ -869,13 +729,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get permissionRequired => 'Vyžadováno oprávnění';
-
-  @override
-  String get permissionsDescription =>
-      'Abychom vám mohli poskytnout co nejlepší zážitek, Aurora Music potřebuje přístup k určitým funkcím vašeho zařízení.';
-
-  @override
-  String get permissionsTitle => 'Teď ty důležité věci';
 
   @override
   String get playAll => 'Přehrát vše';
@@ -896,25 +749,12 @@ class AppLocalizationsCs extends AppLocalizations {
   String get possibleReasons => 'Možné důvody:';
 
   @override
-  String get preparingToScan => 'Příprava hledání';
-
-  @override
-  String get privacyDescription =>
-      'V Aurora Music bereme vaše soukromí vážně. Sbíráme anonymní data pro zlepšení vašeho zážitku a vylepšení našich služeb. Používáním aplikace souhlasíte se Zásadami soukromí.';
-
-  @override
   String get privacyNotice =>
       'Používáním této aplikace souhlasíte s našimi Zásadami ochrany osobních údajů.';
 
   @override
   String get privacyPolicyLink =>
       'Přečtěte si naše Zásady ochrany osobních údajů';
-
-  @override
-  String get privacyTitle => 'Vaše soukromí je důležité';
-
-  @override
-  String get pullToRefresh => 'Táhněte pro obnovení';
 
   @override
   String get quality => 'Kvalita';
@@ -927,9 +767,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get queueEmpty => 'Fronta je prázdná';
-
-  @override
-  String get quickAccess => 'Rychlý přístup';
 
   @override
   String get reasonFormat => 'Formát souboru nepodporuje úpravu metadat';
@@ -948,25 +785,16 @@ class AppLocalizationsCs extends AppLocalizations {
   String get recentlyPlayed => 'Nedávno přehrávané';
 
   @override
-  String get recentlyPlayedAlbums => 'Naposledy hrané alba';
-
-  @override
   String get recentlyPlayedArtists => 'Naposledy hraní umělci';
 
   @override
   String get recentlyPlayedSongs => 'Naposledy hrané písně';
 
   @override
-  String get recommendedApps => 'Doporučené aplikace:';
-
-  @override
   String get refreshing => 'Obnovuji...';
 
   @override
   String get refreshLyrics => 'Obnovit text';
-
-  @override
-  String get releaseToRefresh => 'Pusťte pro obnovení';
 
   @override
   String get remove => 'Odebrat';
@@ -976,9 +804,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get removeSongConfirmation => 'Odebrat tuto skladbu z playlistu?';
-
-  @override
-  String get removeSongs => 'Odebrat skladby';
 
   @override
   String get rename => 'Přejmenovat';
@@ -1025,9 +850,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get saveFailedDesc => 'Nelze uložit metadata do tohoto souboru.';
-
-  @override
-  String get savingMetadata => 'Ukládám metadata...';
 
   @override
   String get scanFailed => 'Skenování selhalo';
@@ -1078,9 +900,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get separators => 'Oddělovače';
 
   @override
-  String get separatorsDesc => 'Znaky použité k rozdělení jmen umělců';
-
-  @override
   String get set => 'Nastavit';
 
   @override
@@ -1100,9 +919,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get settingsAccentColor => 'Barva zvýraznění';
-
-  @override
-  String get settingsAccentColorDesc => 'Zvolte barvu zvýraznění aplikace';
 
   @override
   String get settingsAppearance => 'Vzhled';
@@ -1146,18 +962,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get settingsClearCacheTitle => 'Vymazat mezipaměť?';
-
-  @override
-  String get settingsDarkMode => 'Tmavý režim';
-
-  @override
-  String get settingsDarkModeDesc => 'Přepnout na tmavé téma';
-
-  @override
-  String get settingsDisabled => 'Vypnuto';
-
-  @override
-  String get settingsEnabled => 'Zapnuto';
 
   @override
   String get settingsDataWindow => 'Časové okno dat';
@@ -1380,12 +1184,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get done => 'Hotovo';
 
   @override
-  String get testArtistString => 'Testovací řetězec umělců';
-
-  @override
-  String get testSeparation => 'Test rozdělení';
-
-  @override
   String get thankYouSupport => 'Děkuji za vaši podporu!';
 
   @override
@@ -1417,9 +1215,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get tracks => 'Skladby';
 
   @override
-  String get tryAgain => 'Zkusit znovu';
-
-  @override
   String get unknown => 'Neznámý';
 
   @override
@@ -1429,19 +1224,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get updateAvailable => 'Dostupná aktualizace';
 
   @override
-  String get updateFailed => 'Aktualizace knihovny se nezdařila';
-
-  @override
   String get updateMessage => 'Nová verze k dispozici';
 
   @override
   String get updateNow => 'Aktualizovat';
-
-  @override
-  String get userSettings => 'Uživatelské nastavení';
-
-  @override
-  String get versionCheckError => 'Aktualizace nebyly zkontrolovány';
 
   @override
   String get viewArtist => 'Zobrazit umělce';
@@ -1453,17 +1239,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get welcomeBack => 'Vítejte zpět';
 
   @override
-  String get welcomeDescription =>
-      'Vydejte se na cestu vaší hudby. Poslouchejte, jako nikdy předtím. Pozvedněte zážitek z hudby na novou úroveň.';
-
-  @override
-  String get welcomeTitle => 'Vítejte v Aurora Music';
-
-  @override
-  String get whatsNew => 'Co je nového (v angličtině)';
-
-  @override
-  String get whats_new => 'Co je nového';
+  String get whatsNew => 'Co je nového';
 
   @override
   String get view_changelog => 'Zobrazit seznam změn a nové funkce';
@@ -1473,9 +1249,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get yes => 'Ano';
-
-  @override
-  String get yesUpper => 'Ano';
 
   @override
   String get yourLibrary => 'Vaše knihovna';
@@ -1527,20 +1300,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get feedback_title => 'Líbí se vám Aurora Music?';
 
   @override
-  String get feedback_description =>
-      'Vaše zpětná vazba pomáhá vylepšit Aurora Music! Našli jste chybu nebo máte nápad? Rádi si vás vyslechneme.';
-
-  @override
-  String get report_bug => 'Nahlásit chybu';
-
-  @override
-  String get suggest_feature => 'Navrhnout funkci';
-
-  @override
   String get maybe_later => 'Možná později';
-
-  @override
-  String get dont_ask_again => 'Znovu se neptat';
 
   @override
   String get send_feedback => 'Odeslat zpětnou vazbu';
@@ -1585,9 +1345,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get restartNow => 'Restartovat nyní';
-
-  @override
-  String get upNext => 'Následující';
 
   @override
   String get clearUpcoming => 'Vymazat nadcházející';
@@ -1751,28 +1508,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get backgroundDarknessDesc => 'Průhlednost překrytí na obalu';
 
   @override
-  String get feedbackHeaderTitle => 'Už je to chvíli co používáš Aurora Music';
-
-  @override
-  String get feedbackHeaderSubtitle =>
-      'Jsi přesně ten, pro koho jsem tohle vytvořil. Podělíš se o rychlou myšlenku? Opravdu to pomáhá.';
-
-  @override
-  String get feedbackLove => 'Líbí se mi';
-
-  @override
-  String get feedbackMissing => 'Něco chybí';
-
-  @override
-  String get feedbackBroken => 'Něco nefunguje';
-
-  @override
-  String get feedbackHint => 'Něco konkrétního? (volitelné)';
-
-  @override
-  String get feedbackSend => 'Odeslat';
-
-  @override
   String get microphoneAccessNeeded => 'Je potřeba přístup k mikrofonu';
 
   @override
@@ -1853,9 +1588,6 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get recapYourSoundLabel => 'TVŮJ ZVUK';
-
-  @override
-  String get recapTopGenresTitle => 'Oblíbené žánry';
 
   @override
   String get recapYouListenMost => 'POSLOUCHÁŠ NEJVÍCE';
@@ -1978,19 +1710,168 @@ class AppLocalizationsCs extends AppLocalizations {
       'Nastavte zvuk a pak klepněte na \"Uložit aktuální\".';
 
   @override
-  String get whatsNewTitle => 'Co je nového';
+  String get lyricsHint =>
+      'Zde vložte nesynchronizovaný text…\n\nKaždý verš na samostatný řádek.';
 
   @override
-  String whatsNewIn(String version) {
-    return 'Co je nového ve verzi $version';
+  String get lyricsSelectLrcFile => 'Vyberte prosím soubor .lrc';
+
+  @override
+  String get lyricsNoLyricsInFile => 'V tomto souboru nebyl nalezen žádný text';
+
+  @override
+  String importFailed(String error) {
+    return 'Import selhal: $error';
   }
 
   @override
-  String get whatsNewContinue => 'Rozumím!';
+  String get lyricsImportTooltip => 'Importovat soubor .lrc';
 
   @override
-  String get whatsNewNext => 'Další';
+  String get importPlaylistM3u => 'Importovat playlist (.m3u)';
 
   @override
-  String get whatsNewPrev => 'Zpět';
+  String get setSyncFolder => 'Nastavit složku pro synchronizaci…';
+
+  @override
+  String get syncNow => 'Synchronizovat nyní';
+
+  @override
+  String get searchPlaylists => 'Hledat playlisty…';
+
+  @override
+  String get pleaseSelectM3uFile => 'Vyberte prosím soubor .m3u nebo .m3u8';
+
+  @override
+  String get noMatchingSongsForPlaylist =>
+      'Pro tento playlist nebyly nalezeny žádné odpovídající skladby';
+
+  @override
+  String importedPlaylist(String name, int count) {
+    return 'Importováno „$name“ ($count skladeb)';
+  }
+
+  @override
+  String playlistsSyncWith(String folder) {
+    return 'Playlisty se budou synchronizovat s: $folder';
+  }
+
+  @override
+  String couldNotSetSyncFolder(String error) {
+    return 'Nepodařilo se nastavit složku pro synchronizaci: $error';
+  }
+
+  @override
+  String get setSyncFolderFirst => 'Nejprve nastavte složku pro synchronizaci';
+
+  @override
+  String get playlistsSynced => 'Playlisty synchronizovány';
+
+  @override
+  String get alreadyUpToDate => 'Vše je aktuální';
+
+  @override
+  String syncFailed(String error) {
+    return 'Synchronizace selhala: $error';
+  }
+
+  @override
+  String exportFailed(String error) {
+    return 'Export selhal: $error';
+  }
+
+  @override
+  String get searchFolders => 'Hledat složky…';
+
+  @override
+  String get songInfoPath => 'Cesta';
+
+  @override
+  String get closeVisualiser => 'Zavřít vizualizér';
+
+  @override
+  String get previousMode => 'Předchozí režim';
+
+  @override
+  String get nextMode => 'Další režim';
+
+  @override
+  String get sortBy => 'Řadit podle';
+
+  @override
+  String get colorTheme => 'Barevné téma';
+
+  @override
+  String get insightsTotalPlays => 'Celkem\npřehrání';
+
+  @override
+  String get insightsTracksHeard => 'Slyšené\nskladby';
+
+  @override
+  String get insightsEstListening => 'Odh.\nposl.';
+
+  @override
+  String get dismiss => 'Zavřít';
+
+  @override
+  String updateVersionAvailable(String version) {
+    return 'Verze $version je nyní k dispozici.';
+  }
+
+  @override
+  String get updateNewVersionAvailable => 'Je dostupná nová verze.';
+
+  @override
+  String get lyricsPasteLyricsTitle => 'Vložit texty';
+
+  @override
+  String get lyricsUseLyrics => 'Použít texty';
+
+  @override
+  String get lyricsPaste => 'Vložit';
+
+  @override
+  String get lyricsNoLyricsYet => 'Zatím žádné texty';
+
+  @override
+  String get lyricsPasteToGetStarted => 'Vložte texty pro začátek';
+
+  @override
+  String get lyricsNoTimestampsYet =>
+      'Zatím žádná časová razítka — klepněte na tlačítko razítka při přehrávání.';
+
+  @override
+  String get lyricsAllLinesStampedHint =>
+      'Všechny řádky označeny — klepněte na Uložit.';
+
+  @override
+  String get lyricsAllStamped => '✓  Všechny řádky označeny';
+
+  @override
+  String get lyricsPasteFirst => 'Nejdříve vložte texty';
+
+  @override
+  String lyricsTapToStamp(int current, int total) {
+    return '⏱  OZNAČIT ŘÁDEK $current / $total';
+  }
+
+  @override
+  String get lyricsNextLabel => 'Další';
+
+  @override
+  String get translationDisclaimerNote =>
+      'Some translations are AI-generated or community-contributed and may contain errors. Help us improve them on Crowdin.';
+
+  @override
+  String get newLanguagesAvailableTitle => 'New Languages Available';
+
+  @override
+  String get newLanguagesAvailableBody =>
+      'Aurora Music now supports German, Spanish, Hindi, and Russian. You can change your language in Settings.';
+
+  @override
+  String get newLanguagesGoToSettings => 'Change Language';
+
+  @override
+  String get newLanguagesDismiss => 'Got it';
 }

@@ -1,0 +1,176 @@
+import 'dart:async';
+import 'dart:ui';
+
+import 'package:aurora_music_v01/core/constants/font_constants.dart';
+import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
+import 'package:provider/provider.dart';
+
+import '../../l10n/generated/app_localizations.dart';
+import '../providers/performance_mode_provider.dart';
+import '../services/new_languages_service.dart';
+
+/// Dialog shown once after new languages are added to Aurora Music.
+/// It notifies the user and offers a shortcut to the language settings.
+class NewLanguagesDialog extends StatelessWidget {
+  final VoidCallback? onGoToSettings;
+
+  const NewLanguagesDialog({super.key, this.onGoToSettings});
+
+  /// Shows the dialog if there are newly registered languages the user has
+  /// not yet been notified about. Marks them all as seen immediately so the
+  /// dialog is never shown twice for the same set.
+  static Future<void> showIfNeeded(
+    BuildContext context, {
+    VoidCallback? onGoToSettings,
+  }) async {
+    final newLangs = await NewLanguagesService.getNewLanguages();
+    if (newLangs.isEmpty) return;
+
+    await NewLanguagesService.markAllSeen();
+
+    if (context.mounted) {
+      unawaited(showDialog(
+        context: context,
+        builder: (_) => NewLanguagesDialog(onGoToSettings: onGoToSettings),
+      ));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final performanceProvider =
+        Provider.of<PerformanceModeProvider>(context, listen: false);
+    final shouldBlur = performanceProvider.shouldEnableBlur;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final BoxDecoration dialogDecoration;
+    if (shouldBlur) {
+      dialogDecoration = BoxDecoration(
+        color: Colors.grey[900]?.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      );
+    } else {
+      dialogDecoration = BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: colorScheme.outlineVariant),
+      );
+    }
+
+    final innerContent = Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      decoration: dialogDecoration,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icon
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: iconoir.Language(
+                  color: colorScheme.primary,
+                  width: 44,
+                  height: 44,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Title
+            Text(
+              l10n.newLanguagesAvailableTitle,
+              style: TextStyle(
+                fontFamily: FontConstants.fontFamily,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+
+            // Body
+            Text(
+              l10n.newLanguagesAvailableBody,
+              style: TextStyle(
+                fontFamily: FontConstants.fontFamily,
+                fontSize: 14,
+                color: colorScheme.onSurface.withValues(alpha: 0.7),
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+
+            // Primary action
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  onGoToSettings?.call();
+                },
+                icon: const iconoir.Settings(
+                  color: Colors.white,
+                  width: 20,
+                  height: 20,
+                ),
+                label: Text(
+                  l10n.newLanguagesGoToSettings,
+                  style: const TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Dismiss
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                l10n.newLanguagesDismiss,
+                style: TextStyle(
+                  fontFamily: FontConstants.fontFamily,
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: shouldBlur
+            ? BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: innerContent,
+              )
+            : innerContent,
+      ),
+    );
+  }
+}

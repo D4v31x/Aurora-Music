@@ -54,7 +54,6 @@ class SettingsTiles {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: bgColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: borderColor),
           boxShadow: isLowEnd
@@ -67,7 +66,13 @@ class SettingsTiles {
                   ),
                 ],
         ),
-        child: Column(children: children),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Material(
+            color: bgColor,
+            child: Column(children: children),
+          ),
+        ),
       ),
     );
   }

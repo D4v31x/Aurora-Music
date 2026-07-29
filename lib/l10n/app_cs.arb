@@ -13,11 +13,7 @@
   "album": "Album",
   "albums": "Alba",
   "allSongs": "Všechny skladby",
-  "alphaDescription": "Děkujeme za testování Aurora Music před jejím veřejným vydáním. Vaše odezva nám pomůže aplikaci dělat stále lepší.",
-  "alphaTitle": "Exkluzivní Alpha přístup",
-  "appExit": "Ukončit Aurora Music",
   "appName": "Aurora Music",
-  "appUpToDate": "Aplikace je aktuální!",
   "artist": "Umělec",
   "artistName": "Jméno umělce",
   "artists": "Umělci",
@@ -43,7 +39,9 @@
   "smartPlaylistPreviewCount": "Aktuálně odpovídá {count} skladbám",
   "@smartPlaylistPreviewCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shareAsClip": "Sdílet jako klip",
@@ -54,17 +52,11 @@
   "bitrate": "Datový tok",
   "buyMeCoffee": "Kup mi kafe",
   "cancel": "Zavřít",
-  "checkForUpdates": "Vyhledat aktualizace",
-  "checkingForUpdates": "Hledám aktualizace",
   "coffeeSupport": "Podpořte kávou",
-  "comingSoon": "Již brzy",
-  "communityDescription": "Chete vědět co se děje v zákulisí? Sledujte nás na Instagramu pro exkluzivní obsah a aktualizace.",
-  "communityTitle": "Připojte se k naší komunitě",
   "composer": "Skladatel",
   "connectWithUs": "Spojte se s námi",
   "copied": "Zkopírováno",
   "copy": "Kopírovat",
-  "coverArtUpdated": "Obal alba aktualizován",
   "create": "Vytvořit",
   "createFirstPlaylist": "Klepnutím na tlačítko výše vytvoříte první playlist",
   "createPlaylist": "Vytvořit playlist",
@@ -77,16 +69,13 @@
   "deletePlaylistConfirmation": "Opravdu chcete smazat tento playlist?",
   "deselectAll": "Odznačit vše",
   "details": "Detaily",
-  "directDonation": "Přímý dar",
   "discard": "Zahodit",
   "dontShowAgain": "Znovu nezobrazovat",
   "duration": "Délka",
-  "editPlaylist": "Upravit playlist",
   "enableArtistSeparation": "Povolit oddělování umělců",
   "enableArtistSeparationDesc": "Automaticky rozdělit kombinovaná jména umělců",
   "enjoyingAurora": "Líbí se vám Aurora?",
   "enjoyingAuroraDesc": "Pokud rádi používáte Aurora Music, zvažte podporu jejího vývoje. Vaše podpora pomáhá udržet aplikaci zdarma!",
-  "enterPlaylistName": "Zadejte název playlistu",
   "error": "Chyba",
   "exclusionHint": "např. AC/DC",
   "exclusions": "Výjimky",
@@ -94,7 +83,6 @@
   "exit": "Ukončit",
   "exitApp": "Ukončit aplikaci",
   "exitAppConfirm": "Chcete aplikaci ukončit?",
-  "exitDesc": "Jste si jisti, že chcete ukončit Aurora Music?",
   "expandLyrics": "Rozbalit texty",
   "extraLarge": "Extra velké",
   "favoriteSongs": "Oblíbené skladby",
@@ -102,12 +90,8 @@
   "fileInfoDesc": "Dlouhým stiskem zkopírujete hodnoty",
   "fileName": "Název souboru",
   "filePath": "Cesta k souboru",
-  "finalizing": "Dokončování",
-  "finishDescription": "Máte nastaveno! Přejeme příjemný poslech plný zážitků!",
-  "finishTitle": "Vše je připraveno!",
   "folder": "Složka",
   "folders": "Složky",
-  "followInstagram": "Sledujte nás na Instagramu",
   "fontSize": "Velikost písma",
   "format": "Formát",
   "forYou": "Pro tebe",
@@ -123,16 +107,13 @@
   "buyMeACoffee": "Kup mi kávu",
   "donationNote": "Žádný tlak - vždy můžete darovat později v Nastavení",
   "language": "Jazyk",
-  "languageTitle": "Vyberte si jazyk",
   "large": "Velké",
   "later": "Později",
   "library": "Knihovny",
   "libraryError": "Chyba při načítání hudební knihovny",
   "libraryLoaded": "Hudební knihovna načtena",
   "libraryUpdated": "Knihovna aktualizována",
-  "lightMode": "Světlý režim",
   "loading": "Načítání",
-  "loadingImages": "Načítání obrázků",
   "loadingLibrary": "Načítání knihovny",
   "lossless": "Bezztrátová",
   "lowQuality": "Nízká kvalita",
@@ -143,12 +124,9 @@
   "maybeLater": "Možná později",
   "medium": "Střední",
   "metadata": "Metadata",
-  "metadataEditInfo": "Úprava metadat vyžaduje aplikaci třetí strany. Změny jsou zobrazeny pouze jako náhled.",
-  "metadataInfoTitle": "Upravit metadata",
   "metadataSaved": "Metadata úspěšně uložena",
   "metadataApplied": "Metadata úspěšně staženy",
   "metadataDownloadFailed": "Stahování selhalo. Zkontrolujte připojení a zkuste to znovu.",
-  "moreResults": "Další výsledky",
   "mostPlayed": "Nejhranější",
   "newPlaylist": "Nový playlist",
   "next": "Další",
@@ -163,18 +141,13 @@
   "noLyricsFound": "Text písně nenalezen",
   "noPermissionExplanation": "Bez oprávnění Aurora Music nemůže přistupovat k vaší hudební knihovně.",
   "noPlaylists": "Žádné playlisty",
-  "noPlaylistsCreated": "Žádné playlisty",
   "noResults": "Žádné výsledky",
   "noSeparators": "Žádné oddělovače nakonfigurovány",
   "noSongPlaying": "Nepřehrává se žádná skladba",
   "noSongsAvailable": "Žádné dostupné skladby",
   "noSongsInPlaylist": "V playlistu nejsou žádné skladby",
-  "noUpdateFound": "Nebyla nalezena žádná aktualizace",
-  "noUpper": "Ne",
   "nowPlaying": "Právě hraje",
-  "ofMusic": "hudby",
   "onboardingAlbumArt": "Krásné obaly alb",
-  "onboardingAlbumArtDesc": "Automaticky stahuje a zobrazuje obaly alb",
   "onboardingAlbumArtwork": "Obaly alb",
   "onboardingAlbumArtworkDesc": "Stahuje kvalitní obaly alb pro vylepšení vaší knihovny",
   "onboardingAppInfoSubtitle": "Váš osobní hudební společník",
@@ -191,18 +164,11 @@
   "onboardingCompletionSubtitle": "Začněte si užívat svou hudbu",
   "onboardingCompletionTitle": "Vše je připraveno!",
   "onboardingContinue": "Pokračovat",
-  "onboardingDarkMode": "Tmavý režim",
-  "onboardingDarkModeDesc": "Šetrné pro oči při slabém osvětlení",
-  "alwaysOn": "Vždy zapnuto",
   "onboardingDynamicColors": "Dynamické barvy",
   "onboardingDynamicColorsDesc": "Přizpůsobit se barvám tapety systému",
   "onboardingGrantPermissions": "Udělit oprávnění",
   "onboardingInternetSubtitle": "Jak Aurora Music využívá internet",
   "onboardingInternetTitle": "Využití internetu",
-  "onboardingLightMode": "Světlý režim",
-  "onboardingLightModeDesc": "Jasné a čisté rozhraní",
-  "onboardingLocalLibrary": "Lokální hudební knihovna",
-  "onboardingLocalLibraryDesc": "Přehrávejte hudební soubory uložené na vašem zařízení",
   "onboardingLocalMusic": "Hudba na vašem zařízení",
   "onboardingLocalMusicDesc": "Mějte své hudební soubory na dosah ruky",
   "onboardingLyrics": "Texty písní",
@@ -223,18 +189,13 @@
   "onboardingRequired": "Vyžadováno",
   "onboardingAudioRequired": "Pro pokračování je vyžadován přístup ke zvuku. Udělte prosím oprávnění výše.",
   "onboardingSelectLanguage": "Vyberte si svůj preferovaný jazyk",
-  "onboardingSetupExperience": "Pojďme nastavit váš zážitek",
-  "onboardingSkip": "Přeskočit",
   "onboardingSmartPlaylists": "Chytré playlisty",
   "onboardingSmartPlaylistsDesc": "Vytvářejte a spravujte své hudební kolekce",
   "onboardingStartListening": "Začít poslouchat",
   "onboardingStorageAccess": "Přístup k úložišti",
   "onboardingStorageAccessDesc": "Potřebné pro čtení hudebních souborů ze zařízení",
-  "onboardingSyncBackup": "Synchronizace a záloha",
-  "onboardingSyncBackupDesc": "Volitelná cloudová synchronizace playlistů a nastavení",
   "onboardingThemeSubtitle": "Vyberte si téma, které vám vyhovuje",
   "onboardingThemeTitle": "Upravte si vzhled",
-  "onboardingWelcome": "Vítejte v Aurora Music",
   "beta_welcome_title": "Program Beta Testování",
   "beta_welcome_thanks": "Děkujeme, že jste se připojili k našemu programu beta testování a pomáháte nám vylepšovat Aurora Music.",
   "beta_expect_bugs_title": "Očekávejte Chyby",
@@ -243,52 +204,38 @@
   "beta_feedback_desc": "Vaše hlášení a návrhy nám pomáhají udělat aplikaci lepší pro všechny.",
   "beta_updates_title": "Časté Aktualizace",
   "beta_updates_desc": "Nové funkce a opravy jsou vydávány pravidelně během dalšího vývoje.",
-  "beta_build_label": "Beta Verze",
   "oneTimeSupport": "Rychlá jednorázová podpora",
   "openFolder": "Otevřít ve správci souborů",
   "openFolderInfo": "Použijte správce souborů pro navigaci na toto umístění",
-  "openSettings": "Otevřít nastavení",
   "ownTimer": "Vlastní nastavení",
-  "paypal": "PayPal",
   "permDeny": "Oprávnění odepřeno",
   "permissionExplanation": "Aurora Music potřebuje tato oprávnění pro správné fungování. Udělte prosím oprávnění v nastavení aplikace.",
   "permissionLater": "Oprávnění můžete udělit později v nastavení aplikace",
   "permissionRequired": "Vyžadováno oprávnění",
-  "permissionsDescription": "Abychom vám mohli poskytnout co nejlepší zážitek, Aurora Music potřebuje přístup k určitým funkcím vašeho zařízení.",
-  "permissionsTitle": "Teď ty důležité věci",
   "playAll": "Přehrát vše",
   "playingFrom": "Přehrávání z",
   "playlist": "Playlist",
   "playlistName": "Název playlistu",
   "playlists": "Playlisty",
   "possibleReasons": "Možné důvody:",
-  "preparingToScan": "Příprava hledání",
-  "privacyDescription": "V Aurora Music bereme vaše soukromí vážně. Sbíráme anonymní data pro zlepšení vašeho zážitku a vylepšení našich služeb. Používáním aplikace souhlasíte se Zásadami soukromí.",
   "privacyNotice": "Používáním této aplikace souhlasíte s našimi Zásadami ochrany osobních údajů.",
   "privacyPolicyLink": "Přečtěte si naše Zásady ochrany osobních údajů",
-  "privacyTitle": "Vaše soukromí je důležité",
-  "pullToRefresh": "Táhněte pro obnovení",
   "quality": "Kvalita",
   "qualityDesc": "Kvalita zvuku na základě formátu a datového toku",
   "queue": "Fronta",
   "queueEmpty": "Fronta je prázdná",
-  "quickAccess": "Rychlý přístup",
   "reasonFormat": "Formát souboru nepodporuje úpravu metadat",
   "reasonPermissions": "Oprávnění k úložišti nejsou udělena",
   "reasonReadonly": "Soubor je pouze pro čtení nebo na externím úložišti",
   "recentlyAdded": "Nedávno přidané",
   "recentlyPlayed": "Nedávno přehrávané",
-  "recentlyPlayedAlbums": "Naposledy hrané alba",
   "recentlyPlayedArtists": "Naposledy hraní umělci",
   "recentlyPlayedSongs": "Naposledy hrané písně",
-  "recommendedApps": "Doporučené aplikace:",
   "refreshing": "Obnovuji...",
   "refreshLyrics": "Obnovit text",
-  "releaseToRefresh": "Pusťte pro obnovení",
   "remove": "Odebrat",
   "removeSong": "Odebrat skladbu",
   "removeSongConfirmation": "Odebrat tuto skladbu z playlistu?",
-  "removeSongs": "Odebrat skladby",
   "rename": "Přejmenovat",
   "renamePlaylist": "Přejmenovat playlist",
   "repeat": "Opakování",
@@ -304,7 +251,6 @@
   "saveChangesDesc": "Chcete uložit vaše změny?",
   "saveFailed": "Uložení selhalo",
   "saveFailedDesc": "Nelze uložit metadata do tohoto souboru.",
-  "savingMetadata": "Ukládám metadata...",
   "scanFailed": "Skenování selhalo",
   "scanningSongs": "Načítání písní",
   "search": "Hledat",
@@ -321,7 +267,6 @@
   "separator": "Oddělovač",
   "separatorHint": "např. / nebo feat.",
   "separators": "Oddělovače",
-  "separatorsDesc": "Znaky použité k rozdělení jmen umělců",
   "set": "Nastavit",
   "setMinutes": "Vyberte počet minut",
   "settings": "Nastavení",
@@ -329,7 +274,6 @@
   "settingsAboutApp": "O Aurora Music",
   "settingsAboutSubtitle": "Verze, zpětná vazba a aktualizace",
   "settingsAccentColor": "Barva zvýraznění",
-  "settingsAccentColorDesc": "Zvolte barvu zvýraznění aplikace",
   "settingsAppearance": "Vzhled",
   "settingsAppearanceSubtitle": "Motiv, barvy a rozložení",
   "settingsAudio": "Zvuk",
@@ -347,10 +291,6 @@
   "settingsCacheItems": "{count} položek",
   "settingsDataWindow": "Časové okno dat",
   "settingsDataWindowDesc": "Jak daleko zpět přehled zobrazuje",
-  "settingsDarkMode": "Tmavý režim",
-  "settingsDarkModeDesc": "Přepnout na tmavé téma",
-  "settingsDisabled": "Vypnuto",
-  "settingsEnabled": "Zapnuto",
   "settingsGapless": "Plynulé přehrávání",
   "settingsGaplessDesc": "Bez mezer mezi skladbami",
   "settingsCrossfade": "Prolínání skladeb",
@@ -413,8 +353,6 @@
   "supportAuroraMessage": "Pomozte udržet Aurora Music zdarma a podpořte budoucí vývoj. Každý příspěvek hodně znamená!",
   "supportAuroraTitle": "Podpořte Aurora Music",
   "tapAddToAddSongs": "Klepněte na + pro přidání skladeb",
-  "testArtistString": "Testovací řetězec umělců",
-  "testSeparation": "Test rozdělení",
   "thankYouSupport": "Děkuji za vaši podporu!",
   "theme": "Téma",
   "title": "Název",
@@ -425,26 +363,18 @@
   "trackInfoDesc": "Klepněte na ikonu tužky pro úpravu informací",
   "trackInfoEditDesc": "Upravte pole níže, poté klepněte na ikonu zaškrtnutí pro uložení",
   "tracks": "Skladby",
-  "tryAgain": "Zkusit znovu",
   "unknown": "Neznámý",
   "unknownArtist": "Neznámý umělec",
   "updateAvailable": "Dostupná aktualizace",
-  "updateFailed": "Aktualizace knihovny se nezdařila",
   "updateMessage": "Nová verze k dispozici",
   "updateNow": "Aktualizovat",
-  "userSettings": "Uživatelské nastavení",
-  "versionCheckError": "Aktualizace nebyly zkontrolovány",
   "viewArtist": "Zobrazit umělce",
   "viewDetails": "Zobrazit detaily",
   "welcomeBack": "Vítejte zpět",
-  "welcomeDescription": "Vydejte se na cestu vaší hudby. Poslouchejte, jako nikdy předtím. Pozvedněte zážitek z hudby na novou úroveň.",
-  "welcomeTitle": "Vítejte v Aurora Music",
   "whatsNew": "Co je nového (v angličtině)",
-  "whats_new": "Co je nového",
   "view_changelog": "Zobrazit seznam změn a nové funkce",
   "year": "Rok",
   "yes": "Ano",
-  "yesUpper": "Ano",
   "yourLibrary": "Vaše knihovna",
   "yourPlaylists": "Vaše playlisty",
   "homeLayout": "Rozložení domovské stránky",
@@ -461,11 +391,7 @@
   "continueButton": "Pokračovat",
   "skip": "Přeskočit",
   "feedback_title": "Líbí se vám Aurora Music?",
-  "feedback_description": "Vaše zpětná vazba pomáhá vylepšit Aurora Music! Našli jste chybu nebo máte nápad? Rádi si vás vyslechneme.",
-  "report_bug": "Nahlásit chybu",
-  "suggest_feature": "Navrhnout funkci",
   "maybe_later": "Možná později",
-  "dont_ask_again": "Znovu se neptat",
   "send_feedback": "Odeslat zpětnou vazbu",
   "send_feedback_desc": "Nahlásit chyby nebo navrhnout funkce",
   "contributeTranslations": "Přeložit aplikaci",
@@ -479,7 +405,6 @@
   "restartRequired": "Vyžadován restart",
   "restartRequiredDesc": "Aplikace musí být restartována pro aplikování změny režimu UI. Restartovat nyní?",
   "restartNow": "Restartovat nyní",
-  "upNext": "Následující",
   "clearUpcoming": "Vymazat nadcházející",
   "addToQueue": "Přidat do fronty",
   "playNext": "Přehrát jako další",
@@ -490,59 +415,77 @@
   "noSongsFound": "Nenalezeny žádné skladby",
   "noFoldersFound": "Nenalezeny žádné složky",
   "deleteSong": "Smazat skladbu",
-  "modifySystemSettingsPermission": "V otevřené stránce povolte \u201eÚprava systémových nastavení\u201c a zkuste to znovu.",
+  "modifySystemSettingsPermission": "V otevřené stránce povolte „Úprava systémových nastavení“ a zkuste to znovu.",
   "errorMessage": "Chyba: {message}",
   "@errorMessage": {
     "placeholders": {
-      "message": {"type": "String"}
+      "message": {
+        "type": "String"
+      }
     }
   },
   "songsAddedToQueue": "{count} skladeb přidáno do fronty",
   "@songsAddedToQueue": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "songAddedToQueue": "„{title}“ přidáno do fronty",
   "@songAddedToQueue": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "songSetAsRingtone": "„{title}“ nastaveno jako vyzváněcí tón",
   "@songSetAsRingtone": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "failedToSetRingtone": "Nepodařilo se nastavit vyzváněcí tón: {error}",
   "@failedToSetRingtone": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "deleteSongConfirm": "Smazat „{title}“ ze zařízení? Tuto akci nelze vrátit zpět.",
   "@deleteSongConfirm": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "songDeleted": "„{title}“ smazáno",
   "@songDeleted": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "failedToDelete": "Smazání selhalo: {error}",
   "@failedToDelete": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "songCount": "{count} skladeb",
   "@songCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "badgeNew": "NOVÉ",
@@ -550,10 +493,12 @@
   "readyToPlay": "Připraveno k přehrávání",
   "tapSongToStartListening": "Klepněte na skladbu a začněte poslouchat",
   "clearCachedLyrics": "Vymazat mezipaměť textu",
-  "lyricsCleared": "Mezipaměť textu pro \u201e{title}\u201c vymazána",
+  "lyricsCleared": "Mezipaměť textu pro „{title}“ vymazána",
   "@lyricsCleared": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "noLyricsCached": "Pro tuto skladbu není uložen žádný text",
@@ -578,16 +523,8 @@
   "backgroundDarknessDesc": "Průhlednost překrytí na obalu",
   "onboardingVisualizerAccess": "Vizualizér",
   "onboardingVisualizerAccessDesc": "Umožňuje vizualizéru číst audio session vašeho zařízení pro zobrazení vizualizéru. Mikrofon není nikdy použit pro nahrávání ani ukládání zvuku.",
-  "feedbackHeaderTitle": "Už je to chvíli co používáš Aurora Music",
-  "feedbackHeaderSubtitle": "Jsi přesně ten, pro koho jsem tohle vytvořil. Podělíš se o rychlou myšlenku? Opravdu to pomáhá.",
-  "feedbackLove": "Líbí se mi",
-  "feedbackMissing": "Něco chybí",
-  "feedbackBroken": "Něco nefunguje",
-  "feedbackHint": "Něco konkrétního? (volitelné)",
-  "feedbackSend": "Odeslat",
   "microphoneAccessNeeded": "Je potřeba přístup k mikrofonu",
   "microphoneAccessDesc": "Aurora potřebuje přístup k mikrofonu pro živý vizualizér. Žádný zvuk není nikdy nahrán ani uložen.",
-
   "recapWeek": "týden",
   "recapMonth": "měsíc",
   "recapPeriodWeek": "Týden",
@@ -598,14 +535,18 @@
   "recapIntroTitle": "Tvůj {period}\nPřehled",
   "@recapIntroTitle": {
     "placeholders": {
-      "period": {"type": "String"}
+      "period": {
+        "type": "String"
+      }
     }
   },
   "recapIntroSubtitle": "Podívejme se, co jsi\nposledně poslouchal.",
   "recapPlayedEyebrow": "Tento {period} jsi pouštěl hudbu",
   "@recapPlayedEyebrow": {
     "placeholders": {
-      "period": {"type": "String"}
+      "period": {
+        "type": "String"
+      }
     }
   },
   "recapTimeSingular": "krát",
@@ -621,23 +562,28 @@
   "recapNothingToWrapBody": "Přehraj nějakou hudbu tento {period} a vrať se.",
   "@recapNothingToWrapBody": {
     "placeholders": {
-      "period": {"type": "String"}
+      "period": {
+        "type": "String"
+      }
     }
   },
   "recapSwipeUp": "PŘEJEĎ NAHORU",
   "recapYourSoundLabel": "TVŮJ ZVUK",
-  "recapTopGenresTitle": "Oblíbené žánry",
   "recapYouListenMost": "POSLOUCHÁŠ NEJVÍCE",
   "recapOnDay": "v {day}",
   "@recapOnDay": {
     "placeholders": {
-      "day": {"type": "String"}
+      "day": {
+        "type": "String"
+      }
     }
   },
   "recapAroundTime": "kolem {time}",
   "@recapAroundTime": {
     "placeholders": {
-      "time": {"type": "String"}
+      "time": {
+        "type": "String"
+      }
     }
   },
   "recapVibesHitDifferent": "To je tvůj oblíbený čas na hudbu.",
@@ -645,7 +591,9 @@
   "recapInNumbers": "Tvůj {period}\nv číslech",
   "@recapInNumbers": {
     "placeholders": {
-      "period": {"type": "String"}
+      "period": {
+        "type": "String"
+      }
     }
   },
   "recapNumberOneTrack": "#1 SKLADBA",
@@ -664,7 +612,6 @@
   "recapBannerTitle": "Přehled hudby je tady",
   "recapBannerShow": "Zobrazit",
   "recapBannerLater": "Později",
-
   "eqTitle": "Ekvalizér",
   "eqOn": "ZAP",
   "eqOff": "VYP",
@@ -675,7 +622,9 @@
   "eqPresetNameBuiltIn": "\"{name}\" je název vestavěné předvolby.",
   "@eqPresetNameBuiltIn": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "eqResetAllBands": "Resetovat všechna pásma",
@@ -684,20 +633,76 @@
   "eqSaveCurrent": "Uložit aktuální",
   "eqSettingsSubtitle": "Upravte zvukové frekvence pro každé pásmo",
   "eqEmptyPresets": "Nastavte zvuk a pak klepněte na \"Uložit aktuální\".",
-
-  "whatsNewTitle": "Co je nového",
-  "whatsNewIn": "Co je nového ve verzi {version}",
-  "@whatsNewIn": {
-    "placeholders": {
-      "version": {"type": "String"}
-    }
-  },
-  "whatsNewContinue": "Rozumím!",
-  "whatsNewNext": "Další",
-  "whatsNewPrev": "Zpět",
   "settingsPreviewRecap": "Náhled recapu",
   "settingsPreviewRecapDesc": "Zjistěte, jak bude vypadat váš přehled, s aktuálními statistikami poslechu",
   "eqOpenSystem": "Otevřít systémový ekvalizér",
   "reorderSongs": "Přesunout skladby",
-  "done": "Hotovo"
+  "done": "Hotovo",
+  "saveAsClip": "Uložit jako klip",
+  "saveClip": "Uložit klip",
+  "clipSavedToDevice": "Klip byl uložen",
+  "clipSaveFailed": "Klip se nepodařilo uložit. Zkuste to znovu.",
+  "playlistSavedToDevice": "Playlist byl uložen",
+  "trackTags": "Časové značky",
+  "editTrackTags": "Upravit časové značky",
+  "addTrackTag": "Přidat značku",
+  "noTrackTagsYet": "Žádné značky. Přidejte nějakou pro skok na tuto část skladby.",
+  "trackTagNameHint": "např. název skladby nebo umělce",
+  "trackTagPosition": "Pozice",
+  "useCurrentPosition": "Použít aktuální pozici",
+  "isThisASet": "Přidat časové značky do skladby",
+  "tagPartsForEasySwitching": "Označte jakoukoli událost - kapitoly, významné části, nebo cokoli jiného.",
+  "tagThisTrack": "Přidat značku",
+  "pasteSetlist": "Importovat značky",
+  "pasteSetlistDialogTitle": "Importovat",
+  "pasteSetlistHint": "Zde vložte časové značky, např. 0:00 Intro",
+  "importAction": "Import",
+  "tagsImportedMessage": "Importováno {count} značek",
+  "noTagsFoundInPaste": "Nebyly nalezeny žádné značky",
+  "chooseArtworkFromDevice": "Vybrat z úložiště",
+  "lyricsHint": "Zde vložte nesynchronizovaný text…\n\nKaždý verš na samostatný řádek.",
+  "lyricsSelectLrcFile": "Vyberte prosím soubor .lrc",
+  "lyricsNoLyricsInFile": "V tomto souboru nebyl nalezen žádný text",
+  "importFailed": "Import selhal: {error}",
+  "lyricsImportTooltip": "Importovat soubor .lrc",
+  "importPlaylistM3u": "Importovat playlist (.m3u)",
+  "setSyncFolder": "Nastavit složku pro synchronizaci…",
+  "syncNow": "Synchronizovat nyní",
+  "searchPlaylists": "Hledat playlisty…",
+  "pleaseSelectM3uFile": "Vyberte prosím soubor .m3u nebo .m3u8",
+  "noMatchingSongsForPlaylist": "Pro tento playlist nebyly nalezeny žádné odpovídající skladby",
+  "importedPlaylist": "Importováno „{name}“ ({count} skladeb)",
+  "playlistsSyncWith": "Playlisty se budou synchronizovat s: {folder}",
+  "couldNotSetSyncFolder": "Nepodařilo se nastavit složku pro synchronizaci: {error}",
+  "setSyncFolderFirst": "Nejprve nastavte složku pro synchronizaci",
+  "playlistsSynced": "Playlisty synchronizovány",
+  "alreadyUpToDate": "Vše je aktuální",
+  "syncFailed": "Synchronizace selhala: {error}",
+  "exportFailed": "Export selhal: {error}",
+  "searchFolders": "Hledat složky…",
+  "songInfoPath": "Cesta",
+  "closeVisualiser": "Zavřít vizualizér",
+  "previousMode": "Předchozí režim",
+  "nextMode": "Další režim",
+  "sortBy": "Řadit podle",
+  "colorTheme": "Barevné téma",
+  "insightsTotalPlays": "Celkem\npřehrání",
+  "insightsTracksHeard": "Slyšené\nskladby",
+  "insightsEstListening": "Odh.\nposl.",
+  "dismiss": "Zavřít",
+  "updateVersionAvailable": "Verze {version} je nyní k dispozici.",
+  "updateNewVersionAvailable": "Je dostupná nová verze.",
+  "whatsNew": "Co je nového",
+  "lyricsPasteLyricsTitle": "Vložit texty",
+  "lyricsUseLyrics": "Použít texty",
+  "lyricsPaste": "Vložit",
+  "lyricsNoLyricsYet": "Zatím žádné texty",
+  "lyricsPasteToGetStarted": "Vložte texty pro začátek",
+  "lyricsNoTimestampsYet": "Zatím žádná časová razítka — klepněte na tlačítko razítka při přehrávání.",
+  "lyricsAllLinesStampedHint": "Všechny řádky označeny — klepněte na Uložit.",
+  "lyricsAllStamped": "✓  Všechny řádky označeny",
+  "lyricsPasteFirst": "Nejdříve vložte texty",
+  "lyricsTapToStamp": "⏱  OZNAČIT ŘÁDEK {current} / {total}",
+  "@lyricsTapToStamp": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "lyricsNextLabel": "Další"
 }

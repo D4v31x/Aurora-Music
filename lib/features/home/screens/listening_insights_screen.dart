@@ -10,6 +10,7 @@ library;
 
 import 'dart:math' show max;
 import 'package:flutter/material.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/font_constants.dart';
 import '../../../shared/services/audio_player_service.dart';
@@ -359,6 +360,7 @@ class _QuickStatsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final mins = data.estimatedMinutes;
     final timeLabel = _ListeningInsightsScreenState._fmtMinutes(mins);
+    final loc = AppLocalizations.of(context);
 
     return GlassmorphicContainer(
       borderRadius: BorderRadius.circular(20),
@@ -367,19 +369,19 @@ class _QuickStatsRow extends StatelessWidget {
         children: [
           _QuickStat(
             value: _fmt(data.totalListens),
-            label: 'Total\nPlays',
+            label: loc.insightsTotalPlays,
             icon: Icons.play_circle_outline_rounded,
           ),
           _Divider(),
           _QuickStat(
             value: _fmt(data.uniqueTracksHeard),
-            label: 'Tracks\nHeard',
+            label: loc.insightsTracksHeard,
             icon: Icons.music_note_rounded,
           ),
           _Divider(),
           _QuickStat(
-            value: mins > 0 ? timeLabel : '—',
-            label: 'Est.\nListening',
+            value: mins > 0 ? timeLabel : '\u2014',
+            label: loc.insightsEstListening,
             icon: Icons.access_time_rounded,
           ),
         ],

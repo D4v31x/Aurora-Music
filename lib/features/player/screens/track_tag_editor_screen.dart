@@ -1,6 +1,6 @@
 /// Screen for creating, renaming, and deleting [TrackTag] markers on a
-/// single (typically long / DJ-set style) track, so the user can jump
-/// straight to any tagged part from the Now Playing screen.
+/// track, so the user can jump straight to any tagged part from the Now
+/// Playing screen.
 ///
 /// Design mirrors `LyricsEditorScreen`: an [AppBackground] behind a
 /// transparent [Scaffold] with a custom header (no default AppBar), styled
@@ -21,9 +21,9 @@ import '../../../shared/services/track_tag_service.dart';
 import '../../../shared/utils/formatters/duration_formatter.dart';
 import '../../../shared/widgets/app_background.dart';
 
-/// Matches lines like "0:00 Intro", "00:00 - Song Name", "[1:23:45] Song",
-/// as commonly found in YouTube video descriptions/setlists.
-final RegExp _setlistLineRegex = RegExp(
+/// Matches lines like "0:00 Intro", "00:00 - Chapter Name", "[1:23:45] Title",
+/// as commonly found in YouTube descriptions, podcast chapters, etc.
+final RegExp _timestampLineRegex = RegExp(
   r'^\(?\[?\s*(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\s*\]?\)?\s*[-–—:]?\s*(.+)$',
 );
 
@@ -39,6 +39,8 @@ class TrackTagEditorScreen extends StatefulWidget {
 class _TrackTagEditorScreenState extends State<TrackTagEditorScreen> {
   StreamSubscription<Duration>? _positionSubscription;
   Duration _currentPosition = Duration.zero;
+  bool _isSeeking = false;
+  double _seekValue = 0;
 
   @override
   void initState() {
@@ -46,7 +48,7 @@ class _TrackTagEditorScreenState extends State<TrackTagEditorScreen> {
     final audio = context.read<AudioPlayerService>();
     _currentPosition = audio.audioPlayer.position;
     _positionSubscription = audio.audioPlayer.positionStream.listen((pos) {
-      if (mounted) setState(() => _currentPosition = pos);
+      if (mounted && !_isSeeking) setState(() => _currentPosition = pos);
     });
   }
 
@@ -203,15 +205,15 @@ class _TrackTagEditorScreenState extends State<TrackTagEditorScreen> {
     await context.read<TrackTagService>().deleteTag(widget.song.id, tag.id);
   }
 
-  // ──────────────────────────── paste setlist ──────────────────────────────
+  // ──────────────────────────── paste timestamps ──────────────────────────────
 
-  List<TrackTag> _parseSetlist(String text) {
+  List<TrackTag> _parseTimestamps(String text) {
     final tags = <TrackTag>[];
     var counter = 0;
     for (final rawLine in text.split('\n')) {
       final line = rawLine.trim();
       if (line.isEmpty) continue;
-      final match = _setlistLineRegex.firstMatch(line);
+      final match = _timestampLineRegex.firstMatch(line);
       if (match == null) continue;
 
       final hours = int.tryParse(match.group(1) ?? '') ?? 0;
@@ -231,7 +233,7 @@ class _TrackTagEditorScreenState extends State<TrackTagEditorScreen> {
     return tags;
   }
 
-  void _showPasteSetlistDialog() {
+  void _showImportTimestampsDialog() {
     final loc = AppLocalizations.of(context);
     final controller = TextEditingController();
     showDialog(
@@ -298,7 +300,7 @@ class _TrackTagEditorScreenState extends State<TrackTagEditorScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _importSetlist(controller.text);
+              _importTimestamps(controller.text);
             },
             child: Text(
               loc.importAction,
@@ -314,9 +316,9 @@ class _TrackTagEditorScreenState extends State<TrackTagEditorScreen> {
     );
   }
 
-  Future<void> _importSetlist(String text) async {
+  Future<void> _importTimestamps(String text) async {
     final loc = AppLocalizations.of(context);
-    final parsed = _parseSetlist(text);
+    final parsed = _parseTimestamps(text);
 
     if (parsed.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -407,11 +409,11 @@ class _TrackTagEditorScreenState extends State<TrackTagEditorScreen> {
             ),
           ),
           TextButton.icon(
-            onPressed: _showPasteSetlistDialog,
+            onPressed: _showImportTimestampsDialog,
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 8),
             ),
-            icon: const Icon(Icons.paste_rounded,
+            icon: const Icon(Icons.timer_outlined,
                 color: Colors.white60, size: 18),
             label: Text(
               loc.pasteSetlist,
@@ -428,41 +430,87 @@ class _TrackTagEditorScreenState extends State<TrackTagEditorScreen> {
   }
 
   Widget _buildPlaybackBar(AudioPlayerService audio) {
+    final maxMs = _trackDuration.inMilliseconds > 0
+        ? _trackDuration.inMilliseconds.toDouble()
+        : 1.0;
+    final sliderValue = _isSeeking
+        ? _seekValue
+        : _currentPosition.inMilliseconds.clamp(0, maxMs.toInt()).toDouble();
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+      child: Column(
         children: [
-          Text(
-            formatDuration(_currentPosition),
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
-              fontFamily: FontConstants.fontFamily,
-              fontSize: 13,
-              fontFeatures: const [FontFeature.tabularFigures()],
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 3,
+              thumbShape:
+                  const RoundSliderThumbShape(enabledThumbRadius: 6),
+              overlayShape:
+                  const RoundSliderOverlayShape(overlayRadius: 14),
+              activeTrackColor: Colors.white,
+              inactiveTrackColor: Colors.white24,
+              thumbColor: Colors.white,
+              overlayColor: Colors.white24,
+            ),
+            child: Slider(
+              value: sliderValue,
+              min: 0,
+              max: maxMs,
+              onChangeStart: (v) => setState(() {
+                _isSeeking = true;
+                _seekValue = v;
+              }),
+              onChanged: (v) => setState(() => _seekValue = v),
+              onChangeEnd: (v) {
+                audio.audioPlayer
+                    .seek(Duration(milliseconds: v.round()));
+                setState(() {
+                  _isSeeking = false;
+                  _currentPosition = Duration(milliseconds: v.round());
+                });
+              },
             ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              formatDuration(_trackDuration),
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.35),
-                fontFamily: FontConstants.fontFamily,
-                fontSize: 12,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+            child: Row(
+              children: [
+                Text(
+                  formatDuration(_isSeeking
+                      ? Duration(milliseconds: _seekValue.round())
+                      : _currentPosition),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontFamily: FontConstants.fontFamily,
+                    fontSize: 12,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  formatDuration(_trackDuration),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.35),
+                    fontFamily: FontConstants.fontFamily,
+                    fontSize: 12,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  icon: Icon(
+                    audio.isPlaying
+                        ? Icons.pause_rounded
+                        : Icons.play_arrow_rounded,
+                    color: Colors.white,
+                  ),
+                  onPressed: () => audio.isPlaying
+                      ? audio.audioPlayer.pause()
+                      : audio.audioPlayer.play(),
+                ),
+              ],
             ),
-          ),
-          IconButton(
-            icon: Icon(
-              audio.isPlaying
-                  ? Icons.pause_rounded
-                  : Icons.play_arrow_rounded,
-              color: Colors.white,
-            ),
-            onPressed: () => audio.isPlaying
-                ? audio.audioPlayer.pause()
-                : audio.audioPlayer.play(),
           ),
         ],
       ),
@@ -491,8 +539,8 @@ class _TrackTagEditorScreenState extends State<TrackTagEditorScreen> {
           ),
           const SizedBox(height: 8),
           TextButton.icon(
-            onPressed: _showPasteSetlistDialog,
-            icon: const Icon(Icons.paste_rounded,
+            onPressed: _showImportTimestampsDialog,
+            icon: const Icon(Icons.timer_outlined,
                 color: Colors.white60, size: 20),
             label: Text(
               loc.pasteSetlist,

@@ -693,22 +693,22 @@ void showSongInfoDialog(
           const SizedBox(height: 4),
           InfoRow(
             icon: Icons.title_rounded,
-            label: 'Title',
+            label: l10n.title,
             value: song.title,
           ),
           InfoRow(
             icon: Icons.person_outline_rounded,
-            label: 'Artist',
+            label: l10n.artist,
             value: splitArtists(song.artist ?? 'Unknown').join(', '),
           ),
           InfoRow(
             icon: Icons.album_outlined,
-            label: 'Album',
+            label: l10n.album,
             value: song.album ?? 'Unknown',
           ),
           InfoRow(
             icon: Icons.folder_outlined,
-            label: 'Path',
+            label: l10n.songInfoPath,
             value: shortPath,
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
+import 'package:aurora_music_v01/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:upgrader/upgrader.dart';
 import 'glassmorphic_dialog.dart';
@@ -52,15 +53,15 @@ class _AuroraUpgradeAlertState extends UpgradeAlertState {
       barrierDismissible: false,
       barrierColor: Colors.black54,
       builder: (ctx) => GlassmorphicDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.system_update_alt_rounded,
               color: Colors.white,
               size: 20,
             ),
-            SizedBox(width: 10),
-            Text('Update Available'),
+            const SizedBox(width: 10),
+            Text(AppLocalizations.of(context).updateAvailable),
           ],
         ),
         content: _Content(storeVersion: storeVersion, notes: notes),
@@ -73,7 +74,7 @@ class _AuroraUpgradeAlertState extends UpgradeAlertState {
               // via LaunchMode.externalNonBrowserApplication on Android.
               onUserUpdated(ctx, false);
             },
-            child: const Text('Update Now'),
+            child: Text(AppLocalizations.of(context).updateNow),
           ),
         ],
       ),
@@ -110,13 +111,13 @@ class _Content extends StatelessWidget {
       children: [
         Text(
           storeVersion != null
-              ? 'Version $storeVersion is now available.'
-              : 'A new version is now available.',
+              ? AppLocalizations.of(context).updateVersionAvailable(storeVersion!)
+              : AppLocalizations.of(context).updateNewVersionAvailable,
         ),
         if (notes != null) ...[
           const SizedBox(height: 16),
-          const Text(
-            "What's new",
+          Text(
+            AppLocalizations.of(context).whatsNew,
             style: TextStyle(
               fontFamily: FontConstants.fontFamily,
               fontSize: 13,

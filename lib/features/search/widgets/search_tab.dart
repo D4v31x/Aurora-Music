@@ -664,11 +664,14 @@ class _SearchSongTile extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 3),
         decoration: BoxDecoration(
-          color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(12),
           border: isLowEnd ? Border.all(color: colorScheme.outlineVariant) : null,
         ),
-        child: ListTile(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Material(
+            color: isLowEnd ? colorScheme.surfaceContainerHigh : Colors.white.withValues(alpha: 0.07),
+            child: ListTile(
         contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8),
@@ -699,6 +702,8 @@ class _SearchSongTile extends StatelessWidget {
           onPressed: () => showSongContextMenu(context, song),
         ),
         onTap: onTap,
+        ),
+          ),
         ),
       ),
     );

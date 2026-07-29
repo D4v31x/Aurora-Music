@@ -418,7 +418,7 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
                   icon: const iconoir.NavArrowDown(
                     color: Colors.white, width: 28, height: 28),
                   onPressed: () => Navigator.of(context).pop(),
-                  tooltip: 'Close visualiser',
+                  tooltip: AppLocalizations.of(context).closeVisualiser,
                 ),
                 // Mode switcher centred in remaining space
                 Expanded(
@@ -429,7 +429,7 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
                         icon: const iconoir.NavArrowLeft(
                             color: Colors.white, width: 22, height: 22),
                         onPressed: () => _switchMode(-1),
-                        tooltip: 'Previous mode',
+                        tooltip: AppLocalizations.of(context).previousMode,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -446,7 +446,7 @@ class _MusicVisualizerScreenState extends State<MusicVisualizerScreen>
                         icon: const iconoir.NavArrowRight(
                             color: Colors.white, width: 22, height: 22),
                         onPressed: () => _switchMode(1),
-                        tooltip: 'Next mode',
+                        tooltip: AppLocalizations.of(context).nextMode,
                       ),
                     ],
                   ),

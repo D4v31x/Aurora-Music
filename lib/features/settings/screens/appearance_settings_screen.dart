@@ -2,6 +2,7 @@
 library;
 
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
@@ -338,6 +339,7 @@ void _showRestartDialog(BuildContext context, bool newIsHighEnd) {
 
 void _showColorPickerDialog(
     BuildContext context, ThemeProvider themeProvider) {
+  final l10n = AppLocalizations.of(context);
   showDialog(
     context: context,
     builder: (dialogContext) {
@@ -348,8 +350,8 @@ void _showColorPickerDialog(
           borderRadius: BorderRadius.circular(24),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
         ),
-        title: const Text('Color Theme',
-            style: TextStyle(
+        title: Text(l10n.colorTheme,
+            style: const TextStyle(
                 fontFamily: FontConstants.fontFamily,
                 color: Colors.white,
                 fontWeight: FontWeight.bold)),
@@ -433,8 +435,8 @@ void _showColorPickerDialog(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel',
-                style: TextStyle(
+            child: Text(l10n.cancel,
+                style: const TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     color: Colors.white70)),
           ),
@@ -450,10 +452,30 @@ class _LanguageTile extends StatelessWidget {
 
   final bool isFirst;
 
+  void _showLanguagePicker(BuildContext context) {
+    final localeProvider = LocaleProvider.of(context)!;
+    final currentCode = localeProvider.locale.languageCode;
+
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (_) => _LanguagePickerSheet(
+        currentCode: currentCode,
+        onSelect: (code) => localeProvider.setLocale(Locale(code)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final currentLocale = LocaleProvider.of(context)!.locale.languageCode;
+    final currentCode = LocaleProvider.of(context)!.locale.languageCode;
+    final currentLang = SupportedLanguages.forCode(currentCode);
+    final displayName = currentLang?.nativeName ?? currentCode.toUpperCase();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
 
@@ -481,44 +503,207 @@ class _LanguageTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: primary.withValues(alpha: 0.22)),
             ),
-            child: iconoir.Language(
-                color: primary, width: 20, height: 20),
+            child: iconoir.Language(color: primary, width: 20, height: 20),
           ),
-          title: Text(l10n.settingsLanguage,
-              style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: FontConstants.fontFamily)),
+          title: Text(
+            l10n.settingsLanguage,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              fontFamily: FontConstants.fontFamily,
+            ),
+          ),
           trailing: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
-              color: primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: primary.withValues(alpha: 0.25)),
             ),
-            child: DropdownButton<String>(
-              value: currentLocale,
-              underline: const SizedBox(),
-              isDense: true,
-              style: TextStyle(
-                  color: primary,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: FontConstants.fontFamily),
-              items: SupportedLanguages.all
-                  .map((lang) => DropdownMenuItem(
-                        value: lang.code,
-                        child: Text(lang.nativeName),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  LocaleProvider.of(context)!.setLocale(Locale(value));
-                }
-              },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  displayName,
+                  style: TextStyle(
+                    fontFamily: FontConstants.fontFamily,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: primary,
+                  ),
+                ),
+                const SizedBox(width: 5),
+                iconoir.NavArrowDown(color: primary, width: 13, height: 13),
+              ],
             ),
           ),
+          onTap: () => _showLanguagePicker(context),
         ),
       ],
+    );
+  }
+}
+
+// ── Language picker bottom sheet ──────────────────────────────────────────────
+
+class _LanguagePickerSheet extends StatelessWidget {
+  const _LanguagePickerSheet({
+    required this.currentCode,
+    required this.onSelect,
+  });
+
+  final String currentCode;
+  final void Function(String) onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+    final primary = colorScheme.primary;
+    final shouldBlur = Provider.of<PerformanceModeProvider>(context, listen: false)
+        .shouldEnableBlur;
+
+    final sheetContent = ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: shouldBlur
+          ? BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: _sheetBody(context, l10n, isDark, colorScheme, primary),
+            )
+          : _sheetBody(context, l10n, isDark, colorScheme, primary),
+    );
+
+    return sheetContent;
+  }
+
+  Widget _sheetBody(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool isDark,
+    ColorScheme colorScheme,
+    Color primary,
+  ) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.grey.shade900.withValues(alpha: 0.95)
+            : colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.0),
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12, bottom: 20),
+              decoration: BoxDecoration(
+                color: (isDark ? Colors.white : Colors.black)
+                    .withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            // Section header
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
+              child: Row(
+                children: [
+                  Text(
+                    l10n.settingsLanguage,
+                    style: TextStyle(
+                      fontFamily: FontConstants.fontFamily,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : colorScheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Language list
+            ...SupportedLanguages.all.map((lang) {
+              final isSelected = lang.code == currentCode;
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                child: Material(
+                  color: isSelected
+                      ? primary.withValues(alpha: 0.12)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () {
+                      onSelect(lang.code);
+                      Navigator.pop(context);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  lang.nativeName,
+                                  style: TextStyle(
+                                    fontFamily: FontConstants.fontFamily,
+                                    fontSize: 15,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                    color: isSelected
+                                        ? primary
+                                        : (isDark
+                                            ? Colors.white
+                                            : colorScheme.onSurface),
+                                  ),
+                                ),
+                                Text(
+                                  lang.englishName,
+                                  style: TextStyle(
+                                    fontFamily: FontConstants.fontFamily,
+                                    fontSize: 12,
+                                    color: (isDark
+                                            ? Colors.white
+                                            : colorScheme.onSurface)
+                                        .withValues(alpha: 0.45),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isSelected)
+                            iconoir.Check(
+                              color: primary,
+                              width: 20,
+                              height: 20,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
     );
   }
 }

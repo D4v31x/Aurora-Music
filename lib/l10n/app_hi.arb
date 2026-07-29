@@ -1,0 +1,787 @@
+{
+  "@@locale": "hi",
+  "aboutArtist": "कलाकार के बारे में",
+  "add": "जोड़ें",
+  "addedToPlaylist": "प्लेलिस्ट में जोड़ा गया",
+  "addedToNamedPlaylist": "{name} में जोड़ा गया",
+  "@addedToNamedPlaylist": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addExclusion": "अपवाद जोड़ें",
+  "addSeparator": "विभाजक जोड़ें",
+  "addSongs": "गीत जोड़ें",
+  "addSongsToPlaylist": "प्लेलिस्ट में गीत जोड़ें",
+  "addToPlaylist": "प्लेलिस्ट में जोड़ें",
+  "adjustSync": "सिंक समायोजित करें",
+  "album": "एल्बम",
+  "albums": "एल्बम",
+  "allSongs": "सभी गीत",
+  "appName": "ऑरोरा संगीत",
+  "artist": "कलाकार",
+  "artistName": "कलाकार का नाम",
+  "artists": "कलाकार",
+  "artistSeparation": "कलाकार पृथक्करण",
+  "artistSeparationDesc": "कई कलाकारों को कैसे विभाजित किया जाए, कॉन्फ़िगर करें",
+  "audioQuality": "ध्वनि गुणवत्ता",
+  "audioQualityDesc": "ऑडियो फ़ाइल के तकनीकी विनिर्देश",
+  "auroraMusic": "ऑरोरा संगीत",
+  "autoPlaylists": "स्वचालित प्लेलिस्ट",
+  "autoTag": "स्वचालित टैग",
+  "smartPlaylists": "स्मार्ट प्लेलिस्ट",
+  "createSmartPlaylist": "स्मार्ट प्लेलिस्ट बनाएँ…",
+  "editSmartPlaylist": "स्मार्ट प्लेलिस्ट संपादित करें",
+  "smartPlaylistNameHint": "प्लेलिस्ट का नाम",
+  "smartPlaylistRules": "नियम",
+  "addRule": "नियम जोड़ें",
+  "saveSmartPlaylist": "बचाएँ",
+  "matchAll": "सभी नियमों से मेल करें",
+  "matchAny": "किसी भी नियम से मेल खाएं",
+  "limitResultsLabel": "परिणाम सीमित करें",
+  "noLimit": "कोई सीमा नहीं",
+  "deleteSmartPlaylistConfirm": "क्या इस स्मार्ट प्लेलिस्ट को हटाना है? यह केवल सहेजे गए नियमों को हटाता है — आपके गाने प्रभावित नहीं होते।",
+  "smartPlaylistPreviewCount": "अभी {count} गाने मिल रहे हैं",
+  "@smartPlaylistPreviewCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saveAsClip": "क्लिप के रूप में सहेजें",
+  "generatingClip": "क्लिप उत्पन्न हो रहा है…",
+  "clipDuration": "क्लिप की अवधि",
+  "clipStartOffset": "आरंभ बिंदु",
+  "saveClip": "क्लिप सहेजें",
+  "clipSavedToDevice": "क्लिप डिवाइस पर सहेजी गई",
+  "clipSaveFailed": "क्लिप सहेज नहीं सके। कृपया फिर से प्रयास करें।",
+  "playlistSavedToDevice": "प्लेलिस्ट डिवाइस पर सहेजी गई",
+  "trackTags": "ट्रैक टैग्स",
+  "editTrackTags": "टैग संपादित करें",
+  "addTrackTag": "टैग जोड़ें",
+  "noTrackTagsYet": "अभी तक कोई टैग नहीं है। इस ट्रैक के किसी हिस्से पर सीधे जाने के लिए एक टैग जोड़ें।",
+  "trackTagNameHint": "उदाहरण के लिए गीत का शीर्षक या कलाकार",
+  "trackTagPosition": "पद",
+  "useCurrentPosition": "वर्तमान स्थिति का उपयोग करें",
+  "isThisASet": "इस ट्रैक में टाइमस्टैम्प जोड़ें",
+  "tagPartsForEasySwitching": "किसी भी क्षण को चिह्नित करें — अध्याय, मुख्य अंश, बुकमार्क, या कुछ भी।",
+  "tagThisTrack": "टैग जोड़ें",
+  "pasteSetlist": "टाइमस्टैम्प आयात करें",
+  "pasteSetlistDialogTitle": "समय-मुद्राएँ आयात करें",
+  "pasteSetlistHint": "यहाँ टाइमस्टैम्प पेस्ट करें, जैसे\n0:00 परिचय\n3:45 अध्याय का नाम",
+  "importAction": "आयात",
+  "tagsImportedMessage": "आयातित {count} टैग",
+  "@tagsImportedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noTagsFoundInPaste": "पेस्ट किए गए टेक्स्ट में कोई टाइमस्टैम्प नहीं मिला।",
+  "bitrate": "बिटरेट",
+  "buyMeCoffee": "मुझे कॉफ़ी पिलाएँ",
+  "cancel": "रद्द करें",
+  "coffeeSupport": "कॉफ़ी के साथ समर्थन",
+  "composer": "रचनाकार",
+  "connectWithUs": "हमसे जुड़ें",
+  "copied": "नकल किया गया",
+  "copy": "प्रतिलिपि",
+  "create": "बनाएँ",
+  "createFirstPlaylist": "अपना पहला प्लेलिस्ट बनाने के लिए ऊपर दिए गए बटन पर टैप करें।",
+  "createPlaylist": "प्लेलिस्ट बनाएँ",
+  "darkMode": "डार्क मोड",
+  "dateAdded": "जोड़ा गया दिनांक",
+  "dateModified": "संशोधित तिथि",
+  "delete": "मिटायें",
+  "deletePlaylist": "प्लेलिस्ट हटाएँ",
+  "deletePlaylistConfirm": "क्या आप वास्तव में हटाना चाहते हैं?",
+  "deletePlaylistConfirmation": "क्या आप इस प्लेलिस्ट को हटाना चाहते हैं?",
+  "deselectAll": "सभी को अनचुनें",
+  "details": "विवरण देखें",
+  "discard": "फेंको",
+  "dontShowAgain": "फिर से न दिखाएँ",
+  "duration": "अवधि",
+  "enableArtistSeparation": "कलाकार पृथक्करण सक्षम करें",
+  "enableArtistSeparationDesc": "संयुक्त कलाकार नामों को स्वचालित रूप से विभाजित करें",
+  "enjoyingAurora": "क्या आप ऑरोरा का आनंद ले रहे हैं?",
+  "enjoyingAuroraDesc": "यदि आप ऑरोरा म्यूजिक का उपयोग करना पसंद करते हैं, तो इसके विकास का समर्थन करने पर विचार करें। आपका समर्थन इसे मुफ्त बनाए रखने में मदद करता है!",
+  "error": "त्रुटि",
+  "exclusionHint": "उदा. एसी/डीसी",
+  "exclusions": "अपवाद",
+  "exclusionsDesc": "कलाकार के नाम जिन्हें कभी विभाजित नहीं किया जाना चाहिए",
+  "exit": "निकास",
+  "exitApp": "ऐप बंद करें",
+  "exitAppConfirm": "क्या आप बाहर निकलना चाहते हैं?",
+  "expandLyrics": "गीत के बोल प्रदर्शित करें",
+  "extraLarge": "अति विशाल",
+  "favoriteSongs": "पसंदीदा गाने",
+  "fileInfo": "फ़ाइल जानकारी",
+  "fileInfoDesc": "मूल्यों को कॉपी करने के लिए उन पर लंबा दबाव डालें।",
+  "fileName": "फ़ाइल का नाम",
+  "filePath": "फ़ाइल पथ",
+  "folder": "फ़ोल्डर",
+  "folders": "फ़ोल्डर",
+  "fontSize": "फ़ॉन्ट का आकार",
+  "format": "स्वरूप",
+  "forYou": "आपके लिए",
+  "general": "सामान्य",
+  "genre": "शैली",
+  "getStarted": "शुरू करें",
+  "goodQuality": "अच्छी गुणवत्ता",
+  "gotIt": "समझ गया!",
+  "grantPermission": "अनुमति दें",
+  "highQuality": "उच्च गुणवत्ता",
+  "home": "होम",
+  "kofi": "को-फ़ी",
+  "buyMeACoffee": "मुझे कॉफ़ी पिलाएँ",
+  "donationNote": "कोई दबाव नहीं - आप सेटिंग्स में बाद में भी दान कर सकते हैं।",
+  "language": "भाषा",
+  "large": "बड़ा",
+  "later": "बाद में",
+  "library": "पुस्तकालय",
+  "libraryError": "संगीत लाइब्रेरी लोड करने में त्रुटि",
+  "libraryLoaded": "संगीत पुस्तकालय लोड हो गया",
+  "libraryUpdated": "पुस्तकालय अपडेट किया गया",
+  "loading": "लोड हो रहा है",
+  "loadingLibrary": "लाइब्रेरी लोड हो रही है",
+  "lossless": "हानिरहित",
+  "lowQuality": "निम्न गुणवत्ता",
+  "lyrics": "गीत के बोल",
+  "lyricsAhead": "गीत के बोल आगे हैं",
+  "lyricsBehind": "गीत के बोल पीछे हैं।",
+  "lyricsSynced": "गीत के बोल सिंक हो गए हैं।",
+  "maybeLater": "शायद बाद में",
+  "medium": "मध्यम",
+  "metadata": "मेटाडेटा",
+  "metadataSaved": "मेटाडेटा सफलतापूर्वक सहेजा गया",
+  "metadataApplied": "मेटाडेटा सफलतापूर्वक डाउनलोड हो गया",
+  "metadataDownloadFailed": "डाउनलोड विफल हो गया। अपना कनेक्शन जांचें और फिर से प्रयास करें।",
+  "chooseArtworkFromDevice": "डिवाइस से चुनें",
+  "mostPlayed": "सबसे ज़्यादा बजाए गए",
+  "newPlaylist": "नई प्लेलिस्ट",
+  "next": "अगला",
+  "no": "नहीं",
+  "noAlbumsFound": "कोई एल्बम नहीं मिला",
+  "noArtistInfo": "कलाकार की जानकारी उपलब्ध नहीं है",
+  "noArtistsFound": "कोई कलाकार नहीं मिला",
+  "noData": "प्रदर्शित करने के लिए कोई डेटा नहीं है",
+  "noExclusions": "कोई अपवाद कॉन्फ़िगर नहीं किए गए हैं",
+  "noLyrics": "गीत के बोल उपलब्ध नहीं हैं",
+  "noLyricsDesc": "हम इस गाने के बोल नहीं ढूंढ पाए।",
+  "noLyricsFound": "कोई गीत के बोल नहीं मिले",
+  "noPermissionExplanation": "अनुमति के बिना, ऑरोरा म्यूजिक आपकी संगीत लाइब्रेरी तक पहुँच नहीं पाएगा।",
+  "noPlaylists": "कोई प्लेलिस्ट उपलब्ध नहीं हैं",
+  "noResults": "कोई परिणाम नहीं मिला",
+  "noSeparators": "कोई विभाजक कॉन्फ़िगर नहीं किए गए हैं",
+  "noSongPlaying": "कोई गीत नहीं बज रहा है",
+  "noSongsAvailable": "कोई गीत उपलब्ध नहीं हैं",
+  "noSongsInPlaylist": "इस प्लेलिस्ट में कोई गीत नहीं हैं",
+  "nowPlaying": "अब चल रहा है",
+  "onboardingAlbumArt": "सुंदर एल्बम कला",
+  "onboardingAlbumArtwork": "एल्बम की कलाकृति",
+  "onboardingAlbumArtworkDesc": "आपकी लाइब्रेरी को बेहतर बनाने के लिए उच्च-गुणवत्ता वाले एल्बम कवर लाता है।",
+  "onboardingAppInfoSubtitle": "आपका व्यक्तिगत संगीत साथी",
+  "onboardingAppInfoTitle": "अरोरा म्यूजिक में आपका स्वागत है",
+  "onboardingAudioAccess": "ऑडियो पहुँच",
+  "onboardingAudioAccessDesc": "आपकी संगीत लाइब्रेरी को चलाने और प्रबंधित करने के लिए आवश्यक",
+  "onboardingBack": "वापस",
+  "onboardingBeautifulArtwork": "सुंदर एल्बम कवर",
+  "onboardingBeautifulArtworkDesc": "स्वचालित रूप से एल्बम की कलाकृति प्राप्त करें और उसे वैसे ही प्रदर्शित करें जैसे इसे देखा जाना चाहिए।",
+  "onboardingBluetooth": "ब्लूटूथ",
+  "onboardingBluetoothDesc": "ब्लूटूथ डिवाइसों से कनेक्ट करने के लिए आवश्यक",
+  "onboardingChooseLanguage": "अपनी भाषा चुनें",
+  "languageNotListedHint": "आपकी भाषा सूचीबद्ध नहीं है? अंग्रेज़ी चुनें और अगले पृष्ठ पर जाएँ।",
+  "onboardingCompletionSubtitle": "अपने संगीत का आनंद लेना शुरू करें",
+  "onboardingCompletionTitle": "आप पूरी तरह तैयार हैं!",
+  "onboardingContinue": "जारी रखें",
+  "onboardingDynamicColors": "गतिशील रंग",
+  "onboardingDynamicColorsDesc": "मैच सिस्टम वॉलपेपर रंग",
+  "onboardingGrantPermissions": "अनुमति दें",
+  "onboardingInternetSubtitle": "ऑरोरा म्यूजिक इंटरनेट का उपयोग कैसे करता है",
+  "onboardingInternetTitle": "इंटरनेट का उपयोग",
+  "onboardingLocalMusic": "आपके डिवाइस पर संगीत",
+  "onboardingLocalMusicDesc": "अपने संगीत फ़ाइलों को अपने हाथ में रखें",
+  "onboardingLyrics": "गीत के बोल",
+  "onboardingLyricsDesc": "आपके गीतों के लिए सिंक्रोनाइज़्ड बोल डाउनलोड करें",
+  "onboardingLyricsSupport": "गीत-लेखन सहायता",
+  "onboardingLyricsSupportDesc": "सुनते समय सिंक्रोनाइज़ किए गए बोल देखें",
+  "onboardingMaterialDesign": "मैटेरियल यू डिज़ाइन",
+  "onboardingMaterialDesignDesc": "आपकी पसंद के अनुसार अनुकूलित होने वाले गतिशील रंग",
+  "onboardingMusicMetadata": "संगीत मेटाडेटा",
+  "onboardingMusicMetadataDesc": "कलाकार की जानकारी, एल्बम का विवरण और ट्रैक की जानकारी प्राप्त करता है।",
+  "onboardingNotifications": "सूचनाएँ",
+  "onboardingNotificationsDesc": "प्लेबैक नियंत्रण और अपडेट दिखाएँ",
+  "onboardingOptional": "वैकल्पिक",
+  "onboardingPermissionsSubtitle": "Aurora Music को ठीक से काम करने के लिए इन अनुमतियों की आवश्यकता है।",
+  "onboardingPermissionsTitle": "अनुमति दें",
+  "onboardingPrivacyNote": "आपकी गोपनीयता महत्वपूर्ण है। सभी संगीत फ़ाइलें आपके डिवाइस पर ही रहती हैं।",
+  "onboardingRequesting": "अनुरोध कर रहा है...",
+  "onboardingRequired": "आवश्यक",
+  "onboardingAudioRequired": "जारी रखने के लिए ऑडियो एक्सेस आवश्यक है। कृपया ऊपर दी गई अनुमति प्रदान करें।",
+  "onboardingSelectLanguage": "अपनी पसंदीदा भाषा चुनें",
+  "onboardingSmartPlaylists": "स्मार्ट प्लेलिस्ट",
+  "onboardingSmartPlaylistsDesc": "अपने संगीत संग्रह बनाएँ और प्रबंधित करें",
+  "onboardingStartListening": "सुनना शुरू करें",
+  "onboardingStorageAccess": "भंडारण पहुँच",
+  "onboardingStorageAccessDesc": "आपके डिवाइस से संगीत फ़ाइलें पढ़ने के लिए आवश्यक",
+  "onboardingVisualizerAccess": "दृश्यीकरण उपकरण",
+  "onboardingVisualizerAccessDesc": "यह विज़ुअलाइज़र को आपके डिवाइस के ऑडियो सत्र को लाइव बार स्पेक्ट्रम के लिए पढ़ने की अनुमति देता है। कोई ऑडियो कभी रिकॉर्ड नहीं किया जाता।",
+  "onboardingThemeSubtitle": "अपनी शैली के अनुरूप एक थीम चुनें",
+  "onboardingThemeTitle": "अपनी लुक को कस्टमाइज़ करें",
+  "beta_welcome_title": "बीटा परीक्षण कार्यक्रम",
+  "beta_welcome_thanks": "हमारे बीटा परीक्षण कार्यक्रम में शामिल होने और ऑरोरा म्यूजिक को बेहतर बनाने में मदद करने के लिए धन्यवाद।",
+  "beta_expect_bugs_title": "बग्स की उम्मीद करें",
+  "beta_expect_bugs_desc": "आप क्रैश या अनपेक्षित व्यवहार का सामना कर सकते हैं। यह एक परीक्षण संस्करण है।",
+  "beta_feedback_title": "प्रतिक्रिया मायने रखती है",
+  "beta_feedback_desc": "आपकी रिपोर्टें और सुझाव हमें ऐप को सभी के लिए बेहतर बनाने में मदद करते हैं।",
+  "beta_updates_title": "बार-बार अपडेट",
+  "beta_updates_desc": "हम विकास जारी रखते हुए नई सुविधाएँ और सुधार नियमित रूप से जारी करते हैं।",
+  "oneTimeSupport": "त्वरित एक-बार सहायता",
+  "openFolder": "फ़ाइल मैनेजर में खोलें",
+  "openFolderInfo": "इस स्थान पर नेविगेट करने के लिए अपने फ़ाइल प्रबंधक का उपयोग करें।",
+  "ownTimer": "अपना टाइमर",
+  "permDeny": "अनुमति अस्वीकार कर दी गई",
+  "permissionExplanation": "Aurora Music को ठीक से काम करने के लिए इन अनुमतियों की आवश्यकता है। कृपया ऐप सेटिंग्स में ये अनुमतियाँ प्रदान करें।",
+  "permissionLater": "आप बाद में ऐप सेटिंग्स में अनुमतियाँ दे सकते हैं।",
+  "permissionRequired": "अनुमति आवश्यक",
+  "playAll": "सभी चलाएँ",
+  "playingFrom": "से खेलना",
+  "playlist": "प्लेलिस्ट",
+  "playlistName": "प्लेलिस्ट का नाम",
+  "playlists": "प्लेलिस्ट",
+  "possibleReasons": "संभावित कारण:",
+  "privacyNotice": "इस ऐप का उपयोग जारी रखकर, आप हमारी गोपनीयता नीति से सहमत हैं।",
+  "privacyPolicyLink": "हमारी गोपनीयता नीति पढ़ें",
+  "quality": "गुणवत्ता",
+  "qualityDesc": "फ़ॉर्मेट और बिटरेट के आधार पर ऑडियो गुणवत्ता",
+  "queue": "कतार",
+  "queueEmpty": "कतार खाली है",
+  "reasonFormat": "फ़ाइल प्रारूप मेटाडेटा संपादन का समर्थन नहीं करता है।",
+  "reasonPermissions": "भंडारण अनुमतियाँ प्रदान नहीं की गईं",
+  "reasonReadonly": "फ़ाइल केवल-पठन या बाहरी भंडारण पर है।",
+  "recentlyAdded": "हाल ही में जोड़ा गया",
+  "recentlyPlayed": "हाल ही में खेला गया",
+  "recentlyPlayedArtists": "हाल ही में बजाए गए कलाकार",
+  "recentlyPlayedSongs": "हाल ही में बजाए गए गाने",
+  "refreshing": "ताज़गी...",
+  "refreshLyrics": "गीत के बोल ताज़ा करें",
+  "remove": "हटाएँ",
+  "removeSong": "गाना हटाएँ",
+  "removeSongConfirmation": "क्या इस गाने को प्लेलिस्ट से हटाया जाए?",
+  "rename": "नाम बदलें",
+  "renamePlaylist": "प्लेलिस्ट का नाम बदलें",
+  "repeat": "दोहराएँ",
+  "reset": "पुनः आरंभ करें",
+  "resetArtistSeparationDesc": "यह सभी डिफ़ॉल्ट विभाजक और अपवर्गों को पुनर्स्थापित करेगा।",
+  "resetToDefaults": "डिफ़ॉल्ट पर रीसेट करें",
+  "result": "परिणाम",
+  "results": "परिणाम",
+  "retry": "दोबारा प्रयास करें",
+  "sampleRate": "नमूना दर",
+  "save": "बचाएँ",
+  "saveChanges": "बदलाव सहेजें",
+  "saveChangesDesc": "क्या आप अपने बदलाव सहेजना चाहते हैं?",
+  "saveFailed": "बचाई गई असफल",
+  "saveFailedDesc": "इस फ़ाइल में मेटाडेटा सहेजने में असमर्थ।",
+  "scanFailed": "स्कैन विफल हो गया",
+  "scanningSongs": "गीतों को स्कैन करना",
+  "search": "खोजें",
+  "searchAlbums": "एल्बम खोजें",
+  "searchArtists": "कलाकार खोजें",
+  "searchFailed": "खोज असफल हुई",
+  "searchLyrics": "गीत के बोल खोजें",
+  "searchMetadata": "मेटाडेटा खोजें",
+  "searchTracks": "ट्रैक खोजें",
+  "selectAll": "सभी चुनें",
+  "selectArtist": "कलाकार चुनें",
+  "selected": "चुना हुआ",
+  "selectPlaylist": "प्लेलिस्ट चुनें",
+  "separator": "विभाजक",
+  "separatorHint": "उदाहरण के लिए / या फीचर्ड",
+  "separators": "विभाजक",
+  "set": "सेट",
+  "setMinutes": "निर्धारित मिनट",
+  "settings": "सेटिंग्स",
+  "settingsAbout": "बारे में",
+  "settingsAboutApp": "अरोरा म्यूजिक के बारे में",
+  "settingsAboutSubtitle": "संस्करण, प्रतिक्रिया और अपडेट",
+  "settingsAccentColor": "उल्लेखनीय रंग",
+  "settingsAppearance": "दृश्यमानता",
+  "settingsAppearanceSubtitle": "थीम, रंग और लेआउट",
+  "settingsAudio": "ऑडियो",
+  "settingsBackground": "पृष्ठभूमि",
+  "settingsCacheCleared": "कैश साफ़ हो गया",
+  "settingsCacheInfo": "कैश जानकारी",
+  "settingsCacheInfoDesc": "भंडारण उपयोग देखें",
+  "settingsCheckingUpdates": "अपडेट्स की जाँच...",
+  "settingsCheckUpdates": "अपडेट्स के लिए जाँच करें",
+  "settingsCheckUpdatesDesc": "नवीनतम संस्करण प्राप्त करें",
+  "settingsClearCache": "कैश साफ़ करें",
+  "settingsClearCacheDesc": "सभी कैश किए गए डेटा को हटाएँ",
+  "settingsClearCacheMessage": "सभी कैश किए गए डेटा को आवश्यकतानुसार हटा दिया जाएगा और पुनर्निर्मित किया जाएगा।",
+  "settingsClearCacheTitle": "कैश साफ़ करें?",
+  "settingsDataWindow": "डेटा विंडो",
+  "settingsDataWindowDesc": "रिकैप स्क्रीन कितनी पीछे तक दिखती है",
+  "settingsGapless": "बिना रुकावट प्लेबैक",
+  "settingsGaplessDesc": "निर्बाध ट्रैक संक्रमण",
+  "settingsCrossfade": "क्रॉसफ़ेड",
+  "settingsCrossfadeDesc": "एक ट्रैक के अंत को दूसरे ट्रैक में सहजता से मिलाएँ।",
+  "crossfadeDuration": "क्रॉसफ़ेड अवधि",
+  "crossfadeDurationDesc": "ट्रैकों के बीच का ओवरलैप कितनी देर तक रहता है",
+  "settingsInsights": "अंतर्दृष्टियाँ",
+  "settingsInsightsSubtitle": "सुनने का पुनरावलोकन काल",
+  "settingsLast7Days": "पिछले 7 दिन",
+  "settingsLast30Days": "पिछले 30 दिन",
+  "settingsLanguage": "भाषा",
+  "settingsLayout": "लेआउट",
+  "settingsLibraryFolders": "पुस्तकालय फ़ोल्डर",
+  "settingsLibraryFoldersSubtitle": "स्कैन फ़ोल्डरों को शामिल करें या बाहर रखें",
+  "settingsMaterialYou": "आपकी सामग्री",
+  "settingsMaterialYouDesc": "वॉलपेपर से गतिशील रंग",
+  "settingsMonthlyRecap": "मासिक सारांश",
+  "settingsMonthlyRecapDesc": "हर महीने एक बैनर दिखाएँ (साप्ताहिक की तुलना में प्राथमिकता लेता है)",
+  "settingsNormalization": "आयतन सामान्यीकरण",
+  "settingsNormalizationDesc": "सुसंगत वॉल्यूम स्तर · आपकी फ़ाइलों में ReplayGain टैग्स की आवश्यकता है",
+  "playbackSpeed": "प्लेबैक गति",
+  "playbackSpeedDesc": "ऑडियो प्लेबैक दर समायोजित करें",
+  "adjustPitchWithSpeed": "गति के साथ पिच समायोजित करें",
+  "adjustPitchWithSpeedDesc": "बंद होने पर, पिच शिफ्ट के बिना टेम्पो बदलता है।",
+  "settingsPlayback": "प्लेबैक",
+  "settingsPlaybackSubtitle": "गति, अंतराल रहित और सामान्यीकरण",
+  "settingsRecapBannerDesc": "बैनर आपके पहले खेलने से गिने गए प्रत्येक नए सप्ताह या महीने की शुरुआत में होम स्क्रीन पर दिखाई देता है। \"बाद में\" पर टैप करने से यह सत्र के लिए छिपा रहता है; \"दिखाएँ\" पर टैप करने से इसे देखा हुआ माना जाता है।",
+  "settingsRecapContent": "सारांश सामग्री",
+  "settingsRecapContentDesc": "यह नियंत्रित करता है कि जब आप रिकैप स्क्रीन को मैन्युअली या बैनर के माध्यम से खोलते हैं, तो वह कितनी पिछली जानकारी दिखाती है।",
+  "settingsPreviewRecap": "अग्रिम पुनरावलोकन सारांश",
+  "settingsPreviewRecapDesc": "वर्तमान सेटिंग्स के साथ आपका सारांश अभी कैसा दिखता है देखें।",
+  "settingsRecapSchedule": "सारांश अनुसूची",
+  "settingsStorage": "भंडारण",
+  "settingsCacheItems": "{count} आइटम",
+  "@settingsCacheItems": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMemoryCache": "मेमोरी कैश",
+  "settingsStorageSubtitle": "कैश और मीडिया फ़ाइलें",
+  "settingsTheme": "थीम",
+  "settingsTools": "उपकरण",
+  "settingsResetSetup": "सेटअप रीसेट करें",
+  "settingsResetSetupDesc": "ऑनबोर्डिंग प्रक्रिया को फिर से शुरू करें",
+  "settingsUpdateAvailable": "अपडेट उपलब्ध है!",
+  "settingsUpToDate": "आप अप-टू-डेट हैं",
+  "settingsWeeklyRecap": "साप्ताहिक सारांश",
+  "settingsWeeklyRecapDesc": "अपनी पहली प्ले के बाद हर हफ्ते एक बैनर दिखाएँ",
+  "settingsVersion": "संस्करण",
+  "share": "साझा करें",
+  "showChangelog": "परिवर्तन-इतिहास दिखाएँ",
+  "shuffle": "शफल",
+  "size": "आकार",
+  "sleepTimer": "नींद टाइमर",
+  "small": "छोटा",
+  "songInfo": "गीत की जानकारी",
+  "songs": "गीत",
+  "songsLoaded": "गीत लोड हुए",
+  "standardQuality": "मानक गुणवत्ता",
+  "startType": "खोजने के लिए टाइप करना शुरू करें",
+  "storagePermissionNeeded": "मेटाडेटा संपादित करने के लिए, ऑरोरा म्यूजिक को फ़ाइलों का प्रबंधन करने की अनुमति चाहिए। कृपया सेटिंग्स में 'सभी फ़ाइलों तक पहुँच' प्रदान करें।",
+  "suggestedArtists": "कलाकार आपके लिए",
+  "suggestedTracks": "सुझाए गए ट्रैक",
+  "supportAurora": "अरोरा का समर्थन करें",
+  "supportAuroraBtn": "अरोरा का समर्थन करें",
+  "supportAuroraDescShort": "ऐप को मुफ्त बनाए रखने में मदद करें",
+  "supportAuroraMessage": "Aurora Music को मुफ्त बनाए रखने और भविष्य के विकास का समर्थन करने में मदद करें। हर योगदान बहुत मायने रखता है!",
+  "supportAuroraTitle": "अरोरा म्यूजिक का समर्थन करें",
+  "tapAddToAddSongs": "गीत जोड़ने के लिए + पर टैप करें",
+  "reorderSongs": "गीतों को फिर से क्रमबद्ध करें",
+  "done": "हो गया",
+  "thankYouSupport": "आपके समर्थन के लिए धन्यवाद!",
+  "theme": "थीम",
+  "title": "शीर्षक",
+  "topResult": "शीर्ष परिणाम",
+  "total": "कुल",
+  "track": "ट्रैक",
+  "trackInfo": "ट्रैक की जानकारी",
+  "trackInfoDesc": "ट्रैक की जानकारी संशोधित करने के लिए संपादन आइकन पर टैप करें।",
+  "trackInfoEditDesc": "नीचे दिए गए फ़ील्ड्स को संपादित करें, फिर सहेजने के लिए चेक आइकन पर टैप करें।",
+  "tracks": "ट्रैक",
+  "unknown": "अज्ञात",
+  "unknownArtist": "अज्ञात कलाकार",
+  "updateAvailable": "अपडेट उपलब्ध है",
+  "updateMessage": "एक नया संस्करण उपलब्ध है",
+  "updateNow": "अभी अपडेट करें",
+  "viewArtist": "कलाकार देखें",
+  "viewDetails": "विवरण देखें",
+  "welcomeBack": "फिर से स्वागत है",
+  "whatsNew": "क्या नया है",
+  "view_changelog": "चेंजलॉग और नई सुविधाएँ देखें",
+  "year": "वर्ष",
+  "yes": "हाँ",
+  "yourLibrary": "आपकी लाइब्रेरी",
+  "yourPlaylists": "आपकी प्लेलिस्ट",
+  "homeLayout": "घर का लेआउट",
+  "homeLayoutDesc": "होम टैब पर अनुभाग का क्रम अनुकूलित करें",
+  "customizeHomeTab": "होम टैब को अनुकूलित करें",
+  "dragToReorder": "अनुभागों को पुनः व्यवस्थित करने के लिए खींचें",
+  "resetToDefault": "डिफ़ॉल्ट पर रीसेट करें",
+  "resetLayoutConfirm": "लेआउट को डिफ़ॉल्ट पर रीसेट करें?",
+  "resetLayoutMessage": "यह मूल अनुभाग क्रम और दृश्यता को बहाल करेगा।",
+  "sectionVisibility": "अनुभाग दृश्यता टॉगल करें",
+  "listeningHistory": "श्रवण इतिहास",
+  "libraryStats": "पुस्तकालय आँकड़े",
+  "back": "वापस",
+  "continueButton": "जारी रखें",
+  "skip": "छोड़ें",
+  "feedback_title": "क्या आप ऑरोरा म्यूजिक का आनंद ले रहे हैं?",
+  "maybe_later": "शायद बाद में",
+  "send_feedback": "प्रतिक्रिया भेजें",
+  "send_feedback_desc": "बग रिपोर्ट करें या फीचर सुझाएँ",
+  "contributeTranslations": "अनुवाद योगदान करें",
+  "contributeTranslationsDesc": "Crowdin पर Aurora Music का अनुवाद करने में मदद करें",
+  "contributeTranslationsTitle": "हमारा अनुवाद करने में मदद करें",
+  "contributeTranslationsSubtitle": "हमारे अद्भुत समुदाय की बदौलत ऑरोरा म्यूजिक कई भाषाओं में उपलब्ध है। ऐप को अपनी भाषा में अनुवाद करके हमें और अधिक उपयोगकर्ताओं तक पहुँचने में मदद करें — शुरू करने में केवल कुछ ही मिनट लगते हैं।",
+  "contributeTranslationsOpenCrowdin": "क्राउडइन खोलें",
+  "close": "बंद करें",
+  "settingsHighendUi": "उच्च-स्तरीय यूआई",
+  "settingsHighendUiDesc": "उन्नत दृश्य प्रभाव और एनिमेशन सक्षम करें",
+  "restartRequired": "पुनरारंभ आवश्यक",
+  "restartRequiredDesc": "UI मोड परिवर्तन लागू करने के लिए ऐप को पुनः आरंभ करने की आवश्यकता है। क्या अभी पुनः आरंभ करें?",
+  "restartNow": "अब पुनः आरंभ करें",
+  "clearUpcoming": "स्पष्ट आगामी",
+  "addToQueue": "कतार में जोड़ें",
+  "playNext": "अगला चलाएँ",
+  "removeFromQueue": "कतार से हटाएँ",
+  "play": "बजाएँ",
+  "viewAlbum": "एल्बम देखें",
+  "shuffleAll": "सभी को मिलाएँ",
+  "noSongsFound": "कोई गीत नहीं मिला",
+  "noFoldersFound": "कोई फ़ोल्डर नहीं मिला",
+  "deleteSong": "गाना हटाएँ",
+  "modifySystemSettingsPermission": "खुले हुए पृष्ठ में \"सिस्टम सेटिंग्स संशोधित करें\" की अनुमति दें, फिर से प्रयास करें।",
+  "errorMessage": "त्रुटि: {message}",
+  "@errorMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "songsAddedToQueue": "{count} गाने कतार में जोड़े गए",
+  "@songsAddedToQueue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songAddedToQueue": "{title} कतार में जोड़ा गया",
+  "@songAddedToQueue": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "songSetAsRingtone": "{title} रिंगटोन के रूप में सेट करें",
+  "@songSetAsRingtone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToSetRingtone": "रिंगटोन सेट करने में असफल: {error}",
+  "@failedToSetRingtone": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteSongConfirm": "क्या आप अपने डिवाइस से \"{title}\" हटाना चाहते हैं? इसे वापस नहीं किया जा सकता।",
+  "@deleteSongConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "songDeleted": "\"{title}\" हटाया गया",
+  "@songDeleted": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToDelete": "मिटने में असफल: {error}",
+  "@failedToDelete": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "songCount": "{count} गाने",
+  "@songCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "badgeNew": "नया",
+  "paused": "रुक गया",
+  "readyToPlay": "खेलने के लिए तैयार",
+  "tapSongToStartListening": "सुनना शुरू करने के लिए किसी गाने पर टैप करें",
+  "clearCachedLyrics": "कैश किए गए बोल साफ़ करें",
+  "lyricsCleared": "\"{title}\" के लिए कैश किए गए गीत साफ़ कर दिए गए।",
+  "@lyricsCleared": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noLyricsCached": "इस गीत के लिए कोई कैश किए गए बोल नहीं मिले।",
+  "setAsRingtone": "रिंगटोन के रूप में सेट करें",
+  "songInfoEdit": "गाने की जानकारी / संपादित करें",
+  "goToAlbum": "एल्बम पर जाएँ",
+  "goToArtist": "कलाकार के पास जाएँ",
+  "deleteFromDevice": "डिवाइस से हटाएँ",
+  "checkOutThisSong": "यह गाना देखो!",
+  "backgroundLowEndStyle": "पृष्ठभूमि शैली",
+  "backgroundLowEndStyleDesc": "ऐप का बैकग्राउंड कैसा दिखता है",
+  "backgroundBlobs": "एनिमेटेड ब्लॉब्स",
+  "backgroundSolid": "एक रंग",
+  "backgroundHighEndStyle": "अब पृष्ठभूमि में चल रहा है",
+  "backgroundHighEndStyleDesc": "अब चल रहा है स्क्रीन में पृष्ठभूमि शैली",
+  "backgroundBlurredArtwork": "धुंधली कलाकृति",
+  "accentColor": "उल्लेखनीय रंग",
+  "accentColorDesc": "ऐप का मुख्य रंग चुनें",
+  "backgroundBlur": "पृष्ठभूमि धुंधलापन",
+  "backgroundBlurDesc": "कलाकृति धुंधलापन तीव्रता",
+  "backgroundDarkness": "पृष्ठभूमि अंधकार",
+  "backgroundDarknessDesc": "कलाकृति पर ओवरले पारदर्शिता",
+  "microphoneAccessNeeded": "माइक्रोफ़ोन की पहुँच आवश्यक है",
+  "microphoneAccessDesc": "Aurora को लाइव विज़ुअलाइज़र के लिए आपके डिवाइस के ऑडियो सत्र तक पहुँचने हेतु माइक्रोफ़ोन की अनुमति चाहिए। कोई भी ऑडियो कभी रिकॉर्ड या संग्रहीत नहीं किया जाता।",
+  "recapWeek": "सप्ताह",
+  "recapMonth": "माह",
+  "recapPeriodWeek": "सप्ताह",
+  "recapPeriodMonth": "महीना",
+  "recapWeekly": "साप्ताहिक",
+  "recapMonthly": "मासिक",
+  "recapIntroAppName": "ऑरोरा संगीत",
+  "recapIntroTitle": "आपका {period} पुनरावलोकन",
+  "@recapIntroTitle": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapIntroSubtitle": "चलो देखते हैं कि तुम क्या सुन रहे थे।",
+  "recapPlayedEyebrow": "यह {period} तुमने संगीत बजाया",
+  "@recapPlayedEyebrow": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapTimeSingular": "समय",
+  "recapTimePlural": "बार",
+  "recapListenedForEyebrow": "तुमने सुनने के लिए",
+  "recapListenedForLabel": "संगीत का",
+  "recapTopTrackEyebrow": "आपका #1 ट्रैक",
+  "recapPlays": "निकालता है",
+  "recapTopTracksTitle": "शीर्ष ट्रैक",
+  "recapTopArtistEyebrow": "आपका शीर्ष कलाकार",
+  "recapTopArtistsTitle": "शीर्ष कलाकार",
+  "recapNothingToWrap": "अभी तक लपेटने के लिए कुछ नहीं है",
+  "recapNothingToWrapBody": "इस {period} पर कुछ संगीत बजाओ और वापस आओ।",
+  "@recapNothingToWrapBody": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapSwipeUp": "ऊपर स्वाइप करें",
+  "recapYourSoundLabel": "आपकी आवाज़",
+  "recapYouListenMost": "आप सबसे ज़्यादा सुनते हैं",
+  "recapOnDay": "पर {day}s",
+  "@recapOnDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "recapAroundTime": "के आसपास {time}",
+  "@recapAroundTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "recapVibesHitDifferent": "तभी माहौल कुछ अलग हो गया।",
+  "recapThatsAWrap": "काम पूरा हुआ",
+  "recapInNumbers": "आपके {period}\nआंकड़ों में",
+  "@recapInNumbers": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapNumberOneTrack": "#1 ट्रैक",
+  "recapStatTotalPlays": "कुल प्ले",
+  "recapStatTimeListened": "सुने गए समय",
+  "recapStatUniqueTracks": "अनूठे ट्रैक",
+  "recapStatTopArtist": "शीर्ष कलाकार",
+  "recapDone": "हो गया",
+  "recapWeekdayMonday": "सोमवार",
+  "recapWeekdayTuesday": "मंगलवार",
+  "recapWeekdayWednesday": "बुधवार",
+  "recapWeekdayThursday": "गुरुवार",
+  "recapWeekdayFriday": "शुक्रवार",
+  "recapWeekdaySaturday": "शनिवार",
+  "recapWeekdaySunday": "रविवार",
+  "recapBannerTitle": "संगीत का सारांश यहाँ है",
+  "recapBannerShow": "दिखाएँ",
+  "recapBannerLater": "बाद में",
+  "eqTitle": "समानाकार",
+  "eqOn": "चालू",
+  "eqOff": "बंद",
+  "eqNotAvailable": "इस डिवाइस पर इक्वलाइज़र उपलब्ध नहीं है।",
+  "eqOpenSystem": "ओपन सिस्टम इक्वलाइज़र",
+  "eqSavePreset": "प्रीसेट सहेजें",
+  "eqPresetNameHint": "उदा. मेरा बास बूस्ट",
+  "eqPresetNameEmpty": "नाम खाली नहीं हो सकता।",
+  "eqPresetNameBuiltIn": "\"{name}\" एक अंतर्निर्मित प्रीसेट नाम है।",
+  "@eqPresetNameBuiltIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eqResetAllBands": "सभी बैंड रीसेट करें",
+  "eqPresetsLabel": "पूर्वनिर्धारित सेटिंग्स",
+  "eqYourPresetsLabel": "आपके प्रीसेट्स",
+  "eqSaveCurrent": "वर्तमान सहेजें",
+  "eqSettingsSubtitle": "प्रत्येक बैंड के अनुसार ऑडियो आवृत्तियों को समायोजित करें",
+  "eqEmptyPresets": "अपनी ध्वनि समायोजित करें, फिर \"वर्तमान सहेजें\" पर टैप करें।",
+  "lyricsHint": "अन-सिंक किए हुए बोल यहाँ पेस्ट करें…\n\nप्रति छंद एक पंक्ति।",
+  "lyricsSelectLrcFile": "कृपया एक .lrc फ़ाइल चुनें",
+  "lyricsNoLyricsInFile": "उस फ़ाइल में कोई गीत के बोल नहीं मिले।",
+  "importFailed": "आयात विफल: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsImportTooltip": ".lrc फ़ाइल आयात करें",
+  "importPlaylistM3u": "प्लेलिस्ट आयात करें (.m3u)",
+  "setSyncFolder": "सिंक फ़ोल्डर सेट करें…",
+  "syncNow": "अभी सिंक करें",
+  "searchPlaylists": "प्लेलिस्ट खोजें…",
+  "pleaseSelectM3uFile": "कृपया एक .m3u या .m3u8 फ़ाइल चुनें।",
+  "noMatchingSongsForPlaylist": "उस प्लेलिस्ट के लिए कोई मेल खाने वाले गाने नहीं मिले।",
+  "importedPlaylist": "आयातित \"{name}\" ({count} गाने)",
+  "@importedPlaylist": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistsSyncWith": "प्लेलिस्ट्स {folder} के साथ सिंक होंगी।",
+  "@playlistsSyncWith": {
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotSetSyncFolder": "सिंक फ़ोल्डर सेट नहीं हो सका: {error}",
+  "@couldNotSetSyncFolder": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "setSyncFolderFirst": "पहले सिंक फ़ोल्डर सेट करें",
+  "playlistsSynced": "प्लेलिस्ट सिंक हो गईं",
+  "alreadyUpToDate": "पहले से ही अद्यतित",
+  "syncFailed": "सिंक विफल: {error}",
+  "@syncFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportFailed": "निर्यात विफल: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchFolders": "खोज फ़ोल्डर…",
+  "songInfoPath": "मार्ग",
+  "closeVisualiser": "दृश्यीकरण बंद करें",
+  "previousMode": "पिछला मोड",
+  "nextMode": "अगला मोड",
+  "sortBy": "के अनुसार क्रमबद्ध करें",
+  "colorTheme": "रंग योजना",
+  "insightsTotalPlays": "कुल प्ले",
+  "insightsTracksHeard": "ट्रैक सुने हुए",
+  "insightsEstListening": "अनुमानित। सुनना",
+  "dismiss": "अस्वीकार करें",
+  "updateVersionAvailable": "संस्करण {version} अब उपलब्ध है।",
+  "@updateVersionAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateNewVersionAvailable": "एक नया संस्करण अब उपलब्ध है।",
+  "lyricsPasteLyricsTitle": "गीत के बोल चिपकाएँ",
+  "lyricsUseLyrics": "गीत के बोल का उपयोग करें",
+  "lyricsPaste": "पेस्ट",
+  "lyricsNoLyricsYet": "अभी तक कोई गीत के बोल नहीं",
+  "lyricsPasteToGetStarted": "शुरू करने के लिए गीत के बोल पेस्ट करें",
+  "lyricsNoTimestampsYet": "अभी तक कोई टाइमस्टैम्प नहीं — जब गाना चल रहा हो तो स्टैम्प बटन दबाएँ।",
+  "lyricsAllLinesStampedHint": "सभी लाइनें स्टैम्प हो गईं — समाप्त करने के लिए सेव पर टैप करें।",
+  "lyricsAllStamped": "✓ सभी लाइनें मुद्रित",
+  "lyricsPasteFirst": "पहले बोल चिपकाएँ",
+  "lyricsTapToStamp": "⏱ स्टैम्प लाइन {current} / {total} पर टैप करें",
+  "@lyricsTapToStamp": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsNextLabel": "अगला"
+}

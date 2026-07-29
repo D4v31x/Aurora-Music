@@ -386,6 +386,28 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage>
                     ),
                   ),
 
+                  // Translation quality disclaimer
+                  FadeTransition(
+                    opacity: _exitController.isAnimating ||
+                            _exitController.isCompleted
+                        ? _exitFadeAnimation
+                        : _subtitleFadeAnimation,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
+                      child: Text(
+                        localizations.translationDisclaimerNote,
+                        style: TextStyle(
+                          fontFamily: FontConstants.fontFamily,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: subtitleColor.withValues(alpha: 0.65),
+                          height: 1.4,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+
                   // Navigation buttons
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0, top: 16.0),

@@ -1053,7 +1053,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             SnackBar(content: Text(localizations.playlistSavedToDevice)));
       }
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Export failed: $e')));
+      messenger.showSnackBar(SnackBar(content: Text(localizations.exportFailed('$e'))));
     }
   }
 

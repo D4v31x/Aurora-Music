@@ -6,7 +6,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_cs.dart';
+import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_hi.dart';
+import 'app_localizations_ru.dart';
 
 // ignore_for_file: type=lint
 
@@ -95,7 +99,11 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('cs'),
-    Locale('en')
+    Locale('de'),
+    Locale('en'),
+    Locale('es'),
+    Locale('hi'),
+    Locale('ru')
   ];
 
   /// No description provided for @aboutArtist.
@@ -176,35 +184,11 @@ abstract class AppLocalizations {
   /// **'All Songs'**
   String get allSongs;
 
-  /// No description provided for @alphaDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Thank you for testing Aurora Music before its public release. Your feedback helps us make the app even better.'**
-  String get alphaDescription;
-
-  /// No description provided for @alphaTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Exclusive Alpha Access'**
-  String get alphaTitle;
-
-  /// No description provided for @appExit.
-  ///
-  /// In en, this message translates to:
-  /// **'Exit Aurora Music'**
-  String get appExit;
-
   /// No description provided for @appName.
   ///
   /// In en, this message translates to:
   /// **'Aurora Music'**
   String get appName;
-
-  /// No description provided for @appUpToDate.
-  ///
-  /// In en, this message translates to:
-  /// **'App is up to date!'**
-  String get appUpToDate;
 
   /// No description provided for @artist.
   ///
@@ -437,37 +421,37 @@ abstract class AppLocalizations {
   /// No description provided for @isThisASet.
   ///
   /// In en, this message translates to:
-  /// **'Is this a set?'**
+  /// **'Add timestamps to this track'**
   String get isThisASet;
 
   /// No description provided for @tagPartsForEasySwitching.
   ///
   /// In en, this message translates to:
-  /// **'Tag parts of this track for easier switching between songs.'**
+  /// **'Mark any moment — chapters, highlights, bookmarks, or anything else.'**
   String get tagPartsForEasySwitching;
 
   /// No description provided for @tagThisTrack.
   ///
   /// In en, this message translates to:
-  /// **'Tag this track'**
+  /// **'Add tags'**
   String get tagThisTrack;
 
   /// No description provided for @pasteSetlist.
   ///
   /// In en, this message translates to:
-  /// **'Paste setlist'**
+  /// **'Import timestamps'**
   String get pasteSetlist;
 
   /// No description provided for @pasteSetlistDialogTitle.
   ///
   /// In en, this message translates to:
-  /// **'Paste Setlist'**
+  /// **'Import Timestamps'**
   String get pasteSetlistDialogTitle;
 
   /// No description provided for @pasteSetlistHint.
   ///
   /// In en, this message translates to:
-  /// **'Paste timestamps here, e.g.\n0:00 Intro\n3:45 Song Name'**
+  /// **'Paste timestamps here, e.g.\n0:00 Intro\n3:45 Chapter Name'**
   String get pasteSetlistHint;
 
   /// No description provided for @importAction.
@@ -506,41 +490,11 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
-  /// No description provided for @checkForUpdates.
-  ///
-  /// In en, this message translates to:
-  /// **'Check for updates'**
-  String get checkForUpdates;
-
-  /// No description provided for @checkingForUpdates.
-  ///
-  /// In en, this message translates to:
-  /// **'Checking for updates'**
-  String get checkingForUpdates;
-
   /// No description provided for @coffeeSupport.
   ///
   /// In en, this message translates to:
   /// **'Support with a coffee'**
   String get coffeeSupport;
-
-  /// No description provided for @comingSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Coming soon'**
-  String get comingSoon;
-
-  /// No description provided for @communityDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Want to know what\'s happening behind the scenes? Follow us on Instagram for exclusive content and updates.'**
-  String get communityDescription;
-
-  /// No description provided for @communityTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Join Our Community'**
-  String get communityTitle;
 
   /// No description provided for @composer.
   ///
@@ -565,12 +519,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy'**
   String get copy;
-
-  /// No description provided for @coverArtUpdated.
-  ///
-  /// In en, this message translates to:
-  /// **'Cover art updated'**
-  String get coverArtUpdated;
 
   /// No description provided for @create.
   ///
@@ -644,12 +592,6 @@ abstract class AppLocalizations {
   /// **'See details'**
   String get details;
 
-  /// No description provided for @directDonation.
-  ///
-  /// In en, this message translates to:
-  /// **'Direct donation'**
-  String get directDonation;
-
   /// No description provided for @discard.
   ///
   /// In en, this message translates to:
@@ -667,12 +609,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Duration'**
   String get duration;
-
-  /// No description provided for @editPlaylist.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Playlist'**
-  String get editPlaylist;
 
   /// No description provided for @enableArtistSeparation.
   ///
@@ -697,12 +633,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'If you love using Aurora Music, consider supporting its development. Your support helps keep it free!'**
   String get enjoyingAuroraDesc;
-
-  /// No description provided for @enterPlaylistName.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter playlist name'**
-  String get enterPlaylistName;
 
   /// No description provided for @error.
   ///
@@ -746,12 +676,6 @@ abstract class AppLocalizations {
   /// **'Do you want to exit?'**
   String get exitAppConfirm;
 
-  /// No description provided for @exitDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Are you sure you want to exit?'**
-  String get exitDesc;
-
   /// No description provided for @expandLyrics.
   ///
   /// In en, this message translates to:
@@ -794,24 +718,6 @@ abstract class AppLocalizations {
   /// **'File Path'**
   String get filePath;
 
-  /// No description provided for @finalizing.
-  ///
-  /// In en, this message translates to:
-  /// **'Finalizing'**
-  String get finalizing;
-
-  /// No description provided for @finishDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Everything is ready! We wish you a delightful listening experience!'**
-  String get finishDescription;
-
-  /// No description provided for @finishTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'You\'re All Set!'**
-  String get finishTitle;
-
   /// No description provided for @folder.
   ///
   /// In en, this message translates to:
@@ -823,12 +729,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Folders'**
   String get folders;
-
-  /// No description provided for @followInstagram.
-  ///
-  /// In en, this message translates to:
-  /// **'Follow us on Instagram'**
-  String get followInstagram;
 
   /// No description provided for @fontSize.
   ///
@@ -920,12 +820,6 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get language;
 
-  /// No description provided for @languageTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose Your Language'**
-  String get languageTitle;
-
   /// No description provided for @large.
   ///
   /// In en, this message translates to:
@@ -962,23 +856,11 @@ abstract class AppLocalizations {
   /// **'Library updated'**
   String get libraryUpdated;
 
-  /// No description provided for @lightMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Light Mode'**
-  String get lightMode;
-
   /// No description provided for @loading.
   ///
   /// In en, this message translates to:
   /// **'Loading'**
   String get loading;
-
-  /// No description provided for @loadingImages.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading images'**
-  String get loadingImages;
 
   /// No description provided for @loadingLibrary.
   ///
@@ -1040,18 +922,6 @@ abstract class AppLocalizations {
   /// **'Metadata'**
   String get metadata;
 
-  /// No description provided for @metadataEditInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'Metadata editing requires a third-party app. Changes are shown for preview only.'**
-  String get metadataEditInfo;
-
-  /// No description provided for @metadataInfoTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Metadata'**
-  String get metadataInfoTitle;
-
   /// No description provided for @metadataSaved.
   ///
   /// In en, this message translates to:
@@ -1075,12 +945,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose from device'**
   String get chooseArtworkFromDevice;
-
-  /// No description provided for @moreResults.
-  ///
-  /// In en, this message translates to:
-  /// **'More Results'**
-  String get moreResults;
 
   /// No description provided for @mostPlayed.
   ///
@@ -1166,12 +1030,6 @@ abstract class AppLocalizations {
   /// **'No playlists available'**
   String get noPlaylists;
 
-  /// No description provided for @noPlaylistsCreated.
-  ///
-  /// In en, this message translates to:
-  /// **'No playlists created'**
-  String get noPlaylistsCreated;
-
   /// No description provided for @noResults.
   ///
   /// In en, this message translates to:
@@ -1202,41 +1060,17 @@ abstract class AppLocalizations {
   /// **'No songs in this playlist'**
   String get noSongsInPlaylist;
 
-  /// No description provided for @noUpdateFound.
-  ///
-  /// In en, this message translates to:
-  /// **'No update found'**
-  String get noUpdateFound;
-
-  /// No description provided for @noUpper.
-  ///
-  /// In en, this message translates to:
-  /// **'No'**
-  String get noUpper;
-
   /// No description provided for @nowPlaying.
   ///
   /// In en, this message translates to:
   /// **'Now Playing'**
   String get nowPlaying;
 
-  /// No description provided for @ofMusic.
-  ///
-  /// In en, this message translates to:
-  /// **'of music'**
-  String get ofMusic;
-
   /// No description provided for @onboardingAlbumArt.
   ///
   /// In en, this message translates to:
   /// **'Beautiful Album Art'**
   String get onboardingAlbumArt;
-
-  /// No description provided for @onboardingAlbumArtDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatically fetch and display album artwork'**
-  String get onboardingAlbumArtDesc;
 
   /// No description provided for @onboardingAlbumArtwork.
   ///
@@ -1334,24 +1168,6 @@ abstract class AppLocalizations {
   /// **'Continue'**
   String get onboardingContinue;
 
-  /// No description provided for @onboardingDarkMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark Mode'**
-  String get onboardingDarkMode;
-
-  /// No description provided for @onboardingDarkModeDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Easy on the eyes in low light'**
-  String get onboardingDarkModeDesc;
-
-  /// No description provided for @alwaysOn.
-  ///
-  /// In en, this message translates to:
-  /// **'Always On'**
-  String get alwaysOn;
-
   /// No description provided for @onboardingDynamicColors.
   ///
   /// In en, this message translates to:
@@ -1381,30 +1197,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Internet Usage'**
   String get onboardingInternetTitle;
-
-  /// No description provided for @onboardingLightMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Light Mode'**
-  String get onboardingLightMode;
-
-  /// No description provided for @onboardingLightModeDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Bright and clean interface'**
-  String get onboardingLightModeDesc;
-
-  /// No description provided for @onboardingLocalLibrary.
-  ///
-  /// In en, this message translates to:
-  /// **'Local Music Library'**
-  String get onboardingLocalLibrary;
-
-  /// No description provided for @onboardingLocalLibraryDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Play your music files stored on your device'**
-  String get onboardingLocalLibraryDesc;
 
   /// No description provided for @onboardingLocalMusic.
   ///
@@ -1526,18 +1318,6 @@ abstract class AppLocalizations {
   /// **'Select your preferred language'**
   String get onboardingSelectLanguage;
 
-  /// No description provided for @onboardingSetupExperience.
-  ///
-  /// In en, this message translates to:
-  /// **'Let\'s set up your experience'**
-  String get onboardingSetupExperience;
-
-  /// No description provided for @onboardingSkip.
-  ///
-  /// In en, this message translates to:
-  /// **'Skip'**
-  String get onboardingSkip;
-
   /// No description provided for @onboardingSmartPlaylists.
   ///
   /// In en, this message translates to:
@@ -1580,18 +1360,6 @@ abstract class AppLocalizations {
   /// **'Lets the visualizer read your device\'s audio session for the live bar spectrum. No audio is ever recorded.'**
   String get onboardingVisualizerAccessDesc;
 
-  /// No description provided for @onboardingSyncBackup.
-  ///
-  /// In en, this message translates to:
-  /// **'Sync & Backup'**
-  String get onboardingSyncBackup;
-
-  /// No description provided for @onboardingSyncBackupDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Optional cloud sync for playlists and preferences'**
-  String get onboardingSyncBackupDesc;
-
   /// No description provided for @onboardingThemeSubtitle.
   ///
   /// In en, this message translates to:
@@ -1603,12 +1371,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Customize Your Look'**
   String get onboardingThemeTitle;
-
-  /// No description provided for @onboardingWelcome.
-  ///
-  /// In en, this message translates to:
-  /// **'Welcome to Aurora Music'**
-  String get onboardingWelcome;
 
   /// No description provided for @beta_welcome_title.
   ///
@@ -1658,12 +1420,6 @@ abstract class AppLocalizations {
   /// **'New features and fixes are released regularly as we continue development.'**
   String get beta_updates_desc;
 
-  /// No description provided for @beta_build_label.
-  ///
-  /// In en, this message translates to:
-  /// **'Beta Build'**
-  String get beta_build_label;
-
   /// No description provided for @oneTimeSupport.
   ///
   /// In en, this message translates to:
@@ -1682,23 +1438,11 @@ abstract class AppLocalizations {
   /// **'Use your file manager to navigate to this location'**
   String get openFolderInfo;
 
-  /// No description provided for @openSettings.
-  ///
-  /// In en, this message translates to:
-  /// **'Open Settings'**
-  String get openSettings;
-
   /// No description provided for @ownTimer.
   ///
   /// In en, this message translates to:
   /// **'Own timer'**
   String get ownTimer;
-
-  /// No description provided for @paypal.
-  ///
-  /// In en, this message translates to:
-  /// **'PayPal'**
-  String get paypal;
 
   /// No description provided for @permDeny.
   ///
@@ -1723,18 +1467,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Permission Required'**
   String get permissionRequired;
-
-  /// No description provided for @permissionsDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'To provide you with the best experience, Aurora Music needs access to certain features of your device.'**
-  String get permissionsDescription;
-
-  /// No description provided for @permissionsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Now, the important stuff'**
-  String get permissionsTitle;
 
   /// No description provided for @playAll.
   ///
@@ -1772,18 +1504,6 @@ abstract class AppLocalizations {
   /// **'Possible reasons:'**
   String get possibleReasons;
 
-  /// No description provided for @preparingToScan.
-  ///
-  /// In en, this message translates to:
-  /// **'Preparing to scan'**
-  String get preparingToScan;
-
-  /// No description provided for @privacyDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'At Aurora Music, we take your privacy seriously. We collect anonymous data to improve your experience and enhance our services. By using the app, you agree to our Privacy Policy.'**
-  String get privacyDescription;
-
   /// No description provided for @privacyNotice.
   ///
   /// In en, this message translates to:
@@ -1795,18 +1515,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read our Privacy Policy'**
   String get privacyPolicyLink;
-
-  /// No description provided for @privacyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your Privacy Matters'**
-  String get privacyTitle;
-
-  /// No description provided for @pullToRefresh.
-  ///
-  /// In en, this message translates to:
-  /// **'Pull to refresh'**
-  String get pullToRefresh;
 
   /// No description provided for @quality.
   ///
@@ -1831,12 +1539,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Queue is empty'**
   String get queueEmpty;
-
-  /// No description provided for @quickAccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Quick Access'**
-  String get quickAccess;
 
   /// No description provided for @reasonFormat.
   ///
@@ -1868,12 +1570,6 @@ abstract class AppLocalizations {
   /// **'Recently Played'**
   String get recentlyPlayed;
 
-  /// No description provided for @recentlyPlayedAlbums.
-  ///
-  /// In en, this message translates to:
-  /// **'Recently played albums'**
-  String get recentlyPlayedAlbums;
-
   /// No description provided for @recentlyPlayedArtists.
   ///
   /// In en, this message translates to:
@@ -1886,12 +1582,6 @@ abstract class AppLocalizations {
   /// **'Recently played songs'**
   String get recentlyPlayedSongs;
 
-  /// No description provided for @recommendedApps.
-  ///
-  /// In en, this message translates to:
-  /// **'Recommended apps:'**
-  String get recommendedApps;
-
   /// No description provided for @refreshing.
   ///
   /// In en, this message translates to:
@@ -1903,12 +1593,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refresh Lyrics'**
   String get refreshLyrics;
-
-  /// No description provided for @releaseToRefresh.
-  ///
-  /// In en, this message translates to:
-  /// **'Release to refresh'**
-  String get releaseToRefresh;
 
   /// No description provided for @remove.
   ///
@@ -1927,12 +1611,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove this song from the playlist?'**
   String get removeSongConfirmation;
-
-  /// No description provided for @removeSongs.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get removeSongs;
 
   /// No description provided for @rename.
   ///
@@ -2023,12 +1701,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unable to save metadata to this file.'**
   String get saveFailedDesc;
-
-  /// No description provided for @savingMetadata.
-  ///
-  /// In en, this message translates to:
-  /// **'Saving metadata...'**
-  String get savingMetadata;
 
   /// No description provided for @scanFailed.
   ///
@@ -2126,12 +1798,6 @@ abstract class AppLocalizations {
   /// **'Separators'**
   String get separators;
 
-  /// No description provided for @separatorsDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Characters used to split artist names'**
-  String get separatorsDesc;
-
   /// No description provided for @set.
   ///
   /// In en, this message translates to:
@@ -2173,12 +1839,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Accent Color'**
   String get settingsAccentColor;
-
-  /// No description provided for @settingsAccentColorDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose the app accent color'**
-  String get settingsAccentColorDesc;
 
   /// No description provided for @settingsAppearance.
   ///
@@ -2263,30 +1923,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear Cache?'**
   String get settingsClearCacheTitle;
-
-  /// No description provided for @settingsDarkMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark Mode'**
-  String get settingsDarkMode;
-
-  /// No description provided for @settingsDarkModeDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch to dark theme'**
-  String get settingsDarkModeDesc;
-
-  /// No description provided for @settingsDisabled.
-  ///
-  /// In en, this message translates to:
-  /// **'Disabled'**
-  String get settingsDisabled;
-
-  /// No description provided for @settingsEnabled.
-  ///
-  /// In en, this message translates to:
-  /// **'Enabled'**
-  String get settingsEnabled;
 
   /// No description provided for @settingsDataWindow.
   ///
@@ -2702,18 +2338,6 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get done;
 
-  /// No description provided for @testArtistString.
-  ///
-  /// In en, this message translates to:
-  /// **'Test artist string'**
-  String get testArtistString;
-
-  /// No description provided for @testSeparation.
-  ///
-  /// In en, this message translates to:
-  /// **'Test Separation'**
-  String get testSeparation;
-
   /// No description provided for @thankYouSupport.
   ///
   /// In en, this message translates to:
@@ -2774,12 +2398,6 @@ abstract class AppLocalizations {
   /// **'Tracks'**
   String get tracks;
 
-  /// No description provided for @tryAgain.
-  ///
-  /// In en, this message translates to:
-  /// **'Try Again'**
-  String get tryAgain;
-
   /// No description provided for @unknown.
   ///
   /// In en, this message translates to:
@@ -2798,12 +2416,6 @@ abstract class AppLocalizations {
   /// **'Update Available'**
   String get updateAvailable;
 
-  /// No description provided for @updateFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Library update failed'**
-  String get updateFailed;
-
   /// No description provided for @updateMessage.
   ///
   /// In en, this message translates to:
@@ -2815,18 +2427,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update Now'**
   String get updateNow;
-
-  /// No description provided for @userSettings.
-  ///
-  /// In en, this message translates to:
-  /// **'User settings'**
-  String get userSettings;
-
-  /// No description provided for @versionCheckError.
-  ///
-  /// In en, this message translates to:
-  /// **'New version couldn\'t be checked'**
-  String get versionCheckError;
 
   /// No description provided for @viewArtist.
   ///
@@ -2846,29 +2446,11 @@ abstract class AppLocalizations {
   /// **'Welcome Back'**
   String get welcomeBack;
 
-  /// No description provided for @welcomeDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Embark on a journey with your music. Listen like never before. Elevate your music experience to a new level.'**
-  String get welcomeDescription;
-
-  /// No description provided for @welcomeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Welcome to Aurora Music'**
-  String get welcomeTitle;
-
   /// No description provided for @whatsNew.
   ///
   /// In en, this message translates to:
-  /// **'What\'s New'**
+  /// **'What\'s new'**
   String get whatsNew;
-
-  /// No description provided for @whats_new.
-  ///
-  /// In en, this message translates to:
-  /// **'What\'s New'**
-  String get whats_new;
 
   /// No description provided for @view_changelog.
   ///
@@ -2887,12 +2469,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Yes'**
   String get yes;
-
-  /// No description provided for @yesUpper.
-  ///
-  /// In en, this message translates to:
-  /// **'Yes'**
-  String get yesUpper;
 
   /// No description provided for @yourLibrary.
   ///
@@ -2990,35 +2566,11 @@ abstract class AppLocalizations {
   /// **'Enjoying Aurora Music?'**
   String get feedback_title;
 
-  /// No description provided for @feedback_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Your feedback helps make Aurora Music better! Found a bug or have an idea? We\'d love to hear from you.'**
-  String get feedback_description;
-
-  /// No description provided for @report_bug.
-  ///
-  /// In en, this message translates to:
-  /// **'Report Bug'**
-  String get report_bug;
-
-  /// No description provided for @suggest_feature.
-  ///
-  /// In en, this message translates to:
-  /// **'Suggest Feature'**
-  String get suggest_feature;
-
   /// No description provided for @maybe_later.
   ///
   /// In en, this message translates to:
   /// **'Maybe Later'**
   String get maybe_later;
-
-  /// No description provided for @dont_ask_again.
-  ///
-  /// In en, this message translates to:
-  /// **'Don\'t ask again'**
-  String get dont_ask_again;
 
   /// No description provided for @send_feedback.
   ///
@@ -3097,12 +2649,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restart Now'**
   String get restartNow;
-
-  /// No description provided for @upNext.
-  ///
-  /// In en, this message translates to:
-  /// **'Up Next'**
-  String get upNext;
 
   /// No description provided for @clearUpcoming.
   ///
@@ -3380,48 +2926,6 @@ abstract class AppLocalizations {
   /// **'Overlay opacity on artwork'**
   String get backgroundDarknessDesc;
 
-  /// No description provided for @feedbackHeaderTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Hey, you\'ve been with Aurora Music a while.'**
-  String get feedbackHeaderTitle;
-
-  /// No description provided for @feedbackHeaderSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'You\'re exactly who I built this for. Mind sharing a quick thought? It genuinely helps.'**
-  String get feedbackHeaderSubtitle;
-
-  /// No description provided for @feedbackLove.
-  ///
-  /// In en, this message translates to:
-  /// **'Love it'**
-  String get feedbackLove;
-
-  /// No description provided for @feedbackMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'Something\'s missing'**
-  String get feedbackMissing;
-
-  /// No description provided for @feedbackBroken.
-  ///
-  /// In en, this message translates to:
-  /// **'Something\'s broken'**
-  String get feedbackBroken;
-
-  /// No description provided for @feedbackHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Anything specific? (optional)'**
-  String get feedbackHint;
-
-  /// No description provided for @feedbackSend.
-  ///
-  /// In en, this message translates to:
-  /// **'Send'**
-  String get feedbackSend;
-
   /// No description provided for @microphoneAccessNeeded.
   ///
   /// In en, this message translates to:
@@ -3571,12 +3075,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'YOUR SOUND'**
   String get recapYourSoundLabel;
-
-  /// No description provided for @recapTopGenresTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Top Genres'**
-  String get recapTopGenresTitle;
 
   /// No description provided for @recapYouListenMost.
   ///
@@ -3800,35 +3298,293 @@ abstract class AppLocalizations {
   /// **'Dial in your sound, then tap \"Save current\".'**
   String get eqEmptyPresets;
 
-  /// No description provided for @whatsNewTitle.
+  /// No description provided for @lyricsHint.
   ///
   /// In en, this message translates to:
-  /// **'What\'s New'**
-  String get whatsNewTitle;
+  /// **'Paste unsynced lyrics here…\n\nOne line per verse line.'**
+  String get lyricsHint;
 
-  /// No description provided for @whatsNewIn.
+  /// No description provided for @lyricsSelectLrcFile.
   ///
   /// In en, this message translates to:
-  /// **'What\'s New in {version}'**
-  String whatsNewIn(String version);
+  /// **'Please select a .lrc file'**
+  String get lyricsSelectLrcFile;
 
-  /// No description provided for @whatsNewContinue.
+  /// No description provided for @lyricsNoLyricsInFile.
   ///
   /// In en, this message translates to:
-  /// **'Got it!'**
-  String get whatsNewContinue;
+  /// **'No lyrics found in that file'**
+  String get lyricsNoLyricsInFile;
 
-  /// No description provided for @whatsNewNext.
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {error}'**
+  String importFailed(String error);
+
+  /// No description provided for @lyricsImportTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Import .lrc file'**
+  String get lyricsImportTooltip;
+
+  /// No description provided for @importPlaylistM3u.
+  ///
+  /// In en, this message translates to:
+  /// **'Import playlist (.m3u)'**
+  String get importPlaylistM3u;
+
+  /// No description provided for @setSyncFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Set sync folder…'**
+  String get setSyncFolder;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get syncNow;
+
+  /// No description provided for @searchPlaylists.
+  ///
+  /// In en, this message translates to:
+  /// **'Search playlists…'**
+  String get searchPlaylists;
+
+  /// No description provided for @pleaseSelectM3uFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select an .m3u or .m3u8 file'**
+  String get pleaseSelectM3uFile;
+
+  /// No description provided for @noMatchingSongsForPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching songs found for that playlist'**
+  String get noMatchingSongsForPlaylist;
+
+  /// No description provided for @importedPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported \"{name}\" ({count} songs)'**
+  String importedPlaylist(String name, int count);
+
+  /// No description provided for @playlistsSyncWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlists will sync with: {folder}'**
+  String playlistsSyncWith(String folder);
+
+  /// No description provided for @couldNotSetSyncFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not set sync folder: {error}'**
+  String couldNotSetSyncFolder(String error);
+
+  /// No description provided for @setSyncFolderFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a sync folder first'**
+  String get setSyncFolderFirst;
+
+  /// No description provided for @playlistsSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlists synced'**
+  String get playlistsSynced;
+
+  /// No description provided for @alreadyUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Already up to date'**
+  String get alreadyUpToDate;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed: {error}'**
+  String syncFailed(String error);
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed: {error}'**
+  String exportFailed(String error);
+
+  /// No description provided for @searchFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Search folders…'**
+  String get searchFolders;
+
+  /// No description provided for @songInfoPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Path'**
+  String get songInfoPath;
+
+  /// No description provided for @closeVisualiser.
+  ///
+  /// In en, this message translates to:
+  /// **'Close visualiser'**
+  String get closeVisualiser;
+
+  /// No description provided for @previousMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous mode'**
+  String get previousMode;
+
+  /// No description provided for @nextMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Next mode'**
+  String get nextMode;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sortBy;
+
+  /// No description provided for @colorTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Theme'**
+  String get colorTheme;
+
+  /// No description provided for @insightsTotalPlays.
+  ///
+  /// In en, this message translates to:
+  /// **'Total\nPlays'**
+  String get insightsTotalPlays;
+
+  /// No description provided for @insightsTracksHeard.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracks\nHeard'**
+  String get insightsTracksHeard;
+
+  /// No description provided for @insightsEstListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Est.\nListening'**
+  String get insightsEstListening;
+
+  /// No description provided for @dismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get dismiss;
+
+  /// No description provided for @updateVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} is now available.'**
+  String updateVersionAvailable(String version);
+
+  /// No description provided for @updateNewVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version is now available.'**
+  String get updateNewVersionAvailable;
+
+  /// No description provided for @lyricsPasteLyricsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste Lyrics'**
+  String get lyricsPasteLyricsTitle;
+
+  /// No description provided for @lyricsUseLyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Lyrics'**
+  String get lyricsUseLyrics;
+
+  /// No description provided for @lyricsPaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get lyricsPaste;
+
+  /// No description provided for @lyricsNoLyricsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics yet'**
+  String get lyricsNoLyricsYet;
+
+  /// No description provided for @lyricsPasteToGetStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste lyrics to get started'**
+  String get lyricsPasteToGetStarted;
+
+  /// No description provided for @lyricsNoTimestampsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No timestamps yet — tap the stamp button while the song plays.'**
+  String get lyricsNoTimestampsYet;
+
+  /// No description provided for @lyricsAllLinesStampedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'All lines stamped — tap Save to finish.'**
+  String get lyricsAllLinesStampedHint;
+
+  /// No description provided for @lyricsAllStamped.
+  ///
+  /// In en, this message translates to:
+  /// **'✓  All lines stamped'**
+  String get lyricsAllStamped;
+
+  /// No description provided for @lyricsPasteFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste lyrics first'**
+  String get lyricsPasteFirst;
+
+  /// No description provided for @lyricsTapToStamp.
+  ///
+  /// In en, this message translates to:
+  /// **'⏱  TAP TO STAMP LINE {current} / {total}'**
+  String lyricsTapToStamp(int current, int total);
+
+  /// No description provided for @lyricsNextLabel.
   ///
   /// In en, this message translates to:
   /// **'Next'**
-  String get whatsNewNext;
+  String get lyricsNextLabel;
 
-  /// No description provided for @whatsNewPrev.
+  /// No description provided for @translationDisclaimerNote.
   ///
   /// In en, this message translates to:
-  /// **'Back'**
-  String get whatsNewPrev;
+  /// **'Some translations are AI-generated or community-contributed and may contain errors. Help us improve them on Crowdin.'**
+  String get translationDisclaimerNote;
+
+  /// No description provided for @newLanguagesAvailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Languages Available'**
+  String get newLanguagesAvailableTitle;
+
+  /// No description provided for @newLanguagesAvailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Aurora Music now supports German, Spanish, Hindi, and Russian. You can change your language in Settings.'**
+  String get newLanguagesAvailableBody;
+
+  /// No description provided for @newLanguagesGoToSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Language'**
+  String get newLanguagesGoToSettings;
+
+  /// No description provided for @newLanguagesDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get newLanguagesDismiss;
 }
 
 class _AppLocalizationsDelegate
@@ -3841,8 +3597,14 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['cs', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+        'cs',
+        'de',
+        'en',
+        'es',
+        'hi',
+        'ru'
+      ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -3853,8 +3615,16 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'cs':
       return AppLocalizationsCs();
+    case 'de':
+      return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'hi':
+      return AppLocalizationsHi();
+    case 'ru':
+      return AppLocalizationsRu();
   }
 
   throw FlutterError(

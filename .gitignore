@@ -63,3 +63,8 @@ lib/firebase_options.dart
 android/app/google-services.json
 untranslated.txt
 .understand-anything/
+apply_translations_cs.py
+to_translate_cs.txt
+android/build/reports/problems/problems-report.html
+dev_assets/flutter_arb_translator_config.json
+android/build/reports/problems/problems-report.html

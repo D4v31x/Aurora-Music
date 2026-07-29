@@ -217,20 +217,20 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                         }
                       },
                       itemBuilder: (context) => [
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'import',
-                          child: Text('Import playlist (.m3u)',
-                              style: TextStyle(color: Colors.white)),
+                          child: Text(localizations.importPlaylistM3u,
+                              style: const TextStyle(color: Colors.white)),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'sync_folder',
-                          child: Text('Set sync folder…',
-                              style: TextStyle(color: Colors.white)),
+                          child: Text(localizations.setSyncFolder,
+                              style: const TextStyle(color: Colors.white)),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'sync_now',
-                          child: Text('Sync now',
-                              style: TextStyle(color: Colors.white)),
+                          child: Text(localizations.syncNow,
+                              style: const TextStyle(color: Colors.white)),
                         ),
                         PopupMenuItem(
                           value: 'create_smart',
@@ -243,7 +243,7 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
                   ],
                   searchField: LibrarySearchField(
                     controller: _searchController,
-                    hint: 'Search playlists…',
+                    hint: localizations.searchPlaylists,
                     onChanged: (q) => setState(() => _searchQuery = q),
                     hasQuery: _searchQuery.isNotEmpty,
                     onClear: () {
@@ -842,61 +842,63 @@ class _PlaylistsScreenListState extends State<PlaylistsScreenList> {
   Future<void> _importPlaylist(
       BuildContext context, AudioPlayerService audioService) async {
     final messenger = ScaffoldMessenger.of(context);
+    final loc = AppLocalizations.of(context);
     try {
       final result = await FilePicker.pickFiles();
       final path = result?.files.single.path;
       if (path == null) return;
       final lower = path.toLowerCase();
       if (!lower.endsWith('.m3u') && !lower.endsWith('.m3u8')) {
-        messenger.showSnackBar(const SnackBar(
-            content: Text('Please select an .m3u or .m3u8 file')));
+        messenger.showSnackBar(SnackBar(
+            content: Text(loc.pleaseSelectM3uFile)));
         return;
       }
       final playlist = await audioService.importPlaylistFromM3uFile(path);
       if (playlist == null) {
-        messenger.showSnackBar(const SnackBar(
-            content: Text('No matching songs found for that playlist')));
+        messenger.showSnackBar(SnackBar(
+            content: Text(loc.noMatchingSongsForPlaylist)));
       } else {
         messenger.showSnackBar(SnackBar(
-            content: Text(
-                'Imported "${playlist.name}" (${playlist.songs.length} songs)')));
+            content: Text(loc.importedPlaylist(playlist.name, playlist.songs.length))));
       }
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Import failed: $e')));
+      messenger.showSnackBar(SnackBar(content: Text(loc.importFailed('$e'))));
     }
   }
 
   Future<void> _chooseSyncFolder(
       BuildContext context, AudioPlayerService audioService) async {
     final messenger = ScaffoldMessenger.of(context);
+    final loc = AppLocalizations.of(context);
     try {
       final folder = await FilePicker.getDirectoryPath();
       if (folder == null) return;
       await audioService.setPlaylistSyncFolder(folder);
       await audioService.syncPlaylistsWithFolder();
       messenger.showSnackBar(
-          SnackBar(content: Text('Playlists will sync with: $folder')));
+          SnackBar(content: Text(loc.playlistsSyncWith(folder))));
     } catch (e) {
       messenger.showSnackBar(
-          SnackBar(content: Text('Could not set sync folder: $e')));
+          SnackBar(content: Text(loc.couldNotSetSyncFolder('$e'))));
     }
   }
 
   Future<void> _syncNow(
       BuildContext context, AudioPlayerService audioService) async {
     final messenger = ScaffoldMessenger.of(context);
+    final loc = AppLocalizations.of(context);
     final folder = await audioService.playlistSyncFolder();
     if (folder == null) {
       messenger.showSnackBar(
-          const SnackBar(content: Text('Set a sync folder first')));
+          SnackBar(content: Text(loc.setSyncFolderFirst)));
       return;
     }
     try {
       final changed = await audioService.syncPlaylistsWithFolder();
       messenger.showSnackBar(SnackBar(
-          content: Text(changed ? 'Playlists synced' : 'Already up to date')));
+          content: Text(changed ? loc.playlistsSynced : loc.alreadyUpToDate)));
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Sync failed: $e')));
+      messenger.showSnackBar(SnackBar(content: Text(loc.syncFailed('$e'))));
     }
   }
 

@@ -26,6 +26,7 @@ import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/common/scrolling_text.dart';
 import '../../../shared/widgets/music_metadata_widget.dart';
 import '../../library/screens/artist_detail_screen.dart';
+import '../screens/track_tag_editor_screen.dart';
 import '../widgets/player_widgets.dart';
 import '../widgets/track_tags_section.dart';
 import 'fullscreen_artwork.dart';
@@ -315,10 +316,24 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       case 'queue':
         showQueueDialog(context, audioPlayerService);
         break;
+      case 'track_tags':
+        _openTrackTagEditor(audioPlayerService);
+        break;
       case 'info':
         showSongInfoDialog(context, audioPlayerService);
         break;
     }
+  }
+
+  void _openTrackTagEditor(AudioPlayerService audioPlayerService) {
+    final song = audioPlayerService.currentSong;
+    if (song == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TrackTagEditorScreen(song: song),
+      ),
+    );
   }
 
   void _openFullscreenLyrics(AudioPlayerService audioPlayerService) {

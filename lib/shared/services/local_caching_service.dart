@@ -44,13 +44,37 @@ class LocalCachingArtistService {
       await _loadCacheMetadata();
       await _expireStaleImages();
 
+      // Pre-populate memory cache from disk so cached images load instantly
+      // on subsequent app launches without hitting the network at all.
+      await _preloadFileCacheToMemory();
+
       if (_spotifyEnabled) {
         await _loadCachedData();
       }
+    } catch (_) {
+      // Token fetch or other optional setup failed — continue without Spotify
+    } finally {
       _isInitialized = true;
-    } catch (e) {
-      rethrow;
     }
+  }
+
+  /// Scans the on-disk artist image cache and populates [_imageCache] with
+  /// every file that is still within the 30-day TTL.  After this runs, calls
+  /// to [fetchArtistImage] for already-cached artists return from the in-memory
+  /// map without any file I/O or network requests.
+  Future<void> _preloadFileCacheToMemory() async {
+    try {
+      final entities = await cacheDir.list().toList();
+      for (final entity in entities) {
+        if (entity is! File || !entity.path.endsWith('.jpg')) continue;
+        final fileName = entity.path.split('/').last;
+        if (_isStale(fileName)) continue;
+        // Reverse _fileNameFor: "Artist_Name.jpg" → "Artist Name"
+        final artistName =
+            fileName.replaceAll('.jpg', '').replaceAll('_', ' ');
+        _imageCache[artistName] = entity.path;
+      }
+    } catch (_) {}
   }
 
   Future<void> _createCacheDirectory() async {
@@ -163,7 +187,7 @@ class LocalCachingArtistService {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: {'grant_type': 'client_credentials'},
-    );
+    ).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -288,7 +312,7 @@ class LocalCachingArtistService {
       final response = await _client.get(
         Uri.parse(url),
         headers: {'Authorization': 'Bearer $_accessToken'},
-      );
+      ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -311,7 +335,8 @@ class LocalCachingArtistService {
   Future<String?> _downloadAndCacheImage(
       String imageUrl, File cacheFile, String fileName) async {
     try {
-      final imageResponse = await _client.get(Uri.parse(imageUrl));
+      final imageResponse = await _client.get(Uri.parse(imageUrl))
+          .timeout(const Duration(seconds: 10));
 
       if (imageResponse.statusCode == 200) {
         await cacheFile.writeAsBytes(imageResponse.bodyBytes);

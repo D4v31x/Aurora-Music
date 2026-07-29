@@ -60,12 +60,27 @@ class SupportedLanguages {
     ),
     // ---------------------------------------------------------------------------
     // Community translations – add new entries below this line.
-    // Example:
-    // SupportedLanguage(
-    //   code: 'de',
-    //   nativeName: 'Deutsch',
-    //   englishName: 'German',
-    // ),
+    // ---------------------------------------------------------------------------
+    SupportedLanguage(
+      code: 'de',
+      nativeName: 'Deutsch',
+      englishName: 'German',
+    ),
+    SupportedLanguage(
+      code: 'es',
+      nativeName: 'Español',
+      englishName: 'Spanish',
+    ),
+    SupportedLanguage(
+      code: 'hi',
+      nativeName: 'हिन्दी',
+      englishName: 'Hindi',
+    ),
+    SupportedLanguage(
+      code: 'ru',
+      nativeName: 'Русский',
+      englishName: 'Russian',
+    ),
     // ---------------------------------------------------------------------------
   ];
 

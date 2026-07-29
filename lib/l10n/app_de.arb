@@ -1,0 +1,787 @@
+{
+  "@@locale": "de",
+  "aboutArtist": "Über den Künstler",
+  "add": "Hinzufügen",
+  "addedToPlaylist": "Zur Wiedergabeliste hinzugefügt",
+  "addedToNamedPlaylist": "Zu {name} hinzugefügt",
+  "@addedToNamedPlaylist": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addExclusion": "Ausschluss hinzufügen",
+  "addSeparator": "Trennzeichen hinzufügen",
+  "addSongs": "Songs hinzufügen",
+  "addSongsToPlaylist": "Titel zur Wiedergabeliste hinzufügen",
+  "addToPlaylist": "Zur Wiedergabeliste hinzufügen",
+  "adjustSync": "Synchronisierung anpassen",
+  "album": "Album",
+  "albums": "Alben",
+  "allSongs": "Alle Songs",
+  "appName": "Aurora Music",
+  "artist": "Künstler",
+  "artistName": "Künstlername",
+  "artists": "Künstler",
+  "artistSeparation": "Trennung der Künstler",
+  "artistSeparationDesc": "Konfigurieren Sie, wie mehrere Interpreten aufgeteilt werden",
+  "audioQuality": "Audioqualität",
+  "audioQualityDesc": "Technische Daten der Audiodatei",
+  "auroraMusic": "Aurora Music",
+  "autoPlaylists": "Automatische Wiedergabelisten",
+  "autoTag": "Auto-Tag",
+  "smartPlaylists": "Intelligente Wiedergabelisten",
+  "createSmartPlaylist": "Intelligente Wiedergabeliste erstellen…",
+  "editSmartPlaylist": "Intelligente Wiedergabeliste bearbeiten",
+  "smartPlaylistNameHint": "Name der Wiedergabeliste",
+  "smartPlaylistRules": "Regeln",
+  "addRule": "Regel hinzufügen",
+  "saveSmartPlaylist": "Speichern",
+  "matchAll": "Alle Regeln erfüllen",
+  "matchAny": "Regel „BELIEBIG“",
+  "limitResultsLabel": "Ergebnisse einschränken",
+  "noLimit": "Keine Begrenzung",
+  "deleteSmartPlaylistConfirm": "Diese intelligente Wiedergabeliste löschen? Dadurch werden lediglich die gespeicherten Regeln entfernt – deine Titel bleiben davon unberührt.",
+  "smartPlaylistPreviewCount": "Es werden derzeit {count} Titel angezeigt",
+  "@smartPlaylistPreviewCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saveAsClip": "Als Clip speichern",
+  "generatingClip": "Clip wird erstellt…",
+  "clipDuration": "Dauer des Clips",
+  "clipStartOffset": "Ausgangspunkt",
+  "saveClip": "Clip speichern",
+  "clipSavedToDevice": "Clip auf dem Gerät gespeichert",
+  "clipSaveFailed": "Der Clip konnte nicht gespeichert werden. Bitte versuche es erneut.",
+  "playlistSavedToDevice": "Playlist auf dem Gerät gespeichert",
+  "trackTags": "Track-Tags",
+  "editTrackTags": "Tags bearbeiten",
+  "addTrackTag": "Tag hinzufügen",
+  "noTrackTagsYet": "Noch keine Tags. Füge einen hinzu, um direkt zu einem bestimmten Abschnitt dieses Titels zu springen.",
+  "trackTagNameHint": "z. B. Songtitel oder Interpret",
+  "trackTagPosition": "Position",
+  "useCurrentPosition": "Aktuelle Position verwenden",
+  "isThisASet": "Zeitstempel zu diesem Titel hinzufügen",
+  "tagPartsForEasySwitching": "Markieren Sie jeden beliebigen Moment – Kapitel, Höhepunkte, Lesezeichen oder was auch immer.",
+  "tagThisTrack": "Tags hinzufügen",
+  "pasteSetlist": "Zeitstempel importieren",
+  "pasteSetlistDialogTitle": "Zeitstempel importieren",
+  "pasteSetlistHint": "Fügen Sie hier Zeitstempel ein, z. B.\n0:00 Intro\n3:45 Kapitelbezeichnung",
+  "importAction": "Importieren",
+  "tagsImportedMessage": "Importierte {count}-Tags",
+  "@tagsImportedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noTagsFoundInPaste": "Im eingefügten Text wurden keine Zeitstempel gefunden.",
+  "bitrate": "Bitrate",
+  "buyMeCoffee": "Lade mir einen Kaffee ein",
+  "cancel": "Abbrechen",
+  "coffeeSupport": "Unterstützung bei einem Kaffee",
+  "composer": "Komponist",
+  "connectWithUs": "Bleiben Sie mit uns in Kontakt",
+  "copied": "Kopiert",
+  "copy": "Kopieren",
+  "create": "Erstellen",
+  "createFirstPlaylist": "Tippe auf die Schaltfläche oben, um deine erste Wiedergabeliste zu erstellen",
+  "createPlaylist": "Playlist erstellen",
+  "darkMode": "Dunkler Modus",
+  "dateAdded": "Hinzugefügt am",
+  "dateModified": "Änderungsdatum",
+  "delete": "Löschen",
+  "deletePlaylist": "Wiedergabeliste löschen",
+  "deletePlaylistConfirm": "Möchten Sie das wirklich löschen?",
+  "deletePlaylistConfirmation": "Möchtest du diese Wiedergabeliste wirklich löschen?",
+  "deselectAll": "Alle abwählen",
+  "details": "Details anzeigen",
+  "discard": "Verwerfen",
+  "dontShowAgain": "Nicht mehr anzeigen",
+  "duration": "Dauer",
+  "enableArtistSeparation": "Künstlertrennung aktivieren",
+  "enableArtistSeparationDesc": "Kombinierte Künstlernamen automatisch trennen",
+  "enjoyingAurora": "Gefällt dir „Aurora“?",
+  "enjoyingAuroraDesc": "Wenn Ihnen Aurora Music gefällt, denken Sie doch einmal darüber nach, die Entwicklung der App zu unterstützen. Ihre Unterstützung trägt dazu bei, dass die App kostenlos bleibt!",
+  "error": "Fehler",
+  "exclusionHint": "z. B. AC/DC",
+  "exclusions": "Ausschlüsse",
+  "exclusionsDesc": "Künstlernamen, die niemals getrennt werden sollten",
+  "exit": "Beenden",
+  "exitApp": "App beenden",
+  "exitAppConfirm": "Möchten Sie das Programm beenden?",
+  "expandLyrics": "Songtext anzeigen",
+  "extraLarge": "Extra groß",
+  "favoriteSongs": "Lieblingslieder",
+  "fileInfo": "Datei-Info",
+  "fileInfoDesc": "Halten Sie die Werte gedrückt, um sie zu kopieren",
+  "fileName": "Dateiname",
+  "filePath": "Dateipfad",
+  "folder": "Ordner",
+  "folders": "Ordner",
+  "fontSize": "Schriftgröße",
+  "format": "Format",
+  "forYou": "Für dich",
+  "general": "Allgemeines",
+  "genre": "Genre",
+  "getStarted": "Erste Schritte",
+  "goodQuality": "Gute Qualität",
+  "gotIt": "Verstanden!",
+  "grantPermission": "Berechtigung erteilen",
+  "highQuality": "Hohe Qualität",
+  "home": "Startseite",
+  "kofi": "Ko-fi",
+  "buyMeACoffee": "Lade mir einen Kaffee ein",
+  "donationNote": "Kein Druck – du kannst jederzeit später unter „Einstellungen“ spenden.",
+  "language": "Sprache",
+  "large": "Groß",
+  "later": "Später",
+  "library": "Bibliothek",
+  "libraryError": "Fehler beim Laden der Musikbibliothek",
+  "libraryLoaded": "Musikbibliothek wurde geladen",
+  "libraryUpdated": "Bibliothek aktualisiert",
+  "loading": "Wird geladen",
+  "loadingLibrary": "Bibliothek wird geladen",
+  "lossless": "Verlustfrei",
+  "lowQuality": "Geringe Qualität",
+  "lyrics": "Songtext",
+  "lyricsAhead": "Es folgen die Liedtexte",
+  "lyricsBehind": "Die Liedtexte folgen",
+  "lyricsSynced": "Die Liedtexte sind synchronisiert",
+  "maybeLater": "Vielleicht später",
+  "medium": "Mittel",
+  "metadata": "Metadaten",
+  "metadataSaved": "Metadaten erfolgreich gespeichert",
+  "metadataApplied": "Metadaten wurden erfolgreich heruntergeladen",
+  "metadataDownloadFailed": "Der Download ist fehlgeschlagen. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+  "chooseArtworkFromDevice": "Wählen Sie ein Gerät aus",
+  "mostPlayed": "Am häufigsten gespielt",
+  "newPlaylist": "Neue Wiedergabeliste",
+  "next": "Weiter",
+  "no": "Nein",
+  "noAlbumsFound": "Es wurden keine Alben gefunden",
+  "noArtistInfo": "Keine Informationen zum Künstler verfügbar",
+  "noArtistsFound": "Es wurden keine Künstler gefunden",
+  "noData": "Es sind keine Daten vorhanden.",
+  "noExclusions": "Es sind keine Ausschlüsse konfiguriert",
+  "noLyrics": "Songtext nicht verfügbar",
+  "noLyricsDesc": "Wir konnten keinen Liedtext zu diesem Lied finden.",
+  "noLyricsFound": "Es wurden keine Liedtexte gefunden",
+  "noPermissionExplanation": "Ohne die entsprechenden Berechtigungen kann Aurora Music nicht auf Ihre Musikbibliothek zugreifen.",
+  "noPlaylists": "Es sind keine Wiedergabelisten verfügbar",
+  "noResults": "Es wurden keine Ergebnisse gefunden",
+  "noSeparators": "Es sind keine Trennzeichen konfiguriert",
+  "noSongPlaying": "Es wird kein Lied abgespielt",
+  "noSongsAvailable": "Es sind keine Songs verfügbar",
+  "noSongsInPlaylist": "Diese Wiedergabeliste enthält keine Titel",
+  "nowPlaying": "Aktuell läuft",
+  "onboardingAlbumArt": "Wunderschönes Albumcover",
+  "onboardingAlbumArtwork": "Albumcover",
+  "onboardingAlbumArtworkDesc": "Lädt hochwertige Albumcover herunter, um Ihre Mediathek aufzuwerten",
+  "onboardingAppInfoSubtitle": "Dein persönlicher Musikbegleiter",
+  "onboardingAppInfoTitle": "Willkommen bei Aurora Music",
+  "onboardingAudioAccess": "Audio-Zugriff",
+  "onboardingAudioAccessDesc": "Erforderlich zum Abspielen und Verwalten Ihrer Musikbibliothek",
+  "onboardingBack": "Zurück",
+  "onboardingBeautifulArtwork": "Wunderschönes Albumcover",
+  "onboardingBeautifulArtworkDesc": "Albumcover automatisch abrufen und so anzeigen, wie sie eigentlich gedacht sind",
+  "onboardingBluetooth": "Bluetooth",
+  "onboardingBluetoothDesc": "Erforderlich für die Verbindung mit Bluetooth-Geräten",
+  "onboardingChooseLanguage": "Wählen Sie Ihre Sprache",
+  "languageNotListedHint": "Ihre Sprache ist nicht aufgeführt? Wählen Sie „Englisch“ aus und fahren Sie auf der nächsten Seite fort.",
+  "onboardingCompletionSubtitle": "Genießen Sie Ihre Musik",
+  "onboardingCompletionTitle": "Das war's schon!",
+  "onboardingContinue": "Weiter",
+  "onboardingDynamicColors": "Dynamische Farben",
+  "onboardingDynamicColorsDesc": "Farben der Systemhintergründe anpassen",
+  "onboardingGrantPermissions": "Berechtigungen erteilen",
+  "onboardingInternetSubtitle": "Wie Aurora Music das Internet nutzt",
+  "onboardingInternetTitle": "Internetnutzung",
+  "onboardingLocalMusic": "Musik auf Ihrem Gerät",
+  "onboardingLocalMusicDesc": "Ihre Musikdateien immer griffbereit",
+  "onboardingLyrics": "Songtext",
+  "onboardingLyricsDesc": "Lädt synchronisierte Songtexte für deine Lieder herunter",
+  "onboardingLyricsSupport": "Unterstützung bei Liedtexten",
+  "onboardingLyricsSupportDesc": "Synchronisierte Liedtexte beim Anhören anzeigen",
+  "onboardingMaterialDesign": "Material You-Design",
+  "onboardingMaterialDesignDesc": "Dynamische Farben, die sich Ihren Vorlieben anpassen",
+  "onboardingMusicMetadata": "Musik-Metadaten",
+  "onboardingMusicMetadataDesc": "Ruft Informationen zum Interpreten, zum Album und zu den Titeln ab",
+  "onboardingNotifications": "Benachrichtigungen",
+  "onboardingNotificationsDesc": "Wiedergabesteuerung und Aktualisierungen anzeigen",
+  "onboardingOptional": "Optional",
+  "onboardingPermissionsSubtitle": "Aurora Music benötigt diese Berechtigungen, um ordnungsgemäß zu funktionieren",
+  "onboardingPermissionsTitle": "Berechtigungen erteilen",
+  "onboardingPrivacyNote": "Der Schutz Ihrer Privatsphäre ist uns wichtig. Alle Musikdateien verbleiben auf Ihrem Gerät.",
+  "onboardingRequesting": "Wird angefordert...",
+  "onboardingRequired": "Erforderlich",
+  "onboardingAudioRequired": "Um fortzufahren, ist der Zugriff auf die Audiofunktion erforderlich. Bitte erteilen Sie die oben genannte Berechtigung.",
+  "onboardingSelectLanguage": "Wählen Sie Ihre bevorzugte Sprache aus",
+  "onboardingSmartPlaylists": "Intelligente Wiedergabelisten",
+  "onboardingSmartPlaylistsDesc": "Erstellen und verwalten Sie Ihre Musiksammlungen",
+  "onboardingStartListening": "Zum Anhören",
+  "onboardingStorageAccess": "Speicherzugriff",
+  "onboardingStorageAccessDesc": "Erforderlich, um Musikdateien von Ihrem Gerät zu lesen",
+  "onboardingVisualizerAccess": "Visualisierer",
+  "onboardingVisualizerAccessDesc": "Ermöglicht es dem Visualizer, die Audiositzung Ihres Geräts für das Live-Balkenspektrum auszulesen. Es wird zu keinem Zeitpunkt Audio aufgezeichnet.",
+  "onboardingThemeSubtitle": "Wähle ein Thema, das zu deinem Stil passt",
+  "onboardingThemeTitle": "Gestalte deinen Look ganz nach deinen Wünschen",
+  "beta_welcome_title": "Beta-Testprogramm",
+  "beta_welcome_thanks": "Vielen Dank, dass Sie an unserem Beta-Testprogramm teilnehmen und uns dabei helfen, Aurora Music zu verbessern.",
+  "beta_expect_bugs_title": "Rechnen Sie mit Fehlern",
+  "beta_expect_bugs_desc": "Es kann zu Abstürzen oder unerwartetem Verhalten kommen. Dies ist eine Testversion.",
+  "beta_feedback_title": "Feedback ist wichtig",
+  "beta_feedback_desc": "Ihre Rückmeldungen und Vorschläge helfen uns dabei, die App für alle zu verbessern.",
+  "beta_updates_title": "Regelmäßige Aktualisierungen",
+  "beta_updates_desc": "Im Zuge der weiteren Entwicklung werden regelmäßig neue Funktionen und Fehlerbehebungen veröffentlicht.",
+  "oneTimeSupport": "Schnelle einmalige Unterstützung",
+  "openFolder": "Im Dateimanager öffnen",
+  "openFolderInfo": "Navigieren Sie mit Ihrem Dateimanager zu diesem Speicherort",
+  "ownTimer": "Eigener Timer",
+  "permDeny": "Zugriff verweigert",
+  "permissionExplanation": "Aurora Music benötigt diese Berechtigungen, um ordnungsgemäß zu funktionieren. Bitte erteilen Sie die Berechtigungen in den App-Einstellungen.",
+  "permissionLater": "Sie können die Berechtigungen später in den App-Einstellungen erteilen.",
+  "permissionRequired": "Genehmigung erforderlich",
+  "playAll": "Alle abspielen",
+  "playingFrom": "Abspielen von",
+  "playlist": "Wiedergabeliste",
+  "playlistName": "Name der Wiedergabeliste",
+  "playlists": "Playlists",
+  "possibleReasons": "Mögliche Gründe:",
+  "privacyNotice": "Wenn Sie diese App weiterhin nutzen, erklären Sie sich mit unserer Datenschutzerklärung einverstanden.",
+  "privacyPolicyLink": "Lesen Sie unsere Datenschutzerklärung",
+  "quality": "Qualität",
+  "qualityDesc": "Audioqualität in Abhängigkeit von Format und Bitrate",
+  "queue": "Warteschlange",
+  "queueEmpty": "Die Warteschlange ist leer",
+  "reasonFormat": "Das Dateiformat unterstützt die Bearbeitung von Metadaten nicht.",
+  "reasonPermissions": "Speicherberechtigungen nicht erteilt",
+  "reasonReadonly": "Die Datei ist schreibgeschützt oder befindet sich auf einem externen Speichermedium",
+  "recentlyAdded": "Kürzlich hinzugefügt",
+  "recentlyPlayed": "Zuletzt gespielt",
+  "recentlyPlayedArtists": "Zuletzt abgespielte Künstler",
+  "recentlyPlayedSongs": "Zuletzt abgespielte Titel",
+  "refreshing": "Erfrischend...",
+  "refreshLyrics": "Songtexte aktualisieren",
+  "remove": "Entfernen",
+  "removeSong": "Titel entfernen",
+  "removeSongConfirmation": "Soll dieser Titel aus der Wiedergabeliste entfernt werden?",
+  "rename": "Umbenennen",
+  "renamePlaylist": "Wiedergabeliste umbenennen",
+  "repeat": "Wiederholen",
+  "reset": "Zurücksetzen",
+  "resetArtistSeparationDesc": "Dadurch werden alle Standardtrennzeichen und Ausschlüsse wiederhergestellt.",
+  "resetToDefaults": "Auf Standardwerte zurücksetzen",
+  "result": "Ergebnis",
+  "results": "Ergebnisse",
+  "retry": "Erneut versuchen",
+  "sampleRate": "Abtastrate",
+  "save": "Speichern",
+  "saveChanges": "Änderungen speichern",
+  "saveChangesDesc": "Möchten Sie Ihre Änderungen speichern?",
+  "saveFailed": "Speichern fehlgeschlagen",
+  "saveFailedDesc": "Metadaten können nicht in dieser Datei gespeichert werden.",
+  "scanFailed": "Scan fehlgeschlagen",
+  "scanningSongs": "Songs scannen",
+  "search": "Suche",
+  "searchAlbums": "Alben suchen",
+  "searchArtists": "Künstler suchen",
+  "searchFailed": "Die Suche ist fehlgeschlagen",
+  "searchLyrics": "Songtexte suchen",
+  "searchMetadata": "Metadaten durchsuchen",
+  "searchTracks": "Titel suchen",
+  "selectAll": "Alles auswählen",
+  "selectArtist": "Künstler auswählen",
+  "selected": "ausgewählt",
+  "selectPlaylist": "Playlist auswählen",
+  "separator": "Trennzeichen",
+  "separatorHint": "z. B. / oder mit",
+  "separators": "Trennzeichen",
+  "set": "Set",
+  "setMinutes": "Protokoll festlegen",
+  "settings": "Einstellungen",
+  "settingsAbout": "Über",
+  "settingsAboutApp": "Über Aurora Music",
+  "settingsAboutSubtitle": "Version, Feedback und Updates",
+  "settingsAccentColor": "Akzentfarbe",
+  "settingsAppearance": "Aussehen",
+  "settingsAppearanceSubtitle": "Thema, Farben und Layout",
+  "settingsAudio": "Audio",
+  "settingsBackground": "Hintergrund",
+  "settingsCacheCleared": "Cache geleert",
+  "settingsCacheInfo": "Cache-Informationen",
+  "settingsCacheInfoDesc": "Speicherbelegung anzeigen",
+  "settingsCheckingUpdates": "Nach Updates suchen...",
+  "settingsCheckUpdates": "Nach Updates suchen",
+  "settingsCheckUpdatesDesc": "Aktuelle Version herunterladen",
+  "settingsClearCache": "Cache leeren",
+  "settingsClearCacheDesc": "Alle zwischengespeicherten Daten löschen",
+  "settingsClearCacheMessage": "Alle zwischengespeicherten Daten werden gelöscht und bei Bedarf neu erstellt.",
+  "settingsClearCacheTitle": "Cache leeren?",
+  "settingsDataWindow": "Datenfenster",
+  "settingsDataWindowDesc": "Wie weit zurück der Rückblick-Bildschirm reicht",
+  "settingsGapless": "Wiedergabe ohne Pausen",
+  "settingsGaplessDesc": "Nahtlose Übergänge zwischen den Titeln",
+  "settingsCrossfade": "Crossfade",
+  "settingsCrossfadeDesc": "Das Ende eines Titels nahtlos in den nächsten überblenden",
+  "crossfadeDuration": "Überblenddauer",
+  "crossfadeDurationDesc": "Wie lange die Überlappung zwischen den Titeln dauert",
+  "settingsInsights": "Einblicke",
+  "settingsInsightsSubtitle": "Zusammenfassung der Hörverständnis-Phase",
+  "settingsLast7Days": "Die letzten 7 Tage",
+  "settingsLast30Days": "Letzte 30 Tage",
+  "settingsLanguage": "Sprache",
+  "settingsLayout": "Layout",
+  "settingsLibraryFolders": "Bibliotheksordner",
+  "settingsLibraryFoldersSubtitle": "Scan-Ordner einbeziehen oder ausschließen",
+  "settingsMaterialYou": "Material You",
+  "settingsMaterialYouDesc": "Dynamische Farben durch die Tapete",
+  "settingsMonthlyRecap": "Monatsrückblick",
+  "settingsMonthlyRecapDesc": "Jeden Monat ein Banner anzeigen (hat Vorrang vor der wöchentlichen Anzeige)",
+  "settingsNormalization": "Lautstärkenormalisierung",
+  "settingsNormalizationDesc": "Gleichmäßige Lautstärke · Erfordert ReplayGain-Tags in Ihren Dateien",
+  "playbackSpeed": "Wiedergabegeschwindigkeit",
+  "playbackSpeedDesc": "Wiedergabegeschwindigkeit anpassen",
+  "adjustPitchWithSpeed": "Tonhöhe mit der Geschwindigkeit anpassen",
+  "adjustPitchWithSpeedDesc": "Wenn ausgeschaltet, ändert sich das Tempo ohne Tonhöhenverschiebung",
+  "settingsPlayback": "Wiedergabe",
+  "settingsPlaybackSubtitle": "Geschwindigkeit, lückenlose Wiedergabe und Normalisierung",
+  "settingsRecapBannerDesc": "Das Banner wird zu Beginn jeder neuen Woche oder jedes neuen Monats – gerechnet ab deinem allerersten Spiel – auf dem Startbildschirm angezeigt. Wenn du auf „Später“ tippst, wird es für diese Sitzung ausgeblendet; wenn du auf „Anzeigen“ tippst, wird es als gesehen markiert.",
+  "settingsRecapContent": "Zusammenfassung des Inhalts",
+  "settingsRecapContentDesc": "Legt fest, wie viel Verlauf auf dem Übersichtsbildschirm angezeigt wird, wenn Sie ihn manuell oder über das Banner öffnen.",
+  "settingsPreviewRecap": "Vorschau – Rückblick",
+  "settingsPreviewRecapDesc": "Sehen Sie sich an, wie Ihre Zusammenfassung mit den aktuellen Einstellungen derzeit aussieht",
+  "settingsRecapSchedule": "Zeitplan der Zusammenfassungen",
+  "settingsStorage": "Lagerung",
+  "settingsCacheItems": "{count} Artikel",
+  "@settingsCacheItems": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMemoryCache": "Speicher-Cache",
+  "settingsStorageSubtitle": "Cache- und Mediendateien",
+  "settingsTheme": "Thema",
+  "settingsTools": "Werkzeuge",
+  "settingsResetSetup": "Einstellungen zurücksetzen",
+  "settingsResetSetupDesc": "Den Onboarding-Prozess neu starten",
+  "settingsUpdateAvailable": "Update verfügbar!",
+  "settingsUpToDate": "Du bist auf dem neuesten Stand",
+  "settingsWeeklyRecap": "Wochenrückblick",
+  "settingsWeeklyRecapDesc": "Zeige jede Woche nach dem ersten Abspielen ein Banner an",
+  "settingsVersion": "Version",
+  "share": "Teilen",
+  "showChangelog": "Änderungsprotokoll anzeigen",
+  "shuffle": "Zufallsreihenfolge",
+  "size": "Größe",
+  "sleepTimer": "Ausschalt-Timer",
+  "small": "Klein",
+  "songInfo": "Informationen zum Song",
+  "songs": "Lieder",
+  "songsLoaded": "Lieder wurden geladen",
+  "standardQuality": "Standardqualität",
+  "startType": "Beginnen Sie mit der Eingabe, um zu suchen",
+  "storagePermissionNeeded": "Um Metadaten zu bearbeiten, benötigt Aurora Music die Berechtigung, Dateien zu verwalten. Bitte erteilen Sie in den Einstellungen die Berechtigung „Zugriff auf alle Dateien“.",
+  "suggestedArtists": "Künstler für dich",
+  "suggestedTracks": "Empfohlene Titel",
+  "supportAurora": "Unterstütze Aurora",
+  "supportAuroraBtn": "Unterstütze Aurora",
+  "supportAuroraDescShort": "Hilf mit, die App kostenlos zu halten",
+  "supportAuroraMessage": "Helfen Sie mit, Aurora Music kostenlos zu halten, und unterstützen Sie die weitere Entwicklung. Jeder Beitrag bedeutet uns sehr viel!",
+  "supportAuroraTitle": "Unterstützen Sie Aurora Music",
+  "tapAddToAddSongs": "Tippe auf „+“, um Songs hinzuzufügen",
+  "reorderSongs": "Songs neu anordnen",
+  "done": "Fertig",
+  "thankYouSupport": "Vielen Dank für Ihre Unterstützung!",
+  "theme": "Thema",
+  "title": "Titel",
+  "topResult": "Top-Ergebnis",
+  "total": "Gesamt",
+  "track": "Titel",
+  "trackInfo": "Titelinformationen",
+  "trackInfoDesc": "Tippe auf das Bearbeitungssymbol, um die Titelinformationen zu ändern",
+  "trackInfoEditDesc": "Bearbeiten Sie die untenstehenden Felder und tippen Sie anschließend auf das Häkchen-Symbol, um zu speichern",
+  "tracks": "Titel",
+  "unknown": "Unbekannt",
+  "unknownArtist": "Unbekannter Künstler",
+  "updateAvailable": "Update verfügbar",
+  "updateMessage": "Eine neue Version ist verfügbar",
+  "updateNow": "Jetzt aktualisieren",
+  "viewArtist": "Künstler anzeigen",
+  "viewDetails": "Details anzeigen",
+  "welcomeBack": "Willkommen zurück",
+  "whatsNew": "Was gibt’s Neues?",
+  "view_changelog": "Änderungsprotokoll und neue Funktionen anzeigen",
+  "year": "Jahr",
+  "yes": "Ja",
+  "yourLibrary": "Ihre Bibliothek",
+  "yourPlaylists": "Deine Wiedergabelisten",
+  "homeLayout": "Startseite – Layout",
+  "homeLayoutDesc": "Reihenfolge der Abschnitte auf der Registerkarte „Startseite“ anpassen",
+  "customizeHomeTab": "Registerkarte „Startseite“ anpassen",
+  "dragToReorder": "Zum Neuanordnen der Abschnitte ziehen",
+  "resetToDefault": "Auf Standardwerte zurücksetzen",
+  "resetLayoutConfirm": "Layout auf Standard zurücksetzen?",
+  "resetLayoutMessage": "Dadurch werden die ursprüngliche Reihenfolge und Sichtbarkeit der Abschnitte wiederhergestellt.",
+  "sectionVisibility": "Sichtbarkeit des Abschnitts umschalten",
+  "listeningHistory": "Hörverlauf",
+  "libraryStats": "Bibliotheksstatistiken",
+  "back": "Zurück",
+  "continueButton": "Weiter",
+  "skip": "Überspringen",
+  "feedback_title": "Gefällt dir Aurora Music?",
+  "maybe_later": "Vielleicht später",
+  "send_feedback": "Feedback senden",
+  "send_feedback_desc": "Fehler melden oder Funktionen vorschlagen",
+  "contributeTranslations": "Übersetzungen beisteuern",
+  "contributeTranslationsDesc": "Hilf mit, „Aurora Music“ auf Crowdin zu übersetzen",
+  "contributeTranslationsTitle": "Helfen Sie uns beim Übersetzen",
+  "contributeTranslationsSubtitle": "Dank unserer großartigen Community ist Aurora Music in mehreren Sprachen verfügbar. Hilf uns dabei, noch mehr Nutzer zu erreichen, indem du die App in deine Sprache übersetzt – der Einstieg dauert nur wenige Minuten.",
+  "contributeTranslationsOpenCrowdin": "Crowdin öffnen",
+  "close": "Schließen",
+  "settingsHighendUi": "Hochwertige Benutzeroberfläche",
+  "settingsHighendUiDesc": "Erweiterte visuelle Effekte und Animationen aktivieren",
+  "restartRequired": "Neustart erforderlich",
+  "restartRequiredDesc": "Die App muss neu gestartet werden, damit die Änderung des UI-Modus wirksam wird. Jetzt neu starten?",
+  "restartNow": "Jetzt neu starten",
+  "clearUpcoming": "Anstehende Termine löschen",
+  "addToQueue": "Zur Warteschlange hinzufügen",
+  "playNext": "Als Nächstes abspielen",
+  "removeFromQueue": "Aus der Warteschlange entfernen",
+  "play": "Abspielen",
+  "viewAlbum": "Album anzeigen",
+  "shuffleAll": "Alle mischen",
+  "noSongsFound": "Es wurden keine Lieder gefunden",
+  "noFoldersFound": "Es wurden keine Ordner gefunden",
+  "deleteSong": "Titel löschen",
+  "modifySystemSettingsPermission": "Aktivieren Sie auf der sich öffnenden Seite die Option „Systemeinstellungen ändern“ und versuchen Sie es dann erneut.",
+  "errorMessage": "Fehler: {message}",
+  "@errorMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "songsAddedToQueue": "{count} Titel wurden zur Wiedergabeliste hinzugefügt",
+  "@songsAddedToQueue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songAddedToQueue": "„{title}“ wurde zur Warteschlange hinzugefügt",
+  "@songAddedToQueue": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "songSetAsRingtone": "„{title}“ als Klingelton festlegen",
+  "@songSetAsRingtone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToSetRingtone": "Das Festlegen des Klingeltons ist fehlgeschlagen: {error}",
+  "@failedToSetRingtone": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteSongConfirm": "„{title}“ von Ihrem Gerät löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.",
+  "@deleteSongConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "songDeleted": "„{title}“ wurde gelöscht",
+  "@songDeleted": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToDelete": "Löschen fehlgeschlagen: {error}",
+  "@failedToDelete": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "songCount": "{count} Lieder",
+  "@songCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "badgeNew": "NEU",
+  "paused": "Angehalten",
+  "readyToPlay": "Bereit zum Spielen",
+  "tapSongToStartListening": "Tippe auf einen Song, um ihn abzuspielen",
+  "clearCachedLyrics": "Zwischengespeicherte Liedtexte löschen",
+  "lyricsCleared": "Zwischengespeicherte Songtexte für „{title}“ gelöscht",
+  "@lyricsCleared": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noLyricsCached": "Für diesen Song wurden keine zwischengespeicherten Songtexte gefunden.",
+  "setAsRingtone": "Als Klingelton festlegen",
+  "songInfoEdit": "Song-Infos / Bearbeiten",
+  "goToAlbum": "Zum Album",
+  "goToArtist": "Zum Künstler",
+  "deleteFromDevice": "Vom Gerät löschen",
+  "checkOutThisSong": "Hör dir diesen Song mal an!",
+  "backgroundLowEndStyle": "Hintergrundstil",
+  "backgroundLowEndStyleDesc": "So sieht der Hintergrund der App aus",
+  "backgroundBlobs": "Animierte Kleckse",
+  "backgroundSolid": "Einfarbig",
+  "backgroundHighEndStyle": "Aktuelle Wiedergabe – Hintergrund",
+  "backgroundHighEndStyleDesc": "Hintergrundstil im Bildschirm „Aktuelle Wiedergabe“",
+  "backgroundBlurredArtwork": "Unscharfe Kunstwerke",
+  "accentColor": "Akzentfarbe",
+  "accentColorDesc": "Wähle die Akzentfarbe der App aus",
+  "backgroundBlur": "Hintergrundunschärfe",
+  "backgroundBlurDesc": "Intensität der Unschärfe des Bildes",
+  "backgroundDarkness": "Hintergrund: Dunkelheit",
+  "backgroundDarknessDesc": "Deckkraft der Überlagerung auf der Grafik",
+  "microphoneAccessNeeded": "Zugriff auf das Mikrofon erforderlich",
+  "microphoneAccessDesc": "Aurora benötigt Zugriff auf das Mikrofon, um für den Live-Visualizer auf die Audiositzung Ihres Geräts zugreifen zu können. Es werden zu keinem Zeitpunkt Audiodaten aufgezeichnet oder gespeichert.",
+  "recapWeek": "Woche",
+  "recapMonth": "Monat",
+  "recapPeriodWeek": "Woche",
+  "recapPeriodMonth": "Monat",
+  "recapWeekly": "Wöchentlich",
+  "recapMonthly": "Monatlich",
+  "recapIntroAppName": "AURORA MUSIC",
+  "recapIntroTitle": "Dein {period}\nZusammenfassung",
+  "@recapIntroTitle": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapIntroSubtitle": "Mal sehen, was du dir\nso angehört hast.",
+  "recapPlayedEyebrow": "In diesem {period} hast du Musik abgespielt",
+  "@recapPlayedEyebrow": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapTimeSingular": "Zeit",
+  "recapTimePlural": "Mal",
+  "recapListenedForEyebrow": "Du hast darauf geachtet, ob",
+  "recapListenedForLabel": "Musik",
+  "recapTopTrackEyebrow": "Dein beliebtester Titel",
+  "recapPlays": "Stücke",
+  "recapTopTracksTitle": "Top-Titel",
+  "recapTopArtistEyebrow": "Dein Lieblingskünstler",
+  "recapTopArtistsTitle": "Top-Künstler",
+  "recapNothingToWrap": "Noch gibt es nichts zum Einpacken",
+  "recapNothingToWrapBody": "Spiel doch ein bisschen Musik, {period}, und komm dann wieder zurück.",
+  "@recapNothingToWrapBody": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapSwipeUp": "NACH OBEN WISCHEN",
+  "recapYourSoundLabel": "DEIN SOUND",
+  "recapYouListenMost": "DU HÖRST AM MEISTEN ZU",
+  "recapOnDay": "auf {day}s",
+  "@recapOnDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "recapAroundTime": "etwa {time}",
+  "@recapAroundTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "recapVibesHitDifferent": "Da war die Stimmung plötzlich ganz anders.",
+  "recapThatsAWrap": "DAS WAR'S DANN",
+  "recapInNumbers": "Dein {period}\nin Zahlen",
+  "@recapInNumbers": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapNumberOneTrack": "#1 TITEL",
+  "recapStatTotalPlays": "Gesamtanzahl der Wiedergaben",
+  "recapStatTimeListened": "Hörzeit",
+  "recapStatUniqueTracks": "Einzigartige Titel",
+  "recapStatTopArtist": "Top-Künstler",
+  "recapDone": "Fertig",
+  "recapWeekdayMonday": "Montag",
+  "recapWeekdayTuesday": "Dienstag",
+  "recapWeekdayWednesday": "Mittwoch",
+  "recapWeekdayThursday": "Donnerstag",
+  "recapWeekdayFriday": "Freitag",
+  "recapWeekdaySaturday": "Samstag",
+  "recapWeekdaySunday": "Sonntag",
+  "recapBannerTitle": "Hier geht’s zum Musikrückblick",
+  "recapBannerShow": "Anzeigen",
+  "recapBannerLater": "Später",
+  "eqTitle": "Equalizer",
+  "eqOn": "EIN",
+  "eqOff": "AUS",
+  "eqNotAvailable": "Der Equalizer ist auf diesem Gerät nicht verfügbar.",
+  "eqOpenSystem": "Offener System-Equalizer",
+  "eqSavePreset": "Voreinstellung speichern",
+  "eqPresetNameHint": "z. B. „My Bass Boost“",
+  "eqPresetNameEmpty": "Der Name darf nicht leer sein.",
+  "eqPresetNameBuiltIn": "„{name}“ ist der Name einer integrierten Voreinstellung.",
+  "@eqPresetNameBuiltIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eqResetAllBands": "Alle Frequenzbänder zurücksetzen",
+  "eqPresetsLabel": "VOREINSTELLUNGEN",
+  "eqYourPresetsLabel": "IHRE VOREINSTELLUNGEN",
+  "eqSaveCurrent": "Aktuellen Stand speichern",
+  "eqSettingsSubtitle": "Audiofrequenzen pro Frequenzband anpassen",
+  "eqEmptyPresets": "Stelle deinen Sound ein und tippe anschließend auf „Aktuellen Sound speichern“.",
+  "lyricsHint": "Füge hier die nicht synchronisierten Songtexte ein…\n\nEine Zeile pro Verszeile.",
+  "lyricsSelectLrcFile": "Bitte wählen Sie eine .lrc-Datei aus",
+  "lyricsNoLyricsInFile": "In dieser Datei wurden keine Liedtexte gefunden",
+  "importFailed": "Import fehlgeschlagen: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsImportTooltip": ".lrc-Datei importieren",
+  "importPlaylistM3u": "Wiedergabeliste importieren (.m3u)",
+  "setSyncFolder": "Synchronisierungsordner festlegen…",
+  "syncNow": "Jetzt synchronisieren",
+  "searchPlaylists": "Playlists suchen…",
+  "pleaseSelectM3uFile": "Bitte wählen Sie eine .m3u- oder .m3u8-Datei aus",
+  "noMatchingSongsForPlaylist": "Für diese Wiedergabeliste wurden keine passenden Titel gefunden.",
+  "importedPlaylist": "„{name}“ importiert ({count} Titel)",
+  "@importedPlaylist": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistsSyncWith": "Die Wiedergabelisten werden mit {folder} synchronisiert.",
+  "@playlistsSyncWith": {
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotSetSyncFolder": "Der Synchronisierungsordner konnte nicht festgelegt werden: {error}",
+  "@couldNotSetSyncFolder": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "setSyncFolderFirst": "Legen Sie zunächst einen Synchronisierungsordner fest",
+  "playlistsSynced": "Playlists synchronisiert",
+  "alreadyUpToDate": "Bereits auf dem neuesten Stand",
+  "syncFailed": "Synchronisierung fehlgeschlagen: {error}",
+  "@syncFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportFailed": "Export fehlgeschlagen: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchFolders": "Suchordner…",
+  "songInfoPath": "Pfad",
+  "closeVisualiser": "Visualisierung schließen",
+  "previousMode": "Vorheriger Modus",
+  "nextMode": "Nächster Modus",
+  "sortBy": "Sortieren nach",
+  "colorTheme": "Farbschema",
+  "insightsTotalPlays": "Gesamt\nAufrufe",
+  "insightsTracksHeard": "Titel\nGehört",
+  "insightsEstListening": "Geschätzt.\nZuhören",
+  "dismiss": "Schließen",
+  "updateVersionAvailable": "Version {version} ist jetzt verfügbar.",
+  "@updateVersionAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateNewVersionAvailable": "Eine neue Version ist nun verfügbar.",
+  "lyricsPasteLyricsTitle": "Songtext einfügen",
+  "lyricsUseLyrics": "Songtexte verwenden",
+  "lyricsPaste": "Einfügen",
+  "lyricsNoLyricsYet": "Noch kein Liedtext",
+  "lyricsPasteToGetStarted": "Füge den Liedtext ein, um loszulegen",
+  "lyricsNoTimestampsYet": "Noch keine Zeitstempel – tippe während der Wiedergabe auf die Stempel-Schaltfläche.",
+  "lyricsAllLinesStampedHint": "Alle Zeilen sind markiert – tippe auf „Speichern“, um den Vorgang abzuschließen.",
+  "lyricsAllStamped": "✓  Alle Zeilen abgestempelt",
+  "lyricsPasteFirst": "Füge zuerst den Liedtext ein",
+  "lyricsTapToStamp": "⏱  AUF DIE ZEILE {current} / {total} TIPPEN, UM SIE ZU STAMPFEN",
+  "@lyricsTapToStamp": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsNextLabel": "Weiter"
+}

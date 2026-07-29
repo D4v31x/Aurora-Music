@@ -1,0 +1,787 @@
+{
+  "@@locale": "ru",
+  "aboutArtist": "Об Исполнителе",
+  "add": "Добавить",
+  "addedToPlaylist": "Добавлено в плейлист",
+  "addedToNamedPlaylist": "Добавлено в {name}",
+  "@addedToNamedPlaylist": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addExclusion": "Добавить Исключение",
+  "addSeparator": "Добавить Разделитель",
+  "addSongs": "Добавить Песни",
+  "addSongsToPlaylist": "Добавить Песни в Плейлист",
+  "addToPlaylist": "Добавить в Плейлист",
+  "adjustSync": "Настройка Синхронизации",
+  "album": "Альбом",
+  "albums": "Альбомы",
+  "allSongs": "Все песни",
+  "appName": "Aurora Music",
+  "artist": "Исполнитель",
+  "artistName": "Имя исполнителя",
+  "artists": "Исполнители",
+  "artistSeparation": "Разделитель Исполнителей",
+  "artistSeparationDesc": "Настройте как разделяются несколько исполнителей",
+  "audioQuality": "Качество Звука",
+  "audioQualityDesc": "Технические характеристики аудиофайла",
+  "auroraMusic": "Aurora Music",
+  "autoPlaylists": "Автоплейлист",
+  "autoTag": "Автотег",
+  "smartPlaylists": "Умные плейлисты",
+  "createSmartPlaylist": "Создать интеллектуальный плейлист…",
+  "editSmartPlaylist": "Редактировать интеллектуальный плейлист",
+  "smartPlaylistNameHint": "Название плейлиста",
+  "smartPlaylistRules": "Правила",
+  "addRule": "Добавить правило",
+  "saveSmartPlaylist": "Сохранить",
+  "matchAll": "Соответствовать ВСЕМ правилам",
+  "matchAny": "Правило «Соответствие ЛЮБОМУ»",
+  "limitResultsLabel": "Ограничить результаты",
+  "noLimit": "Без ограничений",
+  "deleteSmartPlaylistConfirm": "Удалить этот интеллектуальный плейлист? При этом будут удалены только сохраненные правила — на ваши песни это никак не повлияет.",
+  "smartPlaylistPreviewCount": "Сейчас найдено {count} песен",
+  "@smartPlaylistPreviewCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saveAsClip": "Сохранить как клип",
+  "generatingClip": "Создание клипа…",
+  "clipDuration": "Продолжительность клипа",
+  "clipStartOffset": "Начальная точка",
+  "saveClip": "Сохранить клип",
+  "clipSavedToDevice": "Клип сохранен на устройстве",
+  "clipSaveFailed": "Не удалось сохранить клип. Пожалуйста, попробуйте ещё раз.",
+  "playlistSavedToDevice": "Плейлист сохранен на устройстве",
+  "trackTags": "Теги треков",
+  "editTrackTags": "Редактировать теги",
+  "addTrackTag": "Добавить тег",
+  "noTrackTagsYet": "Тегов пока нет. Добавьте тег, чтобы сразу перейти к определенному участку этого трека.",
+  "trackTagNameHint": "например, название песни или исполнитель",
+  "trackTagPosition": "Должность",
+  "useCurrentPosition": "Использовать текущее положение",
+  "isThisASet": "Добавить временные метки к этой дорожке",
+  "tagPartsForEasySwitching": "Отмечайте любые моменты — главы, важные фрагменты, закладки или что угодно.",
+  "tagThisTrack": "Добавить теги",
+  "pasteSetlist": "Импорт временных меток",
+  "pasteSetlistDialogTitle": "Импорт временных меток",
+  "pasteSetlistHint": "Вставьте сюда временные метки, например:\n0:00 Вступление\n3:45 Название главы",
+  "importAction": "Импорт",
+  "tagsImportedMessage": "Импортировано {count} тегов",
+  "@tagsImportedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noTagsFoundInPaste": "В вставленном тексте не найдено временных меток.",
+  "bitrate": "Битрейт",
+  "buyMeCoffee": "Купи Мне Кофе",
+  "cancel": "Закрыть",
+  "coffeeSupport": "Поддержать кружкой кофе",
+  "composer": "Композитор",
+  "connectWithUs": "Связаться с нами",
+  "copied": "Скопировано",
+  "copy": "Скопировать",
+  "create": "Создать",
+  "createFirstPlaylist": "Нажми на кнопку выше, чтобы создать ваш первый плейлист",
+  "createPlaylist": "Создать Плейлист",
+  "darkMode": "Тёмная Тема",
+  "dateAdded": "Дата Добавления",
+  "dateModified": "Дата Изменения",
+  "delete": "Удалить",
+  "deletePlaylist": "Удалить Плейлист",
+  "deletePlaylistConfirm": "Вы уверены, что хотите удалить",
+  "deletePlaylistConfirmation": "Вы действительно хотите удалить этот плейлист?",
+  "deselectAll": "Отменить выбор всех",
+  "details": "Подробнее",
+  "discard": "Отменить",
+  "dontShowAgain": "Не показывать снова",
+  "duration": "Длительность",
+  "enableArtistSeparation": "Включить Разделение Исполнителей",
+  "enableArtistSeparationDesc": "Автоматически разделять составные имена исполнителей",
+  "enjoyingAurora": "Нравится Aurora?",
+  "enjoyingAuroraDesc": "Если вам нравится пользоваться Aurora Music, подумайте о том, чтобы поддержать её разработку. Ваша поддержка помогает сохранить бесплатный доступ к приложению!",
+  "error": "Ошибка",
+  "exclusionHint": "например, переменный/постоянный ток",
+  "exclusions": "Исключения",
+  "exclusionsDesc": "Имена исполнителей, которые не должны разделяться",
+  "exit": "Выйти",
+  "exitApp": "Выйти из приложения",
+  "exitAppConfirm": "Вы хотите выйти?",
+  "expandLyrics": "Показать текст песни",
+  "extraLarge": "Огромный",
+  "favoriteSongs": "Любимые песни",
+  "fileInfo": "Сведения о файле",
+  "fileInfoDesc": "Нажмите и удерживайте значения, чтобы скопировать их",
+  "fileName": "Имя файла",
+  "filePath": "Путь к файлу",
+  "folder": "Папка",
+  "folders": "Папки",
+  "fontSize": "Размер шрифта",
+  "format": "Формат",
+  "forYou": "Для вас",
+  "general": "Общие сведения",
+  "genre": "Жанр",
+  "getStarted": "Начать работу",
+  "goodQuality": "Хорошее качество",
+  "gotIt": "Понял!",
+  "grantPermission": "Предоставить разрешение",
+  "highQuality": "Высокое качество",
+  "home": "Главная",
+  "kofi": "Ko-fi",
+  "buyMeACoffee": "Купите мне кофе",
+  "donationNote": "Необязательно - вы можете нас всегда поддержать в настройках",
+  "language": "Язык",
+  "large": "Большой",
+  "later": "Позже",
+  "library": "Библиотека",
+  "libraryError": "Ошибка загрузки музыкальной библиотеки",
+  "libraryLoaded": "Музыкальная библиотека загружена",
+  "libraryUpdated": "Библиотека обновлена",
+  "loading": "Загрузка",
+  "loadingLibrary": "Загрузка библиотеки",
+  "lossless": "Без потерь",
+  "lowQuality": "Низкое Качество",
+  "lyrics": "Текст",
+  "lyricsAhead": "Текст опережает",
+  "lyricsBehind": "Текст отстаёт",
+  "lyricsSynced": "Текст синхронизирован",
+  "maybeLater": "Позже",
+  "medium": "Средний",
+  "metadata": "Метаданные",
+  "metadataSaved": "Метаданные успешно изменены",
+  "metadataApplied": "Метаданные успешно загружены",
+  "metadataDownloadFailed": "Загрузка не удалась. Проверьте подключение и попробуйте ещё раз.",
+  "chooseArtworkFromDevice": "Выберите устройство",
+  "mostPlayed": "Часто Прослушиваемое",
+  "newPlaylist": "Новый Плейлист",
+  "next": "Следующее",
+  "no": "Нет",
+  "noAlbumsFound": "Альбомов не найдено",
+  "noArtistInfo": "Информация об артисте не доступна",
+  "noArtistsFound": "Артистов не найдено",
+  "noData": "Нет данных для отображения",
+  "noExclusions": "Исключения не настроены",
+  "noLyrics": "Текст недоступен",
+  "noLyricsDesc": "Мы не нашли текст для этой песни",
+  "noLyricsFound": "Текст не найден",
+  "noPermissionExplanation": "Без разрешений Aurora Music не сможет получить доступ к вашей библиотеке музыки.",
+  "noPlaylists": "Плейлистов нет",
+  "noResults": "Результатов не найдено",
+  "noSeparators": "Разделители не настроены",
+  "noSongPlaying": "Никакая песня не воспроизводится",
+  "noSongsAvailable": "Песен нет",
+  "noSongsInPlaylist": "В этом плейлисте нет песен",
+  "nowPlaying": "Сейчас играет",
+  "onboardingAlbumArt": "Красивые обложки альбомов",
+  "onboardingAlbumArtwork": "Обложка альбома",
+  "onboardingAlbumArtworkDesc": "Загружает высококачественные обложки альбомов для улучшения вашей медиатеки",
+  "onboardingAppInfoSubtitle": "Ваш личный музыкальный спутник",
+  "onboardingAppInfoTitle": "Добро пожаловать в «Aurora Music»",
+  "onboardingAudioAccess": "Доступ к аудиоматериалам",
+  "onboardingAudioAccessDesc": "Необходимо для воспроизведения и управления вашей музыкальной библиотекой",
+  "onboardingBack": "Назад",
+  "onboardingBeautifulArtwork": "Красивая обложка альбома",
+  "onboardingBeautifulArtworkDesc": "Автоматически загружать и отображать обложки альбомов так, как их задумывали авторы",
+  "onboardingBluetooth": "Bluetooth",
+  "onboardingBluetoothDesc": "Необходимо для подключения к устройствам Bluetooth",
+  "onboardingChooseLanguage": "Выберите язык",
+  "languageNotListedHint": "Вашего языка нет в списке? Выберите «Английский» и перейдите на следующую страницу.",
+  "onboardingCompletionSubtitle": "Начните наслаждаться музыкой",
+  "onboardingCompletionTitle": "Всё готово!",
+  "onboardingContinue": "Продолжить",
+  "onboardingDynamicColors": "Динамические цвета",
+  "onboardingDynamicColorsDesc": "Подбор цветов обоев в соответствии с системой",
+  "onboardingGrantPermissions": "Предоставить права доступа",
+  "onboardingInternetSubtitle": "Как компания «Aurora Music» использует Интернет",
+  "onboardingInternetTitle": "Использование Интернета",
+  "onboardingLocalMusic": "Музыка на вашем устройстве",
+  "onboardingLocalMusicDesc": "Ваши музыкальные файлы всегда под рукой",
+  "onboardingLyrics": "Текст",
+  "onboardingLyricsDesc": "Скачивает синхронизированные тексты песен",
+  "onboardingLyricsSupport": "Поддержка текстов песен",
+  "onboardingLyricsSupportDesc": "Просматривайте синхронизированные тексты песен во время прослушивания",
+  "onboardingMaterialDesign": "Дизайн «Material You»",
+  "onboardingMaterialDesignDesc": "Динамичные цвета, которые подстраиваются под ваши предпочтения",
+  "onboardingMusicMetadata": "Метаданные музыки",
+  "onboardingMusicMetadataDesc": "Получает сведения об исполнителе, данные об альбоме и информацию о треках",
+  "onboardingNotifications": "Уведомления",
+  "onboardingNotificationsDesc": "Показать элементы управления воспроизведением и обновления",
+  "onboardingOptional": "Необязательно",
+  "onboardingPermissionsSubtitle": "Для правильной работы приложению «Aurora Music» необходимы следующие разрешения",
+  "onboardingPermissionsTitle": "Предоставить права доступа",
+  "onboardingPrivacyNote": "Ваша конфиденциальность важна для нас. Все музыкальные файлы хранятся на вашем устройстве.",
+  "onboardingRequesting": "Ожидается запрос...",
+  "onboardingRequired": "Обязательно",
+  "onboardingAudioRequired": "Для продолжения требуется доступ к аудио. Пожалуйста, предоставьте указанное выше разрешение.",
+  "onboardingSelectLanguage": "Выберите желаемый язык",
+  "onboardingSmartPlaylists": "Умный Плейлист",
+  "onboardingSmartPlaylistsDesc": "Создавайте и управляйте своими музыкальными коллекциями",
+  "onboardingStartListening": "Начать прослушивание",
+  "onboardingStorageAccess": "Доступ к хранилищу",
+  "onboardingStorageAccessDesc": "Требуется доступ к музыкальным файлам на вашем устройстве",
+  "onboardingVisualizerAccess": "Визуализатор",
+  "onboardingVisualizerAccessDesc": "Позволяет визуализатору считывать данные аудиосессии вашего устройства для отображения спектра в режиме реального времени. Аудио никогда не записывается.",
+  "onboardingThemeSubtitle": "Выберите тему, которая соответствует вашему стилю",
+  "onboardingThemeTitle": "Создайте свой собственный образ",
+  "beta_welcome_title": "Программа бета-тестирования",
+  "beta_welcome_thanks": "Благодарим вас за участие в нашей программе бета-тестирования и за помощь в совершенствовании Aurora Music.",
+  "beta_expect_bugs_title": "Будьте готовы к ошибкам",
+  "beta_expect_bugs_desc": "Возможны сбои в работе или непредвиденные явления. Это тестовая версия.",
+  "beta_feedback_title": "Отзывы имеют значение",
+  "beta_feedback_desc": "Ваши отзывы и предложения помогают нам сделать приложение лучше для всех.",
+  "beta_updates_title": "Частые обновления",
+  "beta_updates_desc": "По мере продолжения разработки регулярно выпускаются новые функции и исправления.",
+  "oneTimeSupport": "Быстрая разовая поддержка",
+  "openFolder": "Открыть в диспетчере файлов",
+  "openFolderInfo": "Воспользуйтесь файловым менеджером, чтобы перейти в этот каталог",
+  "ownTimer": "Собственный таймер",
+  "permDeny": "Доступ запрещен",
+  "permissionExplanation": "Приложению Aurora Music требуются эти разрешения для правильной работы. Пожалуйста, предоставьте эти разрешения в настройках приложения.",
+  "permissionLater": "Вы можете предоставить разрешения позже в настройках приложения",
+  "permissionRequired": "Требуется разрешение",
+  "playAll": "Воспроизвести всё",
+  "playingFrom": "Воспроизведение с",
+  "playlist": "Плейлист",
+  "playlistName": "Название плейлиста",
+  "playlists": "Плейлисты",
+  "possibleReasons": "Возможные причины:",
+  "privacyNotice": "Продолжая пользоваться этим приложением, вы соглашаетесь с нашей Политикой конфиденциальности.",
+  "privacyPolicyLink": "Ознакомьтесь с нашей Политикой конфиденциальности",
+  "quality": "Качество",
+  "qualityDesc": "Качество звука зависит от формата и битрейта",
+  "queue": "Очередь",
+  "queueEmpty": "Очередь пуста",
+  "reasonFormat": "Данный формат файла не поддерживает редактирование метаданных",
+  "reasonPermissions": "Права на хранение не предоставлены",
+  "reasonReadonly": "Файл доступен только для чтения или находится на внешнем носителе",
+  "recentlyAdded": "Недавно добавленные",
+  "recentlyPlayed": "Недавно воспроизведенные",
+  "recentlyPlayedArtists": "Недавно прослушанные исполнители",
+  "recentlyPlayedSongs": "Недавно прослушанные песни",
+  "refreshing": "Освежает...",
+  "refreshLyrics": "Обновить тексты песен",
+  "remove": "Удалить",
+  "removeSong": "Удалить песню",
+  "removeSongConfirmation": "Удалить эту песню из плейлиста?",
+  "rename": "Переименовать",
+  "renamePlaylist": "Переименовать плейлист",
+  "repeat": "Повторить",
+  "reset": "Сброс",
+  "resetArtistSeparationDesc": "Это приведет к восстановлению всех разделителей и исключений по умолчанию.",
+  "resetToDefaults": "Сброс на настройки по умолчанию",
+  "result": "Результат",
+  "results": "Результаты",
+  "retry": "Повторить попытку",
+  "sampleRate": "Частота дискретизации",
+  "save": "Сохранить",
+  "saveChanges": "Сохранить изменения",
+  "saveChangesDesc": "Хотите сохранить изменения?",
+  "saveFailed": "Сохранение не удалось",
+  "saveFailedDesc": "Не удалось сохранить метаданные в этом файле.",
+  "scanFailed": "Сканирование не удалось",
+  "scanningSongs": "Сканирование песен",
+  "search": "Поиск",
+  "searchAlbums": "Поиск альбомов",
+  "searchArtists": "Поиск исполнителей",
+  "searchFailed": "Поиск не удался",
+  "searchLyrics": "Поиск текстов песен",
+  "searchMetadata": "Поиск по метаданным",
+  "searchTracks": "Поиск треков",
+  "selectAll": "Выделить всё",
+  "selectArtist": "Выбрать исполнителя",
+  "selected": "выбранный",
+  "selectPlaylist": "Выбрать плейлист",
+  "separator": "Разделитель",
+  "separatorHint": "например, / или при участии",
+  "separators": "Разделители",
+  "set": "Набор",
+  "setMinutes": "Установить продолжительность",
+  "settings": "Настройки",
+  "settingsAbout": "О нас",
+  "settingsAboutApp": "О компании «Aurora Music»",
+  "settingsAboutSubtitle": "Версия, отзывы и обновления",
+  "settingsAccentColor": "Акцентный цвет",
+  "settingsAppearance": "Внешний вид",
+  "settingsAppearanceSubtitle": "Тема, цвета и макет",
+  "settingsAudio": "Аудио",
+  "settingsBackground": "Общая информация",
+  "settingsCacheCleared": "Кэш очищен",
+  "settingsCacheInfo": "Информация о кэше",
+  "settingsCacheInfoDesc": "Просмотреть использование дискового пространства",
+  "settingsCheckingUpdates": "Проверка наличия обновлений...",
+  "settingsCheckUpdates": "Проверить наличие обновлений",
+  "settingsCheckUpdatesDesc": "Скачать последнюю версию",
+  "settingsClearCache": "Очистить кэш",
+  "settingsClearCacheDesc": "Удалить все данные из кэша",
+  "settingsClearCacheMessage": "Все данные из кэша будут удалены и при необходимости восстановлены.",
+  "settingsClearCacheTitle": "Очистить кэш?",
+  "settingsDataWindow": "Окно данных",
+  "settingsDataWindowDesc": "Насколько далеко назад отображается экран с кратким обзором",
+  "settingsGapless": "Воспроизведение без пауз",
+  "settingsGaplessDesc": "Плавные переходы между треками",
+  "settingsCrossfade": "Переход",
+  "settingsCrossfadeDesc": "Плавный переход от конца одной дорожки к следующей",
+  "crossfadeDuration": "Продолжительность плавного перехода",
+  "crossfadeDurationDesc": "Как долго длится перекрытие между треками",
+  "settingsInsights": "Аналитика",
+  "settingsInsightsSubtitle": "Период повторения прослушанного материала",
+  "settingsLast7Days": "Последние 7 дней",
+  "settingsLast30Days": "Последние 30 дней",
+  "settingsLanguage": "Язык",
+  "settingsLayout": "Макет",
+  "settingsLibraryFolders": "Пакеты библиотеки",
+  "settingsLibraryFoldersSubtitle": "Включить или исключить папки для сканирования",
+  "settingsMaterialYou": "Material You",
+  "settingsMaterialYouDesc": "Динамичные цвета из обоев",
+  "settingsMonthlyRecap": "Ежемесячный обзор",
+  "settingsMonthlyRecapDesc": "Показывать баннер каждый месяц (имеет приоритет над еженедельным)",
+  "settingsNormalization": "Нормализация громкости",
+  "settingsNormalizationDesc": "Стабильный уровень громкости · Требуется наличие тегов ReplayGain в файлах",
+  "playbackSpeed": "Скорость воспроизведения",
+  "playbackSpeedDesc": "Настройка скорости воспроизведения звука",
+  "adjustPitchWithSpeed": "Регулировка высоты тона в зависимости от скорости",
+  "adjustPitchWithSpeedDesc": "В выключенном состоянии темп изменяется без изменения высоты тона",
+  "settingsPlayback": "Воспроизведение",
+  "settingsPlaybackSubtitle": "Скорость, воспроизведение без пауз и нормализация",
+  "settingsRecapBannerDesc": "Баннер появляется на главном экране в начале каждой новой недели или месяца, отсчитываемых с момента вашего первого запуска игры. Нажатие кнопки «Позже» скрывает его на время текущего сеанса; нажатие кнопки «Показать» помечает его как просмотренный.",
+  "settingsRecapContent": "Краткое содержание",
+  "settingsRecapContentDesc": "Определяет, какой объем истории отображается на экране сводки при его открытии вручную или через баннер.",
+  "settingsPreviewRecap": "Краткий обзор предварительного просмотра",
+  "settingsPreviewRecapDesc": "Посмотрите, как выглядит ваш обзор в данный момент с текущими настройками",
+  "settingsRecapSchedule": "Расписание повторов",
+  "settingsStorage": "Хранение",
+  "settingsCacheItems": "{count} товаров",
+  "@settingsCacheItems": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMemoryCache": "Кэш-память",
+  "settingsStorageSubtitle": "Кэш и мультимедийные файлы",
+  "settingsTheme": "Тема",
+  "settingsTools": "Инструменты",
+  "settingsResetSetup": "Сброс настроек",
+  "settingsResetSetupDesc": "Перезапустить процесс адаптации новых сотрудников",
+  "settingsUpdateAvailable": "Доступно обновление!",
+  "settingsUpToDate": "Вы в курсе последних новостей",
+  "settingsWeeklyRecap": "Еженедельный обзор",
+  "settingsWeeklyRecapDesc": "Показывать баннер каждую неделю после первого прослушивания",
+  "settingsVersion": "Версия",
+  "share": "Поделиться",
+  "showChangelog": "Показать журнал изменений",
+  "shuffle": "Перемешать",
+  "size": "Размер",
+  "sleepTimer": "Таймер выключения",
+  "small": "Маленький",
+  "songInfo": "Информация о песне",
+  "songs": "Песни",
+  "songsLoaded": "Песни загружены",
+  "standardQuality": "Стандартное качество",
+  "startType": "Начните вводить текст для поиска",
+  "storagePermissionNeeded": "Для редактирования метаданных приложению Aurora Music требуется разрешение на управление файлами. Пожалуйста, предоставьте доступ ко «всем файлам» в настройках.",
+  "suggestedArtists": "Художники для вас",
+  "suggestedTracks": "Рекомендуемые треки",
+  "supportAurora": "Поддержите «Аврору»",
+  "supportAuroraBtn": "Поддержите «Аврору»",
+  "supportAuroraDescShort": "Помогите сохранить приложение бесплатным",
+  "supportAuroraMessage": "Помогите сохранить бесплатный доступ к Aurora Music и поддержать его дальнейшее развитие. Каждый вклад имеет огромное значение!",
+  "supportAuroraTitle": "Поддержите «Aurora Music»",
+  "tapAddToAddSongs": "Нажмите «+», чтобы добавить песни",
+  "reorderSongs": "Изменить порядок песен",
+  "done": "Готово",
+  "thankYouSupport": "Спасибо за вашу поддержку!",
+  "theme": "Тема",
+  "title": "Название",
+  "topResult": "Лучший результат",
+  "total": "Итого",
+  "track": "Трек",
+  "trackInfo": "Информация о треке",
+  "trackInfoDesc": "Нажмите на значок редактирования, чтобы изменить информацию о треке",
+  "trackInfoEditDesc": "Измените данные в полях ниже, а затем нажмите на значок галочки, чтобы сохранить",
+  "tracks": "Треки",
+  "unknown": "Неизвестно",
+  "unknownArtist": "Неизвестный художник",
+  "updateAvailable": "Доступно обновление",
+  "updateMessage": "Доступна новая версия",
+  "updateNow": "Обновить сейчас",
+  "viewArtist": "Посмотреть информацию об исполнителе",
+  "viewDetails": "Посмотреть подробности",
+  "welcomeBack": "С возвращением!",
+  "whatsNew": "Что нового",
+  "view_changelog": "Просмотреть журнал изменений и новые функции",
+  "year": "Год",
+  "yes": "Да",
+  "yourLibrary": "Ваша библиотека",
+  "yourPlaylists": "Ваши плейлисты",
+  "homeLayout": "Планировка дома",
+  "homeLayoutDesc": "Настройка порядка разделов на вкладке «Главная»",
+  "customizeHomeTab": "Настройка вкладки «Главная»",
+  "dragToReorder": "Перетащите, чтобы изменить порядок разделов",
+  "resetToDefault": "Сброс к настройкам по умолчанию",
+  "resetLayoutConfirm": "Сбросить макет до значений по умолчанию?",
+  "resetLayoutMessage": "Это восстановит исходный порядок разделов и их отображение.",
+  "sectionVisibility": "Включить/выключить отображение раздела",
+  "listeningHistory": "История прослушиваний",
+  "libraryStats": "Статистика библиотеки",
+  "back": "Назад",
+  "continueButton": "Продолжить",
+  "skip": "Пропустить",
+  "feedback_title": "Вам нравится Aurora Music?",
+  "maybe_later": "Может, позже",
+  "send_feedback": "Отправить отзыв",
+  "send_feedback_desc": "Сообщите об ошибках или предложите новые функции",
+  "contributeTranslations": "Присылайте переводы",
+  "contributeTranslationsDesc": "Помогите перевести «Aurora Music» на Crowdin",
+  "contributeTranslationsTitle": "Помогите нам с переводом",
+  "contributeTranslationsSubtitle": "Приложение Aurora Music доступно на нескольких языках благодаря нашему замечательному сообществу. Помогите нам охватить ещё больше пользователей, переведя приложение на ваш язык — начать работу можно всего за несколько минут.",
+  "contributeTranslationsOpenCrowdin": "Открыть Crowdin",
+  "close": "Закрыть",
+  "settingsHighendUi": "Интерфейс пользователя премиум-класса",
+  "settingsHighendUiDesc": "Включить расширенные визуальные эффекты и анимацию",
+  "restartRequired": "Требуется перезапуск",
+  "restartRequiredDesc": "Для применения изменений режима интерфейса необходимо перезапустить приложение. Перезапустить сейчас?",
+  "restartNow": "Перезапустить сейчас",
+  "clearUpcoming": "Очистить предстоящие",
+  "addToQueue": "Добавить в очередь",
+  "playNext": "Следующий трек",
+  "removeFromQueue": "Удалить из очереди",
+  "play": "Играть",
+  "viewAlbum": "Посмотреть альбом",
+  "shuffleAll": "Перемешать всё",
+  "noSongsFound": "Песни не найдены",
+  "noFoldersFound": "Папки не найдены",
+  "deleteSong": "Удалить песню",
+  "modifySystemSettingsPermission": "На открывшейся странице разрешите «Изменение системных настроек», а затем попробуйте ещё раз.",
+  "errorMessage": "Ошибка: {message}",
+  "@errorMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "songsAddedToQueue": "{count} песен добавлено в очередь",
+  "@songsAddedToQueue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songAddedToQueue": "«{title}» добавлено в очередь",
+  "@songAddedToQueue": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "songSetAsRingtone": "«{title}» установлено в качестве мелодии звонка",
+  "@songSetAsRingtone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToSetRingtone": "Не удалось установить мелодию звонка: {error}",
+  "@failedToSetRingtone": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteSongConfirm": "Удалить «{title}» с вашего устройства? Это действие нельзя отменить.",
+  "@deleteSongConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "songDeleted": "«{title}» удалено",
+  "@songDeleted": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToDelete": "Не удалось удалить: {error}",
+  "@failedToDelete": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "songCount": "{count} песен",
+  "@songCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "badgeNew": "НОВОЕ",
+  "paused": "Приостановлено",
+  "readyToPlay": "Готовы к игре",
+  "tapSongToStartListening": "Нажмите на песню, чтобы начать прослушивание",
+  "clearCachedLyrics": "Очистить кэшированные тексты песен",
+  "lyricsCleared": "Кэшированные тексты песен для «{title}» удалены",
+  "@lyricsCleared": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "noLyricsCached": "Текст песни в кэше не найден",
+  "setAsRingtone": "Установить в качестве мелодии звонка",
+  "songInfoEdit": "Информация о песне / Редактировать",
+  "goToAlbum": "Перейти к альбому",
+  "goToArtist": "Перейти к исполнителю",
+  "deleteFromDevice": "Удалить с устройства",
+  "checkOutThisSong": "Послушайте эту песню!",
+  "backgroundLowEndStyle": "Стиль фона",
+  "backgroundLowEndStyleDesc": "Как выглядит фон приложения",
+  "backgroundBlobs": "Анимированные кляксы",
+  "backgroundSolid": "Однотонный",
+  "backgroundHighEndStyle": "Фон для текущего воспроизведения",
+  "backgroundHighEndStyleDesc": "Стиль фона на экране «Воспроизведение»",
+  "backgroundBlurredArtwork": "Размытые иллюстрации",
+  "accentColor": "Акцентный цвет",
+  "accentColorDesc": "Выберите цвет акцента для приложения",
+  "backgroundBlur": "Размытие фона",
+  "backgroundBlurDesc": "Интенсивность размытия изображения",
+  "backgroundDarkness": "Темнота на заднем плане",
+  "backgroundDarknessDesc": "Прозрачность наложения на иллюстрацию",
+  "microphoneAccessNeeded": "Требуется доступ к микрофону",
+  "microphoneAccessDesc": "Приложению Aurora требуется доступ к микрофону для подключения к аудиосессии вашего устройства с целью работы визуализатора в режиме реального времени. Аудиосигнал не записывается и не сохраняется.",
+  "recapWeek": "неделя",
+  "recapMonth": "месяц",
+  "recapPeriodWeek": "Неделя",
+  "recapPeriodMonth": "Месяц",
+  "recapWeekly": "Еженедельно",
+  "recapMonthly": "Ежемесячно",
+  "recapIntroAppName": "AURORA MUSIC",
+  "recapIntroTitle": "Ваш {period}\nКраткое изложение",
+  "@recapIntroTitle": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapIntroSubtitle": "Давай посмотрим, что ты\nслушал.",
+  "recapPlayedEyebrow": "В этом {period} вы слушали музыку",
+  "@recapPlayedEyebrow": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapTimeSingular": "время",
+  "recapTimePlural": "раз",
+  "recapListenedForEyebrow": "Вы прислушались к",
+  "recapListenedForLabel": "музыки",
+  "recapTopTrackEyebrow": "Ваш трек № 1",
+  "recapPlays": "спектакли",
+  "recapTopTracksTitle": "Лучшие треки",
+  "recapTopArtistEyebrow": "Ваш любимый исполнитель",
+  "recapTopArtistsTitle": "Лучшие артисты",
+  "recapNothingToWrap": "Пока нечего заворачивать",
+  "recapNothingToWrapBody": "Послушай немного музыки, {period}, а потом вернись.",
+  "@recapNothingToWrapBody": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapSwipeUp": "ПРОВЕДИ ПАЛЬЦЕМ ВВЕРХ",
+  "recapYourSoundLabel": "ВАШ ЗВУК",
+  "recapYouListenMost": "ЧТО ВЫ СЛУШАЕТЕ ЧАЩЕ ВСЕГО",
+  "recapOnDay": "за {day} секунд",
+  "@recapOnDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "recapAroundTime": "около {time}",
+  "@recapAroundTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "recapVibesHitDifferent": "И вот тогда атмосфера стала совсем другой.",
+  "recapThatsAWrap": "НА ЭТОМ ВСЁ",
+  "recapInNumbers": "Ваш {period}\nв цифрах",
+  "@recapInNumbers": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "recapNumberOneTrack": "#1 ТРЕК",
+  "recapStatTotalPlays": "Общее количество просмотров",
+  "recapStatTimeListened": "Время прослушивания",
+  "recapStatUniqueTracks": "Уникальные треки",
+  "recapStatTopArtist": "Лучший артист",
+  "recapDone": "Готово",
+  "recapWeekdayMonday": "Понедельник",
+  "recapWeekdayTuesday": "вторник",
+  "recapWeekdayWednesday": "среда",
+  "recapWeekdayThursday": "четверг",
+  "recapWeekdayFriday": "Пятница",
+  "recapWeekdaySaturday": "Суббота",
+  "recapWeekdaySunday": "Воскресенье",
+  "recapBannerTitle": "Обзор музыкальных событий можно найти здесь",
+  "recapBannerShow": "Показать",
+  "recapBannerLater": "Позже",
+  "eqTitle": "Эквалайзер",
+  "eqOn": "ВКЛ.",
+  "eqOff": "ВЫКЛ.",
+  "eqNotAvailable": "На данном устройстве функция эквалайзера недоступна.",
+  "eqOpenSystem": "Эквалайзер с открытой системой",
+  "eqSavePreset": "Сохранить пресет",
+  "eqPresetNameHint": "например, «My Bass Boost»",
+  "eqPresetNameEmpty": "Поле «Имя» не может быть пустым.",
+  "eqPresetNameBuiltIn": "«{name}» — это название встроенной предустановки.",
+  "@eqPresetNameBuiltIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eqResetAllBands": "Сбросить настройки всех диапазонов",
+  "eqPresetsLabel": "ПРЕДУСТАНОВКИ",
+  "eqYourPresetsLabel": "ВАШИ ПРЕДУСТАНОВКИ",
+  "eqSaveCurrent": "Сохранить текущее",
+  "eqSettingsSubtitle": "Настройка частот звука по каждому диапазону",
+  "eqEmptyPresets": "Настройте звук, а затем нажмите «Сохранить текущие настройки».",
+  "lyricsHint": "Вставьте сюда несинхронизированные тексты песен…\n\nПо одной строке на каждую строку куплета.",
+  "lyricsSelectLrcFile": "Пожалуйста, выберите файл .lrc",
+  "lyricsNoLyricsInFile": "В этом файле не найдено текстов песен",
+  "importFailed": "Ошибка импорта: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsImportTooltip": "Импортировать файл .lrc",
+  "importPlaylistM3u": "Импортировать плейлист (.m3u)",
+  "setSyncFolder": "Установить папку для синхронизации…",
+  "syncNow": "Синхронизировать сейчас",
+  "searchPlaylists": "Поиск плейлистов…",
+  "pleaseSelectM3uFile": "Пожалуйста, выберите файл с расширением .m3u или .m3u8",
+  "noMatchingSongsForPlaylist": "Песен, соответствующих этому плейлисту, не найдено",
+  "importedPlaylist": "Импортировано «{name}» ({count} песен)",
+  "@importedPlaylist": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistsSyncWith": "Плейлисты будут синхронизированы с: {folder}",
+  "@playlistsSyncWith": {
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotSetSyncFolder": "Не удалось настроить папку синхронизации: {error}",
+  "@couldNotSetSyncFolder": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "setSyncFolderFirst": "Сначала настройте папку для синхронизации",
+  "playlistsSynced": "Синхронизированы плейлисты",
+  "alreadyUpToDate": "Уже актуально",
+  "syncFailed": "Ошибка синхронизации: {error}",
+  "@syncFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportFailed": "Ошибка экспорта: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchFolders": "Поиск папок…",
+  "songInfoPath": "Путь",
+  "closeVisualiser": "Закрыть визуализатор",
+  "previousMode": "Предыдущий режим",
+  "nextMode": "Следующий режим",
+  "sortBy": "Сортировать по",
+  "colorTheme": "Цветовая схема",
+  "insightsTotalPlays": "Всего\nПросмотров",
+  "insightsTracksHeard": "Треки\nПрослушано",
+  "insightsEstListening": "Приблизительно\nПрослушивание",
+  "dismiss": "Отклонить",
+  "updateVersionAvailable": "Теперь доступна версия {version}.",
+  "@updateVersionAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateNewVersionAvailable": "Теперь доступна новая версия.",
+  "lyricsPasteLyricsTitle": "Вставить текст песни",
+  "lyricsUseLyrics": "Использовать тексты песен",
+  "lyricsPaste": "Вставить",
+  "lyricsNoLyricsYet": "Текста песни пока нет",
+  "lyricsPasteToGetStarted": "Вставьте текст песни, чтобы начать",
+  "lyricsNoTimestampsYet": "Метки времени пока отсутствуют — нажмите кнопку с отметкой во время воспроизведения песни.",
+  "lyricsAllLinesStampedHint": "Все строки отмечены — нажмите «Сохранить», чтобы завершить.",
+  "lyricsAllStamped": "✓  Все строки проштампованы",
+  "lyricsPasteFirst": "Сначала вставьте текст песни",
+  "lyricsTapToStamp": "⏱  Нажмите, чтобы поставить отметку на строке {current} / {total}",
+  "@lyricsTapToStamp": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsNextLabel": "Далее"
+}

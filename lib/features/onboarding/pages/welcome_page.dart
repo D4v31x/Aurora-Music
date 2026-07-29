@@ -60,6 +60,22 @@ class _WelcomePageState extends State<WelcomePage>
       'title': 'Vítejte v Aurora Music',
       'subtitle': 'Pojďme nastavit váš zážitek'
     },
+    {
+      'title': 'Willkommen bei Aurora Music',
+      'subtitle': 'Lass uns dein Erlebnis einrichten'
+    },
+    {
+      'title': 'Bienvenido a Aurora Music',
+      'subtitle': 'Configuremos tu experiencia'
+    },
+    {
+      'title': 'Aurora Music में आपका स्वागत है',
+      'subtitle': 'आइए आपका अनुभव सेट करें'
+    },
+    {
+      'title': 'Добро пожаловать в Aurora Music',
+      'subtitle': 'Давайте настроим ваш опыт'
+    },
   ];
 
   @override
@@ -339,11 +355,13 @@ class _WelcomePageState extends State<WelcomePage>
           child: Stack(
             children: [
               Center(
-                child: AnimatedBuilder(
-                  animation: Listenable.merge(
-                      [_controller, _exitController, _textCycleController]),
-                  builder: (context, child) {
-                    return Column(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 36),
+                  child: AnimatedBuilder(
+                    animation: Listenable.merge(
+                        [_controller, _exitController, _textCycleController]),
+                    builder: (context, child) {
+                      return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // Page icon
@@ -377,7 +395,7 @@ class _WelcomePageState extends State<WelcomePage>
                                   : _fadeAnimation,
                               child: SizedBox(
                                 height:
-                                    50, // Fixed height to prevent layout jumps
+                                    108, // Tall enough for 2-line titles
                                 child: ClipRect(
                                   child: Stack(
                                     alignment: Alignment.center,
@@ -451,7 +469,7 @@ class _WelcomePageState extends State<WelcomePage>
                                 : _fadeAnimation2,
                             child: SizedBox(
                               height:
-                                  30, // Fixed height to prevent layout jumps
+                                  60, // Tall enough for 2-line subtitles
                               child: ClipRect(
                                 child: Stack(
                                   alignment: Alignment.center,
@@ -512,6 +530,7 @@ class _WelcomePageState extends State<WelcomePage>
                       ],
                     );
                   },
+                ),
                 ),
               ),
 

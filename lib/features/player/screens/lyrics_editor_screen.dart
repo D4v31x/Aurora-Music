@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/font_constants.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/lyrics_service.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -144,9 +145,9 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
         backgroundColor: Colors.grey[900],
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text(
-          'Paste Lyrics',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context).lyricsPasteLyricsTitle,
+          style: const TextStyle(
             color: Colors.white,
             fontFamily: FontConstants.fontFamily,
             fontWeight: FontWeight.bold,
@@ -167,7 +168,7 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
               height: 1.5,
             ),
             decoration: InputDecoration(
-              hintText: 'Paste unsynced lyrics here…\n\nOne line per verse line.',
+              hintText: AppLocalizations.of(context).lyricsHint,
               hintStyle: const TextStyle(
                   color: Colors.white30,
                   fontFamily: FontConstants.fontFamily,
@@ -192,9 +193,9 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context).cancel,
+              style: const TextStyle(
                   color: Colors.white54,
                   fontFamily: FontConstants.fontFamily),
             ),
@@ -204,9 +205,9 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
               Navigator.pop(ctx);
               _parsePastedText(controller.text);
             },
-            child: const Text(
-              'Use Lyrics',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context).lyricsUseLyrics,
+              style: const TextStyle(
                 color: Colors.white,
                 fontFamily: FontConstants.fontFamily,
                 fontWeight: FontWeight.bold,
@@ -246,7 +247,7 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
       if (path == null) return;
       if (!path.toLowerCase().endsWith('.lrc')) {
         messenger.showSnackBar(
-            const SnackBar(content: Text('Please select a .lrc file')));
+            SnackBar(content: Text(AppLocalizations.of(context).lyricsSelectLrcFile)));
         return;
       }
 
@@ -282,7 +283,7 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
       final lines = _extractPlainLines(content);
       if (lines.isEmpty) {
         messenger.showSnackBar(
-            const SnackBar(content: Text('No lyrics found in that file')));
+            SnackBar(content: Text(AppLocalizations.of(context).lyricsNoLyricsInFile)));
         return;
       }
 
@@ -316,7 +317,7 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
       widget.onSaved();
       Navigator.pop(context);
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Import failed: $e')));
+      messenger.showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).importFailed('$e'))));
     }
   }
 
@@ -330,9 +331,9 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
 
     if (stampedIndices.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'No timestamps yet — tap the stamp button while the song plays.',
+            AppLocalizations.of(context).lyricsNoTimestampsYet,
           ),
         ),
       );
@@ -411,7 +412,7 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
             child: Column(
               children: [
                 Text(
-                  title.isNotEmpty ? title : 'Unknown',
+                  title.isNotEmpty ? title : AppLocalizations.of(context).unknown,
                   style: const TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     color: Colors.white,
@@ -438,7 +439,7 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
             ),
           ),
           IconButton(
-            tooltip: 'Import .lrc file',
+            tooltip: AppLocalizations.of(context).lyricsImportTooltip,
             icon: const Icon(Icons.file_open_outlined,
                 color: Colors.white60, size: 20),
             onPressed: _importLrcFile,
@@ -448,9 +449,9 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 8),
             ),
-            child: const Text(
-              'Paste',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context).lyricsPaste,
+              style: const TextStyle(
                 color: Colors.white60,
                 fontFamily: FontConstants.fontFamily,
                 fontSize: 14,
@@ -462,9 +463,9 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 8),
             ),
-            child: const Text(
-              'Save',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context).save,
+              style: const TextStyle(
                 color: Colors.white,
                 fontFamily: FontConstants.fontFamily,
                 fontSize: 14,
@@ -617,9 +618,9 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
           children: [
             Icon(Icons.lyrics_outlined, size: 56, color: Colors.white.withValues(alpha: 0.18)),
             const SizedBox(height: 16),
-            const Text(
-              'No lyrics yet',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context).lyricsNoLyricsYet,
+              style: const TextStyle(
                 fontFamily: FontConstants.fontFamily,
                 color: Colors.white54,
                 fontSize: 18,
@@ -630,9 +631,9 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
               onPressed: _showPasteDialog,
               icon: const Icon(Icons.paste_rounded,
                   color: Colors.white60, size: 20),
-              label: const Text(
-                'Paste lyrics to get started',
-                style: TextStyle(
+              label: Text(
+                AppLocalizations.of(context).lyricsPasteToGetStarted,
+                style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white60,
                 ),
@@ -642,9 +643,9 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
               onPressed: _importLrcFile,
               icon: const Icon(Icons.file_open_outlined,
                   color: Colors.white60, size: 20),
-              label: const Text(
-                'Import .lrc file',
-                style: TextStyle(
+              label: Text(
+                AppLocalizations.of(context).lyricsImportTooltip,
+                style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white60,
                 ),
@@ -802,7 +803,7 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                'Next: "${_lines[_nextStampIndex]}"',
+                '${AppLocalizations.of(context).lyricsNextLabel}: "${_lines[_nextStampIndex]}"',
                 style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white54,
@@ -814,11 +815,11 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
               ),
             ),
           if (allStamped)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 8),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                'All lines stamped — tap Save to finish.',
-                style: TextStyle(
+                AppLocalizations.of(context).lyricsAllLinesStampedHint,
+                style: const TextStyle(
                   fontFamily: FontConstants.fontFamily,
                   color: Colors.white70,
                   fontSize: 13,
@@ -847,10 +848,10 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
               child: Center(
                 child: Text(
                   allStamped
-                      ? '✓  All lines stamped'
+                      ? AppLocalizations.of(context).lyricsAllStamped
                       : !hasLines
-                          ? 'Paste lyrics first'
-                          : '⏱  TAP TO STAMP LINE ${_nextStampIndex + 1} / ${_lines.length}',
+                          ? AppLocalizations.of(context).lyricsPasteFirst
+                          : AppLocalizations.of(context).lyricsTapToStamp(_nextStampIndex + 1, _lines.length),
                   style: TextStyle(
                     fontFamily: FontConstants.fontFamily,
                     fontSize: 15,

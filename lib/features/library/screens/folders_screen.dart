@@ -180,6 +180,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
   @override
   Widget build(BuildContext context) {
     final count = _filteredFolders.length;
+    final loc = AppLocalizations.of(context);
 
     return AppBackground(
       child: Scaffold(
@@ -190,7 +191,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
           slivers: [
             LibraryScreenHeader(
               badge: 'Library',
-              title: 'Folders',
+              title: loc.folders,
               subtitle: _isLoading
                   ? null
                   : '$count ${count == 1 ? 'folder' : 'folders'}',
@@ -199,7 +200,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
               showBackButton: true,
               searchField: LibrarySearchField(
                 controller: _searchController,
-                hint: 'Search folders…',
+                hint: loc.searchFolders,
                 onChanged: _filterFolders,
                 hasQuery: _searchQuery.isNotEmpty,
                 onClear: () {

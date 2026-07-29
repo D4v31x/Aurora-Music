@@ -59,14 +59,15 @@ class _SongContextMenu extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: Colors.grey[900]!.withValues(alpha: 0.88),
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border(
               top: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
             ),
           ),
-          child: SafeArea(
+          child: Material(
+            color: Colors.grey[900]!.withValues(alpha: 0.88),
+            child: SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -149,6 +150,7 @@ class _SongContextMenu extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
               ],
+            ),
             ),
           ),
         ),
@@ -450,35 +452,38 @@ class _SongContextMenu extends StatelessWidget {
                   else
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 300),
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: audioService.playlists.length,
-                        itemBuilder: (_, i) {
-                          final playlist = audioService.playlists[i];
-                          return ListTile(
-                            leading: const Icon(Icons.playlist_play,
-                                color: Colors.white),
-                            title: Text(
-                              playlist.name,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: FontConstants.fontFamily),
-                            ),
-                            subtitle: Text(
-                              '${playlist.songs.length} songs',
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                            onTap: () {
-                              audioService.addSongToPlaylist(
-                                  playlist.id, song);
-                              Navigator.pop(ctx);
-                              NotificationManager.showMessage(
-                                context,
-                                AppLocalizations.of(context).addedToNamedPlaylist(playlist.name),
-                              );
-                            },
-                          );
-                        },
+                      child: Material(
+                        color: Colors.transparent,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: audioService.playlists.length,
+                          itemBuilder: (_, i) {
+                            final playlist = audioService.playlists[i];
+                            return ListTile(
+                              leading: const Icon(Icons.playlist_play,
+                                  color: Colors.white),
+                              title: Text(
+                                playlist.name,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: FontConstants.fontFamily),
+                              ),
+                              subtitle: Text(
+                                '${playlist.songs.length} songs',
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                              onTap: () {
+                                audioService.addSongToPlaylist(
+                                    playlist.id, song);
+                                Navigator.pop(ctx);
+                                NotificationManager.showMessage(
+                                  context,
+                                  AppLocalizations.of(context).addedToNamedPlaylist(playlist.name),
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
                 ],

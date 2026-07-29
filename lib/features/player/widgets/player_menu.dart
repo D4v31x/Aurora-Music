@@ -165,6 +165,14 @@ class PlayerMoreOptionsMenu extends StatelessWidget {
             label: l10n.queue,
           ),
         ),
+        // Track Tags
+        PopupMenuItem<String>(
+          value: 'track_tags',
+          child: _MenuItemRow(
+            icon: const Icon(Icons.bookmark_add_outlined, color: Colors.white),
+            label: l10n.trackTags,
+          ),
+        ),
         // Song Info
         PopupMenuItem<String>(
           value: 'info',

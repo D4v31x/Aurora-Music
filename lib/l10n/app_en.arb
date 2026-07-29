@@ -6,7 +6,9 @@
   "addedToNamedPlaylist": "Added to {name}",
   "@addedToNamedPlaylist": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "addExclusion": "Add Exclusion",
@@ -18,11 +20,7 @@
   "album": "Album",
   "albums": "Albums",
   "allSongs": "All Songs",
-  "alphaDescription": "Thank you for testing Aurora Music before its public release. Your feedback helps us make the app even better.",
-  "alphaTitle": "Exclusive Alpha Access",
-  "appExit": "Exit Aurora Music",
   "appName": "Aurora Music",
-  "appUpToDate": "App is up to date!",
   "artist": "Artist",
   "artistName": "Artist name",
   "artists": "Artists",
@@ -48,7 +46,9 @@
   "smartPlaylistPreviewCount": "Matches {count} songs right now",
   "@smartPlaylistPreviewCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "saveAsClip": "Save as clip",
@@ -66,34 +66,30 @@
   "trackTagNameHint": "e.g. Song title or artist",
   "trackTagPosition": "Position",
   "useCurrentPosition": "Use current position",
-  "isThisASet": "Is this a set?",
-  "tagPartsForEasySwitching": "Tag parts of this track for easier switching between songs.",
-  "tagThisTrack": "Tag this track",
-  "pasteSetlist": "Paste setlist",
-  "pasteSetlistDialogTitle": "Paste Setlist",
-  "pasteSetlistHint": "Paste timestamps here, e.g.\n0:00 Intro\n3:45 Song Name",
+  "isThisASet": "Add timestamps to this track",
+  "tagPartsForEasySwitching": "Mark any moment — chapters, highlights, bookmarks, or anything else.",
+  "tagThisTrack": "Add tags",
+  "pasteSetlist": "Import timestamps",
+  "pasteSetlistDialogTitle": "Import Timestamps",
+  "pasteSetlistHint": "Paste timestamps here, e.g.\n0:00 Intro\n3:45 Chapter Name",
   "importAction": "Import",
   "tagsImportedMessage": "Imported {count} tags",
   "@tagsImportedMessage": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "noTagsFoundInPaste": "No timestamps found in the pasted text.",
   "bitrate": "Bitrate",
   "buyMeCoffee": "Buy Me a Coffee",
   "cancel": "Cancel",
-  "checkForUpdates": "Check for updates",
-  "checkingForUpdates": "Checking for updates",
   "coffeeSupport": "Support with a coffee",
-  "comingSoon": "Coming soon",
-  "communityDescription": "Want to know what's happening behind the scenes? Follow us on Instagram for exclusive content and updates.",
-  "communityTitle": "Join Our Community",
   "composer": "Composer",
   "connectWithUs": "Connect with us",
   "copied": "Copied",
   "copy": "Copy",
-  "coverArtUpdated": "Cover art updated",
   "create": "Create",
   "createFirstPlaylist": "Tap the button above to create your first playlist",
   "createPlaylist": "Create Playlist",
@@ -106,16 +102,13 @@
   "deletePlaylistConfirmation": "Are you sure you want to delete this playlist?",
   "deselectAll": "Deselect All",
   "details": "See details",
-  "directDonation": "Direct donation",
   "discard": "Discard",
   "dontShowAgain": "Don't show again",
   "duration": "Duration",
-  "editPlaylist": "Edit Playlist",
   "enableArtistSeparation": "Enable Artist Separation",
   "enableArtistSeparationDesc": "Automatically split combined artist names",
   "enjoyingAurora": "Enjoying Aurora?",
   "enjoyingAuroraDesc": "If you love using Aurora Music, consider supporting its development. Your support helps keep it free!",
-  "enterPlaylistName": "Enter playlist name",
   "error": "Error",
   "exclusionHint": "e.g. AC/DC",
   "exclusions": "Exclusions",
@@ -123,7 +116,6 @@
   "exit": "Exit",
   "exitApp": "Exit App",
   "exitAppConfirm": "Do you want to exit?",
-  "exitDesc": "Are you sure you want to exit?",
   "expandLyrics": "Expand Lyrics",
   "extraLarge": "Extra Large",
   "favoriteSongs": "Favorite Songs",
@@ -131,12 +123,8 @@
   "fileInfoDesc": "Long press on values to copy them",
   "fileName": "File Name",
   "filePath": "File Path",
-  "finalizing": "Finalizing",
-  "finishDescription": "Everything is ready! We wish you a delightful listening experience!",
-  "finishTitle": "You're All Set!",
   "folder": "Folder",
   "folders": "Folders",
-  "followInstagram": "Follow us on Instagram",
   "fontSize": "Font Size",
   "format": "Format",
   "forYou": "For You",
@@ -152,16 +140,13 @@
   "buyMeACoffee": "Buy Me a Coffee",
   "donationNote": "No pressure - you can always donate later in Settings",
   "language": "Language",
-  "languageTitle": "Choose Your Language",
   "large": "Large",
   "later": "Later",
   "library": "Library",
   "libraryError": "Error loading music library",
   "libraryLoaded": "Music library loaded",
   "libraryUpdated": "Library updated",
-  "lightMode": "Light Mode",
   "loading": "Loading",
-  "loadingImages": "Loading images",
   "loadingLibrary": "Loading library",
   "lossless": "Lossless",
   "lowQuality": "Low Quality",
@@ -172,13 +157,10 @@
   "maybeLater": "Maybe Later",
   "medium": "Medium",
   "metadata": "Metadata",
-  "metadataEditInfo": "Metadata editing requires a third-party app. Changes are shown for preview only.",
-  "metadataInfoTitle": "Edit Metadata",
   "metadataSaved": "Metadata saved successfully",
   "metadataApplied": "Metadata downloaded successfully",
   "metadataDownloadFailed": "Download failed. Check your connection and try again.",
   "chooseArtworkFromDevice": "Choose from device",
-  "moreResults": "More Results",
   "mostPlayed": "Most Played",
   "newPlaylist": "New Playlist",
   "next": "Next",
@@ -193,18 +175,13 @@
   "noLyricsFound": "No lyrics found",
   "noPermissionExplanation": "Without permissions, Aurora Music won't be able to access your music library.",
   "noPlaylists": "No playlists available",
-  "noPlaylistsCreated": "No playlists created",
   "noResults": "No results found",
   "noSeparators": "No separators configured",
   "noSongPlaying": "No song playing",
   "noSongsAvailable": "No songs available",
   "noSongsInPlaylist": "No songs in this playlist",
-  "noUpdateFound": "No update found",
-  "noUpper": "No",
   "nowPlaying": "Now Playing",
-  "ofMusic": "of music",
   "onboardingAlbumArt": "Beautiful Album Art",
-  "onboardingAlbumArtDesc": "Automatically fetch and display album artwork",
   "onboardingAlbumArtwork": "Album Artwork",
   "onboardingAlbumArtworkDesc": "Fetches high-quality album covers to enhance your library",
   "onboardingAppInfoSubtitle": "Your personal music companion",
@@ -221,18 +198,11 @@
   "onboardingCompletionSubtitle": "Start enjoying your music",
   "onboardingCompletionTitle": "You're All Set!",
   "onboardingContinue": "Continue",
-  "onboardingDarkMode": "Dark Mode",
-  "onboardingDarkModeDesc": "Easy on the eyes in low light",
-  "alwaysOn": "Always On",
   "onboardingDynamicColors": "Dynamic Colors",
   "onboardingDynamicColorsDesc": "Match system wallpaper colors",
   "onboardingGrantPermissions": "Grant Permissions",
   "onboardingInternetSubtitle": "How Aurora Music uses the internet",
   "onboardingInternetTitle": "Internet Usage",
-  "onboardingLightMode": "Light Mode",
-  "onboardingLightModeDesc": "Bright and clean interface",
-  "onboardingLocalLibrary": "Local Music Library",
-  "onboardingLocalLibraryDesc": "Play your music files stored on your device",
   "onboardingLocalMusic": "Music on your device",
   "onboardingLocalMusicDesc": "Have your music files in the palm of your hand",
   "onboardingLyrics": "Lyrics",
@@ -253,8 +223,6 @@
   "onboardingRequired": "Required",
   "onboardingAudioRequired": "Audio access is required to continue. Please grant the permission above.",
   "onboardingSelectLanguage": "Select your preferred language",
-  "onboardingSetupExperience": "Let's set up your experience",
-  "onboardingSkip": "Skip",
   "onboardingSmartPlaylists": "Smart Playlists",
   "onboardingSmartPlaylistsDesc": "Create and manage your music collections",
   "onboardingStartListening": "Start Listening",
@@ -262,11 +230,8 @@
   "onboardingStorageAccessDesc": "Required to read music files from your device",
   "onboardingVisualizerAccess": "Visualizer",
   "onboardingVisualizerAccessDesc": "Lets the visualizer read your device's audio session for the live bar spectrum. No audio is ever recorded.",
-  "onboardingSyncBackup": "Sync & Backup",
-  "onboardingSyncBackupDesc": "Optional cloud sync for playlists and preferences",
   "onboardingThemeSubtitle": "Choose a theme that suits your style",
   "onboardingThemeTitle": "Customize Your Look",
-  "onboardingWelcome": "Welcome to Aurora Music",
   "beta_welcome_title": "Beta Testing Program",
   "beta_welcome_thanks": "Thank you for joining our beta testing program and helping us improve Aurora Music.",
   "beta_expect_bugs_title": "Expect Bugs",
@@ -275,52 +240,38 @@
   "beta_feedback_desc": "Your reports and suggestions help us make the app better for everyone.",
   "beta_updates_title": "Frequent Updates",
   "beta_updates_desc": "New features and fixes are released regularly as we continue development.",
-  "beta_build_label": "Beta Build",
   "oneTimeSupport": "Quick one-time support",
   "openFolder": "Open in File Manager",
   "openFolderInfo": "Use your file manager to navigate to this location",
-  "openSettings": "Open Settings",
   "ownTimer": "Own timer",
-  "paypal": "PayPal",
   "permDeny": "Permissions denied",
   "permissionExplanation": "Aurora Music needs these permissions to function properly. Please grant the permissions in the app settings.",
   "permissionLater": "You can grant permissions later in app settings",
   "permissionRequired": "Permission Required",
-  "permissionsDescription": "To provide you with the best experience, Aurora Music needs access to certain features of your device.",
-  "permissionsTitle": "Now, the important stuff",
   "playAll": "Play All",
   "playingFrom": "Playing from",
   "playlist": "Playlist",
   "playlistName": "Playlist name",
   "playlists": "Playlists",
   "possibleReasons": "Possible reasons:",
-  "preparingToScan": "Preparing to scan",
-  "privacyDescription": "At Aurora Music, we take your privacy seriously. We collect anonymous data to improve your experience and enhance our services. By using the app, you agree to our Privacy Policy.",
   "privacyNotice": "By continuing to use this app, you agree to our Privacy Policy.",
   "privacyPolicyLink": "Read our Privacy Policy",
-  "privacyTitle": "Your Privacy Matters",
-  "pullToRefresh": "Pull to refresh",
   "quality": "Quality",
   "qualityDesc": "Audio quality based on format and bitrate",
   "queue": "Queue",
   "queueEmpty": "Queue is empty",
-  "quickAccess": "Quick Access",
   "reasonFormat": "File format doesn't support metadata editing",
   "reasonPermissions": "Storage permissions not granted",
   "reasonReadonly": "File is read-only or on external storage",
   "recentlyAdded": "Recently Added",
   "recentlyPlayed": "Recently Played",
-  "recentlyPlayedAlbums": "Recently played albums",
   "recentlyPlayedArtists": "Recently played artists",
   "recentlyPlayedSongs": "Recently played songs",
-  "recommendedApps": "Recommended apps:",
   "refreshing": "Refreshing...",
   "refreshLyrics": "Refresh Lyrics",
-  "releaseToRefresh": "Release to refresh",
   "remove": "Remove",
   "removeSong": "Remove Song",
   "removeSongConfirmation": "Remove this song from the playlist?",
-  "removeSongs": "Delete",
   "rename": "Rename",
   "renamePlaylist": "Rename Playlist",
   "repeat": "Repeat",
@@ -336,7 +287,6 @@
   "saveChangesDesc": "Do you want to save your changes?",
   "saveFailed": "Save Failed",
   "saveFailedDesc": "Unable to save metadata to this file.",
-  "savingMetadata": "Saving metadata...",
   "scanFailed": "Scan failed",
   "scanningSongs": "Scanning songs",
   "search": "Search",
@@ -353,7 +303,6 @@
   "separator": "Separator",
   "separatorHint": "e.g. / or feat.",
   "separators": "Separators",
-  "separatorsDesc": "Characters used to split artist names",
   "set": "Set",
   "setMinutes": "Set minutes",
   "settings": "Settings",
@@ -361,7 +310,6 @@
   "settingsAboutApp": "About Aurora Music",
   "settingsAboutSubtitle": "Version, feedback & updates",
   "settingsAccentColor": "Accent Color",
-  "settingsAccentColorDesc": "Choose the app accent color",
   "settingsAppearance": "Appearance",
   "settingsAppearanceSubtitle": "Theme, colors & layout",
   "settingsAudio": "Audio",
@@ -376,10 +324,6 @@
   "settingsClearCacheDesc": "Remove all cached data",
   "settingsClearCacheMessage": "All cached data will be deleted and rebuilt as needed.",
   "settingsClearCacheTitle": "Clear Cache?",
-  "settingsDarkMode": "Dark Mode",
-  "settingsDarkModeDesc": "Switch to dark theme",
-  "settingsDisabled": "Disabled",
-  "settingsEnabled": "Enabled",
   "settingsDataWindow": "Data Window",
   "settingsDataWindowDesc": "How far back the recap screen looks",
   "settingsGapless": "Gapless Playback",
@@ -418,7 +362,9 @@
   "settingsCacheItems": "{count} items",
   "@settingsCacheItems": {
     "placeholders": {
-      "count": {"type": "String"}
+      "count": {
+        "type": "String"
+      }
     }
   },
   "settingsMemoryCache": "Memory Cache",
@@ -454,8 +400,6 @@
   "tapAddToAddSongs": "Tap + to add songs",
   "reorderSongs": "Reorder Songs",
   "done": "Done",
-  "testArtistString": "Test artist string",
-  "testSeparation": "Test Separation",
   "thankYouSupport": "Thank you for your support!",
   "theme": "Theme",
   "title": "Title",
@@ -466,26 +410,18 @@
   "trackInfoDesc": "Tap the edit icon to modify track information",
   "trackInfoEditDesc": "Edit fields below, then tap the check icon to save",
   "tracks": "Tracks",
-  "tryAgain": "Try Again",
   "unknown": "Unknown",
   "unknownArtist": "Unknown Artist",
   "updateAvailable": "Update Available",
-  "updateFailed": "Library update failed",
   "updateMessage": "A new version is available",
   "updateNow": "Update Now",
-  "userSettings": "User settings",
-  "versionCheckError": "New version couldn't be checked",
   "viewArtist": "View artist",
   "viewDetails": "View details",
   "welcomeBack": "Welcome Back",
-  "welcomeDescription": "Embark on a journey with your music. Listen like never before. Elevate your music experience to a new level.",
-  "welcomeTitle": "Welcome to Aurora Music",
   "whatsNew": "What's New",
-  "whats_new": "What's New",
   "view_changelog": "View changelog and new features",
   "year": "Year",
   "yes": "Yes",
-  "yesUpper": "Yes",
   "yourLibrary": "Your Library",
   "yourPlaylists": "Your Playlists",
   "homeLayout": "Home Layout",
@@ -502,11 +438,7 @@
   "continueButton": "Continue",
   "skip": "Skip",
   "feedback_title": "Enjoying Aurora Music?",
-  "feedback_description": "Your feedback helps make Aurora Music better! Found a bug or have an idea? We'd love to hear from you.",
-  "report_bug": "Report Bug",
-  "suggest_feature": "Suggest Feature",
   "maybe_later": "Maybe Later",
-  "dont_ask_again": "Don't ask again",
   "send_feedback": "Send Feedback",
   "send_feedback_desc": "Report bugs or suggest features",
   "contributeTranslations": "Contribute Translations",
@@ -520,7 +452,6 @@
   "restartRequired": "Restart Required",
   "restartRequiredDesc": "The app needs to restart to apply the UI mode change. Restart now?",
   "restartNow": "Restart Now",
-  "upNext": "Up Next",
   "clearUpcoming": "Clear upcoming",
   "addToQueue": "Add to queue",
   "playNext": "Play next",
@@ -535,55 +466,73 @@
   "errorMessage": "Error: {message}",
   "@errorMessage": {
     "placeholders": {
-      "message": {"type": "String"}
+      "message": {
+        "type": "String"
+      }
     }
   },
   "songsAddedToQueue": "{count} songs added to queue",
   "@songsAddedToQueue": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "songAddedToQueue": "\"{title}\" added to queue",
   "@songAddedToQueue": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "songSetAsRingtone": "\"{title}\" set as ringtone",
   "@songSetAsRingtone": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "failedToSetRingtone": "Failed to set ringtone: {error}",
   "@failedToSetRingtone": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "deleteSongConfirm": "Delete \"{title}\" from your device? This cannot be undone.",
   "@deleteSongConfirm": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "songDeleted": "\"{title}\" deleted",
   "@songDeleted": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "failedToDelete": "Failed to delete: {error}",
   "@failedToDelete": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "songCount": "{count} songs",
   "@songCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "badgeNew": "NEW",
@@ -594,7 +543,9 @@
   "lyricsCleared": "Cached lyrics cleared for \"{title}\"",
   "@lyricsCleared": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "noLyricsCached": "No cached lyrics found for this song",
@@ -617,16 +568,8 @@
   "backgroundBlurDesc": "Artwork blur intensity",
   "backgroundDarkness": "Background Darkness",
   "backgroundDarknessDesc": "Overlay opacity on artwork",
-  "feedbackHeaderTitle": "Hey, you've been with Aurora Music a while.",
-  "feedbackHeaderSubtitle": "You're exactly who I built this for. Mind sharing a quick thought? It genuinely helps.",
-  "feedbackLove": "Love it",
-  "feedbackMissing": "Something's missing",
-  "feedbackBroken": "Something's broken",
-  "feedbackHint": "Anything specific? (optional)",
-  "feedbackSend": "Send",
   "microphoneAccessNeeded": "Microphone access needed",
   "microphoneAccessDesc": "Aurora needs microphone access to tap your device's audio session for the live visualizer. No audio is ever recorded or stored.",
-
   "recapWeek": "week",
   "recapMonth": "month",
   "recapPeriodWeek": "Week",
@@ -637,14 +580,18 @@
   "recapIntroTitle": "Your {period}\nRecap",
   "@recapIntroTitle": {
     "placeholders": {
-      "period": {"type": "String"}
+      "period": {
+        "type": "String"
+      }
     }
   },
   "recapIntroSubtitle": "Let's see what you've been\nlistening to.",
   "recapPlayedEyebrow": "This {period} you played music",
   "@recapPlayedEyebrow": {
     "placeholders": {
-      "period": {"type": "String"}
+      "period": {
+        "type": "String"
+      }
     }
   },
   "recapTimeSingular": "time",
@@ -660,23 +607,28 @@
   "recapNothingToWrapBody": "Play some music this {period} and come back.",
   "@recapNothingToWrapBody": {
     "placeholders": {
-      "period": {"type": "String"}
+      "period": {
+        "type": "String"
+      }
     }
   },
   "recapSwipeUp": "SWIPE UP",
   "recapYourSoundLabel": "YOUR SOUND",
-  "recapTopGenresTitle": "Top Genres",
   "recapYouListenMost": "YOU LISTEN MOST",
   "recapOnDay": "on {day}s",
   "@recapOnDay": {
     "placeholders": {
-      "day": {"type": "String"}
+      "day": {
+        "type": "String"
+      }
     }
   },
   "recapAroundTime": "around {time}",
   "@recapAroundTime": {
     "placeholders": {
-      "time": {"type": "String"}
+      "time": {
+        "type": "String"
+      }
     }
   },
   "recapVibesHitDifferent": "That's when the vibes hit different.",
@@ -684,7 +636,9 @@
   "recapInNumbers": "Your {period}\nin Numbers",
   "@recapInNumbers": {
     "placeholders": {
-      "period": {"type": "String"}
+      "period": {
+        "type": "String"
+      }
     }
   },
   "recapNumberOneTrack": "#1 TRACK",
@@ -703,7 +657,6 @@
   "recapBannerTitle": "Music recap is here",
   "recapBannerShow": "Show",
   "recapBannerLater": "Later",
-
   "eqTitle": "Equalizer",
   "eqOn": "ON",
   "eqOff": "OFF",
@@ -715,7 +668,9 @@
   "eqPresetNameBuiltIn": "\"{name}\" is a built-in preset name.",
   "@eqPresetNameBuiltIn": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "eqResetAllBands": "Reset all bands",
@@ -724,15 +679,62 @@
   "eqSaveCurrent": "Save current",
   "eqSettingsSubtitle": "Adjust audio frequencies per band",
   "eqEmptyPresets": "Dial in your sound, then tap \"Save current\".",
+  "lyricsHint": "Paste unsynced lyrics here…\n\nOne line per verse line.",
+  "lyricsSelectLrcFile": "Please select a .lrc file",
+  "lyricsNoLyricsInFile": "No lyrics found in that file",
+  "importFailed": "Import failed: {error}",
+  "@importFailed": {"placeholders": {"error": {"type": "String"}}},
+  "lyricsImportTooltip": "Import .lrc file",
+  "importPlaylistM3u": "Import playlist (.m3u)",
+  "setSyncFolder": "Set sync folder…",
+  "syncNow": "Sync now",
+  "searchPlaylists": "Search playlists…",
+  "pleaseSelectM3uFile": "Please select an .m3u or .m3u8 file",
+  "noMatchingSongsForPlaylist": "No matching songs found for that playlist",
+  "importedPlaylist": "Imported \"{name}\" ({count} songs)",
+  "@importedPlaylist": {"placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}},
+  "playlistsSyncWith": "Playlists will sync with: {folder}",
+  "@playlistsSyncWith": {"placeholders": {"folder": {"type": "String"}}},
+  "couldNotSetSyncFolder": "Could not set sync folder: {error}",
+  "@couldNotSetSyncFolder": {"placeholders": {"error": {"type": "String"}}},
+  "setSyncFolderFirst": "Set a sync folder first",
+  "playlistsSynced": "Playlists synced",
+  "alreadyUpToDate": "Already up to date",
+  "syncFailed": "Sync failed: {error}",
+  "@syncFailed": {"placeholders": {"error": {"type": "String"}}},
+  "exportFailed": "Export failed: {error}",
+  "@exportFailed": {"placeholders": {"error": {"type": "String"}}},
+  "searchFolders": "Search folders…",
+  "songInfoPath": "Path",
+  "closeVisualiser": "Close visualiser",
+  "previousMode": "Previous mode",
+  "nextMode": "Next mode",
+  "sortBy": "Sort by",
+  "colorTheme": "Color Theme",
+  "insightsTotalPlays": "Total\nPlays",
+  "insightsTracksHeard": "Tracks\nHeard",
+  "insightsEstListening": "Est.\nListening",
+  "dismiss": "Dismiss",
+  "updateVersionAvailable": "Version {version} is now available.",
+  "@updateVersionAvailable": {"placeholders": {"version": {"type": "String"}}},
+  "updateNewVersionAvailable": "A new version is now available.",
+  "whatsNew": "What's new",
+  "lyricsPasteLyricsTitle": "Paste Lyrics",
+  "lyricsUseLyrics": "Use Lyrics",
+  "lyricsPaste": "Paste",
+  "lyricsNoLyricsYet": "No lyrics yet",
+  "lyricsPasteToGetStarted": "Paste lyrics to get started",
+  "lyricsNoTimestampsYet": "No timestamps yet — tap the stamp button while the song plays.",
+  "lyricsAllLinesStampedHint": "All lines stamped — tap Save to finish.",
+  "lyricsAllStamped": "✓  All lines stamped",
+  "lyricsPasteFirst": "Paste lyrics first",
+  "lyricsTapToStamp": "⏱  TAP TO STAMP LINE {current} / {total}",
+  "@lyricsTapToStamp": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "lyricsNextLabel": "Next",
 
-  "whatsNewTitle": "What's New",
-  "whatsNewIn": "What's New in {version}",
-  "@whatsNewIn": {
-    "placeholders": {
-      "version": {"type": "String"}
-    }
-  },
-  "whatsNewContinue": "Got it!",
-  "whatsNewNext": "Next",
-  "whatsNewPrev": "Back"
+  "translationDisclaimerNote": "Some translations are AI-generated or community-contributed and may contain errors. Help us improve them on Crowdin.",
+  "newLanguagesAvailableTitle": "New Languages Available",
+  "newLanguagesAvailableBody": "Aurora Music now supports German, Spanish, Hindi, and Russian. You can change your language in Settings.",
+  "newLanguagesGoToSettings": "Change Language",
+  "newLanguagesDismiss": "Got it"
 }

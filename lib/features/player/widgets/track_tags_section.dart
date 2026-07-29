@@ -11,6 +11,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/constants/font_constants.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -21,9 +22,6 @@ import '../../../shared/utils/formatters/duration_formatter.dart';
 import '../../../shared/widgets/optimized_tiles.dart' show NowPlayingBars;
 import '../screens/track_tag_editor_screen.dart';
 
-/// Tracks longer than this are considered candidates for a "is this a set?"
-/// tagging suggestion.
-const Duration _setThreshold = Duration(minutes: 30);
 
 /// Index of the tag currently playing — the last tag whose position is at
 /// or before [position] — or -1 if [position] precedes every tag.
@@ -39,7 +37,7 @@ int _activeTagIndex(List<TrackTag> tags, Duration position) {
   return active;
 }
 
-class TrackTagsSection extends StatelessWidget {
+class TrackTagsSection extends StatefulWidget {
   final AudioPlayerService audioPlayerService;
   final bool isTablet;
 
@@ -50,8 +48,42 @@ class TrackTagsSection extends StatelessWidget {
   });
 
   @override
+  State<TrackTagsSection> createState() => _TrackTagsSectionState();
+}
+
+class _TrackTagsSectionState extends State<TrackTagsSection> {
+  static const _prefsKey = 'track_tags_suggestion_dismissed';
+
+  // Persisted set of song IDs whose suggestion bar has been dismissed.
+  Set<int> _dismissed = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDismissed();
+  }
+
+  Future<void> _loadDismissed() async {
+    final prefs = await SharedPreferences.getInstance();
+    final ids = prefs.getStringList(_prefsKey) ?? [];
+    if (mounted) {
+      setState(() {
+        _dismissed = ids.map(int.parse).toSet();
+      });
+    }
+  }
+
+  Future<void> _dismiss(int songId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final updated = {..._dismissed, songId};
+    await prefs.setStringList(
+        _prefsKey, updated.map((id) => id.toString()).toList());
+    if (mounted) setState(() => _dismissed = updated);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final song = audioPlayerService.currentSong;
+    final song = widget.audioPlayerService.currentSong;
     if (song == null) return const SizedBox.shrink();
 
     return Consumer<TrackTagService>(
@@ -62,17 +94,17 @@ class TrackTagsSection extends StatelessWidget {
         if (tags.isNotEmpty) {
           return _TagsListCard(
             tags: tags,
-            audioPlayerService: audioPlayerService,
-            isTablet: isTablet,
+            audioPlayerService: widget.audioPlayerService,
+            isTablet: widget.isTablet,
           );
         }
 
-        final duration = Duration(milliseconds: song.duration ?? 0);
-        if (duration >= _setThreshold) {
-          return _TagSuggestionBar(audioPlayerService: audioPlayerService);
-        }
+        if (_dismissed.contains(song.id)) return const SizedBox.shrink();
 
-        return const SizedBox.shrink();
+        return _TagSuggestionBar(
+          audioPlayerService: widget.audioPlayerService,
+          onDismiss: () => _dismiss(song.id),
+        );
       },
     );
   }
@@ -231,8 +263,12 @@ class _TagsListCard extends StatelessWidget {
 
 class _TagSuggestionBar extends StatelessWidget {
   final AudioPlayerService audioPlayerService;
+  final VoidCallback onDismiss;
 
-  const _TagSuggestionBar({required this.audioPlayerService});
+  const _TagSuggestionBar({
+    required this.audioPlayerService,
+    required this.onDismiss,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -250,7 +286,7 @@ class _TagSuggestionBar extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.query_stats_rounded,
+            const Icon(Icons.bookmark_add_outlined,
                 color: Colors.white70, size: 22),
             const SizedBox(width: 12),
             Expanded(
@@ -278,7 +314,7 @@ class _TagSuggestionBar extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
             TextButton(
               onPressed: () => Navigator.push(
                 context,
@@ -287,6 +323,14 @@ class _TagSuggestionBar extends StatelessWidget {
                 ),
               ),
               child: Text(loc.tagThisTrack),
+            ),
+            IconButton(
+              onPressed: onDismiss,
+              icon: const Icon(Icons.close_rounded,
+                  color: Colors.white38, size: 18),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              tooltip: AppLocalizations.of(context).dismiss,
             ),
           ],
         ),
