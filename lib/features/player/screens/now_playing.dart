@@ -30,7 +30,7 @@ import '../screens/track_tag_editor_screen.dart';
 import '../widgets/player_widgets.dart';
 import '../widgets/track_tags_section.dart';
 import 'fullscreen_artwork.dart';
-import 'music_visualizer_screen.dart';
+import '../../visualizer/screens/visualizer_screen.dart';
 import 'fullscreen_lyrics.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
@@ -64,6 +64,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       ValueNotifier<List<TimedLyric>?>(null);
   final ValueNotifier<int> _currentLyricIndexNotifier = ValueNotifier<int>(0);
 
+  // True while the outer page ListView is being actively dragged by the
+  // user — lets the compact lyrics preview pause its own auto re-center so
+  // the two don't visually fight each other mid-scroll.
+  final ValueNotifier<bool> _outerScrollingNotifier = ValueNotifier<bool>(false);
+
   StreamSubscription<Duration>? _positionSub;
   int? _pendingSongLoadId;
   StreamSubscription<SongModel?>? _songChangeSubscription;
@@ -81,8 +86,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     _artworkNotifier.dispose();
     _lyricsNotifier.dispose();
     _currentLyricIndexNotifier.dispose();
+    _outerScrollingNotifier.dispose();
     _positionSub?.cancel();
     _songChangeSubscription?.cancel();
+    _artworkService.artworkRevisionNotifier.removeListener(_onArtworkRevisionChanged);
+    TimedLyricsService().lyricsRevisionNotifier.removeListener(_onLyricsRevisionChanged);
     _pendingSongLoadId = null;
     super.dispose();
   }
@@ -109,17 +117,42 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     // Listen to song changes
     _songChangeSubscription =
         audioPlayerService.currentSongStream.listen((song) {
-      if (song != null && song.id != _lastSongId) {
-        _lastSongId = song.id;
+      if (song == null) return;
+      final isNewSong = song.id != _lastSongId;
+      _lastSongId = song.id;
+      if (!mounted) return;
+      // Rebuild title/artist/album text either way — a same-id emission
+      // means the currently-playing song's own metadata was just edited.
+      setState(() {});
+      if (isNewSong) {
         _pendingSongLoadId = song.id;
-        if (mounted) {
-          setState(() {}); // rebuild title, artist, album text
-          _updateArtwork(song);
-          _initializeTimedLyrics(audioPlayerService);
-          _ensureBackgroundArtwork();
-        }
+        _updateArtwork(song);
+        _initializeTimedLyrics(audioPlayerService);
+        _ensureBackgroundArtwork();
       }
     });
+
+    // Reload artwork/lyrics for the current song if either was edited
+    // while this screen is already open, without waiting for a song change.
+    _artworkService.artworkRevisionNotifier.addListener(_onArtworkRevisionChanged);
+    TimedLyricsService().lyricsRevisionNotifier.addListener(_onLyricsRevisionChanged);
+  }
+
+  void _onArtworkRevisionChanged() {
+    if (!mounted) return;
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+    final song = audioPlayerService.currentSong;
+    if (song != null) _updateArtwork(song);
+  }
+
+  void _onLyricsRevisionChanged() {
+    if (!mounted) return;
+    final audioPlayerService =
+        Provider.of<AudioPlayerService>(context, listen: false);
+    if (audioPlayerService.currentSong != null) {
+      _initializeTimedLyrics(audioPlayerService);
+    }
   }
 
   Future<void> _ensureBackgroundArtwork() async {
@@ -275,7 +308,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         transitionDuration:        const Duration(milliseconds: 400),
         pageBuilder: (ctx, animation, _) => FadeTransition(
           opacity: animation,
-          child:   const MusicVisualizerScreen(),
+          child:   const VisualizerScreen(),
         ),
       ),
     );
@@ -382,16 +415,26 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       child: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxContentWidth),
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            padding: EdgeInsets.symmetric(
-              horizontal: horizontalPadding,
-              vertical: verticalPadding,
-            ),
-            children: [
-              SizedBox(height: isTablet ? 40 : 30),
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification is ScrollStartNotification &&
+                  notification.dragDetails != null) {
+                _outerScrollingNotifier.value = true;
+              } else if (notification is ScrollEndNotification) {
+                _outerScrollingNotifier.value = false;
+              }
+              return false;
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: verticalPadding,
+              ),
+              children: [
+                SizedBox(height: isTablet ? 40 : 30),
               _buildArtworkWithInfo(audioPlayerService, isTablet, isLandscape),
               SizedBox(height: isTablet && isLandscape ? 40 : 24),
               PlayerProgressBar(
@@ -449,6 +492,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 MusicMetadataWidget(song: audioPlayerService.currentSong!),
               SizedBox(height: isTablet ? 40 : 30),
             ],
+          ),
           ),
         ),
       ),
@@ -724,6 +768,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     timedLyrics: timedLyrics,
                     currentLyricIndex: currentIndex,
                     audioPlayerService: audioPlayerService,
+                    outerScrolling: _outerScrollingNotifier,
                   );
                 },
               ),

@@ -393,9 +393,16 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
   /// Lets the user pick an image from device storage to use as the song's
   /// cover art. The chosen image is held as [_pendingCoverArt] and only
   /// written to the file when metadata changes are saved.
+  ///
+  /// Uses `FileType.custom` (rather than `FileType.image`) so this opens the
+  /// system's document/file browser instead of the Android Photo Picker,
+  /// which behaves like an image gallery picker.
   Future<void> _pickArtworkFromStorage() async {
     try {
-      final picked = await FilePicker.pickFile(type: FileType.image);
+      final picked = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: const ['jpg', 'jpeg', 'png', 'webp', 'bmp'],
+      );
       if (picked == null) return;
       final bytes = await picked.readAsBytes();
       if (!mounted) return;
@@ -894,7 +901,7 @@ class _MetadataDetailScreenState extends State<MetadataDetailScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(10),
                               child: Icon(
-                                Icons.photo_library_outlined,
+                                Icons.folder_open_outlined,
                                 size: 20,
                                 color: Colors.white,
                                 semanticLabel:

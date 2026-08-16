@@ -9,15 +9,23 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/track_tag_model.dart';
 
 class TrackTagService extends ChangeNotifier {
   static const String _fileName = 'track_tags.json';
+  static const String _suggestionDismissedPrefsKey =
+      'track_tags_suggestion_dismissed';
 
   Map<String, List<TrackTag>> _tagsBySongId = {};
   bool _loaded = false;
+  bool _suggestionDismissed = false;
 
   bool get loaded => _loaded;
+
+  // Loaded eagerly with tags so UI never flashes the suggestion bar then
+  // hides it a moment later once prefs resolve.
+  bool get suggestionDismissed => _suggestionDismissed;
 
   Future<void> load() async {
     if (_loaded) return;
@@ -33,12 +41,23 @@ class TrackTagService extends ChangeNotifier {
                   .toList(),
             ));
       }
+      final prefs = await SharedPreferences.getInstance();
+      _suggestionDismissed =
+          prefs.getBool(_suggestionDismissedPrefsKey) ?? false;
     } catch (e) {
       debugPrint('Error loading track tags: $e');
     } finally {
       _loaded = true;
       notifyListeners();
     }
+  }
+
+  Future<void> dismissSuggestion() async {
+    if (_suggestionDismissed) return;
+    _suggestionDismissed = true;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_suggestionDismissedPrefsKey, true);
   }
 
   Future<File> _tagsFile() async {

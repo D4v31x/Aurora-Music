@@ -37,6 +37,11 @@ class TimedLyricsService {
   final Map<String, List<TimedLyric>> _memoryCache = {};
   static const int _maxMemoryCacheSize = 50;
 
+  /// Bumped whenever lyrics are saved/edited (see [_saveLyricsToFile]) so
+  /// already-open lyrics views can reload instead of showing stale lyrics
+  /// for the currently-playing song.
+  final ValueNotifier<int> lyricsRevisionNotifier = ValueNotifier<int>(0);
+
   void _log(String message) {
     final fullMessage = '🎵 [LYRICS] $message';
     debugPrint(fullMessage);
@@ -511,6 +516,7 @@ class TimedLyricsService {
       final file = File('${directory.path}/lyrics/$cacheKey.lrc');
       if (await file.exists()) {
         await file.delete();
+        lyricsRevisionNotifier.value = lyricsRevisionNotifier.value + 1;
         return true;
       }
       return false;
@@ -611,6 +617,7 @@ class TimedLyricsService {
       // Also add to memory cache for instant access
       final lyrics = _parseLrc(content);
       _addToMemoryCache(fileName, lyrics);
+      lyricsRevisionNotifier.value = lyricsRevisionNotifier.value + 1;
     } catch (e) {
       _log('  ✗ Error saving lyrics: $e');
     }

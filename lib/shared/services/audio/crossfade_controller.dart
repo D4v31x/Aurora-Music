@@ -28,6 +28,10 @@ extension AudioCrossfadeControllerExtension on AudioPlayerService {
   static const int kMinCrossfadeMs = 1000;
   static const int kMaxCrossfadeMs = 12000;
 
+  /// Fixed duration Automix uses for every transition — it deliberately
+  /// doesn't expose a slider, mirroring Spotify's "automatic" duration pick.
+  static const int kAutomixDurationMs = 8000;
+
   /// Registers an optional factory for building an [AudioPipeline] (e.g. one
   /// wrapping an [AndroidEqualizer]) for the standby player used during a
   /// non-gapless crossfade hand-off. Not required for gapless crossfades,
@@ -46,7 +50,7 @@ extension AudioCrossfadeControllerExtension on AudioPlayerService {
   }
 
   void _onCrossfadeTick(Duration position) {
-    if (!_crossfadeEnabled || _crossfading) return;
+    if (_crossfading) return;
     // just_audio already handles single-track repeat internally — don't
     // crossfade a track into itself.
     if (_loopMode == LoopMode.one) return;
@@ -55,11 +59,17 @@ extension AudioCrossfadeControllerExtension on AudioPlayerService {
     final total = _audioPlayer.duration;
     if (total == null || total <= Duration.zero) return;
 
+    // Automix and manual Crossfade both drive the same engine — Automix
+    // picks its own fixed duration and takes priority when both are on.
+    if (!_automixEnabled && !_crossfadeEnabled) return;
+
     // Clamp the fade window so it never exceeds roughly half the track's
     // duration (a 10-second fade on a 12-second track would start fading
     // almost immediately, which feels broken rather than musical).
     final maxFadeForTrack = (total.inMilliseconds / 2).floor();
-    final fadeMs = _crossfadeDurationMs.clamp(
+    final baseDurationMs =
+        _automixEnabled ? kAutomixDurationMs : _crossfadeDurationMs;
+    final fadeMs = baseDurationMs.clamp(
       kMinCrossfadeMs,
       maxFadeForTrack < kMinCrossfadeMs ? kMinCrossfadeMs : maxFadeForTrack,
     );
@@ -108,7 +118,13 @@ extension AudioCrossfadeControllerExtension on AudioPlayerService {
     } catch (_) {}
   }
 
-  Future<void> _beginCrossfade(int nextIndex, int fadeMs) async {
+  Future<void> _beginCrossfade(
+    int nextIndex,
+    int fadeMs, {
+    Duration? destinationStartOverride,
+    double? speedOverride,
+    double? pitchOverride,
+  }) async {
     if (_crossfading) return;
     if (nextIndex < 0 || nextIndex >= _playlist.length) return;
 
@@ -124,14 +140,17 @@ extension AudioCrossfadeControllerExtension on AudioPlayerService {
           : AudioPlayer();
 
       // Match the outgoing player's speed/pitch settings so the incoming
-      // track doesn't suddenly change tempo when it becomes primary.
-      await standby.setSpeed(_playbackSpeed);
-      await standby.setPitch(_pitchWithSpeed ? _playbackSpeed : 1.0);
+      // track doesn't suddenly change tempo when it becomes primary — unless
+      // an AutoMix tempo correction override is supplied.
+      await standby.setSpeed(speedOverride ?? _playbackSpeed);
+      await standby.setPitch(
+          pitchOverride ?? (_pitchWithSpeed ? _playbackSpeed : 1.0));
 
       final uri = nextSong.uri ?? nextSong.data;
       final nextMediaItem = await _createMediaItem(nextSong);
       await standby.setAudioSource(
         AudioSource.uri(Uri.parse(uri), tag: nextMediaItem),
+        initialPosition: destinationStartOverride,
       );
       await standby.setVolume(0.0);
       unawaited(standby.play());

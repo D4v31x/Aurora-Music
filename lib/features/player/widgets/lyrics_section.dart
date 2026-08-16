@@ -6,6 +6,7 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:provider/provider.dart';
@@ -62,11 +63,17 @@ class LyricsSection extends StatefulWidget {
   /// The audio player service.
   final AudioPlayerService audioPlayerService;
 
+  /// True while the Now Playing screen's own outer scroll view is being
+  /// dragged. While true, the auto re-center-on-current-lyric is paused so
+  /// it doesn't fight the user's drag for visual attention.
+  final ValueListenable<bool>? outerScrolling;
+
   const LyricsSection({
     super.key,
     required this.timedLyrics,
     required this.currentLyricIndex,
     required this.audioPlayerService,
+    this.outerScrolling,
   });
 
   @override
@@ -83,6 +90,10 @@ class _LyricsSectionState extends State<LyricsSection>
   final GlobalKey _scrollKey = GlobalKey();
   final Map<int, GlobalKey> _lyricKeys = {};
 
+  // Set when a lyric-index change is skipped because the outer page was
+  // being dragged; resolved (without animation) once dragging stops.
+  bool _pendingResync = false;
+
   /// Controls the pulsing opacity of the translate button while fetching.
   late final AnimationController _pulseController;
   late final Animation<double> _pulseAnim;
@@ -97,22 +108,41 @@ class _LyricsSectionState extends State<LyricsSection>
     _pulseAnim = Tween<double>(begin: 1.0, end: 0.25).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+    widget.outerScrolling?.addListener(_handleOuterScrollingChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => _jumpToCurrentLyric());
+  }
+
+  void _handleOuterScrollingChanged() {
+    if (widget.outerScrolling?.value == false && _pendingResync) {
+      _pendingResync = false;
+      _scrollToCurrentLyric();
+    }
   }
 
   @override
   void didUpdateWidget(LyricsSection old) {
     super.didUpdateWidget(old);
+    if (old.outerScrolling != widget.outerScrolling) {
+      old.outerScrolling?.removeListener(_handleOuterScrollingChanged);
+      widget.outerScrolling?.addListener(_handleOuterScrollingChanged);
+    }
     // Reset when a new song is loaded (lyrics list reference changes).
     if (!identical(old.timedLyrics, widget.timedLyrics)) {
       _reset();
     } else if (old.currentLyricIndex != widget.currentLyricIndex) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentLyric());
+      if (widget.outerScrolling?.value == true) {
+        // Defer until the user finishes dragging the outer page.
+        _pendingResync = true;
+      } else {
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => _scrollToCurrentLyric());
+      }
     }
   }
 
   @override
   void dispose() {
+    widget.outerScrolling?.removeListener(_handleOuterScrollingChanged);
     _pulseController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -276,10 +306,10 @@ class _LyricsSectionState extends State<LyricsSection>
               ? _buildLyricsContent(context, screenWidth)
               : _buildNoLyricsPlaceholder(context),
         ),
-        if (hasLyrics) ...[
-          _buildExpandButton(context),
-          _buildTranslateButton(context),
-        ],
+        // Always expose the expand button — even with no lyrics yet, tapping
+        // it opens the fullscreen view where lyrics can be added/imported.
+        _buildExpandButton(context),
+        if (hasLyrics) _buildTranslateButton(context),
       ],
     );
   }
@@ -290,31 +320,37 @@ class _LyricsSectionState extends State<LyricsSection>
       opacity: _translationState == _TranslationState.loading ? 0.45 : 1.0,
       duration: const Duration(milliseconds: 300),
       child: Center(
-        child: ShaderMask(
-          shaderCallback: (Rect bounds) {
-            return const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Colors.white,
-                Colors.white,
-                Colors.transparent,
-              ],
-              stops: [0.0, 0.2, 0.8, 1.0],
-            ).createShader(bounds);
-          },
-          blendMode: BlendMode.dstIn,
-          child: SingleChildScrollView(
-            key: _scrollKey,
-            controller: _scrollController,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(
-              vertical: _kLyricsSectionHeight / 2,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: _buildAnimatedLyricLines(context, screenWidth),
+        // This preview only ever scrolls programmatically (follows the
+        // current lyric) and has no taps of its own — IgnorePointer keeps it
+        // fully out of the gesture arena so it can never fight the Now
+        // Playing screen's outer scroll view for a drag.
+        child: IgnorePointer(
+          child: ShaderMask(
+            shaderCallback: (Rect bounds) {
+              return const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.white,
+                  Colors.white,
+                  Colors.transparent,
+                ],
+                stops: [0.0, 0.2, 0.8, 1.0],
+              ).createShader(bounds);
+            },
+            blendMode: BlendMode.dstIn,
+            child: SingleChildScrollView(
+              key: _scrollKey,
+              controller: _scrollController,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(
+                vertical: _kLyricsSectionHeight / 2,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: _buildAnimatedLyricLines(context, screenWidth),
+              ),
             ),
           ),
         ),

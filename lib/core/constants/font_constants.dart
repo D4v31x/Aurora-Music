@@ -8,7 +8,7 @@ class FontConstants {
   /// The primary font family used throughout the app
   /// To change the app's font, simply modify this value
   /// Make sure the font is added to pubspec.yaml and assets/fonts/
-  static const String fontFamily = 'Questrial';
+  static const String fontFamily = 'Host Grotesk';
 
   /// Monospace font family for code/technical text
   static const String monospaceFontFamily = 'monospace';

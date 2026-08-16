@@ -37,6 +37,11 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<SongModel?>? _songChangeSubscription;
 
+  // Auto-scroll-to-current-lyric is paused while the user is manually
+  // scrolling, and resumes a short while after they stop.
+  bool _autoFollowPaused = false;
+  Timer? _resumeAutoFollowTimer;
+
   late AnimationController _fadeController;
 
   final GlobalKey _scrollKey = GlobalKey();
@@ -93,7 +98,19 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           _loadLyricsForCurrentSong(audioService);
         }
       });
+
+      TimedLyricsService().lyricsRevisionNotifier.addListener(_onLyricsRevisionChanged);
     });
+  }
+
+  void _onLyricsRevisionChanged() {
+    if (!mounted) return;
+    final audioService = Provider.of<AudioPlayerService>(context, listen: false);
+    if (audioService.currentSong == null) return;
+    // Force a reload for the current song even though its id hasn't
+    // changed — the lyrics content itself was just edited.
+    setState(() => _lastSongId = null);
+    _loadLyricsForCurrentSong(audioService);
   }
 
   Future<void> _loadSettings() async {
@@ -162,6 +179,9 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     if (_scrollController.hasClients) {
       _scrollController.jumpTo(0);
     }
+    // New song — resume auto-follow even if paused from the previous song.
+    _resumeAutoFollowTimer?.cancel();
+    _autoFollowPaused = false;
   }
 
   void _updateCurrentLyric(Duration position) {
@@ -184,7 +204,23 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
 
     if (newIndex != _currentLyricIndex) {
       setState(() => _currentLyricIndex = newIndex);
-      _scrollToCurrentLyric();
+      if (!_autoFollowPaused) _scrollToCurrentLyric();
+    }
+  }
+
+  void _handleScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollStartNotification &&
+        notification.dragDetails != null) {
+      // User-initiated drag — stop fighting them for scroll control.
+      _resumeAutoFollowTimer?.cancel();
+      _autoFollowPaused = true;
+    } else if (notification is ScrollEndNotification) {
+      _resumeAutoFollowTimer?.cancel();
+      _resumeAutoFollowTimer = Timer(const Duration(seconds: 3), () {
+        if (!mounted) return;
+        _autoFollowPaused = false;
+        _scrollToCurrentLyric();
+      });
     }
   }
 
@@ -220,6 +256,8 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   void dispose() {
     _positionSubscription?.cancel();
     _songChangeSubscription?.cancel();
+    _resumeAutoFollowTimer?.cancel();
+    TimedLyricsService().lyricsRevisionNotifier.removeListener(_onLyricsRevisionChanged);
     _scrollController.dispose();
     _fadeController.dispose();
     _pulseController.dispose();
@@ -257,7 +295,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                     child: _isLoadingLyrics
                         ? _buildLoadingView()
                         : (_currentLyrics == null || _currentLyrics!.isEmpty)
-                            ? _buildNoLyricsView()
+                            ? _buildNoLyricsView(audioService)
                             : _buildLyricsView(),
                   ),
                 ),
@@ -1021,21 +1059,27 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           stops: [0.0, 0.08, 0.92, 1.0],
         ).createShader(bounds),
         blendMode: BlendMode.dstIn,
-        child: ListView.builder(
-          scrollCacheExtent: const ScrollCacheExtent.pixels(1000), key: _scrollKey,
-          controller: _scrollController,
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.symmetric(
-            horizontal: kLyricsHorizontalPadding,
-            vertical: MediaQuery.of(context).size.height * 0.3,
-          ),
-          itemCount: _currentLyrics!.length + (_showTranslated ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (_showTranslated && index == 0) {
-              return _buildTranslationDisclaimerHeader();
-            }
-            return _buildLyricLine(_showTranslated ? index - 1 : index);
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            _handleScrollNotification(notification);
+            return false;
           },
+          child: ListView.builder(
+            scrollCacheExtent: const ScrollCacheExtent.pixels(1000), key: _scrollKey,
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.symmetric(
+              horizontal: kLyricsHorizontalPadding,
+              vertical: MediaQuery.of(context).size.height * 0.3,
+            ),
+            itemCount: _currentLyrics!.length + (_showTranslated ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (_showTranslated && index == 0) {
+                return _buildTranslationDisclaimerHeader();
+              }
+              return _buildLyricLine(_showTranslated ? index - 1 : index);
+            },
+          ),
         ),
       ),
     );
@@ -1231,7 +1275,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     );
   }
 
-  Widget _buildNoLyricsView() {
+  Widget _buildNoLyricsView(AudioPlayerService audioService) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1258,6 +1302,28 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
               fontFamily: FontConstants.fontFamily,
               color: Colors.white54,
               fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Surface the .lrc import / manual lyrics entry front-and-center
+          // instead of leaving it hidden behind the overflow menu.
+          OutlinedButton.icon(
+            onPressed: () => _openLyricsEditor(audioService),
+            icon: const Icon(Icons.edit_note_rounded, size: 20),
+            label: const Text('Add Lyrics'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              textStyle: const TextStyle(
+                fontFamily: FontConstants.fontFamily,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../../shared/providers/providers.dart';
-import '../../../shared/widgets/pill_button.dart';
-import '../../../l10n/generated/app_localizations.dart';
 
 class WelcomePage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -21,7 +20,6 @@ class WelcomePage extends StatefulWidget {
 class _WelcomePageState extends State<WelcomePage>
     with TickerProviderStateMixin {
   late AnimationController _controller;
-  late AnimationController _glowController;
   late AnimationController _exitController;
   late AnimationController _textCycleController;
   late Animation<double> _fadeAnimation;
@@ -30,7 +28,6 @@ class _WelcomePageState extends State<WelcomePage>
   late Animation<double> _fadeAnimation2;
   late Animation<Offset> _slideAnimation2;
   late Animation<double> _buttonFadeAnimation;
-  late Animation<double> _glowAnimation;
   late Animation<double> _exitFadeAnimation;
   late Animation<Offset> _exitSlideAnimation;
 
@@ -147,22 +144,6 @@ class _WelcomePageState extends State<WelcomePage>
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.4, 1.0, curve: Curves.easeOut),
-      ),
-    );
-
-    // Glow animation controller for button press
-    _glowController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
-
-    _glowAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _glowController,
-        curve: Curves.easeInOut,
       ),
     );
 
@@ -319,23 +300,23 @@ class _WelcomePageState extends State<WelcomePage>
 
   void _onButtonPressed() async {
     _textCycleTimer?.cancel();
-    unawaited(_glowController.forward(from: 0.0));
     await _exitController.forward();
     widget.onContinue();
   }
 
-  Color _getRainbowColor(double value) {
-    // Create a subtle rainbow effect that shifts through colors
-    // Using HSL to create smooth transitions
-    final hue = (value * 360) % 360;
-    return HSLColor.fromAHSL(1.0, hue, 0.6, 0.7).toColor();
+  // Counts wrapped lines for [text] under [style] at [maxWidth].
+  int _countTextLines(String text, TextStyle style, double maxWidth) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: maxWidth);
+    return painter.computeLineMetrics().length;
   }
 
   @override
   void dispose() {
     _textCycleTimer?.cancel();
     _controller.dispose();
-    _glowController.dispose();
     _exitController.dispose();
     _textCycleController.dispose();
     super.dispose();
@@ -348,6 +329,45 @@ class _WelcomePageState extends State<WelcomePage>
     final textColor = isDark ? Colors.white : Colors.black;
     final subtitleColor =
         isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.7);
+
+    // Size the title area to the actual number of lines (current + incoming)
+    // so a single-line title doesn't leave space reserved for a second line.
+    const titleTextStyle = TextStyle(
+      fontFamily: FontConstants.fontFamily,
+      fontSize: 34,
+      fontWeight: FontWeight.w600,
+      letterSpacing: -0.8,
+      height: 1.2,
+    );
+    final maxTitleWidth = MediaQuery.of(context).size.width - 72; // matches horizontal padding
+    final currentTitleLines = _countTextLines(
+        _welcomeTexts[_currentLanguageIndex]['title']!, titleTextStyle, maxTitleWidth);
+    final nextTitleLines = _countTextLines(
+        _welcomeTexts[(_currentLanguageIndex + 1) % _welcomeTexts.length]['title']!,
+        titleTextStyle,
+        maxTitleWidth);
+    final titleLines =
+        currentTitleLines > nextTitleLines ? currentTitleLines : nextTitleLines;
+    const titleLineHeight = 34 * 1.2;
+    final titleBoxHeight = titleLineHeight * titleLines + 8;
+
+    const subtitleTextStyle = TextStyle(
+      fontFamily: FontConstants.fontFamily,
+      fontSize: 17,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.2,
+      height: 1.4,
+    );
+    final currentSubtitleLines = _countTextLines(
+        _welcomeTexts[_currentLanguageIndex]['subtitle']!, subtitleTextStyle, maxTitleWidth);
+    final nextSubtitleLines = _countTextLines(
+        _welcomeTexts[(_currentLanguageIndex + 1) % _welcomeTexts.length]['subtitle']!,
+        subtitleTextStyle,
+        maxTitleWidth);
+    final subtitleLines =
+        currentSubtitleLines > nextSubtitleLines ? currentSubtitleLines : nextSubtitleLines;
+    const subtitleLineHeight = 17 * 1.4;
+    final subtitleBoxHeight = subtitleLineHeight * subtitleLines + 8;
 
     return Scaffold(
         backgroundColor: Colors.transparent,
@@ -394,8 +414,7 @@ class _WelcomePageState extends State<WelcomePage>
                                   ? _exitFadeAnimation
                                   : _fadeAnimation,
                               child: SizedBox(
-                                height:
-                                    108, // Tall enough for 2-line titles
+                                height: titleBoxHeight,
                                 child: ClipRect(
                                   child: Stack(
                                     alignment: Alignment.center,
@@ -468,8 +487,7 @@ class _WelcomePageState extends State<WelcomePage>
                                 ? _exitFadeAnimation
                                 : _fadeAnimation2,
                             child: SizedBox(
-                              height:
-                                  60, // Tall enough for 2-line subtitles
+                              height: subtitleBoxHeight,
                               child: ClipRect(
                                 child: Stack(
                                   alignment: Alignment.center,
@@ -544,43 +562,24 @@ class _WelcomePageState extends State<WelcomePage>
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                      child: AnimatedBuilder(
-                        animation: _glowAnimation,
-                        builder: (context, child) {
-                          return DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(100),
-                              boxShadow: _glowAnimation.value > 0
-                                  ? [
-                                      BoxShadow(
-                                        color: _getRainbowColor(
-                                                _glowAnimation.value)
-                                            .withValues(alpha: 
-                                                0.4 * _glowAnimation.value),
-                                        blurRadius: 20 * _glowAnimation.value,
-                                        spreadRadius: 2 * _glowAnimation.value,
-                                      ),
-                                      BoxShadow(
-                                        color: _getRainbowColor(
-                                                _glowAnimation.value + 0.3)
-                                            .withValues(alpha: 
-                                                0.3 * _glowAnimation.value),
-                                        blurRadius: 30 * _glowAnimation.value,
-                                        spreadRadius: 1 * _glowAnimation.value,
-                                      ),
-                                    ]
-                                  : [],
-                            ),
-                            child: PillButton(
-                              text: AppLocalizations.of(context)
-                                  .getStarted,
-                              onPressed: _onButtonPressed,
-                              isPrimary: false,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 48, vertical: 18),
-                            ),
-                          );
-                        },
+                      child: OutlinedButton(
+                        onPressed: _onButtonPressed,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: textColor,
+                          side: BorderSide(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.3)
+                                : Colors.black.withValues(alpha: 0.3),
+                            width: 1.5,
+                          ),
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(18),
+                        ),
+                        child: iconoir.NavArrowRight(
+                          color: textColor,
+                          width: 24,
+                          height: 24,
+                        ),
                       ),
                     ),
                   ),

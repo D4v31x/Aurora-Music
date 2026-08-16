@@ -51,9 +51,14 @@ class PlaybackSourceInfo {
   final PlaybackSource source;
   final String? name; // Album name, playlist name, artist name, etc.
 
+  /// Set only when [source] is [PlaybackSource.playlist] — the playlist's
+  /// stable id.
+  final String? playlistId;
+
   const PlaybackSourceInfo({
     this.source = PlaybackSource.unknown,
     this.name,
+    this.playlistId,
   });
 
   static const unknown = PlaybackSourceInfo();
@@ -221,6 +226,10 @@ class AudioPlayerService extends ChangeNotifier {
   // ── True timed crossfade (see audio/crossfade_controller.dart) ───────────
   bool _crossfadeEnabled = false;
   int _crossfadeDurationMs = 6000; // 1000-12000ms, user-configurable
+  // Automix: one-tap "seamless flow" mode — crossfades every transition
+  // using an automatically-picked duration, so it takes over from (and
+  // hides) the manual Crossfade controls while enabled.
+  bool _automixEnabled = false;
   bool _crossfading = false;
   AudioPlayer? _standbyPlayer;
   Timer? _crossfadeRampTimer;
@@ -238,6 +247,7 @@ class AudioPlayerService extends ChangeNotifier {
   bool get crossfadeEnabled => _crossfadeEnabled;
   int get crossfadeDurationMs => _crossfadeDurationMs;
   Duration get crossfadeDuration => Duration(milliseconds: _crossfadeDurationMs);
+  bool get automixEnabled => _automixEnabled;
 
   // Add ValueNotifiers for reactive state
   final ValueNotifier<bool> isPlayingNotifier = ValueNotifier<bool>(false);

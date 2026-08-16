@@ -455,7 +455,6 @@ class _TrackTagEditorScreenState extends State<TrackTagEditorScreen> {
             ),
             child: Slider(
               value: sliderValue,
-              min: 0,
               max: maxMs,
               onChangeStart: (v) => setState(() {
                 _isSeeking = true;

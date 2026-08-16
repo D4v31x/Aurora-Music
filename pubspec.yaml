@@ -102,6 +102,20 @@ flutter:
     - family: Questrial
       fonts:
         - asset: assets/fonts/Questrial-Regular.ttf
+    - family: Google Sans Flex
+      fonts:
+        - asset: assets/fonts/GoogleSansFlex-Variable.ttf
+    - family: Host Grotesk
+      fonts:
+        - asset: assets/fonts/HostGrotesk-Variable.ttf
+    - family: HarmonyOS
+      fonts:
+        - asset: assets/fonts/HarmonyOS_Sans_Black.ttf
+        - asset: assets/fonts/HarmonyOS_Sans_Bold.ttf
+        - asset: assets/fonts/HarmonyOS_Sans_Regular.ttf
+        - asset: assets/fonts/HarmonyOS_Sans_Medium.ttf
+        - asset: assets/fonts/HarmonyOS_Sans_Thin.ttf
+        - asset: assets/fonts/HarmonyOS_Sans_Light.ttf
     
 
 

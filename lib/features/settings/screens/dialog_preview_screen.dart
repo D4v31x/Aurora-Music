@@ -18,6 +18,7 @@ import '../../../shared/widgets/glassmorphic_dialog.dart';
 import '../../../shared/widgets/packages_dialog.dart' hide PackageInfo;
 import '../../../shared/widgets/song_context_menu.dart';
 import '../../../shared/widgets/translation_reminder_dialog.dart';
+import '../../../shared/services/insights_promo_service.dart';
 import '../../player/widgets/player_dialogs.dart';
 import '../../player/widgets/sleep_timer_widgets.dart';
 import '../widgets/settings_tile_builders.dart';
@@ -166,6 +167,14 @@ class DialogPreviewScreen extends StatelessWidget {
     showSongContextMenu(context, song);
   }
 
+  void _previewRecapBanner(BuildContext context) {
+    // Trigger the real banner (same notifier the weekly/monthly check uses)
+    // and pop back to the Home screen so it shows in its actual app bar,
+    // instead of rendering an isolated look-alike in a popup.
+    InsightsPromoService.recapBannerNotifier.value = true;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   // ── Player sheets ────────────────────────────────────────────────────────
 
   void _previewSleepTimer(BuildContext context) {
@@ -309,6 +318,20 @@ class DialogPreviewScreen extends StatelessWidget {
                   subtitle: 'App close prompt on back press',
                   iconColor: cs.error,
                   onTap: () => _previewExitDialog(context),
+                ),
+              ]),
+
+              // ── Home screen banners ─────────────────────────────────────
+              SettingsTiles.buildSectionHeader(context, 'Home Screen Banners'),
+              SettingsTiles.buildGlassmorphicCard(context, children: [
+                SettingsTiles.buildActionTile(
+                  context,
+                  icon: Icon(Icons.auto_awesome_rounded,
+                      color: cs.primary, size: 20),
+                  title: 'Music recap is here',
+                  subtitle: 'Shows the real banner on the Home app bar',
+                  onTap: () => _previewRecapBanner(context),
+                  isFirst: true,
                 ),
               ]),
 

@@ -137,7 +137,9 @@ class MainActivity : AudioServiceActivity() {
     }
 
     /**
-     * Streams FFT magnitude data from the Android [Visualizer] API to Dart.
+     * Streams FFT magnitude and waveform data from the Android [Visualizer]
+     * API to Dart (0x01-prefixed FFT complex pairs, 0x02-prefixed waveform
+     * bytes) for the visualizer engine's Audio Analysis Engine.
      *
      * The Dart side passes the audio session ID as the [EventChannel] stream
      * argument. When the stream is cancelled the Visualizer is released.
@@ -168,7 +170,19 @@ class MainActivity : AudioServiceActivity() {
                                 object : Visualizer.OnDataCaptureListener {
                                     override fun onWaveFormDataCapture(
                                         v: Visualizer, waveform: ByteArray, samplingRate: Int
-                                    ) { /* waveform mode removed */ }
+                                    ) {
+                                        // Prefix 0x02 = waveform PCM-ish data,
+                                        // used by frequency-agnostic waveform
+                                        // visualizer elements.
+                                        val copy = ByteArray(waveform.size + 1)
+                                        copy[0] = 2
+                                        waveform.copyInto(copy, destinationOffset = 1)
+                                        if (isStreamingFft) {
+                                            visualizerHandler.post {
+                                                if (isStreamingFft) events?.success(copy)
+                                            }
+                                        }
+                                    }
                                     override fun onFftDataCapture(
                                         v: Visualizer, fft: ByteArray, samplingRate: Int
                                     ) {
@@ -186,7 +200,7 @@ class MainActivity : AudioServiceActivity() {
                                     }
                                 },
                                 Visualizer.getMaxCaptureRate(),
-                                false, /* waveform — not used */
+                                true,  /* waveform — used by waveform visualizer elements */
                                 true   /* fft */
                             )
                             enabled = true

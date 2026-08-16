@@ -981,6 +981,46 @@ class AppLocalizationsHi extends AppLocalizations {
   String get settingsGaplessDesc => 'निर्बाध ट्रैक संक्रमण';
 
   @override
+  String get settingsAutomix => 'ऑटोमिक्स';
+
+  @override
+  String get settingsAutomixDesc =>
+      'गानों के बीच अपने आप एक सहज प्रवाह बनाता है';
+
+  @override
+  String get playlistAutomixTitle => 'ऑटोमिक्स';
+
+  @override
+  String get playlistAutomixSubtitle =>
+      'इस प्लेलिस्ट के लिए DJ स्टाइल स्‍वचालित संक्रमण';
+
+  @override
+  String get playlistAutomixOn => 'चालू';
+
+  @override
+  String get playlistAutomixOff => 'बंद';
+
+  @override
+  String get playlistAutomixBeatMatching => 'बीट मिलान';
+
+  @override
+  String get playlistAutomixHarmonicMixing => 'हार्मोनिक मिश्रण';
+
+  @override
+  String get playlistAutomixTempoMatching => 'टेम्पो मिलान';
+
+  @override
+  String get playlistAutomixTransitionDuration => 'संक्रमण अवधि';
+
+  @override
+  String get playlistAutomixAutomatic => 'स्‍वचालित';
+
+  @override
+  String playlistAutomixAnalyzing(int current, int total) {
+    return 'प्लेलिस्ट का विश्लेषण… $current / $total ट्रैक';
+  }
+
+  @override
   String get settingsCrossfade => 'क्रॉसफ़ेड';
 
   @override

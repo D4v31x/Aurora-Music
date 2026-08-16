@@ -448,6 +448,7 @@ class _FavoriteSongsCard extends StatelessWidget {
                   source: PlaybackSourceInfo(
                     source: PlaybackSource.playlist,
                     name: playlist.name,
+                    playlistId: playlist.id,
                   ),
                 );
               }

@@ -365,6 +365,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                             source: PlaybackSourceInfo(
                               source: PlaybackSource.playlist,
                               name: playlist.name,
+                              playlistId: playlist.id,
                             ),
                           ),
                   child: Container(
@@ -421,6 +422,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           source: PlaybackSourceInfo(
                             source: PlaybackSource.playlist,
                             name: playlist.name,
+                            playlistId: playlist.id,
                           ),
                         );
                       },
@@ -533,15 +535,19 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             child: SlideAnimation(
               verticalOffset: 20.0,
               child: FadeInAnimation(
-                child: _buildSongTile(
-                  context,
-                  song,
-                  index,
-                  isPlaying,
-                  isDark,
-                  audioService,
-                  playlist,
-                  durationString,
+                child: Column(
+                  children: [
+                    _buildSongTile(
+                      context,
+                      song,
+                      index,
+                      isPlaying,
+                      isDark,
+                      audioService,
+                      playlist,
+                      durationString,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -661,6 +667,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             source: PlaybackSourceInfo(
               source: PlaybackSource.playlist,
               name: playlist.name,
+              playlistId: playlist.id,
             ),
           );
         },
@@ -1245,6 +1252,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   void _confirmDeletePlaylist(BuildContext context, Playlist playlist) {
     final localizations = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // The bottom sheet/dialog chain above is shown on the *root* navigator
+    // (see _AppShell in main.dart), while this screen lives on the separate
+    // *page* navigator. Popping with the dialog's own context can only ever
+    // close root-navigator routes, so capture this screen's own Navigator
+    // up front to actually leave the screen on confirm.
+    final pageNavigator = Navigator.of(this.context);
 
     showDialog(
       context: context,
@@ -1312,11 +1325,14 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         child: GestureDetector(
                           onTap: () {
                             final audioService =
-                                Provider.of<AudioPlayerService>(context,
+                                Provider.of<AudioPlayerService>(this.context,
                                     listen: false);
+                            // Leave the screens before mutating the
+                            // playlist list to avoid rebuilding a
+                            // mid-transition screen.
+                            Navigator.pop(context); // close the confirm dialog (root navigator)
+                            pageNavigator.pop(); // actually leave this screen (page navigator)
                             audioService.deletePlaylist(widget.playlist);
-                            Navigator.pop(context);
-                            Navigator.pop(context);
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),

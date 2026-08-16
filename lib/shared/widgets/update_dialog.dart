@@ -118,7 +118,7 @@ class _Content extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             AppLocalizations.of(context).whatsNew,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: FontConstants.fontFamily,
               fontSize: 13,
               fontWeight: FontWeight.w600,

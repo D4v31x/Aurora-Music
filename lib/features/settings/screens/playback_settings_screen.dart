@@ -72,37 +72,52 @@ class PlaybackSettingsScreen extends StatelessWidget {
                 ),
                 SettingsTiles.buildSwitchTile(
                   context,
-                  icon: iconoir.SoundHigh(
+                  icon: iconoir.Shuffle(
                       color: Theme.of(context).colorScheme.primary,
                       width: 20,
                       height: 20),
-                  title: l10n.settingsCrossfade,
-                  subtitle: l10n.settingsCrossfadeDesc,
-                  value: audioService.crossfadeEnabled,
-                  onChanged: (v) => audioService.setCrossfadeEnabled(v),
+                  title: l10n.settingsAutomix,
+                  subtitle: l10n.settingsAutomixDesc,
+                  value: audioService.automixEnabled,
+                  onChanged: (v) => audioService.setAutomixEnabled(v),
                 ),
-                if (audioService.crossfadeEnabled)
-                  SettingsTiles.buildSliderTile(
+                // Manual crossfade controls are superseded by Automix while
+                // it's on, so they're hidden rather than shown disabled.
+                if (!audioService.automixEnabled) ...[
+                  SettingsTiles.buildSwitchTile(
                     context,
-                    icon: iconoir.Timer(
+                    icon: iconoir.SoundHigh(
                         color: Theme.of(context).colorScheme.primary,
                         width: 20,
                         height: 20),
-                    title: l10n.crossfadeDuration,
-                    subtitle: l10n.crossfadeDurationDesc,
-                    value: (audioService.crossfadeDurationMs / 1000.0)
-                        .clamp(1.0, 12.0),
-                    min: 1.0,
-                    max: 12.0,
-                    defaultValue: 6.0,
-                    valueFormatter: (v) => '${v.toStringAsFixed(1)}s',
-                    showArrows: true,
-                    arrowStep: 0.5,
-                    onChanged: (v) => audioService
-                        .setCrossfadeDurationMs((v * 1000).round()),
-                    onChangeEnd: (v) => audioService
-                        .setCrossfadeDurationMs((v * 1000).round()),
+                    title: l10n.settingsCrossfade,
+                    subtitle: l10n.settingsCrossfadeDesc,
+                    value: audioService.crossfadeEnabled,
+                    onChanged: (v) => audioService.setCrossfadeEnabled(v),
                   ),
+                  if (audioService.crossfadeEnabled)
+                    SettingsTiles.buildSliderTile(
+                      context,
+                      icon: iconoir.Timer(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 20,
+                          height: 20),
+                      title: l10n.crossfadeDuration,
+                      subtitle: l10n.crossfadeDurationDesc,
+                      value: (audioService.crossfadeDurationMs / 1000.0)
+                          .clamp(1.0, 12.0),
+                      min: 1.0,
+                      max: 12.0,
+                      defaultValue: 6.0,
+                      valueFormatter: (v) => '${v.toStringAsFixed(1)}s',
+                      showArrows: true,
+                      arrowStep: 0.5,
+                      onChanged: (v) => audioService
+                          .setCrossfadeDurationMs((v * 1000).round()),
+                      onChangeEnd: (v) => audioService
+                          .setCrossfadeDurationMs((v * 1000).round()),
+                    ),
+                ],
                 SettingsTiles.buildSwitchTile(
                   context,
                   icon: iconoir.SoundHigh(

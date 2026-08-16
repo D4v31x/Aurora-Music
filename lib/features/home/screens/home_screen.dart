@@ -1182,7 +1182,6 @@ class _RecapAppBarContent extends StatefulWidget {
 
 class _RecapAppBarContentState extends State<_RecapAppBarContent>
     with TickerProviderStateMixin {
-  late final AnimationController _auroraCtrl;
   late final AnimationController _entryCtrl;
   late final Animation<double> _fadeAnim;
   late final Animation<Offset> _slideAnim;
@@ -1190,10 +1189,6 @@ class _RecapAppBarContentState extends State<_RecapAppBarContent>
   @override
   void initState() {
     super.initState();
-    _auroraCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 8),
-    )..repeat();
     _entryCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 650),
@@ -1207,7 +1202,6 @@ class _RecapAppBarContentState extends State<_RecapAppBarContent>
 
   @override
   void dispose() {
-    _auroraCtrl.dispose();
     _entryCtrl.dispose();
     super.dispose();
   }
@@ -1231,10 +1225,9 @@ class _RecapAppBarContentState extends State<_RecapAppBarContent>
         fit: StackFit.expand,
         children: [
           const ColoredBox(color: Color(0xFF08000F)),
-          AnimatedBuilder(
-            animation: _auroraCtrl,
-            builder: (_, __) =>
-                CustomPaint(painter: _RecapAuroraPainter(_auroraCtrl.value)),
+          // Static — painted once, no animation driving continuous repaints.
+          const RepaintBoundary(
+            child: CustomPaint(painter: _RecapAuroraPainter(0.2)),
           ),
           FadeTransition(
             opacity: _fadeAnim,
@@ -1308,7 +1301,7 @@ class _RecapAppBarContentState extends State<_RecapAppBarContent>
 
 class _RecapAuroraPainter extends CustomPainter {
   final double t;
-  _RecapAuroraPainter(this.t);
+  const _RecapAuroraPainter(this.t);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1340,7 +1333,12 @@ class _RecapAuroraPainter extends CustomPainter {
         rh: size.width * 0.76);
   }
 
-  /// Draws a soft aurora blob: three gradient layers for a deeply blurred glow.
+  /// Draws a soft aurora blob: two gradient layers for a deeply blurred glow.
+  ///
+  /// A third "ultra-diffuse outer cloud" layer (5x radius) was dropped
+  /// entirely — it was the least visible and most expensive part (a huge
+  /// oval + fresh shader every single frame, forever, while the banner is
+  /// shown), and cutting it noticeably reduced jank even on flagship devices.
   void _band(Canvas canvas, Size size, Paint p,
       {required Color color,
       required double cx,
@@ -1348,14 +1346,6 @@ class _RecapAuroraPainter extends CustomPainter {
       required double rw,
       required double rh}) {
     final center = Offset(cx * size.width, cy * size.height);
-
-    // Ultra-diffuse outer cloud
-    p.shader = RadialGradient(
-      colors: [color.withValues(alpha: 0.15), color.withValues(alpha: 0.0)],
-    ).createShader(
-        Rect.fromCenter(center: center, width: rw * 5.0, height: rh * 5.0));
-    canvas.drawOval(
-        Rect.fromCenter(center: center, width: rw * 5.0, height: rh * 5.0), p);
 
     // Outer diffuse halo
     p.shader = RadialGradient(

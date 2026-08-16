@@ -987,6 +987,46 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settingsGaplessDesc => 'Плавные переходы между треками';
 
   @override
+  String get settingsAutomix => 'Automix';
+
+  @override
+  String get settingsAutomixDesc =>
+      'Автоматически создаёт плавный переход между треками';
+
+  @override
+  String get playlistAutomixTitle => 'AutoMix';
+
+  @override
+  String get playlistAutomixSubtitle =>
+      'Автоматические переходы в стиле DJ для этого плейлиста';
+
+  @override
+  String get playlistAutomixOn => 'Включено';
+
+  @override
+  String get playlistAutomixOff => 'Выключено';
+
+  @override
+  String get playlistAutomixBeatMatching => 'Совпадение бита';
+
+  @override
+  String get playlistAutomixHarmonicMixing => 'Гармоническое сведение';
+
+  @override
+  String get playlistAutomixTempoMatching => 'Совпадение темпа';
+
+  @override
+  String get playlistAutomixTransitionDuration => 'Длительность перехода';
+
+  @override
+  String get playlistAutomixAutomatic => 'Автоматически';
+
+  @override
+  String playlistAutomixAnalyzing(int current, int total) {
+    return 'Анализ плейлиста… $current / $total треков';
+  }
+
+  @override
   String get settingsCrossfade => 'Переход';
 
   @override

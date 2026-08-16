@@ -18,6 +18,7 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
       _mediaControls = json['mediaControls'] ?? true;
       _crossfadeEnabled = json['crossfadeEnabled'] ?? false;
       _crossfadeDurationMs = json['crossfadeDurationMs'] ?? 6000;
+      _automixEnabled = json['automixEnabled'] ?? false;
 
       // Apply settings to audio player
       await _applySettings();
@@ -38,6 +39,7 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
       'mediaControls': _mediaControls,
       'crossfadeEnabled': _crossfadeEnabled,
       'crossfadeDurationMs': _crossfadeDurationMs,
+      'automixEnabled': _automixEnabled,
     };
 
     await file.writeAsString(jsonEncode(json));
@@ -93,7 +95,7 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
   /// in-progress crossfade ramp immediately when disabled.
   Future<void> setCrossfadeEnabled(bool value) async {
     _crossfadeEnabled = value;
-    if (!value) {
+    if (!value && !_automixEnabled) {
       await cancelCrossfadeIfActive();
     }
     await _saveSettings();
@@ -104,6 +106,18 @@ extension AudioSettingsManagerExtension on AudioPlayerService {
   /// 1-12 second range.
   Future<void> setCrossfadeDurationMs(int value) async {
     _crossfadeDurationMs = value.clamp(1000, 12000);
+    await _saveSettings();
+    _scheduleNotify();
+  }
+
+  /// Enables or disables Automix — a one-tap "seamless flow" mode that
+  /// crossfades every transition using an automatically-picked duration,
+  /// independent of the manual Crossfade toggle/duration.
+  Future<void> setAutomixEnabled(bool value) async {
+    _automixEnabled = value;
+    if (!value && !_crossfadeEnabled) {
+      await cancelCrossfadeIfActive();
+    }
     await _saveSettings();
     _scheduleNotify();
   }

@@ -976,6 +976,46 @@ class AppLocalizationsCs extends AppLocalizations {
   String get settingsGaplessDesc => 'Bez mezer mezi skladbami';
 
   @override
+  String get settingsAutomix => 'Automix';
+
+  @override
+  String get settingsAutomixDesc =>
+      'Automaticky vytvoří plynulý přechod mezi skladbami';
+
+  @override
+  String get playlistAutomixTitle => 'AutoMix';
+
+  @override
+  String get playlistAutomixSubtitle =>
+      'Automatické přechody v DJ stylu pro tento playlist';
+
+  @override
+  String get playlistAutomixOn => 'Zapnuto';
+
+  @override
+  String get playlistAutomixOff => 'Vypnuto';
+
+  @override
+  String get playlistAutomixBeatMatching => 'Sladit rytmus';
+
+  @override
+  String get playlistAutomixHarmonicMixing => 'Harmonické mixování';
+
+  @override
+  String get playlistAutomixTempoMatching => 'Sladit tempo';
+
+  @override
+  String get playlistAutomixTransitionDuration => 'Délka přechodu';
+
+  @override
+  String get playlistAutomixAutomatic => 'Automaticky';
+
+  @override
+  String playlistAutomixAnalyzing(int current, int total) {
+    return 'Analyzýza playlistu… $current / $total skladeb';
+  }
+
+  @override
   String get settingsCrossfade => 'Prolínání skladeb';
 
   @override

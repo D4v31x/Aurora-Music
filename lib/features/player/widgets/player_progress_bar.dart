@@ -1,4 +1,6 @@
+import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/utils/formatters/duration_formatter.dart';
@@ -90,7 +92,12 @@ class _PlayerProgressBarState extends State<PlayerProgressBar> {
           final width = constraints.maxWidth;
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
+            // Use the initial touch-down position (not the post-slop one) as
+            // the drag "start" position — otherwise the thumb visibly snaps
+            // a few pixels the instant a tap turns into a drag.
+            dragStartBehavior: DragStartBehavior.down,
             onTapDown: (details) {
+              HapticFeedback.selectionClick();
               final percentage =
                   (details.localPosition.dx / width).clamp(0.0, 1.0);
               setState(() {
@@ -102,6 +109,7 @@ class _PlayerProgressBarState extends State<PlayerProgressBar> {
               if (_dragValue != null) {
                 final newPosition = duration * _dragValue!;
                 widget.audioService.audioPlayer.seek(newPosition);
+                HapticFeedback.lightImpact();
               }
               setState(() {
                 _isDragging = false;
@@ -115,6 +123,7 @@ class _PlayerProgressBarState extends State<PlayerProgressBar> {
               });
             },
             onHorizontalDragStart: (details) {
+              if (!_isDragging) HapticFeedback.selectionClick();
               final percentage =
                   (details.localPosition.dx / width).clamp(0.0, 1.0);
               setState(() {
@@ -133,6 +142,7 @@ class _PlayerProgressBarState extends State<PlayerProgressBar> {
               if (_dragValue != null) {
                 final newPosition = duration * _dragValue!;
                 widget.audioService.audioPlayer.seek(newPosition);
+                HapticFeedback.lightImpact();
               }
               setState(() {
                 _isDragging = false;
@@ -145,6 +155,7 @@ class _PlayerProgressBarState extends State<PlayerProgressBar> {
                 width: width,
                 height: _isDragging ? 8.0 : 4.0,
                 child: Stack(
+                  clipBehavior: Clip.none,
                   children: [
                     Container(
                       width: width,
@@ -163,6 +174,36 @@ class _PlayerProgressBarState extends State<PlayerProgressBar> {
                         color: Colors.white,
                         borderRadius:
                             BorderRadius.circular(_isDragging ? 4.0 : 2.0),
+                      ),
+                    ),
+                    // Grab thumb — only shown while actively dragging, so
+                    // there's a clear, larger visual anchor for the finger
+                    // while scrubbing (the bar itself is thin).
+                    AnimatedPositioned(
+                      duration: _isDragging
+                          ? Duration.zero
+                          : const Duration(milliseconds: 100),
+                      left: width * (_isDragging ? _dragValue! : progress) - 8,
+                      top: -4,
+                      child: AnimatedScale(
+                        duration: const Duration(milliseconds: 150),
+                        curve: Curves.easeOut,
+                        scale: _isDragging ? 1.0 : 0.0,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],

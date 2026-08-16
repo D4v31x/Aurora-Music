@@ -11,7 +11,6 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/constants/font_constants.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -37,7 +36,7 @@ int _activeTagIndex(List<TrackTag> tags, Duration position) {
   return active;
 }
 
-class TrackTagsSection extends StatefulWidget {
+class TrackTagsSection extends StatelessWidget {
   final AudioPlayerService audioPlayerService;
   final bool isTablet;
 
@@ -48,62 +47,38 @@ class TrackTagsSection extends StatefulWidget {
   });
 
   @override
-  State<TrackTagsSection> createState() => _TrackTagsSectionState();
-}
-
-class _TrackTagsSectionState extends State<TrackTagsSection> {
-  static const _prefsKey = 'track_tags_suggestion_dismissed';
-
-  // Persisted set of song IDs whose suggestion bar has been dismissed.
-  Set<int> _dismissed = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDismissed();
-  }
-
-  Future<void> _loadDismissed() async {
-    final prefs = await SharedPreferences.getInstance();
-    final ids = prefs.getStringList(_prefsKey) ?? [];
-    if (mounted) {
-      setState(() {
-        _dismissed = ids.map(int.parse).toSet();
-      });
-    }
-  }
-
-  Future<void> _dismiss(int songId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final updated = {..._dismissed, songId};
-    await prefs.setStringList(
-        _prefsKey, updated.map((id) => id.toString()).toList());
-    if (mounted) setState(() => _dismissed = updated);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final song = widget.audioPlayerService.currentSong;
+    final song = audioPlayerService.currentSong;
     if (song == null) return const SizedBox.shrink();
 
     return Consumer<TrackTagService>(
       builder: (context, trackTagService, _) {
-        if (!trackTagService.loaded) return const SizedBox.shrink();
-
-        final tags = trackTagService.tagsFor(song.id);
-        if (tags.isNotEmpty) {
-          return _TagsListCard(
-            tags: tags,
-            audioPlayerService: widget.audioPlayerService,
-            isTablet: widget.isTablet,
-          );
+        // suggestionDismissed loads eagerly alongside the tags themselves
+        // (TrackTagService.load()), so there's no separate async round trip
+        // that could flash the suggestion bar and then hide it a moment
+        // later — that was the source of the layout "jump".
+        Widget child = const SizedBox.shrink();
+        if (trackTagService.loaded) {
+          final tags = trackTagService.tagsFor(song.id);
+          if (tags.isNotEmpty) {
+            child = _TagsListCard(
+              tags: tags,
+              audioPlayerService: audioPlayerService,
+              isTablet: isTablet,
+            );
+          } else if (!trackTagService.suggestionDismissed) {
+            child = _TagSuggestionBar(
+              audioPlayerService: audioPlayerService,
+              onDismiss: trackTagService.dismissSuggestion,
+            );
+          }
         }
 
-        if (_dismissed.contains(song.id)) return const SizedBox.shrink();
-
-        return _TagSuggestionBar(
-          audioPlayerService: widget.audioPlayerService,
-          onDismiss: () => _dismiss(song.id),
+        return AnimatedSize(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: child,
         );
       },
     );
@@ -176,80 +151,91 @@ class _TagsListCard extends StatelessWidget {
               final currentPosition = snapshot.data ?? Duration.zero;
               final activeIndex = _activeTagIndex(tags, currentPosition);
 
-              return ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 220),
-                child: ListView.separated(
-                  shrinkWrap: true,
+              // A plain Column (no inner Scrollable) — nesting a second
+              // same-axis scrollable inside the Now Playing screen's own
+              // ListView made the outer scroll feel "trapped": drags would
+              // get absorbed by this list until they crossed its extent.
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: tags.length,
-                  separatorBuilder: (_, __) => Divider(
-                    height: 1,
-                    color: Colors.white.withValues(alpha: 0.08),
-                    indent: 16,
-                    endIndent: 16,
-                  ),
-                  itemBuilder: (context, index) {
-                    final tag = tags[index];
-                    final isActive = index == activeIndex;
-                    return ColoredBox(
-                      color: isActive
-                          ? Colors.white.withValues(alpha: 0.06)
-                          : Colors.transparent,
-                      child: InkWell(
-                        onTap: () => audioPlayerService.audioPlayer
-                            .seek(tag.position),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 56,
-                                child: Text(
-                                  formatDuration(tag.position),
-                                  style: TextStyle(
-                                    color: Colors.white
-                                        .withValues(alpha: isActive ? 0.9 : 0.55),
-                                    fontFamily: FontConstants.fontFamily,
-                                    fontSize: 13,
-                                    fontWeight: isActive
-                                        ? FontWeight.w600
-                                        : FontWeight.normal,
-                                    fontFeatures: const [
-                                      FontFeature.tabularFigures()
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  tag.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontFamily: FontConstants.fontFamily,
-                                    fontSize: 14,
-                                    fontWeight: isActive
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                              if (isActive)
-                                NowPlayingBars(
-                                  isPlaying: audioPlayerService.isPlaying,
-                                  size: 16,
-                                )
-                              else
-                                const Icon(Icons.play_arrow_rounded,
-                                    color: Colors.white38, size: 18),
-                            ],
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (var index = 0; index < tags.length; index++) ...[
+                        if (index > 0)
+                          Divider(
+                            height: 1,
+                            color: Colors.white.withValues(alpha: 0.08),
+                            indent: 16,
+                            endIndent: 16,
                           ),
-                        ),
-                      ),
-                    );
-                  },
+                        Builder(builder: (context) {
+                          final tag = tags[index];
+                          final isActive = index == activeIndex;
+                          return ColoredBox(
+                            color: isActive
+                                ? Colors.white.withValues(alpha: 0.06)
+                                : Colors.transparent,
+                            child: InkWell(
+                              onTap: () => audioPlayerService.audioPlayer
+                                  .seek(tag.position),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 56,
+                                      child: Text(
+                                        formatDuration(tag.position),
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(
+                                              alpha: isActive ? 0.9 : 0.55),
+                                          fontFamily: FontConstants.fontFamily,
+                                          fontSize: 13,
+                                          fontWeight: isActive
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                          fontFeatures: const [
+                                            FontFeature.tabularFigures()
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        tag.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: FontConstants.fontFamily,
+                                          fontSize: 14,
+                                          fontWeight: isActive
+                                              ? FontWeight.w700
+                                              : FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    if (isActive)
+                                      NowPlayingBars(
+                                        isPlaying:
+                                            audioPlayerService.isPlaying,
+                                        size: 16,
+                                      )
+                                    else
+                                      const Icon(Icons.play_arrow_rounded,
+                                          color: Colors.white38, size: 18),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ],
+                  ),
                 ),
               );
             },

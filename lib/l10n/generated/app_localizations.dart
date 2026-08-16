@@ -1948,6 +1948,78 @@ abstract class AppLocalizations {
   /// **'Seamless track transitions'**
   String get settingsGaplessDesc;
 
+  /// No description provided for @settingsAutomix.
+  ///
+  /// In en, this message translates to:
+  /// **'Automix'**
+  String get settingsAutomix;
+
+  /// No description provided for @settingsAutomixDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically create a seamless flow between songs'**
+  String get settingsAutomixDesc;
+
+  /// No description provided for @playlistAutomixTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AutoMix'**
+  String get playlistAutomixTitle;
+
+  /// No description provided for @playlistAutomixSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'DJ-style automatic transitions for this playlist'**
+  String get playlistAutomixSubtitle;
+
+  /// No description provided for @playlistAutomixOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get playlistAutomixOn;
+
+  /// No description provided for @playlistAutomixOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get playlistAutomixOff;
+
+  /// No description provided for @playlistAutomixBeatMatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Beat matching'**
+  String get playlistAutomixBeatMatching;
+
+  /// No description provided for @playlistAutomixHarmonicMixing.
+  ///
+  /// In en, this message translates to:
+  /// **'Harmonic mixing'**
+  String get playlistAutomixHarmonicMixing;
+
+  /// No description provided for @playlistAutomixTempoMatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Tempo matching'**
+  String get playlistAutomixTempoMatching;
+
+  /// No description provided for @playlistAutomixTransitionDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Transition duration'**
+  String get playlistAutomixTransitionDuration;
+
+  /// No description provided for @playlistAutomixAutomatic.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get playlistAutomixAutomatic;
+
+  /// No description provided for @playlistAutomixAnalyzing.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing playlist… {current} / {total} tracks'**
+  String playlistAutomixAnalyzing(int current, int total);
+
   /// No description provided for @settingsCrossfade.
   ///
   /// In en, this message translates to:

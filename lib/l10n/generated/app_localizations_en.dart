@@ -974,6 +974,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsGaplessDesc => 'Seamless track transitions';
 
   @override
+  String get settingsAutomix => 'Automix';
+
+  @override
+  String get settingsAutomixDesc =>
+      'Automatically create a seamless flow between songs';
+
+  @override
+  String get playlistAutomixTitle => 'AutoMix';
+
+  @override
+  String get playlistAutomixSubtitle =>
+      'DJ-style automatic transitions for this playlist';
+
+  @override
+  String get playlistAutomixOn => 'On';
+
+  @override
+  String get playlistAutomixOff => 'Off';
+
+  @override
+  String get playlistAutomixBeatMatching => 'Beat matching';
+
+  @override
+  String get playlistAutomixHarmonicMixing => 'Harmonic mixing';
+
+  @override
+  String get playlistAutomixTempoMatching => 'Tempo matching';
+
+  @override
+  String get playlistAutomixTransitionDuration => 'Transition duration';
+
+  @override
+  String get playlistAutomixAutomatic => 'Automatic';
+
+  @override
+  String playlistAutomixAnalyzing(int current, int total) {
+    return 'Analyzing playlist… $current / $total tracks';
+  }
+
+  @override
   String get settingsCrossfade => 'Crossfade';
 
   @override
