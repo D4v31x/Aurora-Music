@@ -834,190 +834,208 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           await _showExitConfirmation();
         },
         child: AppBackground(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          resizeToAvoidBottomInset: false,
-          body: Stack(
-            children: [
-              RepaintBoundary(
-                child: NotificationListener<ScrollNotification>(
-                  onNotification: (notification) {
-                    if (notification is OverscrollNotification) {
-                      return _handleOverscroll(notification);
-                    } else if (notification is ScrollUpdateNotification) {
-                      return _handleScrollUpdate(notification);
-                    } else if (notification is ScrollEndNotification) {
-                      return _handleScrollEnd(notification);
-                    }
-                    return false;
-                  },
-                  child: NestedScrollView(
-                    controller: _scrollController,
-                    headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                      SliverAppBar(
-                        backgroundColor: Colors.transparent,
-                        elevation: 0.0,
-                        toolbarHeight: 70,
-                        automaticallyImplyLeading: false,
-                        floating: true,
-                        pinned: true,
-                        expandedHeight: 250,
-                        // Performance: Removed BackdropFilter - blur during scroll causes dropped frames
-                        // The app background already provides visual depth
-                        flexibleSpace: LayoutBuilder(
-                          builder: (context, constraints) {
-                            // Calculate how collapsed the app bar is
-                            // toolbarHeight(70) + bottom(55) + statusBar padding
-                            final statusBarHeight =
-                                MediaQuery.of(context).padding.top;
-                            final minHeight =
-                                kToolbarHeight + 55 + statusBarHeight;
-                            final maxHeight = 250 + statusBarHeight;
-                            final currentHeight = constraints.maxHeight;
-                            // 0.0 = fully collapsed, 1.0 = fully expanded
-                            final expandRatio = ((currentHeight - minHeight) /
-                                    (maxHeight - minHeight))
-                                .clamp(0.0, 1.0);
-
-                            return FlexibleSpaceBar(
-                              background: ValueListenableBuilder<bool>(
-                                valueListenable:
-                                    InsightsPromoService.recapBannerNotifier,
-                                builder: (context, recapAvailable, _) {
-                                  return AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 600),
-                                    child: recapAvailable
-                                        ? _RecapAppBarContent(
-                                            key: const ValueKey('recap'),
-                                            onShow: () {
-                                              final period =
-                                                  InsightsPromoService
-                                                      .recapBannerPeriodNotifier
-                                                      .value;
-                                              InsightsPromoService
-                                                  .recapBannerNotifier
-                                                  .value = false;
-                                              // Persist the period so the recap screen
-                                              // opens with the right data window.
-                                              InsightsPromoService
-                                                  .setRecapPeriodDays(period);
-                                              // Record that this week/month was viewed.
-                                              final audioService = Provider.of<
-                                                      AudioPlayerService>(
-                                                  context,
-                                                  listen: false);
-                                              final first =
-                                                  audioService.firstListenTime;
-                                              if (first != null) {
-                                                InsightsPromoService
-                                                    .markRecapViewed(
-                                                        period, first);
-                                              }
-                                              Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      const ListeningRecapScreen(),
-                                                ),
-                                              );
-                                            },
-                                            onLater: () => InsightsPromoService
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            resizeToAvoidBottomInset: false,
+            body: Stack(
+              children: [
+                RepaintBoundary(
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: (notification) {
+                      if (notification is OverscrollNotification) {
+                        return _handleOverscroll(notification);
+                      } else if (notification is ScrollUpdateNotification) {
+                        return _handleScrollUpdate(notification);
+                      } else if (notification is ScrollEndNotification) {
+                        return _handleScrollEnd(notification);
+                      }
+                      return false;
+                    },
+                    child: NestedScrollView(
+                      controller: _scrollController,
+                      headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                        SliverAppBar(
+                          backgroundColor: Colors.transparent,
+                          elevation: 0.0,
+                          toolbarHeight: 70,
+                          automaticallyImplyLeading: false,
+                          floating: true,
+                          pinned: true,
+                          expandedHeight: 250,
+                          // Performance: Removed BackdropFilter - blur during scroll causes dropped frames
+                          // The app background already provides visual depth
+                          //
+                          // The recap banner subtree (ShaderMask + gradient-shader
+                          // CustomPaint) must NOT sit inside a LayoutBuilder here: a
+                          // LayoutBuilder's builder reruns on every scroll frame while
+                          // the SliverAppBar collapses/expands, which forces Flutter to
+                          // rebuild whatever it returns from scratch each frame. That's
+                          // cheap for the plain title but was previously the cause of
+                          // scroll jank whenever the (much heavier) recap banner was
+                          // showing. Only the plain-title branch needs per-frame
+                          // recompute (for its collapse-fade opacity), so the
+                          // LayoutBuilder is scoped to that branch only; the recap
+                          // banner widget instance is built once by
+                          // ValueListenableBuilder and left untouched by scrolling.
+                          flexibleSpace: ValueListenableBuilder<bool>(
+                            valueListenable:
+                                InsightsPromoService.recapBannerNotifier,
+                            builder: (context, recapAvailable, _) {
+                              return FlexibleSpaceBar(
+                                background: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 600),
+                                  child: recapAvailable
+                                      ? _RecapAppBarContent(
+                                          key: const ValueKey('recap'),
+                                          onShow: () {
+                                            final period = InsightsPromoService
+                                                .recapBannerPeriodNotifier
+                                                .value;
+                                            InsightsPromoService
                                                 .recapBannerNotifier
-                                                .value = false,
-                                          )
-                                        : ColoredBox(
-                                            key: const ValueKey('normal'),
-                                            color: Colors.transparent,
-                                            child: Center(
-                                              child: Opacity(
-                                                opacity: expandRatio,
-                                                child: buildAppBarTitle(),
+                                                .value = false;
+                                            // Persist the period so the recap screen
+                                            // opens with the right data window.
+                                            InsightsPromoService
+                                                .setRecapPeriodDays(period);
+                                            // Record that this week/month was viewed.
+                                            final audioService =
+                                                Provider.of<AudioPlayerService>(
+                                                    context,
+                                                    listen: false);
+                                            final first =
+                                                audioService.firstListenTime;
+                                            if (first != null) {
+                                              InsightsPromoService
+                                                  .markRecapViewed(
+                                                      period, first);
+                                            }
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const ListeningRecapScreen(),
                                               ),
-                                            ),
-                                          ),
-                                  );
-                                },
-                              ),
-                              centerTitle: true,
-                            );
-                          },
-                        ),
-                        bottom: PreferredSize(
-                          preferredSize: const Size.fromHeight(55),
-                          child: ValueListenableBuilder<bool>(
-                              valueListenable: _isScrolledNotifier,
-                              builder: (context, isScrolled, _) {
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(20, 0, 20, 6),
-                                  child: AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 300),
-                                    child: isScrolled
-                                        ? _BlurredNavBar(
-                                            key: const ValueKey('scrolled'),
-                                            child: _HomeTabBar(
-                                                tabController: _tabController),
-                                          )
-                                        : _HomeTabBar(
-                                            tabController: _tabController,
-                                          ),
-                                  ),
-                                );
-                              }),
-                        ),
-                      ),
-                    ],
-                    body: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        RepaintBoundary(
-                          child: HomeTab(
-                            randomSongs: randomSongs,
-                            randomArtists: randomArtists,
-                            artistService: _artistService,
-                            currentSong: currentSong,
-                          ),
-                        ),
-                        const RepaintBoundary(child: LibraryTab()),
-                        RepaintBoundary(
-                          child: SearchTab(
-                            songs: songs,
-                            artists: artists,
-                            albums: albums,
-                            isInitialized: _isInitialized,
-                          ),
-                        ),
-                        RepaintBoundary(
-                          child: SettingsTab(
-                            notificationManager: _notificationManager,
-                            onUpdateCheck: () async {
-                              await launchUrl(
-                                Uri.parse(
-                                  'https://play.google.com/store/apps/details?id=com.aurorasoftware.music',
+                                            );
+                                          },
+                                          onLater: () => InsightsPromoService
+                                              .recapBannerNotifier
+                                              .value = false,
+                                        )
+                                      : LayoutBuilder(
+                                          key: const ValueKey('normal'),
+                                          builder: (context, constraints) {
+                                            // toolbarHeight(70) + bottom(55) + statusBar padding
+                                            final statusBarHeight =
+                                                MediaQuery.of(context)
+                                                    .padding
+                                                    .top;
+                                            final minHeight = kToolbarHeight +
+                                                55 +
+                                                statusBarHeight;
+                                            final maxHeight =
+                                                250 + statusBarHeight;
+                                            final currentHeight =
+                                                constraints.maxHeight;
+                                            // 0.0 = fully collapsed, 1.0 = fully expanded
+                                            final expandRatio =
+                                                ((currentHeight - minHeight) /
+                                                        (maxHeight - minHeight))
+                                                    .clamp(0.0, 1.0);
+                                            return ColoredBox(
+                                              color: Colors.transparent,
+                                              child: Center(
+                                                child: Opacity(
+                                                  opacity: expandRatio,
+                                                  child: buildAppBarTitle(),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
                                 ),
-                                mode: LaunchMode.externalApplication,
+                                centerTitle: true,
                               );
                             },
-                            onResetSetup: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const OnboardingScreen()),
-                              );
-                            },
+                          ),
+                          bottom: PreferredSize(
+                            preferredSize: const Size.fromHeight(55),
+                            child: ValueListenableBuilder<bool>(
+                                valueListenable: _isScrolledNotifier,
+                                builder: (context, isScrolled, _) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(20, 0, 20, 6),
+                                    child: AnimatedSwitcher(
+                                      duration:
+                                          const Duration(milliseconds: 300),
+                                      child: isScrolled
+                                          ? _BlurredNavBar(
+                                              key: const ValueKey('scrolled'),
+                                              child: _HomeTabBar(
+                                                  tabController:
+                                                      _tabController),
+                                            )
+                                          : _HomeTabBar(
+                                              tabController: _tabController,
+                                            ),
+                                    ),
+                                  );
+                                }),
                           ),
                         ),
                       ],
+                      body: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          RepaintBoundary(
+                            child: HomeTab(
+                              randomSongs: randomSongs,
+                              randomArtists: randomArtists,
+                              artistService: _artistService,
+                              currentSong: currentSong,
+                            ),
+                          ),
+                          const RepaintBoundary(child: LibraryTab()),
+                          RepaintBoundary(
+                            child: SearchTab(
+                              songs: songs,
+                              artists: artists,
+                              albums: albums,
+                              isInitialized: _isInitialized,
+                            ),
+                          ),
+                          RepaintBoundary(
+                            child: SettingsTab(
+                              notificationManager: _notificationManager,
+                              onUpdateCheck: () async {
+                                await launchUrl(
+                                  Uri.parse(
+                                    'https://play.google.com/store/apps/details?id=com.aurorasoftware.music',
+                                  ),
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              },
+                              onResetSetup: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const OnboardingScreen()),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              // (Mini player is now overlaid globally in MaterialApp.builder)
-            ],
+                // (Mini player is now overlaid globally in MaterialApp.builder)
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 }
@@ -1213,87 +1231,93 @@ class _RecapAppBarContentState extends State<_RecapAppBarContent>
 
   @override
   Widget build(BuildContext context) {
-    return ShaderMask(
-      shaderCallback: (bounds) => const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        stops: [0.0, 0.28, 1.0],
-        colors: [Colors.white, Colors.white, Colors.transparent],
-      ).createShader(bounds),
-      blendMode: BlendMode.dstIn,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          const ColoredBox(color: Color(0xFF08000F)),
-          // Static — painted once, no animation driving continuous repaints.
-          const RepaintBoundary(
-            child: CustomPaint(painter: _RecapAuroraPainter(0.2)),
-          ),
-          FadeTransition(
-            opacity: _fadeAnim,
-            child: SlideTransition(
-              position: _slideAnim,
-              child: Align(
-                alignment: const Alignment(0, 0.05),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context).recapBannerTitle,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: FontConstants.fontFamily,
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w600,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withValues(alpha: 0.5),
-                            blurRadius: 12,
+    // RepaintBoundary isolates the whole banner (incl. the ShaderMask, which
+    // always needs its own offscreen layer) onto a single cached compositing
+    // layer, so the SliverAppBar's per-scroll-frame collapse/parallax
+    // recomposition doesn't force this subtree to re-rasterize every frame.
+    return RepaintBoundary(
+      child: ShaderMask(
+        shaderCallback: (bounds) => const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          stops: [0.0, 0.28, 1.0],
+          colors: [Colors.white, Colors.white, Colors.transparent],
+        ).createShader(bounds),
+        blendMode: BlendMode.dstIn,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const ColoredBox(color: Color(0xFF08000F)),
+            // Static — painted once, no animation driving continuous repaints.
+            const RepaintBoundary(
+              child: CustomPaint(painter: _RecapAuroraPainter(0.2)),
+            ),
+            FadeTransition(
+              opacity: _fadeAnim,
+              child: SlideTransition(
+                position: _slideAnim,
+                child: Align(
+                  alignment: const Alignment(0, 0.05),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context).recapBannerTitle,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: FontConstants.fontFamily,
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w600,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 12,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          FilledButton(
+                            onPressed: () => _dismiss(widget.onShow),
+                            style: FilledButton.styleFrom(
+                              backgroundColor:
+                                  Colors.white.withValues(alpha: 0.18),
+                              foregroundColor: Colors.white,
+                              side: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.35)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50)),
+                            ),
+                            child: Text(
+                                AppLocalizations.of(context).recapBannerShow),
+                          ),
+                          const SizedBox(width: 12),
+                          TextButton(
+                            onPressed: () => _dismiss(widget.onLater),
+                            style: TextButton.styleFrom(
+                              foregroundColor:
+                                  Colors.white.withValues(alpha: 0.65),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                            ),
+                            child: Text(
+                                AppLocalizations.of(context).recapBannerLater),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        FilledButton(
-                          onPressed: () => _dismiss(widget.onShow),
-                          style: FilledButton.styleFrom(
-                            backgroundColor:
-                                Colors.white.withValues(alpha: 0.18),
-                            foregroundColor: Colors.white,
-                            side: BorderSide(
-                                color: Colors.white.withValues(alpha: 0.35)),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 10),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50)),
-                          ),
-                          child: Text(
-                              AppLocalizations.of(context).recapBannerShow),
-                        ),
-                        const SizedBox(width: 12),
-                        TextButton(
-                          onPressed: () => _dismiss(widget.onLater),
-                          style: TextButton.styleFrom(
-                            foregroundColor:
-                                Colors.white.withValues(alpha: 0.65),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 10),
-                          ),
-                          child: Text(
-                              AppLocalizations.of(context).recapBannerLater),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

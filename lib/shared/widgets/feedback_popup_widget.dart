@@ -11,8 +11,15 @@ class FeedbackPopupWidget {
   FeedbackPopupWidget._();
 
   static Future<void> _triggerReview() async {
-    await InAppReview.instance
-        .openStoreListing(appStoreId: 'com.aurorasoftware.music');
+    final inAppReview = InAppReview.instance;
+    // Prefer the native in-app review sheet (stays in the app); only fall
+    // back to jumping to the Play Store listing when it's unavailable.
+    if (await inAppReview.isAvailable()) {
+      await inAppReview.requestReview();
+    } else {
+      await inAppReview.openStoreListing(
+          appStoreId: 'com.aurorasoftware.music');
+    }
   }
 
   /// Triggers the in-app review unconditionally — use from Settings where

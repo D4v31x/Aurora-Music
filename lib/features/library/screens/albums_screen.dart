@@ -394,7 +394,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
       padding: const EdgeInsets.all(12),
       sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+          crossAxisCount: 3,
           childAspectRatio: 0.75,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
@@ -404,7 +404,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             final album = _displayedAlbums[index];
             return AnimationConfiguration.staggeredGrid(
               position: index,
-              columnCount: 2,
+              columnCount: 3,
               duration: const Duration(milliseconds: 300),
               child: ScaleAnimation(
                 child: FadeInAnimation(
@@ -483,7 +483,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
 
   Widget _buildAlbumsList(AudioPlayerService audioPlayerService) {
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {

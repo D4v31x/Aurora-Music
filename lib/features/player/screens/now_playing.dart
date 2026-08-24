@@ -30,7 +30,7 @@ import '../screens/track_tag_editor_screen.dart';
 import '../widgets/player_widgets.dart';
 import '../widgets/track_tags_section.dart';
 import 'fullscreen_artwork.dart';
-import '../../visualizer/screens/visualizer_screen.dart';
+import 'music_visualizer_screen.dart';
 import 'fullscreen_lyrics.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 
@@ -308,7 +308,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         transitionDuration:        const Duration(milliseconds: 400),
         pageBuilder: (ctx, animation, _) => FadeTransition(
           opacity: animation,
-          child:   const VisualizerScreen(),
+          child:   const MusicVisualizerScreen(),
         ),
       ),
     );

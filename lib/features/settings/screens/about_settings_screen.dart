@@ -19,7 +19,6 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
 import '../../../shared/widgets/feedback_popup_widget.dart';
 import '../widgets/settings_tile_builders.dart';
-import 'dialog_preview_screen.dart';
 
 class AboutSettingsScreen extends StatelessWidget {
   final String currentVersion;
@@ -247,22 +246,6 @@ class AboutSettingsScreen extends StatelessWidget {
                   iconColor: Colors.orange,
                   onTap: onResetSetup!,
                 ),
-            ]),
-            SettingsTiles.buildSectionHeader(context, 'Developer'),
-            SettingsTiles.buildGlassmorphicCard(context, children: [
-              SettingsTiles.buildActionTile(
-                context,
-                icon: Icon(Icons.widgets_outlined,
-                    color: Theme.of(context).colorScheme.primary, size: 20),
-                title: 'Popup Previews',
-                subtitle: 'Preview every dialog & sheet in the app',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const DialogPreviewScreen(),
-                  ),
-                ),
-                isFirst: true,
-              ),
             ]),
             const SizedBox(height: 32),
           ],
