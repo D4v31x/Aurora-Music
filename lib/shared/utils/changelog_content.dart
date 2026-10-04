@@ -1,4 +1,23 @@
+import 'package:flutter/material.dart' show IconData, Icons;
+
 class ChangelogContent {
+  /// Short, user-facing summaries shown in the post-update popup.
+  static const Map<String, List<({IconData icon, String text})>> highlights = {
+    '1.4.0': [
+      (icon: Icons.drag_indicator_rounded, text: 'Reorder songs in your playlists'),
+      (icon: Icons.swap_vert_rounded, text: 'Import and export M3U playlists'),
+      (icon: Icons.sort_rounded, text: 'Your sort choices are remembered'),
+      (icon: Icons.bolt_rounded, text: 'Smoother lists and a faster start'),
+      (icon: Icons.insights_rounded, text: 'More accurate listening stats'),
+    ],
+  };
+
+  /// Highlights for [version], falling back to the latest known release.
+  static List<({IconData icon, String text})> getHighlightsForVersion(
+      String version) {
+    return highlights[version] ?? highlights.values.first;
+  }
+
   static const Map<String, List<Map<String, List<String>>>> versions = {
     // Latest version at the top
     '1.4.0': [

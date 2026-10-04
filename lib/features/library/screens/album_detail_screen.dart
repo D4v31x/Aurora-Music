@@ -4,6 +4,7 @@ import 'package:iconoir_flutter/iconoir_flutter.dart' as iconoir;
 import 'package:aurora_music_v01/core/constants/font_constants.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../../shared/services/audio_player_service.dart';
+import '../../../shared/utils/album_sanitizer.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -41,7 +42,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
   List<SongModel> _allSongs = [];
   final List<SongModel> _displayedSongs = [];
   int _currentPage = 0;
-  final int _songsPerPage = 50;
+  final int _songsPerPage = 100;
   bool _isLoading = false;
   bool _hasMoreSongs = true;
 
@@ -72,8 +73,26 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     _loadSongs();
   }
 
+  AudioPlayerService? _audioServiceRef;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final service = Provider.of<AudioPlayerService>(context, listen: false);
+    if (_audioServiceRef == null) {
+      _audioServiceRef = service;
+      service.songsNotifier.addListener(_onSongsChanged);
+    }
+  }
+
+  void _onSongsChanged() {
+    if (!mounted) return;
+    _loadSongs();
+  }
+
   @override
   void dispose() {
+    _audioServiceRef?.songsNotifier.removeListener(_onSongsChanged);
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _dominantColorNotifier.dispose();
@@ -81,7 +100,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
   }
 
   void _scrollListener() {
-    if (_scrollController.position.extentAfter < 500 &&
+    if (_scrollController.position.extentAfter < 2500 &&
         !_isLoading &&
         _hasMoreSongs) {
       _loadMoreSongs();
@@ -114,12 +133,13 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     }
 
     // Get related albums from same artist
-    final allAlbums = await _audioQuery.queryAlbums();
+    final allAlbums = sanitizeAlbums(await _audioQuery.queryAlbums());
     final related = allAlbums
         .where((album) =>
             album.artist == artistName && album.album != widget.albumName)
         .toList();
 
+    if (!mounted) return;
     setState(() {
       _allSongs = albumSongs;
       _artistName = artistName;
@@ -374,7 +394,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
               '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
 
           return AnimationConfiguration.staggeredList(
-            position: index,
+            position: index < 12 ? index : 0,
             duration: const Duration(milliseconds: 200),
             child: SlideAnimation(
               verticalOffset: 30.0,

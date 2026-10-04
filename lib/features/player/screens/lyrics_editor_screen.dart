@@ -557,24 +557,27 @@ class _LyricsEditorScreenState extends State<LyricsEditorScreen> {
                           ),
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(
-                          audioService.isPlaying
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          color: Colors.white,
-                          size: 30,
+                      ValueListenableBuilder<bool>(
+                        valueListenable: audioService.isPlayingNotifier,
+                        builder: (context, isPlaying, _) => IconButton(
+                          icon: Icon(
+                            isPlaying
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                              minWidth: 40, minHeight: 40),
+                          onPressed: () {
+                            if (isPlaying) {
+                              audioService.pause();
+                            } else {
+                              audioService.resume();
+                            }
+                          },
                         ),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                            minWidth: 40, minHeight: 40),
-                        onPressed: () {
-                          if (audioService.isPlaying) {
-                            audioService.pause();
-                          } else {
-                            audioService.resume();
-                          }
-                        },
                       ),
                       IconButton(
                         icon: const Icon(Icons.forward_5_rounded,

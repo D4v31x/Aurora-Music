@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/artist_utils.dart';
+import '../utils/album_sanitizer.dart';
 import 'audio_constants.dart';
 import 'smart_suggestions_service.dart';
 
@@ -201,7 +202,7 @@ class PlayCountService {
   /// Gets the most played albums, sorted by play count.
   Future<List<AlbumModel>> getMostPlayedAlbums({int count = 10}) async {
     try {
-      final albums = await _audioQuery.queryAlbums();
+      final albums = sanitizeAlbums(await _audioQuery.queryAlbums());
 
       albums.sort((a, b) => (_albumPlayCounts[b.id.toString()] ?? 0)
           .compareTo(_albumPlayCounts[a.id.toString()] ?? 0));

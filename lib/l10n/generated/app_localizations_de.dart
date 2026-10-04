@@ -522,6 +522,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Lädt hochwertige Albumcover herunter, um Ihre Mediathek aufzuwerten';
 
   @override
+  String get onboardingAnalytics => 'Anonyme Analysen & Absturzberichte';
+
+  @override
+  String get onboardingAnalyticsDesc =>
+      'Hilft uns, Fehler zu beheben und die Leistung zu verbessern. Enthält niemals Ihren Hörverlauf oder persönliche Daten.';
+
+  @override
   String get onboardingAppInfoSubtitle => 'Dein persönlicher Musikbegleiter';
 
   @override
@@ -686,32 +693,32 @@ class AppLocalizationsDe extends AppLocalizations {
       'Gestalte deinen Look ganz nach deinen Wünschen';
 
   @override
-  String get beta_welcome_title => 'Beta-Testprogramm';
+  String get beta_welcome_title => 'Beta Testing Program';
 
   @override
   String get beta_welcome_thanks =>
-      'Vielen Dank, dass Sie an unserem Beta-Testprogramm teilnehmen und uns dabei helfen, Aurora Music zu verbessern.';
+      'Thank you for joining our beta testing program and helping us improve Aurora Music.';
 
   @override
-  String get beta_expect_bugs_title => 'Rechnen Sie mit Fehlern';
+  String get beta_expect_bugs_title => 'Expect Bugs';
 
   @override
   String get beta_expect_bugs_desc =>
-      'Es kann zu Abstürzen oder unerwartetem Verhalten kommen. Dies ist eine Testversion.';
+      'You may encounter crashes or unexpected behavior. This is a testing version.';
 
   @override
-  String get beta_feedback_title => 'Feedback ist wichtig';
+  String get beta_feedback_title => 'Feedback Matters';
 
   @override
   String get beta_feedback_desc =>
-      'Ihre Rückmeldungen und Vorschläge helfen uns dabei, die App für alle zu verbessern.';
+      'Your reports and suggestions help us make the app better for everyone.';
 
   @override
-  String get beta_updates_title => 'Regelmäßige Aktualisierungen';
+  String get beta_updates_title => 'Frequent Updates';
 
   @override
   String get beta_updates_desc =>
-      'Im Zuge der weiteren Entwicklung werden regelmäßig neue Funktionen und Fehlerbehebungen veröffentlicht.';
+      'New features and fixes are released regularly as we continue development.';
 
   @override
   String get oneTimeSupport => 'Schnelle einmalige Unterstützung';
@@ -1233,6 +1240,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get supportAuroraTitle => 'Unterstützen Sie Aurora Music';
 
   @override
+  String get updatedTitle => 'Aurora Music was updated';
+
+  @override
+  String get updatedHighlights => 'Highlights';
+
+  @override
+  String get showUpdatePopup => 'Update popup';
+
+  @override
+  String get showUpdatePopupDesc => 'Preview the screen shown after an update';
+
+  @override
   String get tapAddToAddSongs => 'Tippe auf „+“, um Songs hinzuzufügen';
 
   @override
@@ -1370,6 +1389,31 @@ class AppLocalizationsDe extends AppLocalizations {
   String get send_feedback_desc => 'Fehler melden oder Funktionen vorschlagen';
 
   @override
+  String get rateApp => 'Rate Aurora Music';
+
+  @override
+  String get rateAppDesc => 'Enjoying the app? Leave a review on Google Play';
+
+  @override
+  String get feedbackTypeBug => 'Bug';
+
+  @override
+  String get feedbackTypeSuggestion => 'Suggestion';
+
+  @override
+  String get feedbackHint => 'Describe the bug or suggestion...';
+
+  @override
+  String get feedbackSend => 'Send';
+
+  @override
+  String get feedbackSentThanks => 'Thanks for your feedback!';
+
+  @override
+  String get feedbackSentError =>
+      'Couldn\'t send feedback. Please try again later.';
+
+  @override
   String get contributeTranslations => 'Übersetzungen beisteuern';
 
   @override
@@ -1504,6 +1548,11 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String lyricsCleared(String title) {
     return 'Zwischengespeicherte Songtexte für „$title“ gelöscht';
+  }
+
+  @override
+  String lyricsAdded(String title) {
+    return 'Lyrics added for \"$title\"';
   }
 
   @override

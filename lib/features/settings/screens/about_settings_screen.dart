@@ -15,8 +15,10 @@ import '../../../shared/services/donation_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/version_service.dart';
 import '../../../shared/widgets/changelog_dialog.dart';
+import '../../../shared/widgets/update_popup_dialog.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/expanding_player.dart';
+import '../../../shared/widgets/feedback_dialog.dart';
 import '../../../shared/widgets/feedback_popup_widget.dart';
 import '../widgets/settings_tile_builders.dart';
 
@@ -200,6 +202,16 @@ class AboutSettingsScreen extends StatelessWidget {
               ),
               SettingsTiles.buildActionTile(
                 context,
+                icon: const iconoir.Sparks(
+                    color: Colors.orange, width: 20, height: 20),
+                title: l10n.showUpdatePopup,
+                subtitle: l10n.showUpdatePopupDesc,
+                iconColor: Colors.orange,
+                onTap: () => UpdatePopupDialog.show(context,
+                    version: currentVersion),
+              ),
+              SettingsTiles.buildActionTile(
+                context,
                 icon: const iconoir.HeartSolid(
                     color: Colors.pink, width: 20, height: 20),
                 title: l10n.supportAurora,
@@ -214,6 +226,15 @@ class AboutSettingsScreen extends StatelessWidget {
                 title: l10n.send_feedback,
                 subtitle: l10n.send_feedback_desc,
                 iconColor: Colors.green,
+                onTap: () => FeedbackDialog.show(context),
+              ),
+              SettingsTiles.buildActionTile(
+                context,
+                icon: const iconoir.StarSolid(
+                    color: Colors.amber, width: 20, height: 20),
+                title: l10n.rateApp,
+                subtitle: l10n.rateAppDesc,
+                iconColor: Colors.amber,
                 onTap: () => FeedbackPopupWidget.show(context),
               ),
               SettingsTiles.buildActionTile(

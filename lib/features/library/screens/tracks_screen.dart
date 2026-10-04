@@ -75,7 +75,7 @@ class _TracksScreenState extends State<TracksScreen> {
   List<SongModel> _allSongs = [];
   List<SongModel> _displayedSongs = [];
   int _currentPage = 0;
-  final int _songsPerPage = 50;
+  final int _songsPerPage = 100;
   bool _isLoading = false;
   bool _hasMoreSongs = true;
   String _searchQuery = '';
@@ -148,7 +148,7 @@ class _TracksScreenState extends State<TracksScreen> {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.extentAfter < 500 &&
+    if (_scrollController.position.extentAfter < 2500 &&
         !_isLoading &&
         _hasMoreSongs) {
       _loadMoreSongs();
@@ -485,7 +485,7 @@ class _TracksScreenState extends State<TracksScreen> {
                 key: ValueKey(
                     song.id), // Use song ID as key for better performance
                 child: AnimationConfiguration.staggeredList(
-                  position: index,
+                  position: index < 12 ? index : 0,
                   duration: const Duration(
                       milliseconds: 200), // Reduced for better performance
                   child: SlideAnimation(
@@ -534,7 +534,7 @@ class _TracksScreenState extends State<TracksScreen> {
               return RepaintBoundary(
                 key: ValueKey(song.id),
                 child: AnimationConfiguration.staggeredGrid(
-                  position: index,
+                  position: index < 12 ? index : 0,
                   columnCount: columns,
                   duration: const Duration(milliseconds: 200),
                   child: ScaleAnimation(

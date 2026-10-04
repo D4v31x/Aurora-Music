@@ -515,6 +515,13 @@ class AppLocalizationsCs extends AppLocalizations {
       'Stahuje kvalitní obaly alb pro vylepšení vaší knihovny';
 
   @override
+  String get onboardingAnalytics => 'Anonymní analytika a hlášení o pádech';
+
+  @override
+  String get onboardingAnalyticsDesc =>
+      'Pomáhá nám opravovat chyby a zlepšovat výkon. Nikdy neobsahuje historii poslechu ani osobní údaje.';
+
+  @override
   String get onboardingAppInfoSubtitle => 'Váš osobní hudební společník';
 
   @override
@@ -676,32 +683,32 @@ class AppLocalizationsCs extends AppLocalizations {
   String get onboardingThemeTitle => 'Upravte si vzhled';
 
   @override
-  String get beta_welcome_title => 'Program Beta Testování';
+  String get beta_welcome_title => 'Beta Testing Program';
 
   @override
   String get beta_welcome_thanks =>
-      'Děkujeme, že jste se připojili k našemu programu beta testování a pomáháte nám vylepšovat Aurora Music.';
+      'Thank you for joining our beta testing program and helping us improve Aurora Music.';
 
   @override
-  String get beta_expect_bugs_title => 'Očekávejte Chyby';
+  String get beta_expect_bugs_title => 'Expect Bugs';
 
   @override
   String get beta_expect_bugs_desc =>
-      'Můžete narazit na pády nebo neočekávané chování. Toto je testovací verze.';
+      'You may encounter crashes or unexpected behavior. This is a testing version.';
 
   @override
-  String get beta_feedback_title => 'Zpětná Vazba je Důležitá';
+  String get beta_feedback_title => 'Feedback Matters';
 
   @override
   String get beta_feedback_desc =>
-      'Vaše hlášení a návrhy nám pomáhají udělat aplikaci lepší pro všechny.';
+      'Your reports and suggestions help us make the app better for everyone.';
 
   @override
-  String get beta_updates_title => 'Časté Aktualizace';
+  String get beta_updates_title => 'Frequent Updates';
 
   @override
   String get beta_updates_desc =>
-      'Nové funkce a opravy jsou vydávány pravidelně během dalšího vývoje.';
+      'New features and fixes are released regularly as we continue development.';
 
   @override
   String get oneTimeSupport => 'Rychlá jednorázová podpora';
@@ -1215,6 +1222,18 @@ class AppLocalizationsCs extends AppLocalizations {
   String get supportAuroraTitle => 'Podpořte Aurora Music';
 
   @override
+  String get updatedTitle => 'Aurora Music was updated';
+
+  @override
+  String get updatedHighlights => 'Highlights';
+
+  @override
+  String get showUpdatePopup => 'Update popup';
+
+  @override
+  String get showUpdatePopupDesc => 'Preview the screen shown after an update';
+
+  @override
   String get tapAddToAddSongs => 'Klepněte na + pro přidání skladeb';
 
   @override
@@ -1347,6 +1366,31 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get send_feedback_desc => 'Nahlásit chyby nebo navrhnout funkce';
+
+  @override
+  String get rateApp => 'Rate Aurora Music';
+
+  @override
+  String get rateAppDesc => 'Enjoying the app? Leave a review on Google Play';
+
+  @override
+  String get feedbackTypeBug => 'Bug';
+
+  @override
+  String get feedbackTypeSuggestion => 'Suggestion';
+
+  @override
+  String get feedbackHint => 'Describe the bug or suggestion...';
+
+  @override
+  String get feedbackSend => 'Send';
+
+  @override
+  String get feedbackSentThanks => 'Thanks for your feedback!';
+
+  @override
+  String get feedbackSentError =>
+      'Couldn\'t send feedback. Please try again later.';
 
   @override
   String get contributeTranslations => 'Přeložit aplikaci';
@@ -1484,6 +1528,11 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String lyricsCleared(String title) {
     return 'Mezipaměť textu pro „$title“ vymazána';
+  }
+
+  @override
+  String lyricsAdded(String title) {
+    return 'Lyrics added for \"$title\"';
   }
 
   @override

@@ -7,7 +7,6 @@ library;
 
 export 'screens/onboarding_screen.dart';
 export 'pages/welcome_page.dart';
-export 'pages/beta_welcome_page.dart';
 export 'pages/language_selection_page.dart';
 export 'pages/permissions_page.dart';
 export 'pages/theme_selection_page.dart';

@@ -274,6 +274,21 @@ class _InternetUsagePageState extends State<InternetUsagePage>
                               isOptional: false,
                               isDark: isDark,
                             ),
+                            const SizedBox(height: 16),
+                            _buildInfoCard(
+                              context: context,
+                              icon: iconoir.Bug(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 24,
+                                height: 24,
+                              ),
+                              title: AppLocalizations.of(context)
+                                  .onboardingAnalytics,
+                              description: AppLocalizations.of(context)
+                                  .onboardingAnalyticsDesc,
+                              isOptional: false,
+                              isDark: isDark,
+                            ),
                             const SizedBox(height: 24),
                             Container(
                               padding: const EdgeInsets.all(16),

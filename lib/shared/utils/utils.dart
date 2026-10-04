@@ -11,6 +11,7 @@
 /// - Validators (audio, path)
 library;
 
+export 'album_sanitizer.dart';
 export 'audio_service_selectors.dart';
 export 'changelog_content.dart';
 export 'device_capabilities.dart';

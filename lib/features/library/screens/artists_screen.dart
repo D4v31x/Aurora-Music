@@ -43,7 +43,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
   bool _isLoadingMore = false;
   bool _hasMore = false;
   int _currentPage = 0;
-  static const int _pageSize = 40;
+  static const int _pageSize = 100;
   String _searchQuery = '';
   final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
@@ -109,7 +109,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.extentAfter < 500 &&
+    if (_scrollController.position.extentAfter < 2500 &&
         !_isLoadingMore &&
         _hasMore) {
       _loadMoreItems();
@@ -399,7 +399,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
           (context, index) {
             final artist = _displayedArtists[index];
             return AnimationConfiguration.staggeredGrid(
-              position: index,
+              position: index < 12 ? index : 0,
               columnCount: 3,
               duration: const Duration(milliseconds: 300),
               child: ScaleAnimation(
@@ -486,7 +486,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             }
             final artist = _displayedArtists[index];
             return AnimationConfiguration.staggeredList(
-              position: index,
+              position: index < 12 ? index : 0,
               duration: const Duration(milliseconds: 300),
               child: SlideAnimation(
                 verticalOffset: 30,

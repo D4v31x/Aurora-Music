@@ -6,6 +6,7 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
     List<SongModel> songs,
     int startIndex, {
     PlaybackSourceInfo? source,
+    int retryCount = 0,
   }) async {
     // Update playback source
     _playbackSource = source ?? PlaybackSourceInfo.unknown;
@@ -167,11 +168,31 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
         return;
       }
       if (kDebugMode) debugPrint('Failed to set playlist: $e');
-      _addError('Failed to set playlist: $e');
       _isPlaying = false;
       isPlayingNotifier.value = false;
       _isLoading = false;
-      _scheduleNotify();
+
+      // The lead song (often the whole queue in gapless mode) failed to
+      // load — e.g. a corrupted/malformed file. Drop it and retry with the
+      // rest of the queue rather than leaving playback dead with no feedback.
+      final failedTitle = _playlist.isNotEmpty ? _playlist.first.title : null;
+      if (_playlist.length > 1 && retryCount < 3) {
+        _addError(failedTitle != null
+            ? "Couldn't play \"$failedTitle\" — skipping"
+            : "Couldn't play this song — skipping");
+        _scheduleNotify();
+        unawaited(setPlaylist(
+          _playlist.sublist(1),
+          0,
+          source: _playbackSource,
+          retryCount: retryCount + 1,
+        ));
+      } else {
+        _addError(failedTitle != null
+            ? "Couldn't play \"$failedTitle\""
+            : 'Failed to set playlist: $e');
+        _scheduleNotify();
+      }
     }
   }
 
@@ -217,7 +238,11 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
     }
   }
 
-  Future<void> play({int? index}) async {
+  Future<void> play({int? index}) => _playInternal(index: index);
+
+  /// [skipAttempt] bounds the auto-skip-on-failure recursion below so a run
+  /// of several corrupted/unplayable files in a row can't loop indefinitely.
+  Future<void> _playInternal({int? index, int skipAttempt = 0}) async {
     // If an explicit index is provided (user selected a song), allow it
     // even if a previous load is in progress — the user's intent takes priority.
     if (index != null) {
@@ -320,7 +345,28 @@ extension AudioPlaybackControllerExtension on AudioPlayerService {
       _isPlaying = false;
       isPlayingNotifier.value = false;
       _currentSongController.addError('Failed to play song: $e');
-      _scheduleNotify();
+
+      // A single corrupted/unplayable file shouldn't kill the whole queue —
+      // skip ahead automatically, but give up after a few in a row so a
+      // string of bad files doesn't spin silently through the whole playlist.
+      final failedSong = (_currentIndex >= 0 && _currentIndex < _playlist.length)
+          ? _playlist[_currentIndex]
+          : null;
+      final hasNext = _currentIndex + 1 < _playlist.length;
+      if (hasNext && skipAttempt < 3) {
+        _addError(failedSong != null
+            ? 'Couldn\'t play "${failedSong.title}" — skipping'
+            : 'Couldn\'t play this song — skipping');
+        _scheduleNotify();
+        unawaited(
+          _playInternal(index: _currentIndex + 1, skipAttempt: skipAttempt + 1),
+        );
+      } else {
+        _addError(failedSong != null
+            ? 'Couldn\'t play "${failedSong.title}"'
+            : 'Playback failed');
+        _scheduleNotify();
+      }
     } finally {
       _isLoading = false;
     }

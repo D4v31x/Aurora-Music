@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/notification_manager.dart';
 import '../../../shared/services/folder_filter_service.dart';
@@ -38,12 +39,12 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   List<AlbumModel> _displayedAlbums = [];
   AlbumSortOption _sortOption = AlbumSortOption.name;
   bool _isAscending = true;
-  bool _isGridView = true;
+  bool _isGridView = false;
   bool _isLoading = true;
   bool _isLoadingMore = false;
   bool _hasMore = false;
   int _currentPage = 0;
-  static const int _pageSize = 40;
+  static const int _pageSize = 100;
   String _searchQuery = '';
   final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
@@ -51,12 +52,16 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   AudioPlayerService? _audioServiceRef;
 
   static const String _sortPrefsKey = 'albums';
+  static const String _gridColumnsPrefsKey = 'albums_grid_columns';
+  static const List<int> _gridColumnChoices = [2, 3];
+  int _gridColumns = 3;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
     _loadSortPreferences();
+    _loadGridColumns();
     // _loadAlbums() is called from didChangeDependencies once the service is ready.
   }
 
@@ -80,6 +85,25 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
       optionIndex: _sortOption.index,
       ascending: _isAscending,
     ));
+  }
+
+  Future<void> _loadGridColumns() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getInt(_gridColumnsPrefsKey);
+    if (saved != null && _gridColumnChoices.contains(saved) && mounted) {
+      setState(() => _gridColumns = saved);
+    }
+  }
+
+  void _cycleGridColumns() {
+    final currentIndex = _gridColumnChoices.indexOf(_gridColumns);
+    final next = _gridColumnChoices[
+        (currentIndex + 1) % _gridColumnChoices.length];
+    setState(() => _gridColumns = next);
+    unawaited(
+      SharedPreferences.getInstance()
+          .then((prefs) => prefs.setInt(_gridColumnsPrefsKey, next)),
+    );
   }
 
   @override
@@ -109,7 +133,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.extentAfter < 500 &&
+    if (_scrollController.position.extentAfter < 2500 &&
         !_isLoadingMore &&
         _hasMore) {
       _loadMoreItems();
@@ -302,6 +326,25 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
                       size: 18,
                     ),
                   ),
+                  if (_isGridView) ...[
+                    const SizedBox(width: 8),
+                    LibraryControlPill(
+                      onTap: _cycleGridColumns,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.photo_size_select_large_rounded,
+                              color: Colors.white70, size: 18),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$_gridColumns',
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -392,29 +435,43 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   Widget _buildAlbumsGrid(AudioPlayerService audioPlayerService) {
     return SliverPadding(
       padding: const EdgeInsets.all(12),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 0.75,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final album = _displayedAlbums[index];
-            return AnimationConfiguration.staggeredGrid(
-              position: index,
-              columnCount: 3,
-              duration: const Duration(milliseconds: 300),
-              child: ScaleAnimation(
-                child: FadeInAnimation(
-                  child: _buildAlbumGridTile(album),
-                ),
-              ),
-            );
-          },
-          childCount: _displayedAlbums.length,
-        ),
+      sliver: SliverLayoutBuilder(
+        builder: (context, constraints) {
+          const spacing = 12.0;
+          final tileWidth =
+              (constraints.crossAxisExtent - spacing * (_gridColumns - 1)) /
+                  _gridColumns;
+          final scaler = MediaQuery.textScalerOf(context);
+          // Tile = square art + gap + title + subtitle (+ border slack).
+          final textHeight =
+              scaler.scale(14) * 1.5 + 2 + scaler.scale(11) * 1.5;
+          final tileHeight = tileWidth + 8 + textHeight + 6;
+
+          return SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _gridColumns,
+              mainAxisExtent: tileHeight,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: spacing,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final album = _displayedAlbums[index];
+                return AnimationConfiguration.staggeredGrid(
+                  position: index < 12 ? index : 0,
+                  columnCount: _gridColumns,
+                  duration: const Duration(milliseconds: 300),
+                  child: ScaleAnimation(
+                    child: FadeInAnimation(
+                      child: _buildAlbumGridTile(album),
+                    ),
+                  ),
+                );
+              },
+              childCount: _displayedAlbums.length,
+            ),
+          );
+        },
       ),
     );
   }
@@ -425,28 +482,24 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
       onLongPress: () => _showAlbumOptions(album),
       child: glassmorphicContainer(
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                flex: 3,
-                child: Center(
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: _artworkService.buildCachedAlbumArtwork(
-                        album.id,
-                        size: 150,
-                      ),
-                    ),
+              AspectRatio(
+                aspectRatio: 1,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: _artworkService.buildCachedAlbumArtwork(
+                    album.id,
+                    size: 150,
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              Expanded(
+              const SizedBox(height: 8),
+              Flexible(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -497,7 +550,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
             }
             final album = _displayedAlbums[index];
             return AnimationConfiguration.staggeredList(
-              position: index,
+              position: index < 12 ? index : 0,
               duration: const Duration(milliseconds: 300),
               child: SlideAnimation(
                 verticalOffset: 30,

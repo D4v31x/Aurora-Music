@@ -18,6 +18,7 @@ import 'folder_filter_service.dart';
 import 'smart_suggestions_service.dart';
 import 'audio/replay_gain_reader.dart';
 import 'playlist_m3u_service.dart';
+import '../utils/album_sanitizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../main.dart' show audioHandler;
 

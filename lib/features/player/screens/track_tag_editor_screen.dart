@@ -497,16 +497,17 @@ class _TrackTagEditorScreenState extends State<TrackTagEditorScreen> {
                   ),
                 ),
                 const SizedBox(width: 4),
-                IconButton(
-                  icon: Icon(
-                    audio.isPlaying
-                        ? Icons.pause_rounded
-                        : Icons.play_arrow_rounded,
-                    color: Colors.white,
+                ValueListenableBuilder<bool>(
+                  valueListenable: audio.isPlayingNotifier,
+                  builder: (context, isPlaying, _) => IconButton(
+                    icon: Icon(
+                      isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      color: Colors.white,
+                    ),
+                    onPressed: () => isPlaying
+                        ? audio.audioPlayer.pause()
+                        : audio.audioPlayer.play(),
                   ),
-                  onPressed: () => audio.isPlaying
-                      ? audio.audioPlayer.pause()
-                      : audio.audioPlayer.play(),
                 ),
               ],
             ),

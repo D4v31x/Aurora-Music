@@ -1,5 +1,6 @@
 import 'package:on_audio_query/on_audio_query.dart';
 import '../models/separated_artist.dart';
+import '../utils/album_sanitizer.dart';
 import 'artist_separator_service.dart';
 
 /// Service that aggregates artists from all songs by properly splitting
@@ -155,7 +156,7 @@ class ArtistAggregatorService {
     if (albumIds.isEmpty) return [];
 
     // Query all albums
-    final allAlbums = await _audioQuery.queryAlbums();
+    final allAlbums = sanitizeAlbums(await _audioQuery.queryAlbums());
 
     // Filter to only albums that contain songs by this artist
     return allAlbums.where((album) => albumIds.contains(album.id)).toList();

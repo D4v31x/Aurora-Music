@@ -36,7 +36,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
   List<SongModel> _allSongs = [];
   final List<SongModel> _displayedSongs = [];
   int _currentPage = 0;
-  final int _songsPerPage = 20;
+  final int _songsPerPage = 100;
   bool _isLoading = false;
   bool _hasMoreSongs = true;
 
@@ -62,8 +62,26 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
     _fetchSongs();
   }
 
+  AudioPlayerService? _audioServiceRef;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final service = Provider.of<AudioPlayerService>(context, listen: false);
+    if (_audioServiceRef == null) {
+      _audioServiceRef = service;
+      service.songsNotifier.addListener(_onSongsChanged);
+    }
+  }
+
+  void _onSongsChanged() {
+    if (!mounted) return;
+    unawaited(_fetchSongs());
+  }
+
   @override
   void dispose() {
+    _audioServiceRef?.songsNotifier.removeListener(_onSongsChanged);
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
@@ -99,7 +117,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
   }
 
   void _scrollListener() {
-    if (_scrollController.position.extentAfter < 200 &&
+    if (_scrollController.position.extentAfter < 2500 &&
         !_isLoading &&
         _hasMoreSongs) {
       _loadMoreSongs();
@@ -203,7 +221,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
               '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
 
           return AnimationConfiguration.staggeredList(
-            position: index,
+            position: index < 12 ? index : 0,
             duration: const Duration(milliseconds: 200),
             child: SlideAnimation(
               verticalOffset: 30.0,

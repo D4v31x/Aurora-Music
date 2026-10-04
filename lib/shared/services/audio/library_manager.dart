@@ -1,6 +1,22 @@
 part of '../audio_player_service.dart';
 
 extension AudioLibraryManagerExtension on AudioPlayerService {
+  // Drops songs whose file no longer exists on disk. MediaStore can keep a
+  // stale row around after a file is deleted outside the app (e.g. via a
+  // file manager) until the OS re-indexes that path, so don't trust it blindly.
+  Future<List<SongModel>> _filterExistingFiles(List<SongModel> songs) async {
+    const batchSize = 200;
+    final existing = <SongModel>[];
+    for (var i = 0; i < songs.length; i += batchSize) {
+      final batch = songs.sublist(i, (i + batchSize).clamp(0, songs.length));
+      final flags = await Future.wait(batch.map((s) => File(s.data).exists()));
+      for (var j = 0; j < batch.length; j++) {
+        if (flags[j]) existing.add(batch[j]);
+      }
+    }
+    return existing;
+  }
+
   // Check permissions safely without crashing the app
   Future<bool> _checkPermissionStatus() async {
     try {
@@ -121,7 +137,9 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
         _rawSongs =
             rawSongs; // cache for instant re-filter on folder exclusion change
         await FolderFilterService().ensureInitialized();
-        final songs = FolderFilterService().filterSongs(rawSongs);
+        final songs = await _filterExistingFiles(
+          FolderFilterService().filterSongs(rawSongs),
+        );
         debugPrint('Queried ${rawSongs.length} songs from storage, '
             '${songs.length} after folder filter');
         _updateSongs(songs);
@@ -189,17 +207,21 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     final file = File('${directory.path}/playlists.json');
 
     if (await file.exists()) {
-      final contents = await file.readAsString();
-      final json = jsonDecode(contents) as List;
-      _playlists = json
-          .map((playlistJson) => Playlist(
-                id: playlistJson['id'],
-                name: playlistJson['name'],
-                songs: (playlistJson['songs'] as List)
-                    .map((songJson) => SongModel(songJson))
-                    .toList(),
-              ))
-          .toList();
+      try {
+        final contents = await file.readAsString();
+        final json = jsonDecode(contents) as List;
+        _playlists = json
+            .map((playlistJson) => Playlist(
+                  id: playlistJson['id'],
+                  name: playlistJson['name'],
+                  songs: (playlistJson['songs'] as List)
+                      .map((songJson) => SongModel(songJson))
+                      .toList(),
+                ))
+            .toList();
+      } catch (e) {
+        debugPrint('Error loading playlists.json (corrupt?): $e');
+      }
     }
   }
 
@@ -554,28 +576,30 @@ extension AudioLibraryManagerExtension on AudioPlayerService {
     )
         .then((rawTracks) {
       final tracks = FolderFilterService().filterSongs(rawTracks);
-      final existingIndex =
-          _playlists.indexWhere((p) => p.id == kRecentlyAddedPlaylistId);
+      unawaited(_filterExistingFiles(tracks).then((existingTracks) {
+        final existingIndex =
+            _playlists.indexWhere((p) => p.id == kRecentlyAddedPlaylistId);
 
-      if (existingIndex != -1) {
-        // Update existing playlist
-        _playlists[existingIndex] = Playlist(
-          id: kRecentlyAddedPlaylistId,
-          name: 'Recently Added',
-          songs: tracks,
-        );
-      } else {
-        // Create new playlist
-        _playlists.add(Playlist(
-          id: kRecentlyAddedPlaylistId,
-          name: 'Recently Added',
-          songs: tracks,
-        ));
-      }
+        if (existingIndex != -1) {
+          // Update existing playlist
+          _playlists[existingIndex] = Playlist(
+            id: kRecentlyAddedPlaylistId,
+            name: 'Recently Added',
+            songs: existingTracks,
+          );
+        } else {
+          // Create new playlist
+          _playlists.add(Playlist(
+            id: kRecentlyAddedPlaylistId,
+            name: 'Recently Added',
+            songs: existingTracks,
+          ));
+        }
 
-      _playlistsDirty = true;
-      _scheduleSavePlayCounts();
-      _scheduleNotify();
+        _playlistsDirty = true;
+        _scheduleSavePlayCounts();
+        _scheduleNotify();
+      }));
     }));
   }
 

@@ -516,6 +516,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Fetches high-quality album covers to enhance your library';
 
   @override
+  String get onboardingAnalytics => 'Anonymous analytics & crash reports';
+
+  @override
+  String get onboardingAnalyticsDesc =>
+      'Helps us fix bugs and improve performance. Never includes your listening history or personal data.';
+
+  @override
   String get onboardingAppInfoSubtitle => 'Your personal music companion';
 
   @override
@@ -1214,6 +1221,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportAuroraTitle => 'Support Aurora Music';
 
   @override
+  String get updatedTitle => 'Aurora Music was updated';
+
+  @override
+  String get updatedHighlights => 'Highlights';
+
+  @override
+  String get showUpdatePopup => 'Update popup';
+
+  @override
+  String get showUpdatePopupDesc => 'Preview the screen shown after an update';
+
+  @override
   String get tapAddToAddSongs => 'Tap + to add songs';
 
   @override
@@ -1346,6 +1365,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get send_feedback_desc => 'Report bugs or suggest features';
+
+  @override
+  String get rateApp => 'Rate Aurora Music';
+
+  @override
+  String get rateAppDesc => 'Enjoying the app? Leave a review on Google Play';
+
+  @override
+  String get feedbackTypeBug => 'Bug';
+
+  @override
+  String get feedbackTypeSuggestion => 'Suggestion';
+
+  @override
+  String get feedbackHint => 'Describe the bug or suggestion...';
+
+  @override
+  String get feedbackSend => 'Send';
+
+  @override
+  String get feedbackSentThanks => 'Thanks for your feedback!';
+
+  @override
+  String get feedbackSentError =>
+      'Couldn\'t send feedback. Please try again later.';
 
   @override
   String get contributeTranslations => 'Contribute Translations';
@@ -1481,6 +1525,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String lyricsCleared(String title) {
     return 'Cached lyrics cleared for \"$title\"';
+  }
+
+  @override
+  String lyricsAdded(String title) {
+    return 'Lyrics added for \"$title\"';
   }
 
   @override

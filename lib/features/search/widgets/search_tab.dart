@@ -747,7 +747,7 @@ class _TopResultCardWithArtwork extends HookWidget {
 
     useEffect(() {
       if (id != prevId || colorState.value.dominant == null) {
-        _extractColors(colorState);
+        _extractColors(context, colorState);
       }
       return null;
     }, [id]);
@@ -880,6 +880,7 @@ class _TopResultCardWithArtwork extends HookWidget {
   }
 
   Future<void> _extractColors(
+    BuildContext context,
     ValueNotifier<({Color? dominant, Color? accent, bool hasArtwork})>
         colorState,
   ) async {
@@ -887,6 +888,7 @@ class _TopResultCardWithArtwork extends HookWidget {
       final artwork = isAlbum
           ? await artworkService.getAlbumArtwork(id)
           : await artworkService.getArtwork(id);
+      if (!context.mounted) return;
       if (artwork != null && artwork.isNotEmpty) {
         final imageProvider = MemoryImage(artwork);
         final palette = await PaletteGenerator.fromImageProvider(
@@ -894,6 +896,7 @@ class _TopResultCardWithArtwork extends HookWidget {
           size: const Size(100, 100),
           maximumColorCount: 8,
         );
+        if (!context.mounted) return;
 
         colorState.value = (
           dominant: palette.dominantColor?.color ?? palette.vibrantColor?.color,
@@ -906,6 +909,7 @@ class _TopResultCardWithArtwork extends HookWidget {
         colorState.value = (dominant: null, accent: null, hasArtwork: false);
       }
     } catch (e) {
+      if (!context.mounted) return;
       colorState.value = (dominant: null, accent: null, hasArtwork: false);
     }
   }
@@ -938,7 +942,7 @@ class _TopArtistResultCard extends HookWidget {
 
     useEffect(() {
       if (artist.name != prevArtistName || colorState.value.dominant == null) {
-        _extractColors(colorState);
+        _extractColors(context, colorState);
       }
       return null;
     }, [artist.name]);
@@ -1061,11 +1065,13 @@ class _TopArtistResultCard extends HookWidget {
   }
 
   Future<void> _extractColors(
+    BuildContext context,
     ValueNotifier<({Color? dominant, Color? accent, bool hasArtwork})>
         colorState,
   ) async {
     try {
       final imagePath = await artworkService.getArtistImageByName(artist.name);
+      if (!context.mounted) return;
       if (imagePath != null) {
         final imageProvider = FileImage(File(imagePath));
         final palette = await PaletteGenerator.fromImageProvider(
@@ -1073,6 +1079,7 @@ class _TopArtistResultCard extends HookWidget {
           size: const Size(100, 100),
           maximumColorCount: 8,
         );
+        if (!context.mounted) return;
 
         colorState.value = (
           dominant: palette.dominantColor?.color ?? palette.vibrantColor?.color,
@@ -1085,6 +1092,7 @@ class _TopArtistResultCard extends HookWidget {
         colorState.value = (dominant: null, accent: null, hasArtwork: false);
       }
     } catch (e) {
+      if (!context.mounted) return;
       colorState.value = (dominant: null, accent: null, hasArtwork: false);
     }
   }

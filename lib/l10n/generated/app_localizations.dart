@@ -1084,6 +1084,18 @@ abstract class AppLocalizations {
   /// **'Fetches high-quality album covers to enhance your library'**
   String get onboardingAlbumArtworkDesc;
 
+  /// No description provided for @onboardingAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous analytics & crash reports'**
+  String get onboardingAnalytics;
+
+  /// No description provided for @onboardingAnalyticsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Helps us fix bugs and improve performance. Never includes your listening history or personal data.'**
+  String get onboardingAnalyticsDesc;
+
   /// No description provided for @onboardingAppInfoSubtitle.
   ///
   /// In en, this message translates to:
@@ -2392,6 +2404,30 @@ abstract class AppLocalizations {
   /// **'Support Aurora Music'**
   String get supportAuroraTitle;
 
+  /// No description provided for @updatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Aurora Music was updated'**
+  String get updatedTitle;
+
+  /// No description provided for @updatedHighlights.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlights'**
+  String get updatedHighlights;
+
+  /// No description provided for @showUpdatePopup.
+  ///
+  /// In en, this message translates to:
+  /// **'Update popup'**
+  String get showUpdatePopup;
+
+  /// No description provided for @showUpdatePopupDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview the screen shown after an update'**
+  String get showUpdatePopupDesc;
+
   /// No description provided for @tapAddToAddSongs.
   ///
   /// In en, this message translates to:
@@ -2656,6 +2692,54 @@ abstract class AppLocalizations {
   /// **'Report bugs or suggest features'**
   String get send_feedback_desc;
 
+  /// No description provided for @rateApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Aurora Music'**
+  String get rateApp;
+
+  /// No description provided for @rateAppDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoying the app? Leave a review on Google Play'**
+  String get rateAppDesc;
+
+  /// No description provided for @feedbackTypeBug.
+  ///
+  /// In en, this message translates to:
+  /// **'Bug'**
+  String get feedbackTypeBug;
+
+  /// No description provided for @feedbackTypeSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestion'**
+  String get feedbackTypeSuggestion;
+
+  /// No description provided for @feedbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the bug or suggestion...'**
+  String get feedbackHint;
+
+  /// No description provided for @feedbackSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get feedbackSend;
+
+  /// No description provided for @feedbackSentThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for your feedback!'**
+  String get feedbackSentThanks;
+
+  /// No description provided for @feedbackSentError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t send feedback. Please try again later.'**
+  String get feedbackSentError;
+
   /// No description provided for @contributeTranslations.
   ///
   /// In en, this message translates to:
@@ -2877,6 +2961,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cached lyrics cleared for \"{title}\"'**
   String lyricsCleared(String title);
+
+  /// No description provided for @lyricsAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics added for \"{title}\"'**
+  String lyricsAdded(String title);
 
   /// No description provided for @noLyricsCached.
   ///

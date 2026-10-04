@@ -125,7 +125,7 @@ extension AudioPlayCountsExtension on AudioPlayerService {
   }
 
   Future<List<AlbumModel>> getMostPlayedAlbums() async {
-    final albums = await _audioQuery.queryAlbums();
+    final albums = sanitizeAlbums(await _audioQuery.queryAlbums());
     // Restrict to albums that contain at least one visible (non-excluded) song.
     if (_rawSongs.isNotEmpty) {
       final allowedAlbumIds = _songs.map((s) => s.albumId).toSet();

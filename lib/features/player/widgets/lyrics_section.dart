@@ -164,6 +164,7 @@ class _LyricsSectionState extends State<LyricsSection>
   }
 
   Future<void> _handleTranslateButton() async {
+    if (!mounted) return;
     final lyrics = widget.timedLyrics;
     if (lyrics == null || lyrics.isEmpty) return;
 

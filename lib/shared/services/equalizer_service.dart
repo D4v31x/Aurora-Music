@@ -127,7 +127,11 @@ class EqualizerService extends ChangeNotifier {
 
   Future<void> setEnabled(AndroidEqualizer eq, bool value) async {
     _enabled = value;
-    await eq.setEnabled(value);
+    try {
+      await eq.setEnabled(value);
+    } catch (e) {
+      debugPrint('[EQ] setEnabled failed: $e');
+    }
     await _save();
     notifyListeners();
   }
@@ -139,7 +143,12 @@ class EqualizerService extends ChangeNotifier {
       p.minDecibels.toDouble(),
       p.maxDecibels.toDouble(),
     );
-    await p.bands[bandIndex].setGain(clamped);
+    try {
+      await p.bands[bandIndex].setGain(clamped);
+    } catch (e) {
+      debugPrint('[EQ] setBandGain failed: $e');
+      return;
+    }
     _preset = 'Custom';
     // Debounced save — avoids hammering SharedPreferences during rapid dragging
     _scheduleSave();
@@ -183,9 +192,13 @@ class EqualizerService extends ChangeNotifier {
     final minDb = p.minDecibels.toDouble();
     final maxDb = p.maxDecibels.toDouble();
     final bands = p.bands;
-    for (int i = 0; i < bands.length; i++) {
-      final g = i < gains.length ? gains[i] : 0.0;
-      await bands[i].setGain(g.clamp(minDb, maxDb));
+    try {
+      for (int i = 0; i < bands.length; i++) {
+        final g = i < gains.length ? gains[i] : 0.0;
+        await bands[i].setGain(g.clamp(minDb, maxDb));
+      }
+    } catch (e) {
+      debugPrint('[EQ] applyGains failed: $e');
     }
   }
 

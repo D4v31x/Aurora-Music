@@ -39,7 +39,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
   final List<SongModel> _displayedSongs = [];
   int _currentPage = 0;
-  final int _songsPerPage = 30;
+  final int _songsPerPage = 100;
   bool _isLoading = false;
   bool _hasMoreSongs = true;
   bool _reorderMode = false;
@@ -56,8 +56,26 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     _loadArtwork();
   }
 
+  AudioPlayerService? _audioServiceRef;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final service = Provider.of<AudioPlayerService>(context, listen: false);
+    if (_audioServiceRef == null) {
+      _audioServiceRef = service;
+      service.songsNotifier.addListener(_onSongsChanged);
+    }
+  }
+
+  void _onSongsChanged() {
+    if (!mounted) return;
+    if (!_reorderMode) _refreshSongs();
+  }
+
   @override
   void dispose() {
+    _audioServiceRef?.songsNotifier.removeListener(_onSongsChanged);
     FolderFilterService().removeListener(_onFolderFilterChanged);
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
@@ -106,7 +124,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       FolderFilterService().filterSongs(widget.playlist.songs);
 
   void _scrollListener() {
-    if (_scrollController.position.extentAfter < 300 &&
+    if (_scrollController.position.extentAfter < 2500 &&
         !_isLoading &&
         _hasMoreSongs) {
       _loadMoreSongs();
@@ -530,7 +548,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
 
           return AnimationConfiguration.staggeredList(
-            position: index,
+            position: index < 12 ? index : 0,
             duration: const Duration(milliseconds: 200),
             child: SlideAnimation(
               verticalOffset: 20.0,

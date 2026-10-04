@@ -75,7 +75,9 @@ class _StorageSettingsScreenState extends State<StorageSettingsScreen> {
                 fontFamily: FontConstants.fontFamily, color: Colors.white70)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              if (mounted) Navigator.pop(context);
+            },
             child: Text(l10n.cancel,
                 style: const TextStyle(
                     fontFamily: FontConstants.fontFamily,
@@ -83,6 +85,7 @@ class _StorageSettingsScreenState extends State<StorageSettingsScreen> {
           ),
           TextButton(
             onPressed: () async {
+              if (!mounted) return;
               Navigator.pop(context);
               await _clearAllCaches();
               if (mounted) {

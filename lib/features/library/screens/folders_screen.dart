@@ -30,7 +30,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
   bool _isLoadingMore = false;
   bool _hasMore = false;
   int _currentPage = 0;
-  static const int _pageSize = 40;
+  static const int _pageSize = 100;
   String? _error;
   String _searchQuery = '';
   FolderSortOption _sortOption = FolderSortOption.name;
@@ -87,7 +87,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.extentAfter < 500 &&
+    if (_scrollController.position.extentAfter < 2500 &&
         !_isLoadingMore &&
         _hasMore) {
       _loadMoreItems();
@@ -312,7 +312,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
           }
           final folder = _displayedFolders[index];
           return AnimationConfiguration.staggeredList(
-            position: index,
+            position: index < 12 ? index : 0,
             duration: const Duration(milliseconds: 300),
             child: SlideAnimation(
               verticalOffset: 40.0,

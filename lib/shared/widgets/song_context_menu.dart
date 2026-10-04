@@ -475,10 +475,13 @@ class _SongContextMenu extends StatelessWidget {
                               onTap: () {
                                 audioService.addSongToPlaylist(
                                     playlist.id, song);
+                                final message = AppLocalizations.of(context)
+                                    .addedToNamedPlaylist(playlist.name);
                                 Navigator.pop(ctx);
+                                if (!context.mounted) return;
                                 NotificationManager.showMessage(
                                   context,
-                                  AppLocalizations.of(context).addedToNamedPlaylist(playlist.name),
+                                  message,
                                 );
                               },
                             );

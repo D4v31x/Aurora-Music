@@ -184,6 +184,8 @@
   "onboardingAlbumArt": "Beautiful Album Art",
   "onboardingAlbumArtwork": "Album Artwork",
   "onboardingAlbumArtworkDesc": "Fetches high-quality album covers to enhance your library",
+  "onboardingAnalytics": "Anonymous analytics & crash reports",
+  "onboardingAnalyticsDesc": "Helps us fix bugs and improve performance. Never includes your listening history or personal data.",
   "onboardingAppInfoSubtitle": "Your personal music companion",
   "onboardingAppInfoTitle": "Welcome to Aurora Music",
   "onboardingAudioAccess": "Audio Access",
@@ -410,6 +412,10 @@
   "supportAuroraDescShort": "Help keep the app free",
   "supportAuroraMessage": "Help keep Aurora Music free and support future development. Every contribution means a lot!",
   "supportAuroraTitle": "Support Aurora Music",
+  "updatedTitle": "Aurora Music was updated",
+  "updatedHighlights": "Highlights",
+  "showUpdatePopup": "Update popup",
+  "showUpdatePopupDesc": "Preview the screen shown after an update",
   "tapAddToAddSongs": "Tap + to add songs",
   "reorderSongs": "Reorder Songs",
   "done": "Done",
@@ -454,6 +460,14 @@
   "maybe_later": "Maybe Later",
   "send_feedback": "Send Feedback",
   "send_feedback_desc": "Report bugs or suggest features",
+  "rateApp": "Rate Aurora Music",
+  "rateAppDesc": "Enjoying the app? Leave a review on Google Play",
+  "feedbackTypeBug": "Bug",
+  "feedbackTypeSuggestion": "Suggestion",
+  "feedbackHint": "Describe the bug or suggestion...",
+  "feedbackSend": "Send",
+  "feedbackSentThanks": "Thanks for your feedback!",
+  "feedbackSentError": "Couldn't send feedback. Please try again later.",
   "contributeTranslations": "Contribute Translations",
   "contributeTranslationsDesc": "Help translate Aurora Music on Crowdin",
   "contributeTranslationsTitle": "Help Us Translate",
@@ -555,6 +569,14 @@
   "clearCachedLyrics": "Clear cached lyrics",
   "lyricsCleared": "Cached lyrics cleared for \"{title}\"",
   "@lyricsCleared": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsAdded": "Lyrics added for \"{title}\"",
+  "@lyricsAdded": {
     "placeholders": {
       "title": {
         "type": "String"

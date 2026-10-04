@@ -12,6 +12,7 @@ import 'core/constants/app_config.dart';
 import 'shared/services/audio_player_service.dart';
 import 'shared/services/audio_handler.dart';
 import 'shared/services/error_tracking_service.dart';
+import 'shared/services/notification_manager.dart';
 import 'shared/services/shader_warmup_service.dart';
 import 'shared/services/background_manager_service.dart';
 import 'shared/services/sleep_timer_controller.dart';
@@ -384,9 +385,26 @@ class _AppShellState extends State<_AppShell> {
     createRectTween: (Rect? begin, Rect? end) =>
         MaterialRectCenterArcTween(begin: begin, end: end),
   );
+  StreamSubscription<String>? _playbackErrorSub;
+
+  @override
+  void initState() {
+    super.initState();
+    // Surface playback errors (e.g. a corrupted/unplayable file) as a toast —
+    // previously this stream had no listener anywhere, so failures were silent.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final audioService =
+          Provider.of<AudioPlayerService>(context, listen: false);
+      _playbackErrorSub = audioService.errorStream.listen((message) {
+        if (mounted) NotificationManager.showMessage(context, message);
+      });
+    });
+  }
 
   @override
   void dispose() {
+    _playbackErrorSub?.cancel();
     _heroController.dispose();
     super.dispose();
   }

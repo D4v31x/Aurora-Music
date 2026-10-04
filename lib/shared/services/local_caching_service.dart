@@ -152,17 +152,32 @@ class LocalCachingArtistService {
       _imageCache.remove(artistName);
     }
 
-    // Also delete any .jpg on disk that has no metadata entry at all.
+    // Reconcile any .jpg on disk with no metadata entry. Don't just delete it —
+    // a previous run may have been killed between writing the file and
+    // persisting its timestamp (two separate awaits), which would otherwise
+    // wipe out a genuinely fresh download on the next launch. Backfill the
+    // timestamp from the file's own last-modified time instead, only
+    // deleting if that's actually past the TTL.
     try {
       final files = await cacheDir.list().toList();
+      bool backfilled = false;
       for (final entity in files) {
         if (entity is File && entity.path.endsWith('.jpg')) {
           final fileName = entity.path.split('/').last;
           if (!_cacheTimestamps.containsKey(fileName)) {
-            await entity.delete();
+            final modified = await entity.lastModified();
+            if (DateTime.now().difference(modified) >= _cacheTtl) {
+              try {
+                await entity.delete();
+              } catch (_) {}
+            } else {
+              _cacheTimestamps[fileName] = modified.toUtc();
+              backfilled = true;
+            }
           }
         }
       }
+      if (backfilled) await _saveCacheMetadata();
     } catch (_) {}
 
     if (staleKeys.isNotEmpty) {

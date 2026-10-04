@@ -325,7 +325,10 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
           IconButton(
             icon: const iconoir.NavArrowDown(
                 color: Colors.white, width: 32, height: 32),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              if (!mounted) return;
+              Navigator.pop(context);
+            },
           ),
           Expanded(
             child: Column(
@@ -452,6 +455,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   }
 
   Future<void> _handleTranslateButton() async {
+    if (!mounted) return;
     final lyrics = _currentLyrics;
     if (lyrics == null || lyrics.isEmpty) return;
 
@@ -638,6 +642,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
   }
 
   Future<void> _performLyricsSearch(String artist, String title) async {
+    if (!mounted) return;
     setState(() => _isLoadingLyrics = true);
 
     // Fetch search results from the API
@@ -726,7 +731,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                   child: ListTile(
-                    onTap: () => _selectLyricsResult(result),
+                    onTap: () => _selectLyricsResult(context, result),
                     contentPadding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     title: Text(
@@ -826,8 +831,9 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
-  void _selectLyricsResult(Map<String, dynamic> result) {
-    Navigator.pop(context);
+  void _selectLyricsResult(BuildContext dialogContext, Map<String, dynamic> result) {
+    if (!mounted) return;
+    Navigator.pop(dialogContext);
 
     final lrcContent = result['syncedLyrics'] as String;
     final timedLyricsService = TimedLyricsService();
@@ -856,6 +862,12 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
         song.title,
         lrcContent,
       );
+      if (mounted) {
+        NotificationManager.showMessage(
+          context,
+          AppLocalizations.of(context).lyricsAdded(song.title),
+        );
+      }
     }
 
     // Notify now-playing screen so it updates its mini lyrics view
@@ -1025,6 +1037,7 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
     final isSelected = (_fontSize - size).abs() < 0.01;
     return ListTile(
       onTap: () {
+        if (!mounted) return;
         Navigator.pop(context);
         _saveFontSize(size);
       },
@@ -1438,21 +1451,22 @@ class _FullscreenLyricsScreenState extends State<FullscreenLyricsScreen>
                 ),
                 onPressed: audioService.back,
               ),
-              IconButton(
-                icon: Icon(
-                  audioService.isPlaying
-                      ? Icons.pause_rounded
-                      : Icons.play_arrow_rounded,
-                  color: Colors.white,
-                  size: 52,
+              ValueListenableBuilder<bool>(
+                valueListenable: audioService.isPlayingNotifier,
+                builder: (context, isPlaying, _) => IconButton(
+                  icon: Icon(
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 52,
+                  ),
+                  onPressed: () {
+                    if (isPlaying) {
+                      audioService.pause();
+                    } else {
+                      audioService.resume();
+                    }
+                  },
                 ),
-                onPressed: () {
-                  if (audioService.isPlaying) {
-                    audioService.pause();
-                  } else {
-                    audioService.resume();
-                  }
-                },
               ),
               IconButton(
                 icon: const Icon(

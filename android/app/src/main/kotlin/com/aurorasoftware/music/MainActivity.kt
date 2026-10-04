@@ -285,9 +285,17 @@ class MainActivity : AudioServiceActivity() {
             result.error("WRITE_FAILED", "createWriteRequest requires API 30+", null)
             return
         }
-        pendingWrite = PendingWrite(tempPath, mediaUri, result)
-        val intentSender = MediaStore.createWriteRequest(contentResolver, listOf(mediaUri))
-        startIntentSenderForResult(intentSender.intentSender, REQUEST_WRITE_PERMISSION, null, 0, 0, 0)
+        // Set pendingWrite only once the intent sender has actually launched —
+        // otherwise a failure here would leave a stale pendingWrite pointing at
+        // an already-replied result, risking a double reply later.
+        try {
+            val intentSender = MediaStore.createWriteRequest(contentResolver, listOf(mediaUri))
+            pendingWrite = PendingWrite(tempPath, mediaUri, result)
+            startIntentSenderForResult(intentSender.intentSender, REQUEST_WRITE_PERMISSION, null, 0, 0, 0)
+        } catch (e: Exception) {
+            pendingWrite = null
+            result.error("WRITE_FAILED", e.message, null)
+        }
     }
 
     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")

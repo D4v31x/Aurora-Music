@@ -717,7 +717,9 @@ void showSongInfoDialog(
       actions: [
         GlassmorphicTextButton(
           isPrimary: true,
-          onPressed: () => Navigator.pop(ctx),
+          onPressed: () {
+            if (ctx.mounted) Navigator.pop(ctx);
+          },
           child: Text(l10n.close),
         ),
       ],

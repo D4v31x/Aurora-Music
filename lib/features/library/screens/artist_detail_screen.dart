@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:palette_generator/palette_generator.dart';
 import '../../../shared/services/local_caching_service.dart';
+import '../../../shared/utils/album_sanitizer.dart';
 import '../../../shared/services/folder_filter_service.dart';
 import '../../../shared/widgets/glassmorphic_container.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -49,7 +50,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
   List<SongModel> _allSongs = [];
   final List<SongModel> _displayedSongs = [];
   int _currentPage = 0;
-  final int _songsPerPage = 50;
+  final int _songsPerPage = 100;
   bool _isLoading = false;
   bool _hasMoreSongs = true;
 
@@ -74,15 +75,33 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     _loadSongs();
   }
 
+  AudioPlayerService? _audioServiceRef;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final service = Provider.of<AudioPlayerService>(context, listen: false);
+    if (_audioServiceRef == null) {
+      _audioServiceRef = service;
+      service.songsNotifier.addListener(_onSongsChanged);
+    }
+  }
+
+  void _onSongsChanged() {
+    if (!mounted) return;
+    _loadSongs();
+  }
+
   @override
   void dispose() {
+    _audioServiceRef?.songsNotifier.removeListener(_onSongsChanged);
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
   }
 
   void _scrollListener() {
-    if (_scrollController.position.extentAfter < 500 &&
+    if (_scrollController.position.extentAfter < 2500 &&
         !_isLoading &&
         _hasMoreSongs) {
       _loadMoreSongs();
@@ -99,11 +118,11 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
     final songs = FolderFilterService().filterSongs(rawSongs);
 
     // Load albums for this artist
-    final allAlbums = await _audioQuery.queryAlbums(
+    final allAlbums = sanitizeAlbums(await _audioQuery.queryAlbums(
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
-    );
+    ));
 
     final artistSongs = songs
         .where((song) =>
@@ -120,6 +139,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
       totalDuration += Duration(milliseconds: song.duration ?? 0);
     }
 
+    if (!mounted) return;
     setState(() {
       _allSongs = artistSongs;
       _albums = artistAlbums;
@@ -417,7 +437,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
             final artworkSize = isTablet ? 100.0 : 120.0;
 
             return AnimationConfiguration.staggeredGrid(
-              position: index,
+              position: index < 12 ? index : 0,
               columnCount: columns,
               duration: const Duration(milliseconds: 200),
               child: ScaleAnimation(
@@ -643,7 +663,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
               '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
 
           return AnimationConfiguration.staggeredList(
-            position: index,
+            position: index < 12 ? index : 0,
             duration: const Duration(milliseconds: 200),
             child: SlideAnimation(
               verticalOffset: 30.0,

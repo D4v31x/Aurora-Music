@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/services/audio_player_service.dart';
 import '../../../shared/services/artist_aggregator_service.dart';
+import '../../../shared/utils/album_sanitizer.dart';
 import '../../../shared/services/artist_separator_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/glassmorphic_dialog.dart';
@@ -250,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _loadAlbumsAndArtists() async {
     try {
       final onAudioQuery = OnAudioQuery();
-      final loadedAlbums = await onAudioQuery.queryAlbums();
+      final loadedAlbums = sanitizeAlbums(await onAudioQuery.queryAlbums());
       // Use ArtistAggregatorService for properly separated artists
       final loadedArtists = await _artistAggregator.getAllArtists();
       if (mounted) {
